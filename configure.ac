@@ -75,7 +75,29 @@ fi
 
 JAVA_INC="-I${JAVA_HOME}/include"
 
-# we should check whether a small jni proggy compiles at this point ...
+LIBS="${LIBS} ${JAVA_LIBS}"
+CFLAGS="${CFLAGS} ${JAVA_INC}"
+
+AC_MSG_CHECKING([whether JNI programs can be compiled])
+AC_LINK_IFELSE([
+#include <jni.h>
+int main(void) {
+    jobject o;
+    return 0;
+}
+	],[AC_MSG_RESULT(yes)],
+	[AC_MSG_ERROR([Cannot compile a simple JNI program. See config.log for details.])])
+
+AC_MSG_CHECKING([JNI data types])
+AC_TRY_RUN(
+	[
+#include <jni.h>
+int main(void) {
+  return (sizeof(int)==sizeof(jint) && sizeof(long)==sizeof(long) && sizeof(jbyte)==sizeof(char) && sizeof(jshort)==sizeof(short) && sizeof(jfloat)==sizeof(float) && sizeof(jdouble)==sizeof(double))?0:1;
+}
+	],
+	[AC_MSG_RESULT([ok])],
+	[AC_MSG_ERROR([One or more JNI types differ from the corresponding native type. You may need to use non-standard compiler flags or a different compiler in order to fix this.])])
 
 AC_SUBST(JAVA_LIBS)
 AC_SUBST(JAVA_INC)
