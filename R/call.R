@@ -1,9 +1,15 @@
 .jinit <- function(classpath=NULL) {
   # determine path separator
-  if (.Platform$file.sep=="/")
-    path.sep<-":"
-  else
+  if (.Platform$OS.type=="windows")
     path.sep<-";"
+  else
+    path.sep<-":"
+
+  if (!is.null(classpath)) {
+    classpath<-as.character(classpath)
+    if (length(classpath)>1)
+      classpath<-paste(classpath,collapse=path.sep)
+  }
   
   # merge CLASSPATH environment variable if present
   cp<-Sys.getenv("CLASSPATH")
