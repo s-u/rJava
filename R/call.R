@@ -79,6 +79,9 @@
       class(r)<-c("jarrayRef","jobjRef")
     }
   } else if (substr(returnSig,1,1)=="L") {
+    if (r==0)
+      return(NULL)
+    
     if (returnSig=="Ljava/lang/String;" && evalString) {
       s<-.External("RgetStringValue",r)
       .External("RfreeObject",r)
