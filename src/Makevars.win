@@ -1,5 +1,11 @@
+# To compile the Windows version, you need to:
+# - set JAVA_HOME to the JDK root (used for includes only)
+# in addition if the pre-compiled stuff is not present, then also:
+# - generate libjvm.a in src from JDK's jvm.dll
+# - copy WinRegistry.dll into inst/libs
+
 JAVA_HOME=C:\\j2sdk1.4.1_03
 
 JAVA_INCLUDES=$(JAVA_HOME)/include $(JAVA_HOME)/include/win32
-PKG_CFLAGS= -D_R_ -I$(TOP)/inst/include -I$(RHOME)/src/include $(JAVA_INCLUDES:%=-I%)
-PKG_LIBS= -ljvm
+PKG_CFLAGS= -D_R_ -I$(RHOME)/src/include $(JAVA_INCLUDES:%=-I%)
+PKG_LIBS= -ljvm -L$(TOP)/src
