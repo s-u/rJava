@@ -205,6 +205,32 @@ SEXP RgetIntArrayCont(SEXP par) {
   return ar;
 }
 
+/* get contents of the integer array object (int) */
+SEXP RgetDoubleArrayCont(SEXP par) {
+  SEXP e=CAR(CDR(par));
+  SEXP ar;
+  jarray o;
+  int l;
+  jdouble *ap;
+
+  if (TYPEOF(e)!=INTSXP)
+    error_return("RgetDoubleArrayCont: invalid object parameter");
+  o=(jarray)INTEGER(e)[0];
+  rjprintf(" jarray %d\n",o);
+  if (!o) return R_NilValue;
+  l=(int)(*env)->GetArrayLength(env, o);
+  rjprintf("convert double array of length %d\n",l);
+  if (l<1) return R_NilValue;
+  ap=(jdouble*)(*env)->GetDoubleArrayElements(env, o, 0);
+  if (!ap)
+    error_return("RgetDoubleArrayCont: can't fetch array contents");
+  PROTECT(ar=allocVector(REALSXP,l));
+  memcpy(REAL(ar),ap,sizeof(jdouble)*l);
+  UNPROTECT(1);
+  (*env)->ReleaseDoubleArrayElements(env, o, ap, 0);
+  return ar;
+}
+
 /* call specified non-static method on an object
    object (int), return signature (string), method name (string) [, ..parameters ...]
    arrays and objects are returned as IDs (hence not evaluated)
@@ -373,7 +399,7 @@ SEXP RcallStaticMethod(SEXP par) {
    object (int), return signature (string), field name (string)
    arrays and objects are returned as IDs (hence not evaluated)
 */
-SEXP Rgetfield(SEXP par) {
+SEXP RgetField(SEXP par) {
   SEXP p=par, e;
   jobject o;
   char *retsig, *mnam;
