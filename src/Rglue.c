@@ -412,14 +412,21 @@ SEXP RcallMethod(SEXP par) {
   if (TYPEOF(e)!=INTSXP)
     error_return("RcallMethod: invalid object parameter");
   o=(jobject)(INTEGER(e)[0]);
+  if (!o)
+    error_return("RcallMethod: attempt to call a method of a NULL object.");
 #ifdef RJAVA_DEBUG
-  rjprintf("object: "); printObject(o);
+  {
+    SEXP de=CAR(CDR(p));
+    rjprintf("RcallMethod (env=%x):\n",env);
+    if (TYPEOF(de)==STRSXP && LENGTH(de)>0)
+      rjprintf(" method to call: %s on object 0x%x\n",CHAR(STRING_ELT(de,0)),o);
+  }
 #endif
   cls=(*env)->GetObjectClass(env,o);
   if (!cls)
     error_return("RcallMethod: cannot determine object class");
 #ifdef RJAVA_DEBUG
-  rjprintf("class: "); printObject(cls);
+  rjprintf(" class: "); printObject(cls);
 #endif
   e=CAR(p); p=CDR(p);
   if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
@@ -433,7 +440,7 @@ SEXP RcallMethod(SEXP par) {
   Rpar2jvalue(p,jpar,sig,32,256);
   strcat(sig,")");
   strcat(sig,retsig);
-  rjprintf("Method %s signature is %s\n",mnam,sig);
+  rjprintf(" Method %s signature is %s\n",mnam,sig);
   mid=(*env)->GetMethodID(env,cls,mnam,sig);
   if (!mid)
     error_return("RcallMethod: method not found");
@@ -481,7 +488,7 @@ SEXP RcallMethod(SEXP par) {
     PROTECT(e=allocVector(INTSXP, 1));
     INTEGER(e)[0]=(int)gr;
     UNPROTECT(1);
-    profReport("Method %s returned:",mnam);
+    profReport("Method %s returned [g.ref=%x]:",mnam, gr);
     return e;
   }
   profReport("Method %s has an unknown signature, not called:",mnam);
@@ -495,10 +502,10 @@ SEXP RcallSyncMethod(SEXP par) {
 
   p=CDR(p); e=CAR(p); p=CDR(p);
   if (TYPEOF(e)!=INTSXP)
-    error_return("RcallMethod: invalid object parameter");
+    error_return("RcallSyncMethod: invalid object parameter");
   o=(jobject)(INTEGER(e)[0]);
 #ifdef RJAVA_DEBUG
-  rjprintf("object: "); printObject(o);
+  rjprintf("RcallSyncMethod:\ object: "); printObject(o);
 #endif
   if ((*env)->MonitorEnter(env, o) != JNI_OK) {
     printf("Rglue.warning: couldn't get monitor on the object, running unsynchronized.\n");
