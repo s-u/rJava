@@ -6,6 +6,9 @@
 JavaVM *jvm;
 static JDK1_1InitArgs vm1_args;
 
+jclass javaStringClass;
+jclass javaObjectClass;
+
 #ifdef JNI_VERSION_1_2 
 static JavaVMInitArgs vm2_args;
 /* Classpath. */
