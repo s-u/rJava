@@ -19,6 +19,11 @@ else
     rm -rf autom4te*
 fi
 
+if [ ! -e getsp.class ]; then
+    echo "Compiling getsp.class"
+    javac getsp.java
+fi
+
 echo "Removing CVS stuff ..."
 rm -rf `find . -name CVS`
 cd ..
