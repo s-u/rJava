@@ -1,0 +1,63 @@
+\name{jcall}
+\alias{.jcall}
+\title{
+  Call a Java method
+}
+\description{
+  \code{.jcall} calls a Java method with the supplied arguments.
+}
+\usage{
+.jcall(obj, returnSig = "V", method, ..., evalArray = TRUE, 
+    evalString = TRUE, interface = "RcallMethod")
+}
+\arguments{
+  \item{obj}{Java object (\code{jobjRef} as returned by
+    \code{\link{.jcall}} or \code{\link{.jnew}}) or fully qualified
+    class name in JNI notation (e.g. \code{"java/lang/String"}).}
+  \item{returnSig}{Return signature in JNI notation (e.g. "V" for void,
+    "[I" for \code{int[]} etc.). For convenience additional type
+    \code{"S"} is supported and expanded to
+    \code{"Ljava/lang/String;"}.}
+  \item{method}{The name of the method to be called}
+  \item{...}{
+    Any parametes that will be passed to the Java method. The parameter
+    types are determined automatically and/or taken from the
+    \code{jobjRef} object.}
+  \item{evalArray}{This flag determines whether the array return value
+    is evaluated (\code{TRUE}) or passed back as Java object reference
+    (\code{FALSE}).}
+  \item{evalString}{This flag determines whether string result is returned
+    as characters or as Java object reference.}
+  \item{inteface}{This option is experimental and specifies the
+    interface used for calling the Java method; the current
+    implementation supports two interfaces:
+    \itemize{
+      \item{\code{"RcallMethod"}}{the default interface.}
+      \item{\code{"RcallSyncMethod"}}{synchronized call of a
+	method. This has simmilar effect as using \code{synchronize} in
+	Java.}
+    }
+  }
+}
+\value{
+  Returns the result of the method.
+}
+\details{
+  \code{.jcall} requires exact match of argument and return types. For
+  higher efficiency \code{.jcall} doens't perform any lookup in the
+  reflection tables. This means that passing subclasses of the classes
+  present in the method definition requires explicit casting using
+  \code{\link{.jcast}}. Passing \code{null} arguments also needs a
+  proper class specification with \code{\link{.jnull}}.
+}
+\seealso{
+  \code{\link{.jnew}}, \code{\link{.jcast}}, \code{\link{.jnull}}
+}
+\examples{
+\dontrun{
+.jcall("java/lang/System","S","getProperty","os.name")
+f <- .jnew("java/awt/Frame","Hello")
+.jcall(f,,"setVisible",TRUE)
+}
+}
+\keyword{interface}
