@@ -16,6 +16,8 @@ void rjprintf(char *fmt, ...) {
 #define rjprintf(...)
 #endif
 
+/* RinitJVM(classpath)
+   initializes JVM with the specified class path */
 SEXP RinitJVM(SEXP par)
 {
   char *c=0;
@@ -32,7 +34,7 @@ SEXP RinitJVM(SEXP par)
 }
 
 /* converts parameters in SEXP list to jpar and sig.
-   strcat is used on sig, hence sig mut be a valid string already */
+   strcat is used on sig, hence sig must be a valid string already */
 SEXP Rpar2jvalue(SEXP par, jvalue *jpar, char *sig, int maxpar, int maxsig) {
   SEXP p=par;
   SEXP e;
@@ -148,6 +150,8 @@ SEXP RgetStringValue(SEXP par) {
   return r;
 }
 
+/** calls .toString() on the passed object (int) and returns the string 
+    value */
 SEXP RtoString(SEXP par) {
   SEXP p,e,r;
   jstring s;
@@ -175,6 +179,7 @@ SEXP RtoString(SEXP par) {
   return r;
 }
 
+/* get contents of the integer array object (int) */
 SEXP RgetIntArrayCont(SEXP par) {
   SEXP e=CAR(CDR(par));
   SEXP ar;
@@ -200,6 +205,10 @@ SEXP RgetIntArrayCont(SEXP par) {
   return ar;
 }
 
+/* call specified non-static method on an object
+   object (int), return signature (string), method name (string) [, ..parameters ...]
+   arrays and objects are returned as IDs (hence not evaluated)
+*/
 SEXP RcallMethod(SEXP par) {
   SEXP p=par, e;
   char sig[256];
@@ -249,6 +258,13 @@ SEXP RcallMethod(SEXP par) {
     UNPROTECT(1);
     return e;
   }
+  if (*retsig=='Z') {
+    jboolean r=(*env)->CallBooleanMethodA(env,o,mid,jpar);
+    PROTECT(e=allocVector(LGLSXP, 1));
+    LOGICAL(e)[0]=(r)?1:0;
+    UNPROTECT(1);
+    return e;
+  }
   if (*retsig=='D') {
     double r=(*env)->CallDoubleMethodA(env,o,mid,jpar);
     PROTECT(e=allocVector(REALSXP, 1));
@@ -273,6 +289,164 @@ SEXP RcallMethod(SEXP par) {
   return R_NilValue;
 }
 
+/* call specified static method of a class
+   class (string), return signature (string), method name (string) [, ..parameters ...]
+   arrays and objects are returned as IDs (hence not evaluated)
+*/
+SEXP RcallStaticMethod(SEXP par) {
+  SEXP p=par, e;
+  char sig[256];
+  jvalue jpar[32];
+  char *cnam, *retsig, *mnam;
+  jmethodID mid;
+  jclass cls;
+
+  p=CDR(p); e=CAR(p); p=CDR(p);
+  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
+    error_return("RcallStaticMethod: invalid class parameter");
+  cnam=CHAR(STRING_ELT(e,0));
+#ifdef RJAVA_DEBUG
+  rjprintf("class: %s\n",cnam);
+#endif
+  cls=getClass(cnam);
+  if (!cls)
+    error_return("RcallStaticMethod: cannot find specified class");
+  e=CAR(p); p=CDR(p);
+  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
+    error_return("RcallMethod: invalid return signature parameter");
+  retsig=CHAR(STRING_ELT(e,0));
+  e=CAR(p); p=CDR(p);
+  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
+    error_return("RcallMethod: invalid method name");
+  mnam=CHAR(STRING_ELT(e,0));
+  strcpy(sig,"(");
+  Rpar2jvalue(p,jpar,sig,32,256);
+  strcat(sig,")");
+  strcat(sig,retsig);
+  rjprintf("Method %s signature is %s\n",mnam,sig);
+  mid=(*env)->GetStaticMethodID(env,cls,mnam,sig);
+  if (!mid)
+    error_return("RcallStaticMethod: method not found");
+  if (*retsig=='V') {
+    (*env)->CallStaticVoidMethodA(env,cls,mid,jpar);
+    return R_NilValue;
+  }
+  if (*retsig=='I') {
+    int r=(*env)->CallStaticIntMethodA(env,cls,mid,jpar);
+    PROTECT(e=allocVector(INTSXP, 1));
+    INTEGER(e)[0]=r;
+    UNPROTECT(1);
+    return e;
+  }
+  if (*retsig=='Z') {
+    jboolean r=(*env)->CallStaticBooleanMethodA(env,cls,mid,jpar);
+    PROTECT(e=allocVector(LGLSXP, 1));
+    LOGICAL(e)[0]=(r)?1:0;
+    UNPROTECT(1);
+    return e;
+  }
+  if (*retsig=='D') {
+    double r=(*env)->CallStaticDoubleMethodA(env,cls,mid,jpar);
+    PROTECT(e=allocVector(REALSXP, 1));
+    REAL(e)[0]=r;
+    UNPROTECT(1);
+    return e;
+  }
+  if (*retsig=='L' || *retsig=='[') {
+    jobject gr;
+    jobject r=(*env)->CallStaticObjectMethodA(env,cls,mid,jpar);
+    gr=r;
+    if (r) {
+      gr=makeGlobal(r);
+      if (gr)
+	releaseObject(r);
+    }
+    PROTECT(e=allocVector(INTSXP, 1));
+    INTEGER(e)[0]=(int)gr;
+    UNPROTECT(1);
+    return e;
+  }
+  return R_NilValue;
+}
+
+/* get value of a non-static field of an object
+   object (int), return signature (string), field name (string)
+   arrays and objects are returned as IDs (hence not evaluated)
+*/
+SEXP Rgetfield(SEXP par) {
+  SEXP p=par, e;
+  jobject o;
+  char *retsig, *mnam;
+  jfieldID mid;
+  jclass cls;
+
+  p=CDR(p); e=CAR(p); p=CDR(p);
+  if (TYPEOF(e)!=INTSXP)
+    error_return("RgetField: invalid object parameter");
+  o=(jobject)(INTEGER(e)[0]);
+#ifdef RJAVA_DEBUG
+  rjprintf("object: "); printObject(o);
+#endif
+  cls=(*env)->GetObjectClass(env,o);
+  if (!cls)
+    error_return("RgetField: cannot determine object class");
+#ifdef RJAVA_DEBUG
+  rjprintf("class: "); printObject(cls);
+#endif
+  e=CAR(p); p=CDR(p);
+  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
+    error_return("RgetField: invalid return signature parameter");
+  retsig=CHAR(STRING_ELT(e,0));
+  e=CAR(p); p=CDR(p);
+  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
+    error_return("RgetField: invalid field name");
+  mnam=CHAR(STRING_ELT(e,0));
+  rjprintf("field %s signature is %s\n",mnam,retsig);
+  mid=(*env)->GetFieldID(env,cls,mnam,retsig);
+  if (!mid)
+    error_return("RgetField: field not found");
+  if (*retsig=='I') {
+    int r=(*env)->GetIntField(env,o,mid);
+    PROTECT(e=allocVector(INTSXP, 1));
+    INTEGER(e)[0]=r;
+    UNPROTECT(1);
+    return e;
+  }
+  if (*retsig=='Z') {
+    jboolean r=(*env)->GetBooleanField(env,o,mid);
+    PROTECT(e=allocVector(LGLSXP, 1));
+    LOGICAL(e)[0]=(r)?1:0;
+    UNPROTECT(1);
+    return e;
+  }
+  if (*retsig=='D') {
+    double r=(*env)->GetDoubleField(env,o,mid);
+    PROTECT(e=allocVector(REALSXP, 1));
+    REAL(e)[0]=r;
+    UNPROTECT(1);
+    return e;
+  }
+  if (*retsig=='L' || *retsig=='[') {
+    jobject gr;
+    jobject r=(*env)->GetObjectField(env,o,mid);
+    gr=r;
+    /* unlike method results: fields, we don't make them global
+    if (r) {
+      gr=makeGlobal(r);
+      if (gr)
+	releaseObject(r);
+    }
+    */
+    PROTECT(e=allocVector(INTSXP, 1));
+    INTEGER(e)[0]=(int)gr;
+    UNPROTECT(1);
+    return e;
+  }
+  return R_NilValue;
+}
+
+/* create new object
+   fully-qualified class in JNI notation (string) [, constructor parameters] */
 SEXP RcreateObject(SEXP par) {
   SEXP p=par;
   SEXP e, ov;
