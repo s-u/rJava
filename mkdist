@@ -1,0 +1,34 @@
+#!/bin/sh
+
+SWD=`pwd`
+echo "Removing previous dist ..."
+rm -rf /tmp/rJava
+echo "Copying package base ..."
+cp -r ../rJava /tmp
+
+rm /tmp/rJava/mkdist
+rm -f /tmp/rJava/*~ /tmp/rJava/R/*~ /tmp/rJava/src/*~ /tmp/rJava/man/*~
+
+echo "Running autoreconf ..."
+cd /tmp/rJava
+autoreconf
+rm -rf autom4te*
+echo "Removing CVS stuff ..."
+rm -rf `find . -name CVS`
+echo "Updating INDEX ..."
+cd ..
+R CMD Rdindex rJava > rJava/INDEX
+echo "Updating version ..."
+cd rJava
+VER=`awk -v ORS= '/rJava v/ { print substr($6,2) }' src/rJava.h`
+echo "rJava version ${VER}"
+cat DESCRIPTION| sed "s/Version:.*/Version: ${VER}/" > d
+mv d DESCRIPTION
+echo "Creating package ..."
+cd ..
+tar fcz rJava_${VER}.tar.gz rJava
+cd ${SWD}
+cp /tmp/rJava_${VER}.tar.gz ..
+rm -rf /tmp/rJava
+echo "Done."
+ls -l ../rJava_${VER}.tar.gz
