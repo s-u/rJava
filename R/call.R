@@ -32,6 +32,8 @@
   o<-.External("RcreateObject", class, ..., PACKAGE="rJava")
   .C("checkExceptions")
   if (!is.null(o)) {
+    if (o==0)
+      warning(paste("Unable to create object of the class",class,", returning null reference."))
     o<-list(jobj=o, jclass=class)
     class(o)<-"jobjRef"
   }
