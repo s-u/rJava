@@ -20,9 +20,8 @@ static JDK1_1InitArgs *vm_args;
 #endif  /* finished the version 1.1 material */
 
 JNIEnv *env;
-char *user_classpath=0;
 
-int initJVM() {
+int initJVM(char *user_classpath) {
   jint res;
   char *classpath;
   
@@ -34,9 +33,9 @@ int initJVM() {
   vm_args = (VMARGS_TYPE *) &vm2_args;
 #if defined(JNI_VERSION_1_2)
   vm_args->version = JNI_VERSION_1_2;
-  printf("JNI 1.2+\n");
+  /* printf("JNI 1.2+\n"); */
 #else
-  printf("JNI 1.1\n");
+  /* printf("JNI 1.1\n"); */
   vm_args->version = 0x00010001;
   vm_args->verbose = 1;
 #endif
