@@ -1,13 +1,16 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000103 /* rJava v0.1-3 */
+#define RJAVA_VER 0x000104 /* rJava v0.1-4 */
 
 #include <jni.h>
 
 /* in rJava.c */
 extern JNIEnv *env;
 extern JavaVM *jvm;
+
+extern jclass javaStringClass;
+extern jclass javaObjectClass;
 
 /* in callJNI */
 jobject createObject(char *class, char *sig, jvalue *par);
