@@ -1,0 +1,26 @@
+# Makefile template. Auther: Simon Urbanek <simon@urbanek.info>
+#
+# by default %.c->%.o->% for each *.c file
+# modify DST and add explicit rule(s) to use for other mappings
+#
+# $Id$
+
+include Makevars
+
+SRC = $(wildcard *.c)
+OBJ = $(SRC:%.c=%.o)
+DST = rJava.so
+
+CFLAGS+=${PKG_CFLAGS}
+LIBS+=${PKG_LIBS}
+
+all: $(DST) $(OBJ)
+
+rJava.so:	rJava.o initJNI.o callJNI.o
+	$(CC) $^ -o $@ $(LIBS)
+
+debug:
+	CFLAGS=-g $(MAKE) all
+
+clean:
+	rm -rf *~ *.o \#* .\#* config.h Mavevars $(DST)
