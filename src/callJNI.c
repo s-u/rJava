@@ -17,11 +17,21 @@ void* errJNI(char *err, ...) {
    The JVM initialization was performed before (but may have failed)
 */
 void init_rJava(void) {
+  jclass c;
   if (!env) return; /* initJVM failed, so we cannot proceed */
   
-  /* get global classes */
-  javaStringClass=(*env)->FindClass(env, "java/lang/String");
-  javaObjectClass=(*env)->FindClass(env, "java/lang/Object");
+  /* get global classes. we make the references explicitely global (although unloading of String/Object is more than unlikely) */
+  c=(*env)->FindClass(env, "java/lang/String");
+  if (!c) { errJNI("Unable to find the basic String class"); return; };
+  javaStringClass=(*env)->NewGlobalRef(env, c);
+  if (!javaStringClass) { errJNI("Unable to create a global reference to the basic String class"); return; };
+  (*env)->DeleteLocalRef(env, c);
+
+  c=(*env)->FindClass(env, "java/lang/Object");
+  if (!c) { errJNI("Unable to find the basic Object class"); return; };
+  javaObjectClass=(*env)->NewGlobalRef(env, c);
+  if (!javaObjectClass) { errJNI("Unable to create a global reference to the basic Object class"); return; };
+  (*env)->DeleteLocalRef(env, c);
 }
 
 jobject createObject(char *class, char *sig, jvalue *par) {
@@ -33,11 +43,16 @@ jobject createObject(char *class, char *sig, jvalue *par) {
   cls=(*env)->FindClass(env,class);
   if (!cls) return errJNI("createObject.FindClass %s failed",class);
   mid=(*env)->GetMethodID(env, cls, "<init>", sig);
-  if (!mid) return errJNI("createObject.GetMethodID(\"%s\",\"%s\") failed",class,sig);
+  if (!mid) {
+    (*env)->DeleteLocalRef(env, cls);  
+    return errJNI("createObject.GetMethodID(\"%s\",\"%s\") failed",class,sig);
+  }
   
   /*  va_start(ap, sig); */
   o=(*env)->NewObjectA(env, cls, mid, par);
   /* va_end(ap); */
+  (*env)->DeleteLocalRef(env, cls);  
+  
   return o?o:errJNI("NewObject(\"%s\",\"%s\",...) failed",class,sig);
 }
 
@@ -56,6 +71,7 @@ void printObject(jobject o) {
   c=(*env)->GetStringUTFChars(env, (jstring)s, 0);
   puts(c);
   (*env)->ReleaseStringUTFChars(env, (jstring)s, c);
+  (*env)->DeleteLocalRef(env, cls);  
   releaseObject(s);
 }
 
