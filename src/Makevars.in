@@ -1,4 +1,4 @@
 # we need to add JNI specific stuff here
-PKG_CFLAGS=@JAVA_INC@
-PKG_LIBS=@JAVA_LIBS@
+PKG_CFLAGS+=@JAVA_INC@
+PKG_LIBS+=@JAVA_LIBS@
 JAVA_HOME=@JAVA_HOME@
