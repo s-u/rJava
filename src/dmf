@@ -16,7 +16,7 @@ LIBS+=${PKG_LIBS}
 
 all: $(DST) $(OBJ)
 
-rJava.so:	rJava.o initJNI.o callJNI.o
+rJava.so:	rJava.o initJNI.o callJNI.o Rglue.o
 	$(CC) $^ -o $@ $(LIBS)
 
 debug:
