@@ -1,8 +1,11 @@
 .jinit <- function(classpath=NULL) {
   .External("RinitJVM",classpath,PACKAGE="rJava")
+  .jniInitialized<<-TRUE # hack hack hack - we should use something better ..
 }
 
+# create a new object
 .jnew <- function(class, ...) {
+  .jcheck()
   o<-.External("RcreateObject", class, ..., PACKAGE="rJava")
   .C("checkExceptions")
   if (!is.null(o)) {
@@ -12,7 +15,36 @@
   o
 }
 
-.jcall <- function(obj, returnSig="V", method, ..., evalArray=FALSE, evalString=TRUE) {
+# evaluates an array reference. If rawJNIRefSignature is set, then obj is not assumed to be
+# jarrayRef, but rather direct JNI reference with the corresponding signature
+.jevalArray <- function(obj, rawJNIRefSignature=NULL, silent=FALSE) {
+  jobj<-obj
+  sig<-rawJNIRefSignature
+  if (is.null(rawJNIRefSignature)) {
+    if(!inherits(obj,"jarrayRef"))
+      stop("The object is not an array reference (jarrayRef).")
+    jobj<-obj$jobj
+    sig<-obj$jsig
+  }
+  if (sig=="[I")
+    return(.External("RgetIntArrayCont", jobj))
+  else if (sig=="[D")
+    return(.External("RgetDoubleArrayCont", jobj))
+  else if (sig=="[Ljava/lang/String;" || sig=="[S")
+    return(.External("RgetStringArrayCont", jobj))
+  else if (substr(sig,1,2)=="[L")
+    return(lapply(.External("RgetObjectArrayCont", r),
+                  function(x) { a<-list(jobj=x, jclass=NULL); class(a)<-"jobjRef"; a } ))
+  # if we don't know how to evaluate this, issue a warning and return the jarrayRef
+  if (!silent)
+    warning(paste("I don't know how to evaluate an array with signature",sig,". Returning a reference."))
+  r<-list(jobj=jobj, jclass=NULL, jsig=sig)
+  class(r)<-c("jarrayRef","jobjRef")
+  r
+}
+
+.jcall <- function(obj, returnSig="V", method, ..., evalArray=TRUE, evalString=TRUE) {
+  .jcheck()
   r<-NULL
   if (returnSig=="S")
     returnSig<-"Ljava/lang/String;"
@@ -23,16 +55,12 @@
   else
     r<-.External("RcallStaticMethod",as.character(obj), returnSig, method, ..., PACKAGE="rJava")
   if (substr(returnSig,1,1)=="[") {
-    if (evalArray) {
-      if (returnSig=="[I")
-        return(.External("RgetIntArrayCont", r))
-      else if (returnSig=="[D")
-        return(.External("RgetDoubleArrayCont", r))
-      else if (substr(returnSig,1,2)=="[L") # this one is wrong - we'll get all the jobjects, but we'd have to convert them to R objects first
-        return(.External("RgetObjectArrayCont", r))
+    if (evalArray)
+      r<-.jevalArray(r,rawJNIRefSignature=returnSig)
+    else {
+      r<-list(jobj=r, jclass=NULL, jsig=returnSig)
+      class(r)<-c("jarrayRef","jobjRef")
     }
-    r<-list(jobj=r, jclass=NULL, jsig=returnSig)
-    class(r)<-c("jarrayRef","jobjRef")
   } else if (substr(returnSig,1,1)=="L") {
     if (returnSig=="Ljava/lang/String;" && evalString) {
       s<-.External("RgetStringValue",r)
@@ -42,7 +70,6 @@
     r<-list(jobj=r, jclass=substr(returnSig,2,nchar(returnSig)-1))
     class(r)<-"jobjRef"
   }
-    
   .C("checkExceptions")
   r
 }
@@ -68,4 +95,9 @@
   r
 }
 
-  
+.jcheck <- function() {
+  if (!exists(".jniInitialized") || !.jniInitialized)
+    stop("Java VM was not initialized. Please use .jinit to initialize JVM.")
+  .C("checkExceptions")
+  invisible()
+}
