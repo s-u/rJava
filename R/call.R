@@ -1,4 +1,4 @@
-.jinit <- function(classpath=NULL) {
+.jinit <- function(classpath=NULL, ..., silent=FALSE) {
   # determine path separator
   if (.Platform$OS.type=="windows")
     path.sep<-";"
@@ -25,7 +25,7 @@
   xr<-.External("RinitJVM",classpath,PACKAGE="rJava")
   if (xr==-1) stop("Unable to initialize JVM.")
   if (xr==-2) stop("Another JVM is already running and rJava was unable to attach itself to that JVM.")
-  if (xr==1 && classpath!="") warning("Since another JVM is already running, it's not possible to change its class path. Therefore the value of the speficied classpath was ignored.")
+  if (xr==1 && classpath!="" && !silent) warning("Since another JVM is already running, it's not possible to change its class path. Therefore the value of the speficied classpath was ignored.")
   .jniInitialized<<-TRUE # hack hack hack - we should use something better ..
   xr
 }
@@ -151,4 +151,8 @@
     stop("Java VM was not initialized. Please use .jinit to initialize JVM.")
   .C("checkExceptions")
   invisible()
+}
+
+.jproperty <- function(key) {
+  .jcall("java/lang/System", "S", "getProperty", as.character(key)[1])
 }
