@@ -2,6 +2,8 @@ public class getsp {
     public static void main(String[] args) {
 	if (args!=null && args.length>0) {
 	    if (args[0].compareTo("-libs")==0) {
+		String prefix="-L";
+		if (args.length>1) prefix=args[1];
 		String lp=System.getProperty("java.library.path");
 		// we're not using StringTokenizer in case the JVM is very crude
 		int i=0,j,k=0;
@@ -15,7 +17,7 @@ public class getsp {
 			String lib=lp.substring(k,i);
 			k=i+1;
 			if (lib.compareTo(".")!=0)
-			    r=(r==null)?("-L"+lib):(r+" -L"+lib);
+			    r=(r==null)?(prefix+lib):(r+" "+prefix+lib);
 		    }
 		    i++;
 		}
