@@ -97,49 +97,6 @@ int initJVM(char *user_classpath) {
   return 0;
 }
 
-void testJVM() {
-  jclass cls;
-  jmethodID mid;
-  jstring jstr;
-  jobjectArray args;
-  jobject fo;
-
-  /*
-    printf("Initialize JVM\n");
-    if (initJVM()) return -1;
-  */
-  printf("OK, fetching a frame\n");
-  cls=(*env)->FindClass(env,"java/awt/Frame");
-  if (!cls) {
-    printf("Cannot find java.awt.Frame\n");
-    goto dst;
-  };
-  printf("Got frame.\n");
-  
-  mid=(*env)->GetMethodID(env, cls, "<init>", "()V");
-  if (!mid) {
-    printf("Can't find Frame constructor\n");
-    goto dst;
-  }
-
-  fo=(*env)->NewObject(env, cls, mid);
-  if (!fo) {
-    printf("Can't create Frame\n");
-    goto dst;
-  }
-
-  mid=(*env)->GetMethodID(env, cls, "show", "()V");
-  if (!mid) {
-    printf("Can't find Frame.show()\n");
-    goto dst;
-  }
-
-  (*env)->CallVoidMethod(env, fo, mid);
-  printf("Frame shown\n");
- dst:
-  ;
-}
-
 void doneJVM() {
   printf("ok, destroying\n");
   (*jvm)->DestroyJavaVM(jvm);
