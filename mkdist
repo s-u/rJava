@@ -9,15 +9,24 @@ cp -r ../rJava /tmp
 rm /tmp/rJava/mkdist
 rm -f /tmp/rJava/*~ /tmp/rJava/R/*~ /tmp/rJava/src/*~ /tmp/rJava/man/*~
 
-echo "Running autoreconf ..."
 cd /tmp/rJava
-autoreconf
-rm -rf autom4te*
+if [ -e /tmp/rJava/configure ]; then
+    echo "Note: autoreconf is *not* ran automatically if configure exists."
+    echo "      Run it manually if necessary."
+else 
+    echo "Running autoreconf ..."
+    autoreconf
+    rm -rf autom4te*
+fi
+
 echo "Removing CVS stuff ..."
 rm -rf `find . -name CVS`
-echo "Updating INDEX ..."
 cd ..
-R CMD Rdindex rJava > rJava/INDEX
+
+#echo "Updating INDEX ..."
+# R CMD Rdindex rJava > rJava/INDEX
+#echo "library(tools)\nsink(\"rJava/INDEX\")\nRdindex(\"rJava/man\")\nsink()" | R --vanilla > /dev/null
+
 echo "Updating version ..."
 cd rJava
 VER=`awk -v ORS= '/rJava v/ { print substr($6,2) }' src/rJava.h`
