@@ -52,7 +52,7 @@ fi
 JAVA_PATH=${JAVA_PATH}:/usr/java/bin:/usr/jdk/bin:/usr/lib/java/bin:/usr/lib/jdk/bin:/usr/local/java/bin:/usr/local/jdk/bin:/usr/local/lib/java/bin:/usr/local/lib/jdk/bin
 AC_PATH_PROGS(JAVA,java,,${JAVA_PATH})
 
-AC_MSG_CHECKING([Java environment])
+AC_MSG_CHECKING([Java environment home])
 
 if test -z "${JAVA_HOME}" ; then
   JAVA_HOME=`${JAVA} -classpath . getsp java.home`
@@ -77,8 +77,12 @@ AC_CHECK_FILE(${JAVA_HOME}/include/jni.h,
 
 JAVA_INC="-I${JNI_H}"
 
-# this should be become more general at some point - so far we're checking linux only
+# Sun's JDK needs jni_md.h in in addition to jni.h and unfortunately it's stored somewhere else ...
+# this should be become more general at some point - so far we're checking linux and solaris only
+# (well, those are presumably the only platforms supported by Sun's JDK and others don't need this
+# at least as of now - 01/2004)
 AC_CHECK_FILE(${JNI_H}/linux/jni_md.h,[JAVA_INC="${JAVA_INC} -I${JNI_H}/linux"])
+AC_CHECK_FILE(${JNI_H}/solaris/jni_md.h,[JAVA_INC="${JAVA_INC} -I${JNI_H}/solaris"])
 
 JAVA_LIBS=`${JAVA} -classpath . getsp -libs`
 JAVA_LIBS="${JAVA_LIBS} -ljvm"
