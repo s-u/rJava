@@ -1,4 +1,21 @@
 .jinit <- function(classpath=NULL) {
+  # determine path separator
+  if (.Platform$file.sep=="/")
+    path.sep<-":"
+  else
+    path.sep<-";"
+  
+  # merge CLASSPATH environment variable if present
+  cp<-Sys.getenv("CLASSPATH")
+  if (!is.null(cp)) {
+    if (is.null(classpath))
+      classpath<-cp
+    else
+      classpath<-paste(classpath,cp,sep=path.sep)
+  }
+  
+  if (is.null(classpath)) classpath<-""
+  # call the corresponding C routine to initialize JVM
   .External("RinitJVM",classpath,PACKAGE="rJava")
   .jniInitialized<<-TRUE # hack hack hack - we should use something better ..
 }
@@ -43,7 +60,7 @@
   r
 }
 
-.jcall <- function(obj, returnSig="V", method, ..., evalArray=TRUE, evalString=TRUE) {
+.jcall <- function(obj, returnSig="V", method, ..., evalArray=TRUE, evalString=TRUE, interface="RcallMethod") {
   .jcheck()
   r<-NULL
   if (returnSig=="S")
@@ -92,6 +109,15 @@
     r<-.External("RgetStringValue",obj$jobj)
   else
     r<-.External("RtoString",obj$jobj)
+  r
+}
+
+# casts java object into new.class - without(!) type checking
+.jcast <- function(obj, new.class) {
+  if (!inherits(obj, "jobjRef"))
+    stop("connot cast anything but Java objects")
+  r<-list(jobj=obj$jobj, jclass=new.class)
+  class(r)<-"jobjRef"
   r
 }
 
