@@ -1,10 +1,8 @@
 .First.lib <- function(libname, pkgname) {
-  cat("loading rJava\n")
   # For MacOS X we have to remove /usr/X11R6/lib from the DYLD_LIBRARY_PATH
   # because it would override Apple's OpenGL framework (which is loaded
   # by JavaVM implicitly)
-  Sys.putenv("DYLD_LIBRARY_PATH"=sub("/usr/X11R6/lib","",Sys.getenv("DYLD_LIBRARY_PATH")))
+  Sys.putenv("DYLD_LIBRARY_PATH"=gsub("/usr/X11R6/lib","",Sys.getenv("DYLD_LIBRARY_PATH")))
   Sys.putenv("LD_LIBRARY_PATH"=paste(Sys.getenv("LD_LIBRARY_PATH"),"@JAVA_LD@",sep=':'))
-  cat(paste("LD_LIBRARY_PATH=",Sys.getenv("LD_LIBRARY_PATH"),"\n",sep=''))
   library.dynam("rJava", pkgname, libname)
 }
