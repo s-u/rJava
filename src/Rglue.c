@@ -5,6 +5,7 @@
 
 #include <stdarg.h>
 
+/* debugging output (enable with -DRJ_DEBUG) */
 #ifdef RJ_DEBUG
 void rjprintf(char *fmt, ...) {
   va_list v;
@@ -16,8 +17,35 @@ void rjprintf(char *fmt, ...) {
 #define rjprintf(...)
 #endif
 
-/* RinitJVM(classpath)
-   initializes JVM with the specified class path */
+/* profiling code (enable with -DRJ_PROFILE) */
+#ifdef RJ_PROFILE
+#include <sys/time.h>
+
+long time_ms() {
+  struct timeval tv;
+  gettimeofday(&tv,0);
+  return (tv.tv_usec/1000)+(tv.tv_sec*1000);
+}
+
+long profilerTime;
+
+#define profStart() profilerTime=time_ms()
+void profReport(char *fmt, ...) {
+  long npt=time_ms();
+  va_list v;
+  va_start(v,fmt);
+  vprintf(fmt,v);
+  va_end(v);
+  printf(" %ld ms\n",npt-profilerTime);
+  profilerTime=npt;
+}
+#else
+#define profStart()
+#define profReport(...)
+#endif
+
+/** RinitJVM(classpath)
+    initializes JVM with the specified class path */
 SEXP RinitJVM(SEXP par)
 {
   char *c=0;
@@ -26,16 +54,19 @@ SEXP RinitJVM(SEXP par)
   
   if (TYPEOF(e)==STRSXP && LENGTH(e)>0)
     c=CHAR(STRING_ELT(e,0));
+  profStart();
   r=initJVM(c);
+  profReport("initJVM:");
   init_rJava();
+  profReport("init_rJava:");
   PROTECT(e=allocVector(INTSXP,1));
   INTEGER(e)[0]=r;
   UNPROTECT(1);
   return e;
 }
 
-/* converts parameters in SEXP list to jpar and sig.
-   strcat is used on sig, hence sig must be a valid string already */
+/** converts parameters in SEXP list to jpar and sig.
+    strcat is used on sig, hence sig must be a valid string already */
 SEXP Rpar2jvalue(SEXP par, jvalue *jpar, char *sig, int maxpar, int maxsig) {
   SEXP p=par;
   SEXP e;
@@ -130,12 +161,13 @@ SEXP Rpar2jvalue(SEXP par, jvalue *jpar, char *sig, int maxpar, int maxsig) {
   return R_NilValue;
 }
 
-/* jobjRefInt object : string */
+/** jobjRefInt object : string */
 SEXP RgetStringValue(SEXP par) {
   SEXP p,e,r;
   jstring s;
   const char *c;
 
+  profStart();
   p=CDR(par); e=CAR(p); p=CDR(p);
   if (TYPEOF(e)!=INTSXP)
     error_return("RgetStringValue: invalid object parameter");
@@ -148,6 +180,7 @@ SEXP RgetStringValue(SEXP par) {
   SET_STRING_ELT(r, 0, mkChar(c));
   UNPROTECT(1);
   (*env)->ReleaseStringUTFChars(env, s, c);
+  profReport("RgetStringValue:");
   return r;
 }
 
@@ -186,7 +219,7 @@ SEXP RtoString(SEXP par) {
   return r;
 }
 
-/* get contents of the object array in the form of int* pointers */
+/** get contents of the object array in the form of int* pointers */
 SEXP RgetObjectArrayCont(SEXP par) {
   SEXP e=CAR(CDR(par));
   SEXP ar;
@@ -195,6 +228,7 @@ SEXP RgetObjectArrayCont(SEXP par) {
   int l,i;
   jint *ap;
 
+  profStart();
   if (TYPEOF(e)!=INTSXP)
     error_return("RgetObjectArrayCont: invalid object parameter");
   o=(jarray)INTEGER(e)[0];
@@ -210,10 +244,11 @@ SEXP RgetObjectArrayCont(SEXP par) {
     i++;
   }
   UNPROTECT(1);
+  profReport("RgetObjectArrayCont[%d]:",o);
   return ar;
 }
 
-/* get contents of the object array in the form of int* */
+/** get contents of the object array in the form of int* */
 SEXP RgetStringArrayCont(SEXP par) {
   SEXP e=CAR(CDR(par));
   SEXP ar;
@@ -223,6 +258,7 @@ SEXP RgetStringArrayCont(SEXP par) {
   jint *ap;
   const char *c;
 
+  profStart();
   if (TYPEOF(e)!=INTSXP)
     error_return("RgetStringArrayCont: invalid object parameter");
   o=(jarray)INTEGER(e)[0];
@@ -253,10 +289,11 @@ SEXP RgetStringArrayCont(SEXP par) {
     i++;
   }
   UNPROTECT(1);
+  profReport("RgetStringArrayCont[%d]:",o);
   return ar;
 }
 
-/* get contents of the integer array object (int) */
+/** get contents of the integer array object (int) */
 SEXP RgetIntArrayCont(SEXP par) {
   SEXP e=CAR(CDR(par));
   SEXP ar;
@@ -264,6 +301,7 @@ SEXP RgetIntArrayCont(SEXP par) {
   int l;
   jint *ap;
 
+  profStart();
   if (TYPEOF(e)!=INTSXP)
     error_return("RgetIntArrayCont: invalid object parameter");
   o=(jarray)INTEGER(e)[0];
@@ -279,10 +317,11 @@ SEXP RgetIntArrayCont(SEXP par) {
   memcpy(INTEGER(ar),ap,sizeof(jint)*l);
   UNPROTECT(1);
   (*env)->ReleaseIntArrayElements(env, o, ap, 0);
+  profReport("RgetIntArrayCont[%d]:",o);
   return ar;
 }
 
-/* get contents of the double array object (int) */
+/** get contents of the double array object (int) */
 SEXP RgetDoubleArrayCont(SEXP par) {
   SEXP e=CAR(CDR(par));
   SEXP ar;
@@ -290,6 +329,7 @@ SEXP RgetDoubleArrayCont(SEXP par) {
   int l;
   jdouble *ap;
 
+  profStart();
   if (TYPEOF(e)!=INTSXP)
     error_return("RgetDoubleArrayCont: invalid object parameter");
   o=(jarray)INTEGER(e)[0];
@@ -305,10 +345,11 @@ SEXP RgetDoubleArrayCont(SEXP par) {
   memcpy(REAL(ar),ap,sizeof(jdouble)*l);
   UNPROTECT(1);
   (*env)->ReleaseDoubleArrayElements(env, o, ap, 0);
+  profReport("RgetDoubleArrayCont[%d]:",o);
   return ar;
 }
 
-/* call specified non-static method on an object
+/** call specified non-static method on an object
    object (int), return signature (string), method name (string) [, ..parameters ...]
    arrays and objects are returned as IDs (hence not evaluated)
 */
@@ -321,6 +362,7 @@ SEXP RcallMethod(SEXP par) {
   jmethodID mid;
   jclass cls;
 
+  profStart();
   p=CDR(p); e=CAR(p); p=CDR(p);
   if (TYPEOF(e)!=INTSXP)
     error_return("RcallMethod: invalid object parameter");
@@ -350,8 +392,12 @@ SEXP RcallMethod(SEXP par) {
   mid=(*env)->GetMethodID(env,cls,mnam,sig);
   if (!mid)
     error_return("RcallMethod: method not found");
+#if (RJ_PROFILE>1)
+  profReport("Found CID/MID for %s %s:",mnam,sig);
+#endif
   if (*retsig=='V') {
     (*env)->CallVoidMethodA(env,o,mid,jpar);
+    profReport("Method %s returned:",mnam);
     return R_NilValue;
   }
   if (*retsig=='I') {
@@ -359,6 +405,7 @@ SEXP RcallMethod(SEXP par) {
     PROTECT(e=allocVector(INTSXP, 1));
     INTEGER(e)[0]=r;
     UNPROTECT(1);
+    profReport("Method %s returned:",mnam);
     return e;
   }
   if (*retsig=='Z') {
@@ -366,6 +413,7 @@ SEXP RcallMethod(SEXP par) {
     PROTECT(e=allocVector(LGLSXP, 1));
     LOGICAL(e)[0]=(r)?1:0;
     UNPROTECT(1);
+    profReport("Method %s returned:",mnam);
     return e;
   }
   if (*retsig=='D') {
@@ -373,6 +421,7 @@ SEXP RcallMethod(SEXP par) {
     PROTECT(e=allocVector(REALSXP, 1));
     REAL(e)[0]=r;
     UNPROTECT(1);
+    profReport("Method %s returned:",mnam);
     return e;
   }
   if (*retsig=='L' || *retsig=='[') {
@@ -387,12 +436,40 @@ SEXP RcallMethod(SEXP par) {
     PROTECT(e=allocVector(INTSXP, 1));
     INTEGER(e)[0]=(int)gr;
     UNPROTECT(1);
+    profReport("Method %s returned:",mnam);
     return e;
   }
+  profReport("Method %s has an unknown signature, not called:",mnam);
   return R_NilValue;
 }
 
-/* call specified static method of a class
+/** like RcallMethod but the call will be synchronized */
+SEXP RcallSyncMethod(SEXP par) {
+  SEXP p=par, e;
+  jobject o;
+
+  p=CDR(p); e=CAR(p); p=CDR(p);
+  if (TYPEOF(e)!=INTSXP)
+    error_return("RcallMethod: invalid object parameter");
+  o=(jobject)(INTEGER(e)[0]);
+#ifdef RJAVA_DEBUG
+  rjprintf("object: "); printObject(o);
+#endif
+  if ((*env)->MonitorEnter(env, o) != JNI_OK) {
+    printf("Rglue.warning: couldn't get monitor on the object, running unsynchronized.\n");
+    return RcallMethod(par);
+  }
+
+  e=RcallMethod(par);
+
+  if ((*env)->MonitorExit(env, o) != JNI_OK)
+    printf("Rglue.SERIOUS PROBLEM: MonitorExit failed, subsequent calls may cause a deadlock!\n");
+
+  return e;
+}
+
+
+/** call specified static method of a class.
    class (string), return signature (string), method name (string) [, ..parameters ...]
    arrays and objects are returned as IDs (hence not evaluated)
 */
@@ -404,6 +481,7 @@ SEXP RcallStaticMethod(SEXP par) {
   jmethodID mid;
   jclass cls;
 
+  profStart();
   p=CDR(p); e=CAR(p); p=CDR(p);
   if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
     error_return("RcallStaticMethod: invalid class parameter");
@@ -430,8 +508,12 @@ SEXP RcallStaticMethod(SEXP par) {
   mid=(*env)->GetStaticMethodID(env,cls,mnam,sig);
   if (!mid)
     error_return("RcallStaticMethod: method not found");
+#if (RJ_PROFILE>1)
+  profReport("Found CID/MID for %s %s:",mnam,sig);
+#endif
   if (*retsig=='V') {
     (*env)->CallStaticVoidMethodA(env,cls,mid,jpar);
+    profReport("Method %s returned:",mnam);
     return R_NilValue;
   }
   if (*retsig=='I') {
@@ -439,6 +521,7 @@ SEXP RcallStaticMethod(SEXP par) {
     PROTECT(e=allocVector(INTSXP, 1));
     INTEGER(e)[0]=r;
     UNPROTECT(1);
+    profReport("Method %s returned:",mnam);
     return e;
   }
   if (*retsig=='Z') {
@@ -446,6 +529,7 @@ SEXP RcallStaticMethod(SEXP par) {
     PROTECT(e=allocVector(LGLSXP, 1));
     LOGICAL(e)[0]=(r)?1:0;
     UNPROTECT(1);
+    profReport("Method %s returned:",mnam);
     return e;
   }
   if (*retsig=='D') {
@@ -453,6 +537,7 @@ SEXP RcallStaticMethod(SEXP par) {
     PROTECT(e=allocVector(REALSXP, 1));
     REAL(e)[0]=r;
     UNPROTECT(1);
+    profReport("Method %s returned:",mnam);
     return e;
   }
   if (*retsig=='L' || *retsig=='[') {
@@ -467,14 +552,16 @@ SEXP RcallStaticMethod(SEXP par) {
     PROTECT(e=allocVector(INTSXP, 1));
     INTEGER(e)[0]=(int)gr;
     UNPROTECT(1);
+    profReport("Method %s returned:",mnam);
     return e;
   }
+  profReport("Method %s has an unknown sigrature, not called:",mnam);
   return R_NilValue;
 }
 
-/* get value of a non-static field of an object
-   object (int), return signature (string), field name (string)
-   arrays and objects are returned as IDs (hence not evaluated)
+/** get value of a non-static field of an object
+    object (int), return signature (string), field name (string)
+    arrays and objects are returned as IDs (hence not evaluated)
 */
 SEXP RgetField(SEXP par) {
   SEXP p=par, e;
@@ -548,8 +635,8 @@ SEXP RgetField(SEXP par) {
   return R_NilValue;
 }
 
-/* create new object
-   fully-qualified class in JNI notation (string) [, constructor parameters] */
+/** create new object.
+    fully-qualified class in JNI notation (string) [, constructor parameters] */
 SEXP RcreateObject(SEXP par) {
   SEXP p=par;
   SEXP e, ov;
@@ -586,7 +673,7 @@ SEXP RcreateObject(SEXP par) {
   return ov;
 }
 
-/* jobjRefInt object : string */
+/** jobjRefInt object : string */
 SEXP RfreeObject(SEXP par) {
   SEXP p,e;
   jobject o;
