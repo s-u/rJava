@@ -1,29 +1,31 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000107 /* rJava v0.1-7 */
+#define RJAVA_VER 0x000108 /* rJava v0.1-8 */
 
 #include <jni.h>
 
 /* in rJava.c */
-extern JNIEnv *env;
+extern JNIEnv *eenv; /* should NOT be used since not thread-safe; use getJNIEnv instead */
 extern JavaVM *jvm;
 
 extern jclass javaStringClass;
 extern jclass javaObjectClass;
 
+extern JNIEnv* getJNIEnv();
+
 /* in callJNI */
-jobject createObject(char *class, char *sig, jvalue *par);
-jclass getClass(char *class);
+jobject createObject(JNIEnv *env, char *class, char *sig, jvalue *par);
+jclass getClass(JNIEnv *env, char *class);
 
-jdoubleArray newDoubleArray(double *cont, int len);
-jintArray newIntArray(int *cont, int len);
-jbooleanArray newBooleanArrayI(int *cont, int len);
-jstring newString(char *cont);
+jdoubleArray newDoubleArray(JNIEnv *env, double *cont, int len);
+jintArray newIntArray(JNIEnv *env, int *cont, int len);
+jbooleanArray newBooleanArrayI(JNIEnv *env, int *cont, int len);
+jstring newString(JNIEnv *env, char *cont);
 
-void releaseObject(jobject o);
-jobject makeGlobal(jobject o);
-void releaseGlobal(jobject o);
+void releaseObject(JNIEnv *env, jobject o);
+jobject makeGlobal(JNIEnv *env, jobject o);
+void releaseGlobal(JNIEnv *env, jobject o);
 
-void printObject(jobject o);
+void printObject(JNIEnv *env, jobject o);
 #endif

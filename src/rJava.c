@@ -22,7 +22,32 @@ static JDK1_1InitArgs vm2_args;
 static JDK1_1InitArgs *vm_args;
 #endif  /* finished the version 1.1 material */
 
-JNIEnv *env;
+JNIEnv *eenv;
+
+JNIEnv *getJNIEnv() {
+    JNIEnv *env;
+    jsize l;
+    jint res;
+    
+    if (!jvm) { // we're hoping that the JVM pointer won't change :P we fetch it just once
+        res= JNI_GetCreatedJavaVMs(&jvm, 1, &l);
+        if (res!=0) {
+            fprintf(stderr, "JNI_GetCreatedJavaVMs failed! (%d)\n",res); return;
+        }
+        if (l<1) {
+            fprintf(stderr, "JNI_GetCreatedJavaVMs said there's no JVM running!\n"); return;
+        }
+    }
+    res = (*jvm)->AttachCurrentThread(jvm, &env, 0);
+    if (res!=0) {
+        fprintf(stderr, "AttachCurrentThread failed! (%d)\n",res); return;
+    }
+    if (env && !eenv) eenv=env;
+    
+    /* if (eenv!=env)
+        fprintf(stderr, "Warning! eenv=%x, but env=%x - different environments encountered!\n", eenv, env); */
+    return env;
+}
 
 int initJVM(char *user_classpath) {
   jint res;
@@ -84,7 +109,7 @@ int initJVM(char *user_classpath) {
     vm2_args.nOptions = propNum;
   }
   /* Create the Java VM */
-  res = JNI_CreateJavaVM(&jvm,(void *)&env,(void *)vm_args);
+  res = JNI_CreateJavaVM(&jvm,(void *)&eenv,(void *)vm_args);
 #else
   tmp = (char*)malloc(strlen(user_classpath) +strlen(vm_args->classpath) + 2);
   strcpy(tmp, user_classpath);
@@ -93,7 +118,7 @@ int initJVM(char *user_classpath) {
   vm_args->classpath = tmp;
   
 #endif
-  if (res != 0 || env == NULL) {
+  if (res != 0 || eenv == NULL) {
     printf("Can't create Java Virtual Machine\n");
     return -1;
   }

@@ -20,6 +20,6 @@ int initJNI12() {
   /* Note that in JDK 1.2, there is no longer any need to call 
    * JNI_GetDefaultJavaVMInitArgs. 
    */
-  res = JNI_CreateJavaVM(&jvm, (void **)&env, &vm_args);
+  res = JNI_CreateJavaVM(&jvm, (void **)&eenv, &vm_args);
   return (res<0)?res:0;
 }
