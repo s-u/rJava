@@ -1,0 +1,85 @@
+# Process this file with autoconf to produce a configure script.
+AC_INIT(rJava, 0.1, Simon.Urbanek@math.uni-augsburg.de)
+AC_CONFIG_SRCDIR([src/rJava.c])
+AC_CONFIG_HEADER([src/config.h])
+
+# find R home and set CC/CFLAGS
+: ${R_HOME=`R RHOME`}
+if test -z "${R_HOME}"; then
+  echo "could not determine R_HOME"
+  exit 1
+fi
+CC=`${R_HOME}/bin/R CMD config CC`;
+CFLAGS=`${R_HOME}/bin/R CMD config CFLAGS`
+AC_SUBST(R_HOME)
+
+# Checks for programs.
+AC_PROG_CC
+
+# Checks for libraries.
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS([string.h sys/time.h unistd.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_HEADER_TIME
+
+# Checks for library functions.
+AC_FUNC_MALLOC
+AC_TYPE_SIGNAL
+AC_CHECK_FUNCS([memset mkdir rmdir select socket])
+
+AC_MSG_CHECKING([endianess])
+AC_TRY_RUN(
+	[
+int main(void) { int i=0x12345678; return (*((char*)&i)==0x78)?0:1; }
+	],
+	[AC_MSG_RESULT(intel-like)],
+	[
+		AC_MSG_RESULT(PPC-like)
+		AC_DEFINE(SWAPEND, 1, [Must be defined for platforms with bytesex inverse to intel style])
+	]
+)
+
+if test -z "${JAVA_HOME}" ; then
+  JAVA_PATH=${JAVA_HOME}:${PATH}
+else
+  JAVA_PATH=${PATH}
+fi
+JAVA_PATH=${JAVA_PATH}:/usr/java/bin:/usr/jdk/bin:/usr/lib/java/bin:/usr/lib/jdk/bin:/usr/local/java/bin:/usr/local/jdk/bin:/usr/local/lib/java/bin:/usr/local/lib/jdk/bin
+AC_PATH_PROGS(JAVA,java,,${JAVA_PATH})
+
+AC_MSG_CHECKING([Java environment])
+
+if test -n "${JAVA}" ; then
+  JAVA_HOME=`${JAVA} -classpath . getsp java.home`
+fi
+
+if test -z "${JAVA_HOME}" ; then
+  AC_MSG_ERROR([Cannot find any Java environment. Please install JDK and/or set JAVA_HOME correspondingly.])
+fi
+
+AC_MSG_RESULT([in ${JAVA_HOME}])
+
+AC_CHECK_FILE(${JAVA_HOME}/include/jni.h,,[AC_MSG_ERROR([jni headers not found. Please make sure you have a proper JDK.])])
+
+JAVA_LIBS=`${JAVA} -classpath . getsp -libs`
+JAVA_LIBS="${JAVA_LIBS} -ljvm"
+
+if test `uname`=Darwin ; then
+  JAVA_LIBS="-framework JavaVM"
+fi
+
+JAVA_INC="-I${JAVA_HOME}/include"
+
+# we should check whether a small jni proggy compiles at this point ...
+
+AC_SUBST(JAVA_LIBS)
+AC_SUBST(JAVA_INC)
+AC_SUBST(JAVA_HOME)
+
+AC_CONFIG_FILES([src/Makevars])
+AC_OUTPUT
