@@ -54,7 +54,7 @@ AC_PATH_PROGS(JAVA,java,,${JAVA_PATH})
 
 AC_MSG_CHECKING([Java environment])
 
-if test -n "${JAVA}" ; then
+if test -z "${JAVA_HOME}" ; then
   JAVA_HOME=`${JAVA} -classpath . getsp java.home`
 fi
 
@@ -64,19 +64,35 @@ fi
 
 AC_MSG_RESULT([in ${JAVA_HOME}])
 
-AC_CHECK_FILE(${JAVA_HOME}/include/jni.h,,[AC_MSG_ERROR([jni headers not found. Please make sure you have a proper JDK.])])
+AC_CHECK_FILE(${JAVA_HOME}/include/jni.h,
+ [JNI_H="${JAVA_HOME}/include"],
+ [AC_CHECK_FILE(${JAVA_HOME}/jni.h,
+  [JNI_H="${JAVA_HOME}"],
+  [AC_CHECK_FILE(${JAVA_HOME}/../include/jni.h,
+   [JNI_H="${JAVA_HOME}/../include"],
+   [AC_MSG_ERROR([jni headers not found. Please make sure you have a proper JDK installed.])
+  ])
+ ])
+])
+
+JAVA_INC="-I${JNI_H}"
+
+# this should be become more general at some point - so far we're checking linux only
+AC_CHECK_FILE(${JNI_H}/linux/jni_md.h,[JAVA_INC="${JAVA_INC} -I${JNI_H}/linux"])
 
 JAVA_LIBS=`${JAVA} -classpath . getsp -libs`
 JAVA_LIBS="${JAVA_LIBS} -ljvm"
 
-if test `uname`=Darwin ; then
+if test `uname` = "Darwin" ; then
   JAVA_LIBS="-framework JavaVM"
 fi
 
-JAVA_INC="-I${JAVA_HOME}/include"
-
 LIBS="${LIBS} ${JAVA_LIBS}"
 CFLAGS="${CFLAGS} ${JAVA_INC}"
+
+SAVE_LDLP="${LD_LIBRARY_PATH}"
+JAVA_LD=`${JAVA} getsp java.library.path`
+LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${JAVA_LD}"
 
 AC_MSG_CHECKING([whether JNI programs can be compiled])
 AC_LINK_IFELSE([
@@ -102,6 +118,8 @@ int main(void) {
 AC_SUBST(JAVA_LIBS)
 AC_SUBST(JAVA_INC)
 AC_SUBST(JAVA_HOME)
+AC_SUBST(JAVA_LD)
 
 AC_CONFIG_FILES([src/Makevars])
+AC_CONFIG_FILES([R/zzz.R])
 AC_OUTPUT
