@@ -1,7 +1,7 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000104 /* rJava v0.1-4 */
+#define RJAVA_VER 0x000106 /* rJava v0.1-6 */
 
 #include <jni.h>
 
