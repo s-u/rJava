@@ -27,6 +27,7 @@ SEXP RinitJVM(SEXP par)
   if (TYPEOF(e)==STRSXP && LENGTH(e)>0)
     c=CHAR(STRING_ELT(e,0));
   r=initJVM(c);
+  init_rJava();
   PROTECT(e=allocVector(INTSXP,1));
   INTEGER(e)[0]=r;
   UNPROTECT(1);
@@ -50,7 +51,7 @@ SEXP Rpar2jvalue(SEXP par, jvalue *jpar, char *sig, int maxpar, int maxsig) {
 	jpar[jvpos++].l=newString(CHAR(STRING_ELT(e,0)));
       } else {
 	int j=0;
-	jobjectArray sa=(*env)->NewObjectArray(env, LENGTH(e), getClass("java/lang/String"), 0);
+	jobjectArray sa=(*env)->NewObjectArray(env, LENGTH(e), javaStringClass, 0);
 	if (!sa) error_return("Unable to create string array.");
 	while (j<LENGTH(e)) {
 	  jobject s=newString(CHAR(STRING_ELT(e,j)));
@@ -150,14 +151,24 @@ SEXP RgetStringValue(SEXP par) {
   return r;
 }
 
+/** calls .toString() of the object and returns the corresponding string java object */
+jstring callToString(jobject o) {
+  jclass cls;
+  jmethodID mid;
+
+  cls=(*env)->GetObjectClass(env,o);
+  if (!cls) error_return("RtoString: can't determine class of the object");
+  mid=(*env)->GetMethodID(env, cls, "toString", "()Ljava/lang/String;");
+  if (!mid) error_return("RtoString: toString not found for the object");
+  return (jstring)(*env)->CallObjectMethod(env, o, mid);  
+}
+
 /** calls .toString() on the passed object (int) and returns the string 
     value */
 SEXP RtoString(SEXP par) {
   SEXP p,e,r;
   jstring s;
   jobject o;
-  jclass cls;
-  jmethodID mid;
   const char *c;
 
   p=CDR(par); e=CAR(p); p=CDR(p);
@@ -165,11 +176,7 @@ SEXP RtoString(SEXP par) {
     error_return("RtoString: invalid object parameter");
   o=(jobject)INTEGER(e)[0];
   if (!o) return R_NilValue;
-  cls=(*env)->GetObjectClass(env,o);
-  if (!cls) error_return("RtoString: can't determine class of the object");
-  mid=(*env)->GetMethodID(env, cls, "toString", "()Ljava/lang/String;");
-  if (!mid) error_return("RtoString: toString not found for the object");
-  s=(jstring)(*env)->CallObjectMethod(env, o, mid);
+  s=callToString(o);
   if (!s) error_return("RtoString: toString call failed");
   c=(*env)->GetStringUTFChars(env, s, 0);
   PROTECT(r=allocVector(STRSXP,1));
@@ -177,6 +184,76 @@ SEXP RtoString(SEXP par) {
   UNPROTECT(1);
   (*env)->ReleaseStringUTFChars(env, s, c);
   return r;
+}
+
+/* get contents of the object array in the form of int* pointers */
+SEXP RgetObjectArrayCont(SEXP par) {
+  SEXP e=CAR(CDR(par));
+  SEXP ar;
+  jarray o;
+  jobject el;
+  int l,i;
+  jint *ap;
+
+  if (TYPEOF(e)!=INTSXP)
+    error_return("RgetObjectArrayCont: invalid object parameter");
+  o=(jarray)INTEGER(e)[0];
+  rjprintf(" jarray %d\n",o);
+  if (!o) return R_NilValue;
+  l=(int)(*env)->GetArrayLength(env, o);
+  rjprintf("convert object array of length %d\n",l);
+  if (l<1) return R_NilValue;
+  PROTECT(ar=allocVector(INTSXP,l));
+  i=0;
+  while (i<l) {
+    INTEGER(ar)[i]=(int)(*env)->GetObjectArrayElement(env, o, i);
+    i++;
+  }
+  UNPROTECT(1);
+  return ar;
+}
+
+/* get contents of the object array in the form of int* */
+SEXP RgetStringArrayCont(SEXP par) {
+  SEXP e=CAR(CDR(par));
+  SEXP ar;
+  jarray o;
+  jobject el;
+  int l,i;
+  jint *ap;
+  const char *c;
+
+  if (TYPEOF(e)!=INTSXP)
+    error_return("RgetStringArrayCont: invalid object parameter");
+  o=(jarray)INTEGER(e)[0];
+  rjprintf(" jarray %d\n",o);
+  if (!o) return R_NilValue;
+  l=(int)(*env)->GetArrayLength(env, o);
+  rjprintf("convert string array of length %d\n",l);
+  if (l<1) return R_NilValue;
+  PROTECT(ar=allocVector(STRSXP,l));
+  i=0;
+  while (i<l) {
+    jobject sobj=(*env)->GetObjectArrayElement(env, o, i);
+    c=0;
+    if (sobj) {
+      /* we could (should?) check the type here ...
+      if (!(*env)->IsInstanceOf(env, sobj, javaStringClass)) {
+	printf(" not a String\n");
+      } else
+      */
+      c=(*env)->GetStringUTFChars(env, sobj, 0);
+    }
+    if (!c)
+      SET_STRING_ELT(ar, i, R_NaString);
+    else {
+      SET_STRING_ELT(ar, i, mkChar(c));
+      (*env)->ReleaseStringUTFChars(env, sobj, c);
+    }
+    i++;
+  }
+  UNPROTECT(1);
+  return ar;
 }
 
 /* get contents of the integer array object (int) */
@@ -205,7 +282,7 @@ SEXP RgetIntArrayCont(SEXP par) {
   return ar;
 }
 
-/* get contents of the integer array object (int) */
+/* get contents of the double array object (int) */
 SEXP RgetDoubleArrayCont(SEXP par) {
   SEXP e=CAR(CDR(par));
   SEXP ar;
