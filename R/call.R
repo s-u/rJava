@@ -95,6 +95,7 @@
   if (!inherits(obj,"jobjRef"))
     stop("obj is not a Java object")
   .External("RfreeObject",obj$jobj)
+  .C("checkExceptions");
   invisible()
 }
 
@@ -116,7 +117,16 @@
 .jcast <- function(obj, new.class) {
   if (!inherits(obj, "jobjRef"))
     stop("connot cast anything but Java objects")
-  r<-list(jobj=obj$jobj, jclass=new.class)
+  r<-obj
+  r$jclass<-new.class
+  r
+}
+
+# creates a new "null" object of the specified class
+# althought it sounds weird, the class is important when passed as
+# a parameter (you can even cast the result)
+.jnull <- function(class="java/lang/Object") { 
+  r<-list(jobj=0, jclass=class)
   class(r)<-"jobjRef"
   r
 }
