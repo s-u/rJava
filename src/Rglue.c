@@ -198,7 +198,10 @@ SEXP Rpar2jvalue(SEXP par, jvalue *jpar, char *sig, int maxpar, int maxsig) {
 	  j++;
 	}
 	if (jc) {
-	  strcat(sig,"L"); strcat(sig,jc); strcat(sig,";");
+	  if (*jc!='[') { /* not an array, we assume it's an object of that class */
+	    strcat(sig,"L"); strcat(sig,jc); strcat(sig,";");
+	  } else /* array definitions are passed as-is */
+	    strcat(sig,jc);
 	} else
 	  strcat(sig,"Ljava/lang/Object;");
 	jpar[jvpos++].l=o;
