@@ -1,12 +1,15 @@
 #include <stdarg.h>
 #include "rJava.h"
 
+void checkExceptions(void);
+
 void* errJNI(char *err, ...) {
   va_list ap;
   va_start(ap, err);
   vfprintf(stderr, err, ap);
   va_end(ap);
   fputs("\n",stderr);
+  checkExceptions();
   return 0;
 }
 
