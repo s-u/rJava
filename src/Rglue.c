@@ -22,9 +22,13 @@ void rjprintf(char *fmt, ...) {
 #include <sys/time.h>
 
 long time_ms() {
+#ifdef Win32
+  return 0; /* in Win32 we have no gettimeofday :( */
+#else
   struct timeval tv;
   gettimeofday(&tv,0);
   return (tv.tv_usec/1000)+(tv.tv_sec*1000);
+#endif
 }
 
 long profilerTime;
@@ -61,7 +65,9 @@ void *initJVMthread(void *classpath)
   int ws;
   int r=initJVM((char*)classpath);
   init_rJava();
+
   pthread_mutex_unlock(&initMutex);
+
 #ifdef XXDARWIN
   CFRunLoopRun();
 #else
