@@ -3,6 +3,19 @@
 #include <Rdefines.h>
 #include <Rinternals.h>
 
+#include <stdarg.h>
+
+#ifdef RJ_DEBUG
+void rjprintf(char *fmt, ...) {
+  va_list v;
+  va_start(v,fmt);
+  vprintf(fmt,v);
+  va_end(v);
+}
+#else
+#define rjprintf(...)
+#endif
+
 SEXP RinitJVM(SEXP par)
 {
   char *c=0;
@@ -27,9 +40,9 @@ SEXP Rpar2jvalue(SEXP par, jvalue *jpar, char *sig, int maxpar, int maxsig) {
   int i=0;
 
   while (p && TYPEOF(p)==LISTSXP && (e=CAR(p))) {
-    printf("par %d type %d\n",i,TYPEOF(e));
+    rjprintf("par %d type %d\n",i,TYPEOF(e));
     if (TYPEOF(e)==STRSXP) {
-      printf(" string vector of length %d\n",LENGTH(e));
+      rjprintf(" string vector of length %d\n",LENGTH(e));
       if (LENGTH(e)==1) {
 	strcat(sig,"Ljava/lang/String;");
 	jpar[jvpos++].l=newString(CHAR(STRING_ELT(e,0)));
@@ -39,7 +52,7 @@ SEXP Rpar2jvalue(SEXP par, jvalue *jpar, char *sig, int maxpar, int maxsig) {
 	if (!sa) error_return("Unable to create string array.");
 	while (j<LENGTH(e)) {
 	  jobject s=newString(CHAR(STRING_ELT(e,j)));
-	  printf (" [%d] \"%s\"\n",j,CHAR(STRING_ELT(e,j)));
+	  rjprintf (" [%d] \"%s\"\n",j,CHAR(STRING_ELT(e,j)));
 	  (*env)->SetObjectArrayElement(env,sa,j,s);
 	  j++;
 	}
@@ -47,11 +60,11 @@ SEXP Rpar2jvalue(SEXP par, jvalue *jpar, char *sig, int maxpar, int maxsig) {
 	strcat(sig,"[Ljava/lang/String;");
       }
     } else if (TYPEOF(e)==INTSXP) {
-      printf(" integer vector of length %d\n",LENGTH(e));
+      rjprintf(" integer vector of length %d\n",LENGTH(e));
       if (LENGTH(e)==1) {
 	strcat(sig,"I");
 	jpar[jvpos++].i=(jint)(INTEGER(e)[0]);
-	printf("  single int orig=%d, jarg=%d [jvpos=%d]\n",
+	rjprintf("  single int orig=%d, jarg=%d [jvpos=%d]\n",
 	       (INTEGER(e)[0]),
 	       jpar[jvpos-1],
 	       jvpos);
@@ -60,7 +73,7 @@ SEXP Rpar2jvalue(SEXP par, jvalue *jpar, char *sig, int maxpar, int maxsig) {
 	jpar[jvpos++].l=newIntArray(INTEGER(e),LENGTH(e));
       }
     } else if (TYPEOF(e)==REALSXP) {
-      printf(" real vector of length %d\n",LENGTH(e));
+      rjprintf(" real vector of length %d\n",LENGTH(e));
       if (LENGTH(e)==1) {
 	strcat(sig,"D");
 	jpar[jvpos++].d=(jdouble)(REAL(e)[0]);
@@ -69,7 +82,7 @@ SEXP Rpar2jvalue(SEXP par, jvalue *jpar, char *sig, int maxpar, int maxsig) {
 	jpar[jvpos++].l=newDoubleArray(REAL(e),LENGTH(e));
       }
     } else if (TYPEOF(e)==LGLSXP) {
-      printf(" logical vector of length %d\n",LENGTH(e));
+      rjprintf(" logical vector of length %d\n",LENGTH(e));
       if (LENGTH(e)==1) {
 	strcat(sig,"Z");
 	jpar[jvpos++].z=(jboolean)(LOGICAL(e)[0]);
@@ -79,19 +92,19 @@ SEXP Rpar2jvalue(SEXP par, jvalue *jpar, char *sig, int maxpar, int maxsig) {
       }
     } else if (TYPEOF(e)==VECSXP) {
       int j=0;
-      printf(" general vector of length %d\n", LENGTH(e));
+      rjprintf(" general vector of length %d\n", LENGTH(e));
       if (inherits(e,"jobjRef")) {
 	jobject o=(jobject)0;
 	char *jc=0;
 	SEXP n=getAttrib(e, R_NamesSymbol);
 	if (TYPEOF(n)!=STRSXP) n=0;
-	printf(" which is in fact a Java object reference\n");
+	rjprintf(" which is in fact a Java object reference\n");
 	while (j<LENGTH(e)) {
 	  SEXP ve=VECTOR_ELT(e,j);
-	  printf("  element %d type %d\n",j,TYPEOF(ve));
+	  rjprintf("  element %d type %d\n",j,TYPEOF(ve));
 	  if (n && j<LENGTH(n)) {
 	    char *an=CHAR(STRING_ELT(n,j));
-	    printf("  name: %s\n",an);
+	    rjprintf("  name: %s\n",an);
 	    if (!strcmp(an,"jobj") && TYPEOF(ve)==INTSXP && LENGTH(ve)==1)
 	      o=(jobject)INTEGER(ve)[0];
 	    if (!strcmp(an,"jclass") && TYPEOF(ve)==STRSXP && LENGTH(ve)==1)
@@ -105,7 +118,7 @@ SEXP Rpar2jvalue(SEXP par, jvalue *jpar, char *sig, int maxpar, int maxsig) {
 	  strcat(sig,"Ljava/lang/Object;");
 	jpar[jvpos++].l=o;
       } else {
-	printf(" (ignoring)\n");
+	rjprintf(" (ignoring)\n");
       }
     }
     i++;
@@ -172,10 +185,10 @@ SEXP RgetIntArrayCont(SEXP par) {
   if (TYPEOF(e)!=INTSXP)
     error_return("RgetIntArrayCont: invalid object parameter");
   o=(jarray)INTEGER(e)[0];
-  printf(" jarray %d\n",o);
+  rjprintf(" jarray %d\n",o);
   if (!o) return R_NilValue;
   l=(int)(*env)->GetArrayLength(env, o);
-  printf("convert int array of length %d\n",l);
+  rjprintf("convert int array of length %d\n",l);
   if (l<1) return R_NilValue;
   ap=(jint*)(*env)->GetIntArrayElements(env, o, 0);
   if (!ap)
@@ -201,13 +214,13 @@ SEXP RcallMethod(SEXP par) {
     error_return("RcallMethod: invalid object parameter");
   o=(jobject)(INTEGER(e)[0]);
 #ifdef RJAVA_DEBUG
-  printf("object: "); printObject(o);
+  rjprintf("object: "); printObject(o);
 #endif
   cls=(*env)->GetObjectClass(env,o);
   if (!cls)
     error_return("RcallMethod: cannot determine object class");
 #ifdef RJAVA_DEBUG
-  printf("class: "); printObject(cls);
+  rjprintf("class: "); printObject(cls);
 #endif
   e=CAR(p); p=CDR(p);
   if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
@@ -221,7 +234,7 @@ SEXP RcallMethod(SEXP par) {
   Rpar2jvalue(p,jpar,sig,32,256);
   strcat(sig,")");
   strcat(sig,retsig);
-  printf("Method %s signature is %s\n",mnam,sig);
+  rjprintf("Method %s signature is %s\n",mnam,sig);
   mid=(*env)->GetMethodID(env,cls,mnam,sig);
   if (!mid)
     error_return("RcallMethod: method not found");
@@ -269,7 +282,7 @@ SEXP RcreateObject(SEXP par) {
   jobject o,go;
 
   if (TYPEOF(p)!=LISTSXP) {
-    printf("Parameter list expected but got type %d.\n",TYPEOF(p));
+    rjprintf("Parameter list expected but got type %d.\n",TYPEOF(p));
     error_return("RcreateObject: invalid parameter");
   }
 
@@ -278,12 +291,12 @@ SEXP RcreateObject(SEXP par) {
   if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
     error_return("RcreateObject: invalid class name");
   class=CHAR(STRING_ELT(e,0));
-  printf("new %s(...)\n",class);
+  rjprintf("new %s(...)\n",class);
   strcpy(sig,"(");
   p=CDR(p);
   Rpar2jvalue(p,jpar,sig,32,256);
   strcat(sig,")V");
-  printf("Constructor signature is %s\n",sig);
+  rjprintf("Constructor signature is %s\n",sig);
   o=createObject(class,sig,jpar);
   go=makeGlobal(o);
   if (go)
