@@ -1,7 +1,7 @@
 #include "rJava.h"
 #include <R.h>
 #include <Rdefines.h>
-#include <Rinternals.h>
+#include <R_ext/Parse.h>
 
 #include <stdarg.h>
 
@@ -88,8 +88,35 @@ SEXP RinitJVM(SEXP par)
   SEXP e=CADR(par);
   int r=0;
   
+  JavaVM *jvms[32];
+  jsize vms=0;
+
   if (TYPEOF(e)==STRSXP && LENGTH(e)>0)
     c=CHAR(STRING_ELT(e,0));
+
+  r=JNI_GetCreatedJavaVMs(jvms, 32, &vms);
+  if (r) {
+    fprintf(stderr, "JNI_GetCreatedJavaVMs returned %d\n", r);
+  } else {
+    if (vms>0) {
+      int i=0;
+      printf("Total %d JVMs found. Trying to attach the current thread.\n", vms);
+      while (i<vms) {
+	if (jvms[i]) {
+	  if (!(*jvms[i])->AttachCurrentThread(jvms[i], (void**)&env, NULL)) {
+	    printf("Attached to existing JVM #%d.\n", i+1);
+	    break;
+	  }
+	}
+	i++;
+      }
+      if (i==vms) fprintf(stderr, "Failed to attach to any existing JVM!\n");
+      PROTECT(e=allocVector(INTSXP,1));
+      INTEGER(e)[0]=(i==vms)?-2:1;
+      UNPROTECT(1);
+      return e;
+    }
+  }
 
 #ifdef THREADS
   printf("launching thread\n");
