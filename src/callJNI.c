@@ -13,6 +13,17 @@ void* errJNI(char *err, ...) {
   return 0;
 }
 
+/* initialize internal structures/variables of rJava.
+   The JVM initialization was performed before (but may have failed)
+*/
+void init_rJava(void) {
+  if (!env) return; /* initJVM failed, so we cannot proceed */
+  
+  /* get global classes */
+  javaStringClass=(*env)->FindClass(env, "java/lang/String");
+  javaObjectClass=(*env)->FindClass(env, "java/lang/Object");
+}
+
 jobject createObject(char *class, char *sig, jvalue *par) {
   /* va_list ap; */
   jmethodID mid;
