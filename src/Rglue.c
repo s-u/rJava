@@ -162,6 +162,31 @@ SEXP RtoString(SEXP par) {
   return r;
 }
 
+SEXP RgetIntArrayCont(SEXP par) {
+  SEXP e=CAR(CDR(par));
+  SEXP ar;
+  jarray o;
+  int l;
+  jint *ap;
+
+  if (TYPEOF(e)!=INTSXP)
+    error_return("RgetIntArrayCont: invalid object parameter");
+  o=(jarray)INTEGER(e)[0];
+  printf(" jarray %d\n",o);
+  if (!o) return R_NilValue;
+  l=(int)(*env)->GetArrayLength(env, o);
+  printf("convert int array of length %d\n",l);
+  if (l<1) return R_NilValue;
+  ap=(jint*)(*env)->GetIntArrayElements(env, o, 0);
+  if (!ap)
+    error_return("RgetIntArrayCont: can't fetch array contents");
+  PROTECT(ar=allocVector(INTSXP,l));
+  memcpy(INTEGER(ar),ap,sizeof(jint)*l);
+  UNPROTECT(1);
+  (*env)->ReleaseIntArrayElements(env, o, ap, 0);
+  return ar;
+}
+
 SEXP RcallMethod(SEXP par) {
   SEXP p=par, e;
   char sig[256];
