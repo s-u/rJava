@@ -1,9 +1,9 @@
-#include <jni.h>
+#include "rJava.h"
 
 #define PATH_SEPARATOR ':'
 #define USER_CLASSPATH "."
 
-static JavaVM *jvm;
+JavaVM *jvm;
 static JDK1_1InitArgs vm1_args;
 
 #ifdef JNI_VERSION_1_2 
@@ -28,7 +28,7 @@ int initJVM() {
   
   if(!user_classpath)
     /* use the CLASSPATH environment variable as default */
-    user_classpath = getenv("CLASSPATH");
+    user_classpath = (char*) getenv("CLASSPATH");
   if(!user_classpath) user_classpath = "";
   
   vm_args = (VMARGS_TYPE *) &vm2_args;
@@ -138,6 +138,7 @@ void testJVM() {
   (*env)->CallVoidMethod(env, fo, mid);
   printf("Frame shown\n");
  dst:
+  ;
 }
 
 void doneJVM() {
