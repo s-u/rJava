@@ -44,21 +44,66 @@ void profReport(char *fmt, ...) {
 #define profReport(...)
 #endif
 
+#ifdef THREADS
+#include <pthread.h>
+
+#ifdef XXDARWIN
+#include <Carbon/Carbon.h>
+#include <CoreFoundation/CoreFoundation.h>
+#include <CoreFoundation/CFRunLoop.h>
+#endif
+
+pthread_t initJVMpt;
+pthread_mutex_t initMutex = PTHREAD_MUTEX_INITIALIZER;
+
+void *initJVMthread(void *classpath)
+{
+  int ws;
+  int r=initJVM((char*)classpath);
+  init_rJava();
+  pthread_mutex_unlock(&initMutex);
+#ifdef XXDARWIN
+  CFRunLoopRun();
+#else
+  while (1) {
+    wait(&ws);
+  }
+#endif
+  return 0;
+}
+
+#endif
+
 /** RinitJVM(classpath)
     initializes JVM with the specified class path */
 SEXP RinitJVM(SEXP par)
 {
   char *c=0;
   SEXP e=CADR(par);
-  int r;
+  int r=0;
   
   if (TYPEOF(e)==STRSXP && LENGTH(e)>0)
     c=CHAR(STRING_ELT(e,0));
+
+#ifdef THREADS
+  printf("launching thread\n");
+  pthread_mutex_lock(&initMutex);
+  pthread_create(&initJVMpt, 0, initJVMthread, c);
+  printf("waiting for mutex\n");
+  pthread_mutex_lock(&initMutex);
+  pthread_mutex_unlock(&initMutex);
+  /* pthread_join(initJVMpt, 0); */
+  printf("attach\n");
+  /* since JVM was initialized by another thread, we need to attach ourselves */
+  (*jvm)->AttachCurrentThread(jvm, (void**)&env, NULL);
+  printf("done.\n");
+#else
   profStart();
   r=initJVM(c);
   profReport("initJVM:");
   init_rJava();
   profReport("init_rJava:");
+#endif
   PROTECT(e=allocVector(INTSXP,1));
   INTEGER(e)[0]=r;
   UNPROTECT(1);
