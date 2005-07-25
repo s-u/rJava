@@ -1,4 +1,6 @@
 #include "rJava.h"
+#include <stdlib.h>
+#include <string.h>
 
 #define PATH_SEPARATOR ':'
 #define USER_CLASSPATH "."
@@ -32,15 +34,15 @@ JNIEnv *getJNIEnv() {
     if (!jvm) { // we're hoping that the JVM pointer won't change :P we fetch it just once
         res= JNI_GetCreatedJavaVMs(&jvm, 1, &l);
         if (res!=0) {
-            fprintf(stderr, "JNI_GetCreatedJavaVMs failed! (%d)\n",res); return;
+            fprintf(stderr, "JNI_GetCreatedJavaVMs failed! (%d)\n",(int)res); return 0;
         }
         if (l<1) {
-            fprintf(stderr, "JNI_GetCreatedJavaVMs said there's no JVM running!\n"); return;
+            fprintf(stderr, "JNI_GetCreatedJavaVMs said there's no JVM running!\n"); return 0;
         }
     }
-    res = (*jvm)->AttachCurrentThread(jvm, &env, 0);
+    res = (*jvm)->AttachCurrentThread(jvm, (void**) &env, 0);
     if (res!=0) {
-        fprintf(stderr, "AttachCurrentThread failed! (%d)\n",res); return;
+        fprintf(stderr, "AttachCurrentThread failed! (%d)\n", (int)res); return 0;
     }
     if (env && !eenv) eenv=env;
     
@@ -81,8 +83,6 @@ int initJVM(char *user_classpath) {
   }
 #if defined(JNI_VERSION_1_2)
   else {
-    char *interfaceLibraryProperty, *java_lib_path; 
-    int i;
     int total_num_properties, propNum = 0;
     
     /* total_num_properties = N_JDK_OPTIONS+n_properties; */

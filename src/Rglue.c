@@ -100,7 +100,7 @@ SEXP RinitJVM(SEXP par)
   } else {
     if (vms>0) {
       int i=0;
-      printf("Total %d JVMs found. Trying to attach the current thread.\n", vms);
+      printf("Total %d JVMs found. Trying to attach the current thread.\n", (int)vms);
       while (i<vms) {
 	if (jvms[i]) {
 	  if (!(*jvms[i])->AttachCurrentThread(jvms[i], (void**)&eenv, NULL)) {
@@ -276,9 +276,9 @@ jstring callToString(jobject o) {
   JNIEnv *env=getJNIEnv();
 
   cls=(*env)->GetObjectClass(env,o);
-  if (!cls) error_return("RtoString: can't determine class of the object");
+  if (!cls) error("RtoString: can't determine class of the object");
   mid=(*env)->GetMethodID(env, cls, "toString", "()Ljava/lang/String;");
-  if (!mid) error_return("RtoString: toString not found for the object");
+  if (!mid) error("RtoString: toString not found for the object");
   return (jstring)(*env)->CallObjectMethod(env, o, mid);  
 }
 
@@ -311,9 +311,7 @@ SEXP RgetObjectArrayCont(SEXP par) {
   SEXP e=CAR(CDR(par));
   SEXP ar;
   jarray o;
-  jobject el;
   int l,i;
-  jint *ap;
   JNIEnv *env=getJNIEnv();
 
   profStart();
@@ -341,9 +339,7 @@ SEXP RgetStringArrayCont(SEXP par) {
   SEXP e=CAR(CDR(par));
   SEXP ar;
   jarray o;
-  jobject el;
   int l,i;
-  jint *ap;
   const char *c;
   JNIEnv *env=getJNIEnv();
 

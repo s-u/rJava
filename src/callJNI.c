@@ -1,4 +1,5 @@
 #include <stdarg.h>
+#include <string.h>
 #include "rJava.h"
 
 void checkExceptionsX(JNIEnv *env);
@@ -65,11 +66,11 @@ void printObject(JNIEnv *env, jobject o) {
   const char *c;
 
   cls=(*env)->GetObjectClass(env,o);
-  if (!cls) return errJNI("printObject.GetObjectClass failed");
+  if (!cls) { errJNI("printObject.GetObjectClass failed"); return ; }
   mid=(*env)->GetMethodID(env, cls, "toString", "()Ljava/lang/String;");
-  if (!mid) return errJNI("printObject.GetMethodID for toString() failed");
+  if (!mid) { errJNI("printObject.GetMethodID for toString() failed"); return; }
   s=(*env)->CallObjectMethod(env, o, mid);
-  if (!s) return errJNI("printObject o.toString() call failed");
+  if (!s) { errJNI("printObject o.toString() call failed"); return; }
   c=(*env)->GetStringUTFChars(env, (jstring)s, 0);
   puts(c);
   (*env)->ReleaseStringUTFChars(env, (jstring)s, c);
