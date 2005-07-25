@@ -34,7 +34,7 @@
 .jnew <- function(class, ...) {
   .jcheck()
   o<-.External("RcreateObject", class, ..., PACKAGE="rJava")
-  .C("checkExceptions")
+  .C("checkExceptions",PACKAGE="rJava")
   if (!is.null(o)) {
     if (o==0)
       warning(paste("Unable to create object of the class",class,", returning null reference."))
@@ -56,13 +56,13 @@
     sig<-obj$jsig
   }
   if (sig=="[I")
-    return(.External("RgetIntArrayCont", jobj))
+    return(.External("RgetIntArrayCont", jobj, PACKAGE="rJava"))
   else if (sig=="[D")
-    return(.External("RgetDoubleArrayCont", jobj))
+    return(.External("RgetDoubleArrayCont", jobj, PACKAGE="rJava"))
   else if (sig=="[Ljava/lang/String;" || sig=="[S")
-    return(.External("RgetStringArrayCont", jobj))
+    return(.External("RgetStringArrayCont", jobj, PACKAGE="rJava"))
   else if (substr(sig,1,2)=="[L")
-    return(lapply(.External("RgetObjectArrayCont", r),
+    return(lapply(.External("RgetObjectArrayCont", jobj, PACKAGE="rJava"),
                   function(x) { a<-list(jobj=x, jclass=NULL); class(a)<-"jobjRef"; a } ))
   # if we don't know how to evaluate this, issue a warning and return the jarrayRef
   if (!silent)
@@ -95,22 +95,22 @@
       return(NULL)
     
     if (returnSig=="Ljava/lang/String;" && evalString) {
-      s<-.External("RgetStringValue",r)
-      .External("RfreeObject",r)
+      s<-.External("RgetStringValue",r, PACKAGE="rJava")
+      .External("RfreeObject",r, PACKAGE="rJava")
       return(s)
     }
     r<-list(jobj=r, jclass=substr(returnSig,2,nchar(returnSig)-1))
     class(r)<-"jobjRef"
   }
-  .C("checkExceptions")
+  .C("checkExceptions",PACKAGE="rJava")
   r
 }
 
 .jfree <- function(obj) {
   if (!inherits(obj,"jobjRef"))
     stop("obj is not a Java object")
-  .External("RfreeObject",obj$jobj)
-  .C("checkExceptions");
+  .External("RfreeObject",obj$jobj, PACKAGE="rJava")
+  .C("checkExceptions",PACKAGE="rJava");
   invisible()
 }
 
@@ -122,9 +122,9 @@
   if (!inherits(obj,"jobjRef"))
     stop("can get value of Java objects only")
   if (!is.null(obj$jclass) && obj$jclass=="lang/java/String")
-    r<-.External("RgetStringValue",obj$jobj)
+    r<-.External("RgetStringValue", obj$jobj, PACKAGE="rJava")
   else
-    r<-.External("RtoString",obj$jobj)
+    r<-.External("RtoString", obj$jobj, PACKAGE="rJava")
   r
 }
 
@@ -149,10 +149,42 @@
 .jcheck <- function() {
   if (!exists(".jniInitialized") || !.jniInitialized)
     stop("Java VM was not initialized. Please use .jinit to initialize JVM.")
-  .C("checkExceptions")
+  .C("checkExceptions",PACKAGE="rJava")
   invisible()
 }
 
 .jproperty <- function(key) {
   .jcall("java/lang/System", "S", "getProperty", as.character(key)[1])
+}
+
+### reflection tools (inofficial so far, because it returns strings
+### instead of the reflection objects - it's useful for quick checks,
+### though)
+
+.jmethods <- function(o, name=NULL) {
+  if (is.null(o)) return (NULL)
+  if (is.character(o) & length(o)==1) {
+    o<-gsub("/",".",o)
+    cl<-.jcall("java/lang/Class","Ljava/lang/Class;","forName",o)
+  } else if (inherits(o, "jobjRef")) {
+    cl<-.jcall(o, "Ljava/lang/Class;", "getClass")
+  } else stop("Can operate on a single string or Java object only.")
+  ms<-.jcall(cl,"[Ljava/lang/reflect/Method;","getMethods")
+  ss<-unlist(lapply(ms,function(x) .jcall(x,"S","toString")))
+  if (!is.null(name))
+    grep(paste("\\.",name,"\\(",sep=''),ss,value=TRUE)
+  else
+    ss
+}
+
+.jconstructors <- function(o) {
+  if (is.null(o)) return (NULL)
+  if (is.character(o) & length(o)==1) {
+    o<-gsub("/",".",o)
+    cl<-.jcall("java/lang/Class","Ljava/lang/Class;","forName",o)
+  } else if (inherits(o, "jobjRef")) {
+    cl<-.jcall(o, "Ljava/lang/Class;", "getClass")
+  } else stop("Can operate on a single string or Java object only.")
+  cs<-.jcall(cl,"[Ljava/lang/reflect/Constructor;","getConstructors")
+  unlist(lapply(cs,function(x) .jcall(x,"S","toString")))
 }
