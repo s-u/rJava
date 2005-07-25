@@ -28,7 +28,7 @@
     (\code{FALSE}).}
   \item{evalString}{This flag determines whether string result is returned
     as characters or as Java object reference.}
-  \item{inteface}{This option is experimental and specifies the
+  \item{interface}{This option is experimental and specifies the
     interface used for calling the Java method; the current
     implementation supports two interfaces:
     \itemize{
