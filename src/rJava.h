@@ -1,7 +1,7 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000109 /* rJava v0.1-9 */
+#define RJAVA_VER 0x00010a /* rJava v0.1-10 */
 
 #include <jni.h>
 
@@ -12,9 +12,13 @@ extern JavaVM *jvm;
 extern jclass javaStringClass;
 extern jclass javaObjectClass;
 
-extern JNIEnv* getJNIEnv();
+JNIEnv* getJNIEnv();
+
+int initJVM(char *user_classpath);
 
 /* in callJNI */
+void init_rJava(void);
+
 jobject createObject(JNIEnv *env, char *class, char *sig, jvalue *par);
 jclass getClass(JNIEnv *env, char *class);
 
