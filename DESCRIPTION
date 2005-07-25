@@ -1,9 +1,9 @@
 Package: rJava
 Version: 0.1-2
 Title: Low-level R to Java interface
-Author: Simon Urbanek <Simon.Urbanek@math.uni-augsburg.de>
-Maintainer: Simon Urbanek <Simon.Urbanek@math.uni-augsburg.de>
+Author: Simon Urbanek <urbanek@research.att.com>
+Maintainer: Simon Urbanek <urbanek@research.att.com>
 Depends: R (>= 1.5.0)
 Description: Low-level interface to Java VM very much like .C/.Call and friends. Allows creation of objects, calling methods and accessing fields.
 License: GPL version 2 or newer
-URL: http://stats.math.uni-augsburg.de/software/rJava/
+URL: http://www.rosuda.org/software/rJava/
