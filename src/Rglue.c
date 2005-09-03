@@ -214,18 +214,28 @@ SEXP Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int
 	SEXP n=getAttrib(e, R_NamesSymbol);
 	if (TYPEOF(n)!=STRSXP) n=0;
 	rjprintf(" which is in fact a Java object reference\n");
-	while (j<LENGTH(e)) {
-	  SEXP ve=VECTOR_ELT(e,j);
-	  rjprintf("  element %d type %d\n",j,TYPEOF(ve));
-	  if (n && j<LENGTH(n)) {
-	    char *an=CHAR(STRING_ELT(n,j));
-	    rjprintf("  name: %s\n",an);
-	    if (!strcmp(an,"jobj") && TYPEOF(ve)==INTSXP && LENGTH(ve)==1)
-	      o=(jobject)INTEGER(ve)[0];
-	    if (!strcmp(an,"jclass") && TYPEOF(ve)==STRSXP && LENGTH(ve)==1)
-	      jc=CHAR(STRING_ELT(ve,0));
+	if (LENGTH(e)>1) { /* old objects were lists */
+	  while (j<LENGTH(e)) {
+	    SEXP ve=VECTOR_ELT(e,j);
+	    rjprintf("  element %d type %d\n",j,TYPEOF(ve));
+	    if (n && j<LENGTH(n)) {
+	      char *an=CHAR(STRING_ELT(n,j));
+	      rjprintf("  name: %s\n",an);
+	      if (!strcmp(an,"jobj") && TYPEOF(ve)==INTSXP && LENGTH(ve)==1)
+		o=(jobject)INTEGER(ve)[0];
+	      if (!strcmp(an,"jclass") && TYPEOF(ve)==STRSXP && LENGTH(ve)==1)
+		jc=CHAR(STRING_ELT(ve,0));
+	    }
+	    j++;
 	  }
-	  j++;
+	} else { /* new objects are S4 objects */
+	  SEXP sref, sclass;
+	  sref=GET_SLOT(e, install("jobj"));
+	  if (sref && TYPEOF(sref)==INTSXP && LENGTH(sref)==1)
+	    o=(jobject)INTEGER(sref)[0];
+	  sclass=GET_SLOT(e, install("jclass"));	  
+	  if (sclass && TYPEOF(sclass)==STRSXP && LENGTH(sclass)==1)
+	    jc=CHAR(STRING_ELT(sclass,0));
 	}
 	if (jc) {
 	  if (*jc!='[') { /* not an array, we assume it's an object of that class */
@@ -446,7 +456,7 @@ SEXP RcallMethod(SEXP par) {
   jvalue jpar[32];
   jobject o;
   char *retsig, *mnam;
-  jmethodID mid;
+  jmethodID mid=0;
   jclass cls;
   JNIEnv *env=getJNIEnv();
   
@@ -472,9 +482,18 @@ SEXP RcallMethod(SEXP par) {
   rjprintf(" class: "); printObject(env, cls);
 #endif
   e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
-    error_return("RcallMethod: invalid return signature parameter");
-  retsig=CHAR(STRING_ELT(e,0));
+  if (TYPEOF(e)==STRSXP && LENGTH(e)==1) { /* signature */
+    retsig=CHAR(STRING_ELT(e,0));
+    /*
+      } else if (inherits(e, "jobjRef")) { method object 
+    SEXP mexp = GET_SLOT(e, install("jobj"));
+    jobject mobj = (jobject)(INTEGER(mexp)[0]);
+    rjprintf(" signature is Java object %x - using reflection\n", mobj);
+    mid = (*env)->FromReflectedMethod(*env, jobject mobj);
+    retsig = getReturnSigFromMethodObject(mobj);
+    */
+  } else error_return("RcallMethod: invalid return signature parameter");
+    
   e=CAR(p); p=CDR(p);
   if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
     error_return("RcallMethod: invalid method name");

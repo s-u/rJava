@@ -2,8 +2,20 @@
 #include <string.h>
 #include "rJava.h"
 
-void checkExceptionsX(JNIEnv *env);
-void checkExceptions() { JNIEnv *env=getJNIEnv(); if (env) checkExceptionsX(env); }
+int checkExceptionsX(JNIEnv *env, int silent);
+
+void checkExceptions() {
+  JNIEnv *env=getJNIEnv();
+  if (env) checkExceptionsX(env, 0);
+}
+
+void RJavaCheckExceptions(int *silent, int *result) {
+  JNIEnv *env=getJNIEnv();
+  if (env)
+    *result=checkExceptionsX(env, *silent);
+  else
+    *result=0;
+}
 
 void* errJNI(char *err, ...) {
   va_list ap;
@@ -152,10 +164,13 @@ void releaseGlobal(JNIEnv *env, jobject o) {
   (*env)->DeleteGlobalRef(env,o);
 }
 
-void checkExceptionsX(JNIEnv *env) {
+int checkExceptionsX(JNIEnv *env, int silent) {
   jthrowable t=(*env)->ExceptionOccurred(env);
   if (t) {
-    (*env)->ExceptionDescribe(env);
+    if (!silent)
+      (*env)->ExceptionDescribe(env);
     (*env)->ExceptionClear(env);
+    return 1;
   }
+  return 0;
 }
