@@ -81,8 +81,11 @@ JAVA_INC="-I${JNI_H}"
 # this should be become more general at some point - so far we're checking linux and solaris only
 # (well, those are presumably the only platforms supported by Sun's JDK and others don't need this
 # at least as of now - 01/2004)
-AC_CHECK_FILE(${JNI_H}/linux/jni_md.h,[JAVA_INC="${JAVA_INC} -I${JNI_H}/linux"])
-AC_CHECK_FILE(${JNI_H}/solaris/jni_md.h,[JAVA_INC="${JAVA_INC} -I${JNI_H}/solaris"])
+jac_found_md=no
+for mddir in . linux solaris ppc irix alpha aix hp-ux genunix cygwin win32; do
+AC_CHECK_FILE(${JNI_H}/$mddir/jni_md.h,[JAVA_INC="${JAVA_INC} -I${JNI_H}/$mddir" jac_found_md=yes])
+if test $jac_found_md == yes; then break; fi
+done
 
 JAVA_LIBS=`${JAVA} -classpath . getsp -libs`
 JAVA_LIBS="${JAVA_LIBS} -ljvm"
