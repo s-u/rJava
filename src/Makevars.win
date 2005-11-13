@@ -2,7 +2,7 @@
 # - set JAVA_HOME to the JDK root (used for includes only)
 # in addition if the pre-compiled stuff is not present, then also:
 # - generate libjvm.dll.a from JDK's jvm.dll
-#   (make -f Makevars.win libjvm.dll.a)
+#   (run `make' in `jvm-w32')
 # - copy WinRegistry.dll into inst/libs
 
 # **** MODIFY THE FOLLOWING LINE BEFORE COMPILING OR SET JAVA_HOME ****
@@ -16,8 +16,9 @@ endif
 # debugging flags like -DRJ_DEBUG or -DRJ_PROFILE to PKG_CFLAGS
 JAVA_INCLUDES=$(JAVA_HOME)/include $(JAVA_HOME)/include/win32
 PKG_CFLAGS+= -D_R_ -DWin32 -I$(RHOME)/src/include $(JAVA_INCLUDES:%=-I%)
-PKG_LIBS+= -ljvm.dll -L.
+PKG_LIBS+= -ljvm.dll -Ljvm-w32
 
-libjvm.dll.a: jvm.def
-	dlltool --input-def jvm.def --kill-at --dllname jvm.dll --output-lib libjvm.dll.a
+libjvm.dll.a:
+	$(MAKE) -C jvm-w32
+	cp jvm-w32/libjvm.dll.a libjvm.dll.a
 
