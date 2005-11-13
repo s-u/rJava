@@ -1,14 +1,23 @@
 # To compile the Windows version, you need to:
 # - set JAVA_HOME to the JDK root (used for includes only)
 # in addition if the pre-compiled stuff is not present, then also:
-# - generate libjvm.a in src from JDK's jvm.dll
+# - generate libjvm.dll.a from JDK's jvm.dll
+#   (make -f Makevars.win libjvm.dll.a)
 # - copy WinRegistry.dll into inst/libs
 
-# **** MODIFY THE FOLLOWING LINE BEFORE COMPILING ****
-JAVA_HOME=D:\\jdk1.4.2_04
+# **** MODIFY THE FOLLOWING LINE BEFORE COMPILING OR SET JAVA_HOME ****
+DEFAULT_JAVA_HOME=C:\\jdk1.4.2_04
+
+ifeq ($(JAVA_HOME),)
+JAVA_HOME:=$(DEFAULT_JAVA_HOME)
+endif
 
 # normally you don't have to touch this unless you want to add
 # debugging flags like -DRJ_DEBUG or -DRJ_PROFILE to PKG_CFLAGS
 JAVA_INCLUDES=$(JAVA_HOME)/include $(JAVA_HOME)/include/win32
-PKG_CFLAGS= -D_R_ -DWin32 -I$(RHOME)/src/include $(JAVA_INCLUDES:%=-I%)
-PKG_LIBS= -ljvm.dll -L$(TOP)/src
+PKG_CFLAGS+= -D_R_ -DWin32 -I$(RHOME)/src/include $(JAVA_INCLUDES:%=-I%)
+PKG_LIBS+= -ljvm.dll -L.
+
+libjvm.dll.a: jvm.def
+	dlltool --input-def jvm.def --kill-at --dllname jvm.dll --output-lib libjvm.dll.a
+
