@@ -27,14 +27,11 @@
 }
 \details{
   There two functions are intended to help with finding correct
-  signatures for methods and constructors. Since rJava doesn't use
-  reflection automatically (yet), it is necessary to provide a proper
+  signatures for methods and constructors. Since the low-level API in rJava doesn't use reflection automatically, it is necessary to provide a proper
   signature. That is somewhat easier using the above methods.
-
-  
 }
 \seealso{
-  \code{\link{.jcall}}, \code{\link{.jnew}}, \code{\link{.jcast}}
+  \code{\link{.jcall}}, \code{\link{.jnew}}, \code{\link{.jcast}} or \code{link{$.jobjRef}}
 }
 \examples{
 \dontrun{
