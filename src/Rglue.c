@@ -5,6 +5,14 @@
 
 #include <stdarg.h>
 
+/* jobject to SEXP encoding - 0.2 and earlier use INTSXP */
+SEXP j2SEXP(jobject o) {
+  SEXP ov; 
+  ov=allocVector(INTSXP, 1);
+  INTEGER(ov)[0]=(int)o;
+  return ov;
+}
+
 /* debugging output (enable with -DRJ_DEBUG) */
 #ifdef RJ_DEBUG
 void rjprintf(char *fmt, ...) {
@@ -233,6 +241,8 @@ SEXP Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int
 	  sref=GET_SLOT(e, install("jobj"));
 	  if (sref && TYPEOF(sref)==INTSXP && LENGTH(sref)==1)
 	    o=(jobject)INTEGER(sref)[0];
+	  if (sref && TYPEOF(sref)==EXTPTRSXP)
+	    o=(jobject)EXTPTR_PTR(sref);
 	  sclass=GET_SLOT(e, install("jclass"));	  
 	  if (sclass && TYPEOF(sclass)==STRSXP && LENGTH(sclass)==1)
 	    jc=CHAR(STRING_ELT(sclass,0));
@@ -264,9 +274,12 @@ SEXP RgetStringValue(SEXP par) {
   
   profStart();
   p=CDR(par); e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)!=INTSXP)
+  if (TYPEOF(e)==INTSXP)
+    s=(jstring)INTEGER(e)[0];
+  else if (TYPEOF(e)==EXTPTRSXP)
+    s=(jstring)EXTPTR_PTR(e);
+  else
     error_return("RgetStringValue: invalid object parameter");
-  s=(jstring)INTEGER(e)[0];
   if (!s) return R_NilValue;
   c=(*env)->GetStringUTFChars(env, s, 0);
   if (!c)
@@ -292,7 +305,7 @@ jstring callToString(jobject o) {
   return (jstring)(*env)->CallObjectMethod(env, o, mid);  
 }
 
-/** calls .toString() on the passed object (int) and returns the string 
+/** calls .toString() on the passed object (int/extptr) and returns the string 
     value */
 SEXP RtoString(SEXP par) {
   SEXP p,e,r;
@@ -302,9 +315,12 @@ SEXP RtoString(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   p=CDR(par); e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)!=INTSXP)
+  if (TYPEOF(e)==INTSXP)
+    o=(jobject)INTEGER(e)[0];
+  else if (TYPEOF(e)==EXTPTRSXP)
+    o=(jobject)EXTPTR_PTR(e);
+  else
     error_return("RtoString: invalid object parameter");
-  o=(jobject)INTEGER(e)[0];
   if (!o) return R_NilValue;
   s=callToString(o);
   if (!s) error_return("RtoString: toString call failed");
@@ -325,9 +341,12 @@ SEXP RgetObjectArrayCont(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   profStart();
-  if (TYPEOF(e)!=INTSXP)
+  if (TYPEOF(e)==INTSXP)
+    o=(jobject)INTEGER(e)[0];
+  else if (TYPEOF(e)==EXTPTRSXP)
+    o=(jobject)EXTPTR_PTR(e);
+  else
     error_return("RgetObjectArrayCont: invalid object parameter");
-  o=(jarray)INTEGER(e)[0];
   rjprintf(" jarray %d\n",o);
   if (!o) return R_NilValue;
   l=(int)(*env)->GetArrayLength(env, o);
@@ -336,6 +355,7 @@ SEXP RgetObjectArrayCont(SEXP par) {
   PROTECT(ar=allocVector(INTSXP,l));
   i=0;
   while (i<l) {
+    /* FIXME: convert to EXTPTR */
     INTEGER(ar)[i]=(int)(*env)->GetObjectArrayElement(env, o, i);
     i++;
   }
@@ -354,9 +374,12 @@ SEXP RgetStringArrayCont(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   profStart();
-  if (TYPEOF(e)!=INTSXP)
+  if (TYPEOF(e)==INTSXP)
+    o=(jobject)INTEGER(e)[0];
+  else if (TYPEOF(e)==EXTPTRSXP)
+    o=(jobject)EXTPTR_PTR(e);
+  else
     error_return("RgetStringArrayCont: invalid object parameter");
-  o=(jarray)INTEGER(e)[0];
   rjprintf(" jarray %d\n",o);
   if (!o) return R_NilValue;
   l=(int)(*env)->GetArrayLength(env, o);
@@ -398,9 +421,12 @@ SEXP RgetIntArrayCont(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   profStart();
-  if (TYPEOF(e)!=INTSXP)
+  if (TYPEOF(e)==INTSXP)
+    o=(jobject)INTEGER(e)[0];
+  else if (TYPEOF(e)==EXTPTRSXP)
+    o=(jobject)EXTPTR_PTR(e);
+  else
     error_return("RgetIntArrayCont: invalid object parameter");
-  o=(jarray)INTEGER(e)[0];
   rjprintf(" jarray %d\n",o);
   if (!o) return R_NilValue;
   l=(int)(*env)->GetArrayLength(env, o);
@@ -427,9 +453,12 @@ SEXP RgetDoubleArrayCont(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   profStart();
-  if (TYPEOF(e)!=INTSXP)
+  if (TYPEOF(e)==INTSXP)
+    o=(jobject)INTEGER(e)[0];
+  else if (TYPEOF(e)==EXTPTRSXP)
+    o=(jobject)EXTPTR_PTR(e);
+  else
     error_return("RgetDoubleArrayCont: invalid object parameter");
-  o=(jarray)INTEGER(e)[0];
   rjprintf(" jarray %d\n",o);
   if (!o) return R_NilValue;
   l=(int)(*env)->GetArrayLength(env, o);
@@ -462,9 +491,12 @@ SEXP RcallMethod(SEXP par) {
   
   profStart();
   p=CDR(p); e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)!=INTSXP)
+  if (TYPEOF(e)==INTSXP)
+    o=(jobject)INTEGER(e)[0];
+  else if (TYPEOF(e)==EXTPTRSXP)
+    o=(jobject)EXTPTR_PTR(e);
+  else
     error_return("RcallMethod: invalid object parameter");
-  o=(jobject)(INTEGER(e)[0]);
   if (!o)
     error_return("RcallMethod: attempt to call a method of a NULL object.");
 #ifdef RJAVA_DEBUG
@@ -547,9 +579,7 @@ SEXP RcallMethod(SEXP par) {
       if (gr)
 	releaseObject(env, r);
     }
-    PROTECT(e=allocVector(INTSXP, 1));
-    INTEGER(e)[0]=(int)gr;
-    UNPROTECT(1);
+    e=j2SEXP(gr);
     profReport("Method %s returned [g.ref=%x]:",mnam, gr);
     return e;
   }
@@ -564,9 +594,12 @@ SEXP RcallSyncMethod(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   p=CDR(p); e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)!=INTSXP)
+  if (TYPEOF(e)==INTSXP)
+    o=(jobject)INTEGER(e)[0];
+  else if (TYPEOF(e)==EXTPTRSXP)
+    o=(jobject)EXTPTR_PTR(e);
+  else
     error_return("RcallSyncMethod: invalid object parameter");
-  o=(jobject)(INTEGER(e)[0]);
 #ifdef RJAVA_DEBUG
   rjprintf("RcallSyncMethod:\ object: "); printObject(o);
 #endif
@@ -688,9 +721,12 @@ SEXP RgetField(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   p=CDR(p); e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)!=INTSXP)
+  if (TYPEOF(e)==INTSXP)
+    o=(jobject)INTEGER(e)[0];
+  else if (TYPEOF(e)==EXTPTRSXP)
+    o=(jobject)EXTPTR_PTR(e);
+  else
     error_return("RgetField: invalid object parameter");
-  o=(jobject)(INTEGER(e)[0]);
 #ifdef RJAVA_DEBUG
   rjprintf("object: "); printObject(env, o);
 #endif
@@ -785,11 +821,10 @@ SEXP RcreateObject(SEXP par) {
     releaseObject(env,o);
   else
     go=o;
-  PROTECT(ov=allocVector(INTSXP, 1));
-  INTEGER(ov)[0]=(int)go;
-  UNPROTECT(1);
-  return ov;
+  
+  return j2SEXP(go);
 }
+
 
 /** jobjRefInt object : string */
 SEXP RfreeObject(SEXP par) {
@@ -798,9 +833,12 @@ SEXP RfreeObject(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   p=CDR(par); e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)!=INTSXP)
+  if (TYPEOF(e)==INTSXP)
+    o=(jobject)INTEGER(e)[0];
+  else if (TYPEOF(e)==EXTPTRSXP)
+    o=(jobject)EXTPTR_PTR(e);
+  else
     error_return("RfreeObject: invalid object parameter");
-  o=(jobject)INTEGER(e)[0];
   releaseGlobal(env, o);
   return R_NilValue;
 }
