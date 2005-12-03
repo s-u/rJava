@@ -73,6 +73,8 @@
     }
   }
   m<-.jcall(cl, "Ljava/lang/reflect/Method;", "getMethod", method, .jcast(ar,"[Ljava/lang/Class;"))
+  if (is.null(m))
+    stop("Cannot find Java method `",method,"' matching the supplied parameters.")
   r<-.jcall(m, "Ljava/lang/Object;", "invoke", .jcast(if(inherits(o,"jobjRef")) o else cl, "java/lang/Object"), .jcast(op, "[Ljava/lang/Object;"))
   if (!is.null(r)) {
     rcl <- .jcall(r, "Ljava/lang/Class;", "getClass")
@@ -81,6 +83,7 @@
     else if (rcn=="java.lang.Number" | rcn=="java.lang.Double" | rcn=="java.lang.Float")
       r <- .jcall(r, "D", "doubleValue")
     else if (rcn=="java.lang.String") r <- .jstrVal(s)
+    else if (rcn=="java.lang.Boolean") r <- .jcall(r, "Z", "booleanValue")
   }
   r
 }
@@ -104,7 +107,7 @@
   unlist(lapply(f, function(x) .jcall(x, "S", "toString")))
 }
 
-### syntactic sugar to allow objet$field and object$methods(...)
+### syntactic sugar to allow object$field and object$methods(...)
 ### first attempts to find a field of that name and then a method
 "$.jobjRef" <- function(o, m, ...) {
   cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
