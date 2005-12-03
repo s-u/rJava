@@ -15,6 +15,8 @@
  \code{$<-.jobjRef} assigns a value to the corresponding Java attribute.
 
  This is just a convenience API. Internally all calls are mapped into \code{\link{.jcall}} calls, therefore the calling conventions and returning objects use the smae rules. For time-critical Java calls \code{\link{.jcall}} should be used directly.
+
+NOTE: This interface is still very experimental! Some type conversions may not work or it may fail to find the method you want. You may need to use \code{\link{.jcall}}, consult \code{\link{.jmethods}}, \code{\link{.jfields}} and possibly apply \code{\link{.jcast}} in such cases. If it is a general problem, please report such issues whith a small reproducible example.
 }
 \seealso{
   \code{\link{.jcall}}, \code{\link{.jnew}}, \code{\link{jobjRef-class}}
