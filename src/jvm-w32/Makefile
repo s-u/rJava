@@ -4,7 +4,7 @@
 TARGETS=libjvm.dll.a findjava.exe WinRegistry.dll
 
 # libjvm.dll.a    - wrapper lib for jvm.dll from Java
-# findjava.exe    - helper tool to find the current JRE/JDK from the registry
+# findjava.exe    - helper tool to find the current JDK from the registry
 # WinRegistry.dll - helper lib to provide registry access to rJava before
 #                   rJava.dll is loaded, because at that point path to
 #                   jvm.dll must be known. We don't hard-code the JVM path,
@@ -15,7 +15,7 @@ all: $(TARGETS)
 libjvm.dll.a: jvm.def
 	dlltool --input-def jvm.def --kill-at --dllname jvm.dll --output-lib libjvm.dll.a
 
-# compile findjava.exe from source - no maigc here, so special libs necessary
+# compile findjava.exe from source - no magic here, no special libs necessary
 findjava.o: findjava.c
 	$(CC) -O2 -c -o $@ $^
 
