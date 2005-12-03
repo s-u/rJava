@@ -57,6 +57,7 @@ setClass("jfloat", representation("numeric"))
 
 # create a new object
 .jnew <- function(class, ...) {
+  class <- gsub("\\.","/",class) # allow non-JNI specifiation
   .jcheck()
   o<-.External("RcreateObject", class, ..., PACKAGE="rJava")
   .C("checkExceptions",PACKAGE="rJava")
@@ -152,6 +153,7 @@ setClass("jfloat", representation("numeric"))
   if (!inherits(obj, "jobjRef"))
     stop("connot cast anything but Java objects")
   r<-obj
+  new.class <- gsub("\\.","/", new.class) # allow non-JNI specifiation
   r@jclass<-new.class
   r
 }
@@ -172,4 +174,9 @@ setClass("jfloat", representation("numeric"))
 
 .jproperty <- function(key) {
   .jcall("java/lang/System", "S", "getProperty", as.character(key)[1])
+}
+
+print.jobjRef <- function(x, ...) {
+  print(paste("Java-Object: ", .jstrVal(x), sep=''), ...)
+  invisible(x)
 }
