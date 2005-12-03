@@ -8,16 +8,19 @@ if [ $? != 0 ]; then
 fi
 
 echo "Find Java..."
-if [ x$JAVA_HOME = x ]; then
-    JAVA_HOME=`src/jvm-w32/findjava`
+# findjava honors JAVA_HOME environment variable, so we can safely overwite it 
+if [ -e src/jvm-w32/findjava.exe ]; then
+    JAVA_HOME=`src/jvm-w32/findjava -s -f`
 fi
 if [ x$JAVA_HOME = x ]; then
-    echo "ERROR: cannot find JDK/JRE." >&2
+    echo "ERROR: cannot find Java Development Kit." >&2
     echo "       Please set JAVA_HOME to specify its location manually" >&2
     exit 1
 fi
 
 echo "  JAVA_HOME=$JAVA_HOME"
+
+echo "JAVA_HOME:=$JAVA_HOME" > src/Makevars.java
 
 echo "Install WinRegistry"
 mkdir -p inst/libs
