@@ -31,7 +31,7 @@ JNIEnv *getJNIEnv() {
     jsize l;
     jint res;
     
-    if (!jvm) { // we're hoping that the JVM pointer won't change :P we fetch it just once
+    if (!jvm) { /* we're hoping that the JVM pointer won't change :P we fetch it just once */
         res= JNI_GetCreatedJavaVMs(&jvm, 1, &l);
         if (res!=0) {
             fprintf(stderr, "JNI_GetCreatedJavaVMs failed! (%d)\n",(int)res); return 0;
