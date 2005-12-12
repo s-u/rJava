@@ -69,6 +69,10 @@ setClass("jfloat", representation("numeric"))
   o
 }
 
+.jmkref <- function(jobj, jclass="java/lang/Object") {
+  new("jobjRef", jobj=jobj, jclass=jclass)
+}
+
 # evaluates an array reference. If rawJNIRefSignature is set, then obj is not assumed to be
 # jarrayRef, but rather direct JNI reference with the corresponding signature
 .jevalArray <- function(obj, rawJNIRefSignature=NULL, silent=FALSE) {
