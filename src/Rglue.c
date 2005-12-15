@@ -475,6 +475,41 @@ SEXP RgetDoubleArrayCont(SEXP par) {
   return ar;
 }
 
+/** get contents of the long array object (int) */
+SEXP RgetLongArrayCont(SEXP par) {
+  SEXP e=CAR(CDR(par));
+  SEXP ar;
+  jarray o;
+  int l;
+  jlong *ap;
+  JNIEnv *env=getJNIEnv();
+
+  profStart();
+  if (TYPEOF(e)==INTSXP)
+    o=(jobject)INTEGER(e)[0];
+  else if (TYPEOF(e)==EXTPTRSXP)
+    o=(jobject)EXTPTR_PTR(e);
+  else
+    error_return("RgetLongArrayCont: invalid object parameter");
+  rjprintf(" jarray %d\n",o);
+  if (!o) return R_NilValue;
+  l=(int)(*env)->GetArrayLength(env, o);
+  rjprintf("convert long array of length %d\n",l);
+  if (l<1) return R_NilValue;
+  ap=(jlong*)(*env)->GetLongArrayElements(env, o, 0);
+  if (!ap)
+    error_return("RgetLongArrayCont: can't fetch array contents");
+  PROTECT(ar=allocVector(REALSXP,l));
+  { /* long must be coerced into double .. we use just a cast for each element, bad idea? */
+    int i=0;
+    while (i<l) { REAL(ar)[i]=(double)ap[i]; i++; }
+  }
+  UNPROTECT(1);
+  (*env)->ReleaseLongArrayElements(env, o, ap, 0);
+  profReport("RgetLongArrayCont[%d]:",o);
+  return ar;
+}
+
 /** call specified non-static method on an object
    object (int), return signature (string), method name (string) [, ..parameters ...]
    arrays and objects are returned as IDs (hence not evaluated)
@@ -548,6 +583,14 @@ SEXP RcallMethod(SEXP par) {
   }
   if (*retsig=='I') {
     int r=(*env)->CallIntMethodA(env,o,mid,jpar);
+    PROTECT(e=allocVector(INTSXP, 1));
+    INTEGER(e)[0]=r;
+    UNPROTECT(1);
+    profReport("Method %s returned:",mnam);
+    return e;
+  }
+  if (*retsig=='J') { /* FIXME: can we safely assume jlong=int ?? */
+    long r=(*env)->CallLongMethodA(env,o,mid,jpar);
     PROTECT(e=allocVector(INTSXP, 1));
     INTEGER(e)[0]=r;
     UNPROTECT(1);
@@ -673,6 +716,14 @@ SEXP RcallStaticMethod(SEXP par) {
     profReport("Method %s returned:",mnam);
     return e;
   }
+  if (*retsig=='J') { /* FIXME: can we safely assume jlong=int ?? */
+    long r=(*env)->CallStaticLongMethodA(env,cls,mid,jpar);
+    PROTECT(e=allocVector(INTSXP, 1));
+    INTEGER(e)[0]=r;
+    UNPROTECT(1);
+    profReport("Method %s returned:",mnam);
+    return e;
+  }
   if (*retsig=='Z') {
     jboolean r=(*env)->CallStaticBooleanMethodA(env,cls,mid,jpar);
     PROTECT(e=allocVector(LGLSXP, 1));
@@ -750,6 +801,13 @@ SEXP RgetField(SEXP par) {
     error_return("RgetField: field not found");
   if (*retsig=='I') {
     int r=(*env)->GetIntField(env,o,mid);
+    PROTECT(e=allocVector(INTSXP, 1));
+    INTEGER(e)[0]=r;
+    UNPROTECT(1);
+    return e;
+  }
+  if (*retsig=='J') {
+    int r=(*env)->GetLongField(env,o,mid); /* FIXME: jlong=int ?? */
     PROTECT(e=allocVector(INTSXP, 1));
     INTEGER(e)[0]=r;
     UNPROTECT(1);
