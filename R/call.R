@@ -31,10 +31,21 @@ setClass("jfloat", representation("numeric"))
   if (xr==-1) stop("Unable to initialize JVM.")
   if (xr==-2) stop("Another JVM is already running and rJava was unable to attach itself to that JVM.")
   if (xr==1 && classpath!="" && !silent) warning("Since another JVM is already running, it's not possible to change its class path. Therefore the value of the speficied classpath was ignored.")
-  .jniInitialized<<-TRUE # hack hack hack - we should use something better ..
+  #.jniInitialized<<-TRUE # hack hack hack - we should use something better ..
 
-  # get caches class objects for reflection
-  je <- parent.env(environment())
+  # this should remove any lingering .jclass objects from the global env
+  # left there by previous versions of rJava
+  pj <- grep("^\\.jclass",ls(1,all=TRUE),value=T)
+  if (length(pj)>0) { 
+    rm(list=pj,pos=1)
+    if (exists(".jniInitialized",1)) rm(list=".jniInitialized",pos=1)
+    if (!silent) warning("rJava found hidden Java objects in your workspace. Internal objects from previous versions of rJava were deleted. Please note that Java objects cannot be saved in the workspace.")
+  }
+  
+  # first, get our environment from the search list
+  je <- as.environment(match("package:rJava", search()))
+  assign(".jniInitialized", TRUE, je)
+  # get cached class objects for reflection
   assign(".jclassObject", .jcall("java/lang/Class","Ljava/lang/Class;","forName","java.lang.Object"), je)
   assign(".jclassClass", .jcall("java/lang/Class","Ljava/lang/Class;","forName","java.lang.Class"), je)
   assign(".jclassString", .jcall("java/lang/Class","Ljava/lang/Class;","forName","java.lang.String"), je)
@@ -69,6 +80,7 @@ setClass("jfloat", representation("numeric"))
   o
 }
 
+# create a new object reference manually (avoid! for backward compat only)
 .jmkref <- function(jobj, jclass="java/lang/Object") {
   new("jobjRef", jobj=jobj, jclass=jclass)
 }
@@ -86,6 +98,8 @@ setClass("jfloat", representation("numeric"))
   }
   if (sig=="[I")
     return(.External("RgetIntArrayCont", jobj, PACKAGE="rJava"))
+  else if (sig=="[J")
+    return(.External("RgetLongArrayCont", jobj, PACKAGE="rJava"))
   else if (sig=="[D")
     return(.External("RgetDoubleArrayCont", jobj, PACKAGE="rJava"))
   else if (sig=="[Ljava/lang/String;" || sig=="[S")
@@ -96,7 +110,7 @@ setClass("jfloat", representation("numeric"))
   # if we don't know how to evaluate this, issue a warning and return the jarrayRef
   if (!silent)
     warning(paste("I don't know how to evaluate an array with signature",sig,". Returning a reference."))
-  new("jarrayRef", jobj=jobj, jclass=NULL, jsig=sig)
+  new("jarrayRef", jobj=jobj, jclass="java/lang/Object", jsig=sig)
 }
 
 .jcall <- function(obj, returnSig="V", method, ..., evalArray=TRUE, evalString=TRUE, interface="RcallMethod") {
@@ -114,7 +128,7 @@ setClass("jfloat", representation("numeric"))
     if (evalArray)
       r<-.jevalArray(r,rawJNIRefSignature=returnSig)
     else
-      r <- new("jarrayRef", jobj=r, jclass=NULL, jsig=returnSig)
+      r <- new("jarrayRef", jobj=r, jclass="java/lang/Object", jsig=returnSig)
   } else if (substr(returnSig,1,1)=="L") {
     if (r==0)
       return(NULL)
