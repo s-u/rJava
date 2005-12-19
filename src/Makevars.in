@@ -1,4 +1,7 @@
 # we need to add JNI specific stuff here
+ifdef DEBUG
+PKG_CFLAGS+=-g -DRJ_DEBUG
+endif
 PKG_CFLAGS+=@JAVA_INC@
 PKG_LIBS+=@JAVA_LIBS@
 JAVA_HOME=@JAVA_HOME@

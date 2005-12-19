@@ -9,7 +9,7 @@ Objects of this class should *not* be created directly. Instead, the function \c
 }
 \section{Slots}{
   \describe{
-    \item{\code{jobj}:}{Internal identifier of the object}
+    \item{\code{jobj}:}{Internal identifier of the object (external pointer to be precise)}
     \item{\code{jclass}:}{Java class name of the object (in JNI notation)}
   }
   Java-side attributes are not accessed via slots, but the \code{$} operator instead.

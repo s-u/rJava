@@ -5,14 +5,6 @@
 
 #include <stdarg.h>
 
-/* jobject to SEXP encoding - 0.2 and earlier use INTSXP */
-SEXP j2SEXP(jobject o) {
-  SEXP ov; 
-  ov=allocVector(INTSXP, 1);
-  INTEGER(ov)[0]=(int)o;
-  return ov;
-}
-
 /* debugging output (enable with -DRJ_DEBUG) */
 #ifdef RJ_DEBUG
 void rjprintf(char *fmt, ...) {
@@ -55,6 +47,34 @@ void profReport(char *fmt, ...) {
 #define profStart()
 #define profReport(...)
 #endif
+
+jstring callToString(jobject o);
+
+void JRefObjectFinalizer(SEXP ref) {
+  if (TYPEOF(ref)==EXTPTRSXP) {
+    JNIEnv *env=getJNIEnv();
+    jobject o = R_ExternalPtrAddr(ref);
+
+#ifdef RJ_DEBUG
+    {
+      jstring s=callToString(o);
+      const char *c=(*env)->GetStringUTFChars(env, s, 0);
+      rjprintf("Finalizer releases Java object [%s] reference %lx\n", c, (long)o);
+      (*env)->ReleaseStringUTFChars(env, s, c);
+    }
+#endif
+
+    if (env && o)
+      releaseGlobal(env, o);
+  }
+}
+
+/* jobject to SEXP encoding - 0.2 and earlier use INTSXP */
+SEXP j2SEXP(jobject o) {
+  SEXP xp = R_MakeExternalPtr(o, R_NilValue, R_NilValue);
+  R_RegisterCFinalizerEx(xp, JRefObjectFinalizer, TRUE);
+  return xp;
+}
 
 #ifdef THREADS
 #include <pthread.h>
@@ -223,27 +243,15 @@ SEXP Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int
 	if (TYPEOF(n)!=STRSXP) n=0;
 	rjprintf(" which is in fact a Java object reference\n");
 	if (LENGTH(e)>1) { /* old objects were lists */
-	  while (j<LENGTH(e)) {
-	    SEXP ve=VECTOR_ELT(e,j);
-	    rjprintf("  element %d type %d\n",j,TYPEOF(ve));
-	    if (n && j<LENGTH(n)) {
-	      char *an=CHAR(STRING_ELT(n,j));
-	      rjprintf("  name: %s\n",an);
-	      if (!strcmp(an,"jobj") && TYPEOF(ve)==INTSXP && LENGTH(ve)==1)
-		o=(jobject)INTEGER(ve)[0];
-	      if (!strcmp(an,"jclass") && TYPEOF(ve)==STRSXP && LENGTH(ve)==1)
-		jc=CHAR(STRING_ELT(ve,0));
-	    }
-	    j++;
-	  }
+	  error("Old, unsupported S3 Java object encountered.");
 	} else { /* new objects are S4 objects */
 	  SEXP sref, sclass;
 	  sref=GET_SLOT(e, install("jobj"));
-	  if (sref && TYPEOF(sref)==INTSXP && LENGTH(sref)==1)
-	    o=(jobject)INTEGER(sref)[0];
 	  if (sref && TYPEOF(sref)==EXTPTRSXP)
 	    o=(jobject)EXTPTR_PTR(sref);
-	  sclass=GET_SLOT(e, install("jclass"));	  
+	  else /* if jobj is anything else, assume NULL ptr */
+	    o=(jobject)0;
+	  sclass=GET_SLOT(e, install("jclass"));
 	  if (sclass && TYPEOF(sclass)==STRSXP && LENGTH(sclass)==1)
 	    jc=CHAR(STRING_ELT(sclass,0));
 	}
@@ -274,9 +282,8 @@ SEXP RgetStringValue(SEXP par) {
   
   profStart();
   p=CDR(par); e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)==INTSXP)
-    s=(jstring)INTEGER(e)[0];
-  else if (TYPEOF(e)==EXTPTRSXP)
+  if (e==R_NilValue) return R_NilValue;
+  if (TYPEOF(e)==EXTPTRSXP)
     s=(jstring)EXTPTR_PTR(e);
   else
     error_return("RgetStringValue: invalid object parameter");
@@ -315,9 +322,8 @@ SEXP RtoString(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   p=CDR(par); e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)==INTSXP)
-    o=(jobject)INTEGER(e)[0];
-  else if (TYPEOF(e)==EXTPTRSXP)
+  if (e==R_NilValue) return R_NilValue;
+  if (TYPEOF(e)==EXTPTRSXP)
     o=(jobject)EXTPTR_PTR(e);
   else
     error_return("RtoString: invalid object parameter");
@@ -332,7 +338,7 @@ SEXP RtoString(SEXP par) {
   return r;
 }
 
-/** get contents of the object array in the form of int* pointers */
+/** get contents of the object array in the form of list of ext. pointers */
 SEXP RgetObjectArrayCont(SEXP par) {
   SEXP e=CAR(CDR(par));
   SEXP ar;
@@ -341,9 +347,8 @@ SEXP RgetObjectArrayCont(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   profStart();
-  if (TYPEOF(e)==INTSXP)
-    o=(jobject)INTEGER(e)[0];
-  else if (TYPEOF(e)==EXTPTRSXP)
+  if (e==R_NilValue) return R_NilValue;
+  if (TYPEOF(e)==EXTPTRSXP)
     o=(jobject)EXTPTR_PTR(e);
   else
     error_return("RgetObjectArrayCont: invalid object parameter");
@@ -352,11 +357,10 @@ SEXP RgetObjectArrayCont(SEXP par) {
   l=(int)(*env)->GetArrayLength(env, o);
   rjprintf("convert object array of length %d\n",l);
   if (l<1) return R_NilValue;
-  PROTECT(ar=allocVector(INTSXP,l));
+  PROTECT(ar=allocVector(VECSXP,l));
   i=0;
   while (i<l) {
-    /* FIXME: convert to EXTPTR */
-    INTEGER(ar)[i]=(int)(*env)->GetObjectArrayElement(env, o, i);
+    SET_VECTOR_ELT(ar, i, j2SEXP((*env)->GetObjectArrayElement(env, o, i)));
     i++;
   }
   UNPROTECT(1);
@@ -374,9 +378,8 @@ SEXP RgetStringArrayCont(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   profStart();
-  if (TYPEOF(e)==INTSXP)
-    o=(jobject)INTEGER(e)[0];
-  else if (TYPEOF(e)==EXTPTRSXP)
+  if (e==R_NilValue) return R_NilValue;
+  if (TYPEOF(e)==EXTPTRSXP)
     o=(jobject)EXTPTR_PTR(e);
   else
     error_return("RgetStringArrayCont: invalid object parameter");
@@ -384,7 +387,7 @@ SEXP RgetStringArrayCont(SEXP par) {
   if (!o) return R_NilValue;
   l=(int)(*env)->GetArrayLength(env, o);
   rjprintf("convert string array of length %d\n",l);
-  if (l<1) return R_NilValue;
+  if (l<0) return R_NilValue;
   PROTECT(ar=allocVector(STRSXP,l));
   i=0;
   while (i<l) {
@@ -411,7 +414,7 @@ SEXP RgetStringArrayCont(SEXP par) {
   return ar;
 }
 
-/** get contents of the integer array object (int) */
+/** get contents of the integer array object */
 SEXP RgetIntArrayCont(SEXP par) {
   SEXP e=CAR(CDR(par));
   SEXP ar;
@@ -421,9 +424,8 @@ SEXP RgetIntArrayCont(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   profStart();
-  if (TYPEOF(e)==INTSXP)
-    o=(jobject)INTEGER(e)[0];
-  else if (TYPEOF(e)==EXTPTRSXP)
+  if (e==R_NilValue) return e;
+  if (TYPEOF(e)==EXTPTRSXP)
     o=(jobject)EXTPTR_PTR(e);
   else
     error_return("RgetIntArrayCont: invalid object parameter");
@@ -431,19 +433,19 @@ SEXP RgetIntArrayCont(SEXP par) {
   if (!o) return R_NilValue;
   l=(int)(*env)->GetArrayLength(env, o);
   rjprintf("convert int array of length %d\n",l);
-  if (l<1) return R_NilValue;
+  if (l<0) return R_NilValue;
   ap=(jint*)(*env)->GetIntArrayElements(env, o, 0);
   if (!ap)
     error_return("RgetIntArrayCont: can't fetch array contents");
   PROTECT(ar=allocVector(INTSXP,l));
-  memcpy(INTEGER(ar),ap,sizeof(jint)*l);
+  if (l>0) memcpy(INTEGER(ar),ap,sizeof(jint)*l);
   UNPROTECT(1);
   (*env)->ReleaseIntArrayElements(env, o, ap, 0);
   profReport("RgetIntArrayCont[%d]:",o);
   return ar;
 }
 
-/** get contents of the double array object (int) */
+/** get contents of the double array object  */
 SEXP RgetDoubleArrayCont(SEXP par) {
   SEXP e=CAR(CDR(par));
   SEXP ar;
@@ -453,9 +455,8 @@ SEXP RgetDoubleArrayCont(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   profStart();
-  if (TYPEOF(e)==INTSXP)
-    o=(jobject)INTEGER(e)[0];
-  else if (TYPEOF(e)==EXTPTRSXP)
+  if (e==R_NilValue) return e;
+  if (TYPEOF(e)==EXTPTRSXP)
     o=(jobject)EXTPTR_PTR(e);
   else
     error_return("RgetDoubleArrayCont: invalid object parameter");
@@ -463,12 +464,12 @@ SEXP RgetDoubleArrayCont(SEXP par) {
   if (!o) return R_NilValue;
   l=(int)(*env)->GetArrayLength(env, o);
   rjprintf("convert double array of length %d\n",l);
-  if (l<1) return R_NilValue;
+  if (l<0) return R_NilValue;
   ap=(jdouble*)(*env)->GetDoubleArrayElements(env, o, 0);
   if (!ap)
     error_return("RgetDoubleArrayCont: can't fetch array contents");
   PROTECT(ar=allocVector(REALSXP,l));
-  memcpy(REAL(ar),ap,sizeof(jdouble)*l);
+  if (l>0) memcpy(REAL(ar),ap,sizeof(jdouble)*l);
   UNPROTECT(1);
   (*env)->ReleaseDoubleArrayElements(env, o, ap, 0);
   profReport("RgetDoubleArrayCont[%d]:",o);
@@ -485,9 +486,8 @@ SEXP RgetLongArrayCont(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   profStart();
-  if (TYPEOF(e)==INTSXP)
-    o=(jobject)INTEGER(e)[0];
-  else if (TYPEOF(e)==EXTPTRSXP)
+  if (e==R_NilValue) return e;
+  if (TYPEOF(e)==EXTPTRSXP)
     o=(jobject)EXTPTR_PTR(e);
   else
     error_return("RgetLongArrayCont: invalid object parameter");
@@ -495,7 +495,7 @@ SEXP RgetLongArrayCont(SEXP par) {
   if (!o) return R_NilValue;
   l=(int)(*env)->GetArrayLength(env, o);
   rjprintf("convert long array of length %d\n",l);
-  if (l<1) return R_NilValue;
+  if (l<0) return R_NilValue;
   ap=(jlong*)(*env)->GetLongArrayElements(env, o, 0);
   if (!ap)
     error_return("RgetLongArrayCont: can't fetch array contents");
@@ -526,9 +526,9 @@ SEXP RcallMethod(SEXP par) {
   
   profStart();
   p=CDR(p); e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)==INTSXP)
-    o=(jobject)INTEGER(e)[0];
-  else if (TYPEOF(e)==EXTPTRSXP)
+  if (e==R_NilValue) 
+    error_return("RcallMethod: call on a NULL object");
+  if (TYPEOF(e)==EXTPTRSXP)
     o=(jobject)EXTPTR_PTR(e);
   else
     error_return("RcallMethod: invalid object parameter");
@@ -589,10 +589,10 @@ SEXP RcallMethod(SEXP par) {
     profReport("Method %s returned:",mnam);
     return e;
   }
-  if (*retsig=='J') { /* FIXME: can we safely assume jlong=int ?? */
-    long r=(*env)->CallLongMethodA(env,o,mid,jpar);
-    PROTECT(e=allocVector(INTSXP, 1));
-    INTEGER(e)[0]=r;
+  if (*retsig=='J') { 
+    jlong r=(*env)->CallLongMethodA(env,o,mid,jpar);
+    PROTECT(e=allocVector(REALSXP, 1));
+    REAL(e)[0]=(double)r;
     UNPROTECT(1);
     profReport("Method %s returned:",mnam);
     return e;
@@ -616,6 +616,10 @@ SEXP RcallMethod(SEXP par) {
   if (*retsig=='L' || *retsig=='[') {
     jobject gr;
     jobject r=(*env)->CallObjectMethodA(env,o,mid,jpar);
+    if (!r) {
+      profReport("Method %s returned NULL:",mnam);
+      return R_NilValue;
+    }
     gr=r;
     if (r) {
       gr=makeGlobal(env, r);
@@ -637,12 +641,14 @@ SEXP RcallSyncMethod(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   p=CDR(p); e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)==INTSXP)
-    o=(jobject)INTEGER(e)[0];
-  else if (TYPEOF(e)==EXTPTRSXP)
+  if (e==R_NilValue) 
+    error_return("RcallMethod: call on a NULL object");
+  if (TYPEOF(e)==EXTPTRSXP)
     o=(jobject)EXTPTR_PTR(e);
   else
     error_return("RcallSyncMethod: invalid object parameter");
+  if (!o)
+    error_return("RcallSyncMethod: attempt to call a method of a NULL object.");
 #ifdef RJAVA_DEBUG
   rjprintf("RcallSyncMethod:\ object: "); printObject(o);
 #endif
@@ -716,10 +722,10 @@ SEXP RcallStaticMethod(SEXP par) {
     profReport("Method %s returned:",mnam);
     return e;
   }
-  if (*retsig=='J') { /* FIXME: can we safely assume jlong=int ?? */
-    long r=(*env)->CallStaticLongMethodA(env,cls,mid,jpar);
-    PROTECT(e=allocVector(INTSXP, 1));
-    INTEGER(e)[0]=r;
+  if (*retsig=='J') {
+    jlong r=(*env)->CallStaticLongMethodA(env,cls,mid,jpar);
+    PROTECT(e=allocVector(REALSXP, 1));
+    REAL(e)[0]=(double)r;
     UNPROTECT(1);
     profReport("Method %s returned:",mnam);
     return e;
@@ -749,11 +755,8 @@ SEXP RcallStaticMethod(SEXP par) {
       if (gr)
 	releaseObject(env, r);
     }
-    PROTECT(e=allocVector(INTSXP, 1));
-    INTEGER(e)[0]=(int)gr;
-    UNPROTECT(1);
     profReport("Method %s returned:",mnam);
-    return e;
+    return j2SEXP(gr);
   }
   profReport("Method %s has an unknown sigrature, not called:",mnam);
   return R_NilValue;
@@ -772,12 +775,13 @@ SEXP RgetField(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   p=CDR(p); e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)==INTSXP)
-    o=(jobject)INTEGER(e)[0];
-  else if (TYPEOF(e)==EXTPTRSXP)
+  if (e==R_NilValue) return R_NilValue;
+  if (TYPEOF(e)==EXTPTRSXP)
     o=(jobject)EXTPTR_PTR(e);
   else
     error_return("RgetField: invalid object parameter");
+  if (!o)
+    error_return("RgetField: attempt to get field of a NULL object");
 #ifdef RJAVA_DEBUG
   rjprintf("object: "); printObject(env, o);
 #endif
@@ -807,9 +811,9 @@ SEXP RgetField(SEXP par) {
     return e;
   }
   if (*retsig=='J') {
-    int r=(*env)->GetLongField(env,o,mid); /* FIXME: jlong=int ?? */
-    PROTECT(e=allocVector(INTSXP, 1));
-    INTEGER(e)[0]=r;
+    jlong r=(*env)->GetLongField(env,o,mid); /* FIXME: jlong=int ?? */
+    PROTECT(e=allocVector(REALSXP, 1));
+    REAL(e)[0]=(double)r;
     UNPROTECT(1);
     return e;
   }
@@ -838,10 +842,7 @@ SEXP RgetField(SEXP par) {
 	releaseObject(r);
     }
     */
-    PROTECT(e=allocVector(INTSXP, 1));
-    INTEGER(e)[0]=(int)gr;
-    UNPROTECT(1);
-    return e;
+    return j2SEXP(gr);
   }
   return R_NilValue;
 }
@@ -874,15 +875,33 @@ SEXP RcreateObject(SEXP par) {
   strcat(sig,")V");
   rjprintf("Constructor signature is %s\n",sig);
   o=createObject(env,class,sig,jpar);
+  if (!o) return R_NilValue;
   go=makeGlobal(env,o);
   if (go)
     releaseObject(env,o);
   else
     go=o;
+
+#ifdef RJ_DEBUG
+  {
+    jstring s=callToString(go);
+    const char *c=(*env)->GetStringUTFChars(env, s, 0);
+    rjprintf("New Java object [%s] reference %lx\n", c, (long)go);
+    (*env)->ReleaseStringUTFChars(env, s, c);
+  }
+#endif
   
   return j2SEXP(go);
 }
 
+/* compares two references */
+SEXP RidenticalRef(SEXP ref1, SEXP ref2) {
+  SEXP r;
+  if (TYPEOF(ref1)!=EXTPTRSXP || TYPEOF(ref2)!=EXTPTRSXP) return R_NilValue;
+  r=allocVector(LGLSXP,1);
+  LOGICAL(r)[0]=(R_ExternalPtrAddr(ref1)==R_ExternalPtrAddr(ref2));
+  return r;
+}
 
 /** jobjRefInt object : string */
 SEXP RfreeObject(SEXP par) {
@@ -891,9 +910,8 @@ SEXP RfreeObject(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   p=CDR(par); e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)==INTSXP)
-    o=(jobject)INTEGER(e)[0];
-  else if (TYPEOF(e)==EXTPTRSXP)
+  if (e==R_NilValue) return e;
+  if (TYPEOF(e)==EXTPTRSXP)
     o=(jobject)EXTPTR_PTR(e);
   else
     error_return("RfreeObject: invalid object parameter");

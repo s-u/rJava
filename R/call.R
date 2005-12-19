@@ -1,5 +1,5 @@
 ## define S4 classes
-setClass("jobjRef", representation(jobj="integer", jclass="character"), prototype=list(jobj=0:0, jclass=NULL))
+setClass("jobjRef", representation(jobj="externalptr", jclass="character"), prototype=list(jobj=NULL, jclass=NULL))
 setClass("jarrayRef", representation("jobjRef", jsig="character"))
 setClass("jfloat", representation("numeric"))
 
@@ -71,13 +71,10 @@ setClass("jfloat", representation("numeric"))
   class <- gsub("\\.","/",class) # allow non-JNI specifiation
   .jcheck()
   o<-.External("RcreateObject", class, ..., PACKAGE="rJava")
-  .C("checkExceptions",PACKAGE="rJava")
-  if (!is.null(o)) {
-    if (o==0)
-      warning(paste("Unable to create object of the class",class,", returning null reference."))
-    o<-new("jobjRef", jobj=o, jclass=class)
-  }
-  o
+  .jcheck()
+  if (is.null(o))
+    warning(paste("Unable to create object of the class",class,", returning null reference."))
+  new("jobjRef", jobj=o, jclass=class)
 }
 
 # create a new object reference manually (avoid! for backward compat only)
@@ -130,8 +127,7 @@ setClass("jfloat", representation("numeric"))
     else
       r <- new("jarrayRef", jobj=r, jclass="java/lang/Object", jsig=returnSig)
   } else if (substr(returnSig,1,1)=="L") {
-    if (r==0)
-      return(NULL)
+    if (is.null(r)) return(NULL)
     
     if (returnSig=="Ljava/lang/String;" && evalString) {
       s<-.External("RgetStringValue",r, PACKAGE="rJava")
@@ -140,7 +136,7 @@ setClass("jfloat", representation("numeric"))
     }
     r <- new("jobjRef", jobj=r, jclass=substr(returnSig,2,nchar(returnSig)-1))
   }
-  .C("checkExceptions",PACKAGE="rJava")
+  .jcheck()
   r
 }
 
@@ -148,7 +144,7 @@ setClass("jfloat", representation("numeric"))
   if (!inherits(obj,"jobjRef"))
     stop("obj is not a Java object")
   .External("RfreeObject",obj@jobj, PACKAGE="rJava")
-  .C("checkExceptions",PACKAGE="rJava");
+  .jcheck()
   invisible()
 }
 
