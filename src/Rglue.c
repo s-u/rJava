@@ -234,7 +234,6 @@ SEXP Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int
 	jpar[jvpos++].l=newBooleanArrayI(env, LOGICAL(e),LENGTH(e));
       }
     } else if (TYPEOF(e)==VECSXP) {
-      int j=0;
       rjprintf(" general vector of length %d\n", LENGTH(e));
       if (inherits(e,"jobjRef")) {
 	jobject o=(jobject)0;
@@ -851,7 +850,7 @@ SEXP RgetField(SEXP par) {
     fully-qualified class in JNI notation (string) [, constructor parameters] */
 SEXP RcreateObject(SEXP par) {
   SEXP p=par;
-  SEXP e, ov;
+  SEXP e;
   char *class;
   char sig[256];
   jvalue jpar[32];
