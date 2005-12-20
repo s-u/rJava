@@ -126,6 +126,21 @@ jintArray newIntArray(JNIEnv *env, int *cont, int len) {
   return da;
 }
 
+jintArray newByteArray(JNIEnv *env, void *cont, int len) {
+  jbyteArray da=(*env)->NewByteArray(env,len);
+  jbyte *dae;
+
+  if (!da) return errJNI("newByteArray.new(%d) failed",len);
+  dae=(*env)->GetByteArrayElements(env, da, 0);
+  if (!dae) {
+    (*env)->DeleteLocalRef(env,da);
+    return errJNI("newByteArray.GetByteArrayElements failed");
+  }
+  memcpy(dae,cont,len);
+  (*env)->ReleaseByteArrayElements(env, da, dae, 0);
+  return da;
+}
+
 jbooleanArray newBooleanArrayI(JNIEnv *env, int *cont, int len) {
   jbooleanArray da=(*env)->NewBooleanArray(env,len);
   jboolean *dae;
@@ -143,6 +158,45 @@ jbooleanArray newBooleanArrayI(JNIEnv *env, int *cont, int len) {
     i++;
   }
   (*env)->ReleaseBooleanArrayElements(env, da, dae, 0);
+  return da;
+}
+
+jcharArray newCharArrayI(JNIEnv *env, int *cont, int len) {
+  jcharArray da=(*env)->NewCharArray(env,len);
+  jchar *dae;
+  int i=0;
+
+  if (!da) return errJNI("newCharArrayI.new(%d) failed",len);
+  dae=(*env)->GetCharArrayElements(env, da, 0);
+  if (!dae) {
+    (*env)->DeleteLocalRef(env,da);
+    return errJNI("newCharArrayI.GetCharArrayElements failed");
+  }
+  while (i<len) {
+    dae[i]=(jchar)cont[i];
+    i++;
+  }
+  (*env)->ReleaseCharArrayElements(env, da, dae, 0);
+  return da;
+}
+
+jfloatArray newFloatArrayD(JNIEnv *env, double *cont, int len) {
+  jfloatArray da=(*env)->NewFloatArray(env,len);
+  jfloat *dae;
+  int i=0;
+
+  if (!da) return errJNI("newFloatArrayD.new(%d) failed",len);
+  dae=(*env)->GetFloatArrayElements(env, da, 0);
+  if (!dae) {
+    (*env)->DeleteLocalRef(env,da);
+    return errJNI("newFloatArrayD.GetFloatArrayElements failed");
+  }
+  /* we cannot just memcpy since JNI uses float and R uses double */
+  while (i<len) {
+    dae[i]=(jfloat)cont[i];
+    i++;
+  }
+  (*env)->ReleaseFloatArrayElements(env, da, dae, 0);
   return da;
 }
 

@@ -62,6 +62,8 @@ setClass("jfloat", representation("numeric"))
   ic <- .jcall("java/lang/Class","Ljava/lang/Class;","forName","java.lang.Boolean")
   f<-.jcall(ic,"Ljava/lang/reflect/Field;","getField", "TYPE")
   assign(".jclass.boolean", .jcast(.jcall(f,"Ljava/lang/Object;","get",.jcast(ic,"java/lang/Object")),"java/lang/Class"), je)
+
+  assign(".jzeroRef", .Call("RgetNullReference", PACKAGE="rJava"), je)
   
   invisible(xr)
 }
@@ -117,7 +119,7 @@ setClass("jfloat", representation("numeric"))
     returnSig<-"Ljava/lang/String;"
   if (returnSig=="[S")
     returnSig<-"[Ljava/lang/String;"
-  if (inherits(obj,"jobjRef"))
+  if (inherits(obj,"jobjRef") || inherits(obj,"jarrayRef"))
     r<-.External("RcallMethod",obj@jobj,returnSig, method, ..., PACKAGE="rJava")
   else
     r<-.External("RcallStaticMethod",as.character(obj), returnSig, method, ..., PACKAGE="rJava")
@@ -141,7 +143,8 @@ setClass("jfloat", representation("numeric"))
 }
 
 .jfree <- function(obj) {
-  if (!inherits(obj,"jobjRef"))
+  warning("The use of '.jfree' is deprecated and dangerous, because even after freeing there may be references to that object. rJava now supports automatic finalizers, so an object is automatically freed once there are no references to it.")
+  if (!inherits(obj,"jobjRef") && !inherits(obj,"jarrayRef"))
     stop("obj is not a Java object")
   .External("RfreeObject",obj@jobj, PACKAGE="rJava")
   .jcheck()
@@ -153,8 +156,8 @@ setClass("jfloat", representation("numeric"))
   if (is.character(obj))
     return(obj)
   r<-NULL
-  if (!inherits(obj,"jobjRef"))
-    stop("can get value of Java objects only")
+  if (!inherits(obj,"jobjRef") && !inherits(obj,"jarrayRef"))
+        stop("can get value of Java objects only")
   if (!is.null(obj@jclass) && obj@jclass=="lang/java/String")
     r<-.External("RgetStringValue", obj@jobj, PACKAGE="rJava")
   else
@@ -164,7 +167,7 @@ setClass("jfloat", representation("numeric"))
 
 # casts java object into new.class - without(!) type checking
 .jcast <- function(obj, new.class) {
-  if (!inherits(obj, "jobjRef"))
+  if (!inherits(obj,"jobjRef") && !inherits(obj,"jarrayRef"))
     stop("connot cast anything but Java objects")
   r<-obj
   new.class <- gsub("\\.","/", new.class) # allow non-JNI specifiation
@@ -176,7 +179,7 @@ setClass("jfloat", representation("numeric"))
 # althought it sounds weird, the class is important when passed as
 # a parameter (you can even cast the result)
 .jnull <- function(class="java/lang/Object") { 
-  new("jobjRef", jobj=0:0, jclass=class)
+  new("jobjRef", jobj=.jzeroRef, jclass=class)
 }
 
 .jcheck <- function(silent=FALSE) {
@@ -193,4 +196,13 @@ setClass("jfloat", representation("numeric"))
 print.jobjRef <- function(x, ...) {
   print(paste("Java-Object: ", .jstrVal(x), sep=''), ...)
   invisible(x)
+}
+
+print.jarrayRef <- function(x, ...) {
+  print(paste("Java-Array-Object",x@jsig,": ", .jstrVal(x), sep=''), ...)
+  invisible(x)
+}
+
+.jarray <- function(x) {
+  .Call("RcreateArray", x, PACKAGE="rJava")
 }

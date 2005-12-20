@@ -1,6 +1,8 @@
 \name{JavaAccess}
 \alias{$.jobjRef}
 \alias{$<-.jobjRef}
+\alias{$.jarrayRef}
+\alias{$<-.jarrayRef}
 \title{
   Field/method operator for Java objects
 }

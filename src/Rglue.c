@@ -235,7 +235,7 @@ SEXP Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int
       }
     } else if (TYPEOF(e)==VECSXP) {
       rjprintf(" general vector of length %d\n", LENGTH(e));
-      if (inherits(e,"jobjRef")) {
+      if (inherits(e,"jobjRef")||inherits(e,"jarrayRef")) {
 	jobject o=(jobject)0;
 	char *jc=0;
 	SEXP n=getAttrib(e, R_NamesSymbol);
@@ -893,6 +893,103 @@ SEXP RcreateObject(SEXP par) {
   return j2SEXP(go);
 }
 
+SEXP new_jarrayRef(jobject a, char *sig) {
+  /* it is too tedious to try to do this in C, so we use 'new' R function instead */
+  SEXP oo = eval(LCONS(install("new"),LCONS(mkString("jarrayRef"),R_NilValue)), R_GlobalEnv);
+  /* .. and set the slots in C .. */
+  if (inherits(oo, "jarrayRef")) {
+    SET_SLOT(oo, install("jobj"), j2SEXP(a));
+    SET_SLOT(oo, install("jclass"), mkString("java/lang/Object"));
+    SET_SLOT(oo, install("jsig"), mkString(sig));
+    return oo;
+  }
+  return R_NilValue;
+}
+
+SEXP RcreateArray(SEXP ar) {
+  JNIEnv *env=getJNIEnv();
+  
+  if (ar==R_NilValue) return R_NilValue;
+  switch(TYPEOF(ar)) {
+  case INTSXP:
+    {
+      if (inherits(ar, "jchar")) {
+	jcharArray a = newCharArrayI(env, INTEGER(ar), LENGTH(ar));
+	if (!a) return R_NilValue;
+	return new_jarrayRef(a, "[C");
+      } else {
+	jintArray a = newIntArray(env, INTEGER(ar), LENGTH(ar));
+	if (!a) return R_NilValue;
+	return new_jarrayRef(a, "[I");
+      }
+    }
+  case REALSXP:
+    {
+      if (inherits(ar, "jfloat")) {
+	jfloatArray a = newFloatArrayD(env, REAL(ar), LENGTH(ar));
+	if (!a) return R_NilValue;
+	return new_jarrayRef(a, "[F");
+      } else {
+	jdoubleArray a = newDoubleArray(env, REAL(ar), LENGTH(ar));
+	if (!a) return R_NilValue;
+	return new_jarrayRef(a, "[D");
+      }
+    }
+  case STRSXP:
+    {
+      jobjectArray a = (*env)->NewObjectArray(env, LENGTH(ar), javaStringClass, 0);
+      int i=0;
+      if (!a) return R_NilValue;
+      while (i<LENGTH(ar)) {
+	(*env)->SetObjectArrayElement(env, a, i, (*env)->NewStringUTF(env, CHAR(STRING_ELT(ar, i))));
+	i++;
+      }
+      return new_jarrayRef(a, "[Ljava/lang/String;");
+    }
+  case LGLSXP:
+    {
+      /* ASSUMPTION: LOGICAL()=int* */
+      jbooleanArray a = newBooleanArrayI(env, LOGICAL(ar), LENGTH(ar));
+      if (!a) return R_NilValue;
+      return new_jarrayRef(a, "[Z");
+    }
+  case VECSXP:
+    {
+      int i=0;
+      while (i<LENGTH(ar)) {
+	SEXP e = VECTOR_ELT(ar, i);
+	if (e!=R_NilValue && !inherits(e, "jobjRef") && !inherits(e, "jarrayRef")) error("Cannot create a Java array from a list that contains anything other than Java object references.");
+	i++;
+      }
+      {
+	jobjectArray a = (*env)->NewObjectArray(env, LENGTH(ar), javaObjectClass, 0);
+	i=0;
+	if (!a) return R_NilValue;
+	while (i<LENGTH(ar)) {
+	  SEXP e = VECTOR_ELT(ar, i);
+	  jobject o = 0;
+	  if (e != R_NilValue) {
+	    SEXP sref=GET_SLOT(e, install("jobj"));
+	    if (sref && TYPEOF(sref)==EXTPTRSXP)
+	      o=(jobject)EXTPTR_PTR(sref);
+	  }	  
+	  (*env)->SetObjectArrayElement(env, a, i, o);
+	  i++;
+	}
+	return new_jarrayRef(a, "[Ljava/lang/Object;");
+      }
+    }
+  case RAWSXP:
+    {
+      jbyteArray a = newByteArray(env, RAW(ar), LENGTH(ar));
+      if (!a) return R_NilValue;
+      return new_jarrayRef(a, "[B");
+    }
+  }
+  error("Unsupported type to create Java array from.");
+  return R_NilValue;
+}
+
 /* compares two references */
 SEXP RidenticalRef(SEXP ref1, SEXP ref2) {
   SEXP r;
@@ -916,4 +1013,9 @@ SEXP RfreeObject(SEXP par) {
     error_return("RfreeObject: invalid object parameter");
   releaseGlobal(env, o);
   return R_NilValue;
+}
+
+/** create a NULL external reference */
+SEXP RgetNullReference() {
+  return R_MakeExternalPtr(0, R_NilValue, R_NilValue);
 }

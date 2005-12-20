@@ -1,3 +1,4 @@
+#include <R.h>
 #include "rJava.h"
 #include <stdlib.h>
 #include <string.h>
@@ -34,15 +35,14 @@ JNIEnv *getJNIEnv() {
     if (!jvm) { /* we're hoping that the JVM pointer won't change :P we fetch it just once */
         res= JNI_GetCreatedJavaVMs(&jvm, 1, &l);
         if (res!=0) {
-            fprintf(stderr, "JNI_GetCreatedJavaVMs failed! (%d)\n",(int)res); return 0;
+            Rf_error("JNI_GetCreatedJavaVMs failed! (result:%d)",(int)res); return 0;
         }
-        if (l<1) {
-            fprintf(stderr, "JNI_GetCreatedJavaVMs said there's no JVM running!\n"); return 0;
-        }
+        if (l<1)
+	    Rf_error("JNI_GetCreatedJavaVMs said there's no JVM running! Maybe .jinit() would help.");
     }
     res = (*jvm)->AttachCurrentThread(jvm, (void**) &env, 0);
     if (res!=0) {
-        fprintf(stderr, "AttachCurrentThread failed! (%d)\n", (int)res); return 0;
+      Rf_error("AttachCurrentThread failed! (result:%d)", (int)res); return 0;
     }
     if (env && !eenv) eenv=env;
     
@@ -77,7 +77,7 @@ int initJVM(char *user_classpath) {
 #endif
     vm1_args.classpath = user_classpath;
     if(JNI_GetDefaultJavaVMInitArgs(vm_args) != 0) {
-      printf("Neither 1.1x nor 1.2x version of JDK seems supported\n");
+      Rf_error("Neither 1.1x nor 1.2x version of JDK seems supported");
       return -1;    
     }
   }
@@ -119,14 +119,12 @@ int initJVM(char *user_classpath) {
   
 #endif
   if (res != 0 || eenv == NULL) {
-    printf("Can't create Java Virtual Machine\n");
+    Rf_error("Cannot create Java Virtual Machine");
     return -1;
   }
   return 0;
 }
 
 void doneJVM() {
-  printf("ok, destroying\n");
   (*jvm)->DestroyJavaVM(jvm);
-  printf("Done.\n");
 }

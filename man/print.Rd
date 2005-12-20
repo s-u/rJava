@@ -1,5 +1,6 @@
 \name{print.jobjRef}
 \alias{print.jobjRef}
+\alias{print.jarrayRef}
 \title{
   Print a Java object
 }
@@ -8,6 +9,7 @@
 }
 \usage{
 print.jobjRef(x, ...)
+print.jarrayRef(x, ...)
 }
 \arguments{
   \item{x}{Java object reference to print}

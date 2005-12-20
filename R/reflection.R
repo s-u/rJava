@@ -9,7 +9,7 @@
   if (is.character(o) & length(o)==1) {
     o<-gsub("/",".",o)
     cl<-.jcall("java/lang/Class","Ljava/lang/Class;","forName",o)
-  } else if (inherits(o, "jobjRef")) {
+  } else if (inherits(o, "jobjRef") || inherits(o, "jarrayRef")) {
     cl<-.jcall(o, "Ljava/lang/Class;", "getClass")
   } else stop("Can operate on a single string or Java object only.")
   ms<-.jcall(cl,"[Ljava/lang/reflect/Method;","getMethods")
@@ -25,7 +25,7 @@
   if (is.character(o) & length(o)==1) {
     o<-gsub("/",".",o)
     cl<-.jcall("java/lang/Class","Ljava/lang/Class;","forName",o)
-  } else if (inherits(o, "jobjRef")) {
+  } else if (inherits(o, "jobjRef") || inherits(o, "jarrayRef")) {
     cl<-.jcall(o, "Ljava/lang/Class;", "getClass")
   } else stop("Can operate on a single string or Java object only.")
   cs<-.jcall(cl,"[Ljava/lang/reflect/Constructor;","getConstructors")
@@ -38,7 +38,7 @@
 .jrcall <- function(o, method, ...) {
   if (!is.character(method) | length(method)!=1)
     stop("Invalid method name - must be exactly one character string.")
-  if (inherits(o, "jobjRef"))
+  if (inherits(o, "jobjRef") || inherits(o, "jarrayRef"))
     cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
   else
     cl <- .jcall("java/lang/Class", "Ljava/lang/Class;", "forName", gsub("/",".",o))
@@ -48,7 +48,7 @@
   ar <- .jcall("java/lang/reflect/Array", "Ljava/lang/Object;", "newInstance", .jclassClass, as.integer(length(p)))
   op <- .jcall("java/lang/reflect/Array", "Ljava/lang/Object;", "newInstance", .jclassObject, as.integer(length(p)))
   if (length(p)>0) for (i in 1:length(p)) {
-    if (inherits(p[[i]], "jobjRef")) {
+    if (inherits(p[[i]], "jobjRef") || inherits(o, "jarrayRef")) {
       .jcall("java/lang/reflect/Array","V","set",.jcast(ar,"java/lang/Object"), as.integer(i-1),.jcast(.jcall(p[[i]],"Ljava/lang/Class;","getClass"),"java/lang/Object"))
       .jcall("java/lang/reflect/Array","V","set",.jcast(op,"java/lang/Object"), as.integer(i-1),.jcast(p[[i]],"java/lang/Object"))
     } else {
@@ -75,7 +75,7 @@
   m<-.jcall(cl, "Ljava/lang/reflect/Method;", "getMethod", method, .jcast(ar,"[Ljava/lang/Class;"))
   if (is.null(m))
     stop("Cannot find Java method `",method,"' matching the supplied parameters.")
-  r<-.jcall(m, "Ljava/lang/Object;", "invoke", .jcast(if(inherits(o,"jobjRef")) o else cl, "java/lang/Object"), .jcast(op, "[Ljava/lang/Object;"))
+  r<-.jcall(m, "Ljava/lang/Object;", "invoke", .jcast(if(inherits(o,"jobjRef") || inherits(o, "jarrayRef")) o else cl, "java/lang/Object"), .jcast(op, "[Ljava/lang/Object;"))
   if (!is.null(r)) {
     rcl <- .jcall(r, "Ljava/lang/Class;", "getClass")
     rcn <- .jcall(rcl, "S", "getName")
@@ -90,7 +90,7 @@
 
 ### get the value of a field (static class fields are not supported yet)
 .jfield <- function(o, name) {
-  if (!inherits(o, "jobjRef"))
+  if (!inherits(o, "jobjRef") && !inherits(o, "jarrayRef"))
     stop("Object must be a Java reference.")
   cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
   f <- .jcall(cl, "Ljava/lang/reflect/Field;", "getField", m)
@@ -99,7 +99,7 @@
 
 ### list the fields of a class or object
 .jfields <- function(o) {
-  if (inherits(o, "jobjRef"))
+  if (inherits(o, "jobjRef") || inherits(o, "jarrayRef"))
     cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
   else
     cl <- .jcall("java/lang/Class", "Ljava/lang/Class;", "forName", gsub("/",".",as.character(o)))
@@ -119,6 +119,8 @@
     .jcall(f,"Ljava/lang/Object;","get",.jcast(o,"java/lang/Object"))
 }
 
+"$.jarrayRef" <- `$.jobjRef`
+
 ### support for object$field<-...
 "$<-.jobjRef" <- function(o, field, value) {
   cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
@@ -131,6 +133,8 @@
   .jcall(f,"Ljava/lang/Object;","set",.jcast(o,"java/lang/Object"),.jcast(value,"java/lang/Object"))
   invisible()
 }
+
+"$<-.jarrayRef" <- `$<-.jobjRef`
 
 # there is no way to distinguish between double and float in R, so we need to mark floats specifically
 .jfloat <- function(x) new("jfloat", as.numeric(x))
