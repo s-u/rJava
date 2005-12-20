@@ -253,11 +253,17 @@ SEXP Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int
 	  sclass=GET_SLOT(e, install("jclass"));
 	  if (sclass && TYPEOF(sclass)==STRSXP && LENGTH(sclass)==1)
 	    jc=CHAR(STRING_ELT(sclass,0));
+	  if (inherits(e, "jarrayRef") && jc && !*jc) {
+	    /* if it's jarrayRef with jclass "" then it's an uncast array - use sig instead */
+	    sclass=GET_SLOT(e, install("jsig"));
+	    if (sclass && TYPEOF(sclass)==STRSXP && LENGTH(sclass)==1)
+	      jc=CHAR(STRING_ELT(sclass,0));
+	  }
 	}
 	if (jc) {
 	  if (*jc!='[') { /* not an array, we assume it's an object of that class */
 	    strcat(sig,"L"); strcat(sig,jc); strcat(sig,";");
-	  } else /* array definitions are passed as-is */
+	  } else /* array signature is passed as-is */
 	    strcat(sig,jc);
 	} else
 	  strcat(sig,"Ljava/lang/Object;");
@@ -899,7 +905,7 @@ SEXP new_jarrayRef(jobject a, char *sig) {
   /* .. and set the slots in C .. */
   if (inherits(oo, "jarrayRef")) {
     SET_SLOT(oo, install("jobj"), j2SEXP(a));
-    SET_SLOT(oo, install("jclass"), mkString("java/lang/Object"));
+    SET_SLOT(oo, install("jclass"), mkString(""));
     SET_SLOT(oo, install("jsig"), mkString(sig));
     return oo;
   }

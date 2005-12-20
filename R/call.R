@@ -101,15 +101,18 @@ setClass("jfloat", representation("numeric"))
     return(.External("RgetLongArrayCont", jobj, PACKAGE="rJava"))
   else if (sig=="[D")
     return(.External("RgetDoubleArrayCont", jobj, PACKAGE="rJava"))
-  else if (sig=="[Ljava/lang/String;" || sig=="[S")
+  else if (sig=="[Ljava/lang/String;")
     return(.External("RgetStringArrayCont", jobj, PACKAGE="rJava"))
   else if (substr(sig,1,2)=="[L")
     return(lapply(.External("RgetObjectArrayCont", jobj, PACKAGE="rJava"),
-                  function(x) new("jobjRef", jobj=x, jclass=substr(sig,3,nchar(sig))) ))
+                  function(x) new("jobjRef", jobj=x, jclass=substr(sig,3,nchar(sig)-1)) ))
+  else if (substr(sig,1,2)=="[[")
+    return(lapply(.External("RgetObjectArrayCont", jobj, PACKAGE="rJava"),
+                  function(x) new("jarrayRef", jobj=x, jclass="", jsig=substr(sig,2,nchar(sig))) ))
   # if we don't know how to evaluate this, issue a warning and return the jarrayRef
   if (!silent)
     warning(paste("I don't know how to evaluate an array with signature",sig,". Returning a reference."))
-  new("jarrayRef", jobj=jobj, jclass="java/lang/Object", jsig=sig)
+  new("jarrayRef", jobj=jobj, jclass="", jsig=sig)
 }
 
 .jcall <- function(obj, returnSig="V", method, ..., evalArray=TRUE, evalString=TRUE, interface="RcallMethod") {
@@ -127,7 +130,7 @@ setClass("jfloat", representation("numeric"))
     if (evalArray)
       r<-.jevalArray(r,rawJNIRefSignature=returnSig)
     else
-      r <- new("jarrayRef", jobj=r, jclass="java/lang/Object", jsig=returnSig)
+      r <- new("jarrayRef", jobj=r, jclass="", jsig=returnSig)
   } else if (substr(returnSig,1,1)=="L") {
     if (is.null(r)) return(NULL)
     
