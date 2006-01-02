@@ -127,6 +127,19 @@ AC_SUBST(JAVA_INC)
 AC_SUBST(JAVA_HOME)
 AC_SUBST(JAVA_LD)
 
+AC_MSG_CHECKING([whether threads should be enabled])
+# check whether we should add THREADS support
+use_threads=no
+if test "xx$NOTHREADS" == "xx"; then
+  UNAME=`uname`
+  # we don't want to run full AC_CANONICAL_HOST, all we care about is OS X
+  if test "x$UNAME" == "xDarwin"; then
+    use_threads=yes
+    AC_DEFINE(THREADS, 1, [Set if threading support should be enabled.])
+  fi
+fi
+AC_MSG_RESULT([${use_threads}])
+
 AC_CONFIG_FILES([src/Makevars])
 AC_CONFIG_FILES([R/zzz.R])
 AC_OUTPUT
