@@ -1,7 +1,7 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000304 /* rJava v0.3-4 */
+#define RJAVA_VER 0x000305 /* rJava v0.3-5 */
 
 /* important changes between versions:
    0.3  - uses EXTPTR in jobj slot, adds finalizers
@@ -9,6 +9,10 @@
    0.1  - first public release */
 
 #include <jni.h>
+
+#ifndef Win32
+#include "config.h"
+#endif
 
 /* in rJava.c */
 extern JNIEnv *eenv; /* should NOT be used since not thread-safe; use getJNIEnv instead */
