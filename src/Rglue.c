@@ -88,21 +88,33 @@ SEXP j2SEXP(jobject o) {
 pthread_t initJVMpt;
 pthread_mutex_t initMutex = PTHREAD_MUTEX_INITIALIZER;
 
+int thInitResult = 0;
+int initAWT = 0;
+
 void *initJVMthread(void *classpath)
 {
   int ws;
-  int r=initJVM((char*)classpath);
+  jclass c;
+  JNIEnv *lenv;
+
+  thInitResult=initJVM((char*)classpath);
+  if (thInitResult) return 0;
+
   init_rJava();
 
+  lenv = eenv; /* we make a local copy before unlocking just in case
+		  someone messes with it before we can use it */
+
+  rjprintf("Unlocking\n");
   pthread_mutex_unlock(&initMutex);
 
-#ifdef XXDARWIN
-  CFRunLoopRun();
-#else
-  while (1) {
-    wait(&ws);
+  if (initAWT) {
+    rjprintf("Get AWT class\n");
+    /* we are still on the same thread, so we can safely use eenv */
+    c = (*lenv)->FindClass(lenv, "java/awt/Frame");
   }
-#endif
+
+  rjprintf("Returning from the init thread.\n");
   return 0;
 }
 
@@ -124,21 +136,21 @@ SEXP RinitJVM(SEXP par)
 
   r=JNI_GetCreatedJavaVMs(jvms, 32, &vms);
   if (r) {
-    fprintf(stderr, "JNI_GetCreatedJavaVMs returned %d\n", r);
+    Rf_error("JNI_GetCreatedJavaVMs returned %d\n", r);
   } else {
     if (vms>0) {
       int i=0;
-      printf("Total %d JVMs found. Trying to attach the current thread.\n", (int)vms);
+      rjprintf("Total %d JVMs found. Trying to attach the current thread.\n", (int)vms);
       while (i<vms) {
 	if (jvms[i]) {
 	  if (!(*jvms[i])->AttachCurrentThread(jvms[i], (void**)&eenv, NULL)) {
-            printf("Attached to existing JVM #%d.\n", i+1);
+            rjprintf("Attached to existing JVM #%d.\n", i+1);
 	    break;
 	  }
 	}
 	i++;
       }
-      if (i==vms) fprintf(stderr, "Failed to attach to any existing JVM!\n");
+      if (i==vms) Rf_error("Failed to attach to any existing JVM.");
       else {
         init_rJava();
       }
@@ -150,21 +162,24 @@ SEXP RinitJVM(SEXP par)
   }
 
 #ifdef THREADS
-  printf("launching thread\n");
+  if (getenv("R_GUI_APP_VERSION") || getenv("RJAVA_INIT_AWT"))
+    initAWT=1;
+
+  rjprintf("launching thread\n");
   pthread_mutex_lock(&initMutex);
   pthread_create(&initJVMpt, 0, initJVMthread, c);
-  printf("waiting for mutex\n");
+  rjprintf("waiting for mutex\n");
   pthread_mutex_lock(&initMutex);
   pthread_mutex_unlock(&initMutex);
   /* pthread_join(initJVMpt, 0); */
-  printf("attach\n");
+  rjprintf("attach\n");
   /* since JVM was initialized by another thread, we need to attach ourselves */
-  (*jvm)->AttachCurrentThread(jvm, (void**)&env, NULL);
-  printf("done.\n");
+  (*jvm)->AttachCurrentThread(jvm, (void**)&eenv, NULL);
+  rjprintf("done.\n");
+  r = thInitResult;
 #else
   profStart();
   r=initJVM(c);
-  profReport("initJVM:");
   init_rJava();
   profReport("init_rJava:");
 #endif
