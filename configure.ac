@@ -13,6 +13,16 @@ CC=`${R_HOME}/bin/R CMD config CC`;
 CFLAGS=`${R_HOME}/bin/R CMD config CFLAGS`
 AC_SUBST(R_HOME)
 
+## enable threads, i.e. Java is running is a separate thread
+AC_ARG_ENABLE([threads],
+[AC_HELP_STRING([--enable-threads],
+		[enable the use of threads, i.e. Java is run on a separate thread.
+		This is necessary for some implementations of AWT. This feature
+		is highly experimental, becasue of synchronization issues, so
+		use with care. @<:@no@:>@])],
+[want_threads="${enableval}"],
+[want_threads=no])
+
 # Checks for programs.
 AC_PROG_CC
 
@@ -127,18 +137,22 @@ AC_SUBST(JAVA_INC)
 AC_SUBST(JAVA_HOME)
 AC_SUBST(JAVA_LD)
 
-AC_MSG_CHECKING([whether threads should be enabled])
-# check whether we should add THREADS support
 use_threads=no
-if test "xx$NOTHREADS" == "xx"; then
+AC_MSG_CHECKING([whether threads support is requested])
+if test "${want_threads}" == yes; then
+  AC_MSG_RESULT([yes])
+  AC_MSG_CHECKING([whether threads can be enabled])
+  # check whether we can add THREADS support
   UNAME=`uname`
   # we don't want to run full AC_CANONICAL_HOST, all we care about is OS X
   if test "x$UNAME" == "xDarwin"; then
     use_threads=yes
     AC_DEFINE(THREADS, 1, [Set if threading support should be enabled.])
   fi
+  AC_MSG_RESULT([${use_threads}])
+else
+  AC_MSG_RESULT([no])
 fi
-AC_MSG_RESULT([${use_threads}])
 
 AC_CONFIG_FILES([src/Makevars])
 AC_CONFIG_FILES([R/zzz.R])
