@@ -69,14 +69,28 @@ void JRefObjectFinalizer(SEXP ref) {
     }
 #endif
 
-    if (env && o)
+    if (env && o) {
+      /* rjprintf("  finalizer releases global reference %lx\n", (long)o);a */
       releaseGlobal(env, o);
+    }
   }
 }
 
 /* jobject to SEXP encoding - 0.2 and earlier use INTSXP */
-SEXP j2SEXP(jobject o) {
-  SEXP xp = R_MakeExternalPtr(o, R_NilValue, R_NilValue);
+SEXP j2SEXP(JNIEnv *env, jobject o, int releaseLocal) {
+  if (!env) error("Invalid Java environment in j2SEXP");
+  if (o) {
+    jobject go = (*env)->NewGlobalRef(env, o);
+    if (!go)
+      error("Failed to create global reference in Java.");
+    rjprintf(" j2SEXP: %lx -> %lx (release=%d)\n", (long)o, (long)go, releaseLocal);
+    if (releaseLocal)
+      releaseObject(env, o);
+    o=go;
+  }
+  
+  {
+    SEXP xp = R_MakeExternalPtr(o, R_NilValue, R_NilValue);
 
 #ifdef RJ_DEBUG
     {
@@ -92,8 +106,9 @@ SEXP j2SEXP(jobject o) {
     }
 #endif
 
-  R_RegisterCFinalizerEx(xp, JRefObjectFinalizer, TRUE);
-  return xp;
+    R_RegisterCFinalizerEx(xp, JRefObjectFinalizer, TRUE);
+    return xp;
+  }
 }
 
 #ifdef THREADS
@@ -345,6 +360,7 @@ SEXP RgetStringValue(SEXP par) {
 jstring callToString(JNIEnv *env, jobject o) {
   jclass cls;
   jmethodID mid;
+  jstring s;
 
   if (!o) { rjprintf("callToString: invoked on a NULL object\n"); return 0; }
   cls=(*env)->GetObjectClass(env,o);
@@ -359,7 +375,10 @@ jstring callToString(JNIEnv *env, jobject o) {
     checkExceptionsX(env, 1);
     return 0;
   }
-  return (jstring)(*env)->CallObjectMethod(env, o, mid);
+  s = (jstring)(*env)->CallObjectMethod(env, o, mid);
+  /* do we really need this? */
+  releaseObject(env, cls);
+  return s;
 }
 
 /** calls .toString() on the passed object (int/extptr) and returns the string 
@@ -413,7 +432,7 @@ SEXP RgetObjectArrayCont(SEXP par) {
   PROTECT(ar=allocVector(VECSXP,l));
   i=0;
   while (i<l) {
-    SET_VECTOR_ELT(ar, i, j2SEXP((*env)->GetObjectArrayElement(env, o, i)));
+    SET_VECTOR_ELT(ar, i, j2SEXP(env, (*env)->GetObjectArrayElement(env, o, i), 0));
     i++;
   }
   UNPROTECT(1);
@@ -673,15 +692,7 @@ SEXP RcallMethod(SEXP par) {
       profReport("Method \"%s\" returned NULL:",mnam);
       return R_NilValue;
     }
-    gr=r;
-    if (r) {
-      gr=makeGlobal(env, r);
-      if (gr)
-	releaseObject(env, r);
-      else
-	rjprintf(" unable to get global reference to %lx\n", (long)r);
-    }
-    e=j2SEXP(gr);
+    e=j2SEXP(env, r, 1);
     profReport("Method \"%s\" returned [g.ref=%x]:",mnam, gr);
     return e;
   }
@@ -804,14 +815,8 @@ SEXP RcallStaticMethod(SEXP par) {
   if (*retsig=='L' || *retsig=='[') {
     jobject gr;
     jobject r=(*env)->CallStaticObjectMethodA(env,cls,mid,jpar);
-    gr=r;
-    if (r) {
-      gr=makeGlobal(env, r);
-      if (gr)
-	releaseObject(env, r);
-    }
     profReport("Method \"%s\" returned:",mnam);
-    return j2SEXP(gr);
+    return j2SEXP(env, r, 1);
   }
   profReport("Method \"%s\" has an unknown sigrature, not called:",mnam);
   return R_NilValue;
@@ -889,15 +894,7 @@ SEXP RgetField(SEXP par) {
   if (*retsig=='L' || *retsig=='[') {
     jobject gr;
     jobject r=(*env)->GetObjectField(env,o,mid);
-    gr=r;
-    /* unlike method results: fields, we don't make them global
-    if (r) {
-      gr=makeGlobal(r);
-      if (gr)
-	releaseObject(r);
-    }
-    */
-    return j2SEXP(gr);
+    return j2SEXP(env, r, 1);
   }
   return R_NilValue;
 }
@@ -931,31 +928,27 @@ SEXP RcreateObject(SEXP par) {
   rjprintf(" constructor signature is %s\n",sig);
   o=createObject(env,class,sig,jpar);
   if (!o) return R_NilValue;
-  go=makeGlobal(env,o);
-  if (go)
-    releaseObject(env,o);
-  else
-    go=o;
 
 #ifdef RJ_DEBUG
   {
-    jstring s=callToString(env, go);
+    jstring s=callToString(env, o);
     const char *c="???";
     if (s) c=(*env)->GetStringUTFChars(env, s, 0);
-    rjprintf(" new Java object [%s] reference %lx\n", c, (long)go);
+    rjprintf(" new Java object [%s] reference %lx (local)\n", c, (long)o);
     if (s) (*env)->ReleaseStringUTFChars(env, s, c);
   }
 #endif
   
-  return j2SEXP(go);
+  return j2SEXP(env, o, 1);
 }
 
 SEXP new_jarrayRef(jobject a, char *sig) {
+  JNIEnv *env=getJNIEnv();
   /* it is too tedious to try to do this in C, so we use 'new' R function instead */
   SEXP oo = eval(LCONS(install("new"),LCONS(mkString("jarrayRef"),R_NilValue)), R_GlobalEnv);
   /* .. and set the slots in C .. */
   if (inherits(oo, "jarrayRef")) {
-    SET_SLOT(oo, install("jobj"), j2SEXP(a));
+    SET_SLOT(oo, install("jobj"), j2SEXP(env, a, 0));
     SET_SLOT(oo, install("jclass"), mkString(""));
     SET_SLOT(oo, install("jsig"), mkString(sig));
     return oo;
@@ -1068,6 +1061,7 @@ SEXP RfreeObject(SEXP par) {
     o=(jobject)EXTPTR_PTR(e);
   else
     error_return("RfreeObject: invalid object parameter");
+  rjprintf("RfreeObject: release reference %lx\n", (long)o);
   releaseGlobal(env, o);
   return R_NilValue;
 }
