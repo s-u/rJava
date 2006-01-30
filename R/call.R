@@ -134,25 +134,15 @@ setClass("jfloat", representation("numeric"))
   } else if (substr(returnSig,1,1)=="L") {
     if (is.null(r)) return(NULL)
     
-    if (returnSig=="Ljava/lang/String;" && evalString) {
-      s<-.External("RgetStringValue",r, PACKAGE="rJava")
-      .External("RfreeObject",r, PACKAGE="rJava")
-      return(s)
-    }
+    if (returnSig=="Ljava/lang/String;" && evalString)
+      return(.External("RgetStringValue",r, PACKAGE="rJava"))
     r <- new("jobjRef", jobj=r, jclass=substr(returnSig,2,nchar(returnSig)-1))
   }
   .jcheck()
   r
 }
 
-.jfree <- function(obj) {
-  warning("The use of '.jfree' is deprecated and dangerous, because even after freeing there may be references to that object. rJava now supports automatic finalizers, so an object is automatically freed once there are no references to it.")
-  if (!inherits(obj,"jobjRef") && !inherits(obj,"jarrayRef"))
-    stop("obj is not a Java object")
-  .External("RfreeObject",obj@jobj, PACKAGE="rJava")
-  .jcheck()
-  invisible()
-}
+#.jfree <- rm
 
 .jstrVal <- function(obj) {
   # .jstrVal(.jstrVal(...)) = .jstrVal(...)
