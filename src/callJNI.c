@@ -1,8 +1,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include "rJava.h"
-
-int checkExceptionsX(JNIEnv *env, int silent);
+#include <R_ext/Print.h>
 
 void checkExceptions() {
   JNIEnv *env=getJNIEnv();
@@ -84,10 +83,10 @@ void printObject(JNIEnv *env, jobject o) {
   s=(*env)->CallObjectMethod(env, o, mid);
   if (!s) { errJNI("printObject o.toString() call failed"); return; }
   c=(*env)->GetStringUTFChars(env, (jstring)s, 0);
-  puts(c);
+  Rprintf("%s\n",c);
   (*env)->ReleaseStringUTFChars(env, (jstring)s, c);
   (*env)->DeleteLocalRef(env, cls);  
-  releaseObject(env, s);
+  (*env)->DeleteLocalRef(env, s);
 }
 
 jclass getClass(JNIEnv *env, char *class) {
@@ -206,6 +205,8 @@ jstring newString(JNIEnv *env, char *cont) {
 }
 
 void releaseObject(JNIEnv *env, jobject o) {
+  /* Rprintf("releaseObject: %lx\n", (long)o);
+     printObject(env, o); */
   (*env)->DeleteLocalRef(env, o);
 }
 
@@ -215,6 +216,8 @@ jobject makeGlobal(JNIEnv *env, jobject o) {
 }
 
 void releaseGlobal(JNIEnv *env, jobject o) {
+  /* Rprintf("releaseGlobal: %lx\n", (long)o);
+     printObject(env, o); */
   (*env)->DeleteGlobalRef(env,o);
 }
 
