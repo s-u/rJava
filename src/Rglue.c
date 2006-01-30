@@ -2,6 +2,7 @@
 #include <R.h>
 #include <Rdefines.h>
 #include <R_ext/Parse.h>
+#include <R_ext/Print.h>
 
 #include <stdarg.h>
 
@@ -10,7 +11,7 @@
 void rjprintf(char *fmt, ...) {
   va_list v;
   va_start(v,fmt);
-  vprintf(fmt,v);
+  Rvprintf(fmt,v);
   va_end(v);
 }
 #else
@@ -38,9 +39,9 @@ void profReport(char *fmt, ...) {
   long npt=time_ms();
   va_list v;
   va_start(v,fmt);
-  vprintf(fmt,v);
+  Rvprintf(fmt,v);
   va_end(v);
-  printf(" %ld ms\n",npt-profilerTime);
+  Rprintf(" %ld ms\n",npt-profilerTime);
   profilerTime=npt;
 }
 #else
@@ -48,7 +49,7 @@ void profReport(char *fmt, ...) {
 #define profReport(...)
 #endif
 
-jstring callToString(jobject o);
+jstring callToString(JNIEnv *env, jobject o);
 
 void JRefObjectFinalizer(SEXP ref) {
   if (TYPEOF(ref)==EXTPTRSXP) {
@@ -57,10 +58,14 @@ void JRefObjectFinalizer(SEXP ref) {
 
 #ifdef RJ_DEBUG
     {
-      jstring s=callToString(o);
-      const char *c=(*env)->GetStringUTFChars(env, s, 0);
-      rjprintf("Finalizer releases Java object [%s] reference %lx\n", c, (long)o);
-      (*env)->ReleaseStringUTFChars(env, s, c);
+      jstring s=callToString(env, o);
+      const char *c="???";
+      if (s) c=(*env)->GetStringUTFChars(env, s, 0);
+      rjprintf("Finalizer releases Java object [%s] reference %lx (SEXP@%lx)\n", c, (long)o, (long)ref);
+      if (s) {
+	(*env)->ReleaseStringUTFChars(env, s, c);
+	releaseObject(env, s);
+      }
     }
 #endif
 
@@ -72,6 +77,21 @@ void JRefObjectFinalizer(SEXP ref) {
 /* jobject to SEXP encoding - 0.2 and earlier use INTSXP */
 SEXP j2SEXP(jobject o) {
   SEXP xp = R_MakeExternalPtr(o, R_NilValue, R_NilValue);
+
+#ifdef RJ_DEBUG
+    {
+      JNIEnv *env=getJNIEnv();
+      jstring s=callToString(env, o);
+      const char *c="???";
+      if (s) c=(*env)->GetStringUTFChars(env, s, 0);
+      rjprintf("New Java object [%s] reference %lx (SEXP@%lx)\n", c, (long)o, (long)xp);
+      if (s) {
+	(*env)->ReleaseStringUTFChars(env, s, c);
+	releaseObject(env, s);
+      }
+    }
+#endif
+
   R_RegisterCFinalizerEx(xp, JRefObjectFinalizer, TRUE);
   return xp;
 }
@@ -105,16 +125,16 @@ void *initJVMthread(void *classpath)
   lenv = eenv; /* we make a local copy before unlocking just in case
 		  someone messes with it before we can use it */
 
-  rjprintf("Unlocking\n");
+  rjprintf("initJVMthread: unlocking\n");
   pthread_mutex_unlock(&initMutex);
 
   if (initAWT) {
-    rjprintf("Get AWT class\n");
+    rjprintf("initJVMthread: get AWT class\n");
     /* we are still on the same thread, so we can safely use eenv */
     c = (*lenv)->FindClass(lenv, "java/awt/Frame");
   }
 
-  rjprintf("Returning from the init thread.\n");
+  rjprintf("initJVMthread: returning from the init thread.\n");
   return 0;
 }
 
@@ -140,11 +160,11 @@ SEXP RinitJVM(SEXP par)
   } else {
     if (vms>0) {
       int i=0;
-      rjprintf("Total %d JVMs found. Trying to attach the current thread.\n", (int)vms);
+      rjprintf("RinitJVM: Total %d JVMs found. Trying to attach the current thread.\n", (int)vms);
       while (i<vms) {
 	if (jvms[i]) {
 	  if (!(*jvms[i])->AttachCurrentThread(jvms[i], (void**)&eenv, NULL)) {
-            rjprintf("Attached to existing JVM #%d.\n", i+1);
+            rjprintf("RinitJVM: Attached to existing JVM #%d.\n", i+1);
 	    break;
 	  }
 	}
@@ -165,23 +185,24 @@ SEXP RinitJVM(SEXP par)
   if (getenv("R_GUI_APP_VERSION") || getenv("RJAVA_INIT_AWT"))
     initAWT=1;
 
-  rjprintf("launching thread\n");
+  rjprintf("RinitJVM(threads): launching thread\n");
   pthread_mutex_lock(&initMutex);
   pthread_create(&initJVMpt, 0, initJVMthread, c);
-  rjprintf("waiting for mutex\n");
+  rjprintf("RinitJVM(threads): waiting for mutex\n");
   pthread_mutex_lock(&initMutex);
   pthread_mutex_unlock(&initMutex);
   /* pthread_join(initJVMpt, 0); */
-  rjprintf("attach\n");
+  rjprintf("RinitJVM(threads): attach\n");
   /* since JVM was initialized by another thread, we need to attach ourselves */
   (*jvm)->AttachCurrentThread(jvm, (void**)&eenv, NULL);
-  rjprintf("done.\n");
+  rjprintf("RinitJVM(threads): done.\n");
   r = thInitResult;
 #else
   profStart();
   r=initJVM(c);
   init_rJava();
   profReport("init_rJava:");
+  rjprintf("RinitJVM(non-threaded): initJVM returned %d\n", r);
 #endif
   PROTECT(e=allocVector(INTSXP,1));
   INTEGER(e)[0]=r;
@@ -198,7 +219,7 @@ SEXP Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int
   int i=0;
 
   while (p && TYPEOF(p)==LISTSXP && (e=CAR(p))) {
-    rjprintf("par %d type %d\n",i,TYPEOF(e));
+    rjprintf("Rpar2jvalue: par %d type %d\n",i,TYPEOF(e));
     if (TYPEOF(e)==STRSXP) {
       rjprintf(" string vector of length %d\n",LENGTH(e));
       if (LENGTH(e)==1) {
@@ -314,26 +335,35 @@ SEXP RgetStringValue(SEXP par) {
   PROTECT(r=allocVector(STRSXP,1));
   SET_STRING_ELT(r, 0, mkChar(c));
   UNPROTECT(1);
+  /* rjprintf("RgetStringValue: got \"%s\"", c); */
   (*env)->ReleaseStringUTFChars(env, s, c);
   profReport("RgetStringValue:");
   return r;
 }
 
 /** calls .toString() of the object and returns the corresponding string java object */
-jstring callToString(jobject o) {
+jstring callToString(JNIEnv *env, jobject o) {
   jclass cls;
   jmethodID mid;
-  JNIEnv *env=getJNIEnv();
 
+  if (!o) { rjprintf("callToString: invoked on a NULL object\n"); return 0; }
   cls=(*env)->GetObjectClass(env,o);
-  if (!cls) error("RtoString: can't determine class of the object");
+  if (!cls) {
+    rjprintf("callToString: can't determine class of the object\n");
+    checkExceptionsX(env, 1);
+    return 0;
+  }
   mid=(*env)->GetMethodID(env, cls, "toString", "()Ljava/lang/String;");
-  if (!mid) error("RtoString: toString not found for the object");
-  return (jstring)(*env)->CallObjectMethod(env, o, mid);  
+  if (!mid) {
+    rjprintf("callToString: toString not found for the object\n");
+    checkExceptionsX(env, 1);
+    return 0;
+  }
+  return (jstring)(*env)->CallObjectMethod(env, o, mid);
 }
 
 /** calls .toString() on the passed object (int/extptr) and returns the string 
-    value */
+    value or NULL if there is no toString method */
 SEXP RtoString(SEXP par) {
   SEXP p,e,r;
   jstring s;
@@ -348,13 +378,16 @@ SEXP RtoString(SEXP par) {
   else
     error_return("RtoString: invalid object parameter");
   if (!o) return R_NilValue;
-  s=callToString(o);
-  if (!s) error_return("RtoString: toString call failed");
+  s=callToString(env, o);
+  if (!s) {
+    return R_NilValue;
+  }
   c=(*env)->GetStringUTFChars(env, s, 0);
   PROTECT(r=allocVector(STRSXP,1));
   SET_STRING_ELT(r, 0, mkChar(c));
   UNPROTECT(1);
   (*env)->ReleaseStringUTFChars(env, s, c);
+  releaseObject(env, s);
   return r;
 }
 
@@ -372,10 +405,10 @@ SEXP RgetObjectArrayCont(SEXP par) {
     o=(jobject)EXTPTR_PTR(e);
   else
     error_return("RgetObjectArrayCont: invalid object parameter");
-  rjprintf(" jarray %d\n",o);
+  rjprintf("RgetObjectArrayCont: jarray %x\n",o);
   if (!o) return R_NilValue;
   l=(int)(*env)->GetArrayLength(env, o);
-  rjprintf("convert object array of length %d\n",l);
+  rjprintf(" convert object array of length %d\n",l);
   if (l<1) return R_NilValue;
   PROTECT(ar=allocVector(VECSXP,l));
   i=0;
@@ -403,10 +436,10 @@ SEXP RgetStringArrayCont(SEXP par) {
     o=(jobject)EXTPTR_PTR(e);
   else
     error_return("RgetStringArrayCont: invalid object parameter");
-  rjprintf(" jarray %d\n",o);
+  rjprintf("RgetStringArrayCont: jarray %x\n",o);
   if (!o) return R_NilValue;
   l=(int)(*env)->GetArrayLength(env, o);
-  rjprintf("convert string array of length %d\n",l);
+  rjprintf(" convert string array of length %d\n",l);
   if (l<0) return R_NilValue;
   PROTECT(ar=allocVector(STRSXP,l));
   i=0;
@@ -449,10 +482,10 @@ SEXP RgetIntArrayCont(SEXP par) {
     o=(jobject)EXTPTR_PTR(e);
   else
     error_return("RgetIntArrayCont: invalid object parameter");
-  rjprintf(" jarray %d\n",o);
+  rjprintf("RgetIntArrayCont: jarray %x\n",o);
   if (!o) return R_NilValue;
   l=(int)(*env)->GetArrayLength(env, o);
-  rjprintf("convert int array of length %d\n",l);
+  rjprintf(" convert int array of length %d\n",l);
   if (l<0) return R_NilValue;
   ap=(jint*)(*env)->GetIntArrayElements(env, o, 0);
   if (!ap)
@@ -480,10 +513,10 @@ SEXP RgetDoubleArrayCont(SEXP par) {
     o=(jobject)EXTPTR_PTR(e);
   else
     error_return("RgetDoubleArrayCont: invalid object parameter");
-  rjprintf(" jarray %d\n",o);
+  rjprintf("RgetDoubleArrayCont: jarray %x\n",o);
   if (!o) return R_NilValue;
   l=(int)(*env)->GetArrayLength(env, o);
-  rjprintf("convert double array of length %d\n",l);
+  rjprintf(" convert double array of length %d\n",l);
   if (l<0) return R_NilValue;
   ap=(jdouble*)(*env)->GetDoubleArrayElements(env, o, 0);
   if (!ap)
@@ -511,10 +544,10 @@ SEXP RgetLongArrayCont(SEXP par) {
     o=(jobject)EXTPTR_PTR(e);
   else
     error_return("RgetLongArrayCont: invalid object parameter");
-  rjprintf(" jarray %d\n",o);
+  rjprintf("RgetLongArrayCont: jarray %d\n",o);
   if (!o) return R_NilValue;
   l=(int)(*env)->GetArrayLength(env, o);
-  rjprintf("convert long array of length %d\n",l);
+  rjprintf(" convert long array of length %d\n",l);
   if (l<0) return R_NilValue;
   ap=(jlong*)(*env)->GetLongArrayElements(env, o, 0);
   if (!ap)
@@ -554,7 +587,7 @@ SEXP RcallMethod(SEXP par) {
     error_return("RcallMethod: invalid object parameter");
   if (!o)
     error_return("RcallMethod: attempt to call a method of a NULL object.");
-#ifdef RJAVA_DEBUG
+#ifdef RJ_DEBUG
   {
     SEXP de=CAR(CDR(p));
     rjprintf("RcallMethod (env=%x):\n",env);
@@ -565,7 +598,7 @@ SEXP RcallMethod(SEXP par) {
   cls=(*env)->GetObjectClass(env,o);
   if (!cls)
     error_return("RcallMethod: cannot determine object class");
-#ifdef RJAVA_DEBUG
+#ifdef RJ_DEBUG
   rjprintf(" class: "); printObject(env, cls);
 #endif
   e=CAR(p); p=CDR(p);
@@ -589,7 +622,7 @@ SEXP RcallMethod(SEXP par) {
   Rpar2jvalue(env,p,jpar,sig,32,256);
   strcat(sig,")");
   strcat(sig,retsig);
-  rjprintf(" Method %s signature is %s\n",mnam,sig);
+  rjprintf(" method \"%s\" signature is %s\n",mnam,sig);
   mid=(*env)->GetMethodID(env,cls,mnam,sig);
   if (!mid)
     error_return("RcallMethod: method not found");
@@ -598,7 +631,7 @@ SEXP RcallMethod(SEXP par) {
 #endif
   if (*retsig=='V') {
     (*env)->CallVoidMethodA(env,o,mid,jpar);
-    profReport("Method %s returned:",mnam);
+    profReport("Method \"%s\" returned:",mnam);
     return R_NilValue;
   }
   if (*retsig=='I') {
@@ -606,7 +639,7 @@ SEXP RcallMethod(SEXP par) {
     PROTECT(e=allocVector(INTSXP, 1));
     INTEGER(e)[0]=r;
     UNPROTECT(1);
-    profReport("Method %s returned:",mnam);
+    profReport("Method \"%s\" returned:",mnam);
     return e;
   }
   if (*retsig=='J') { 
@@ -614,7 +647,7 @@ SEXP RcallMethod(SEXP par) {
     PROTECT(e=allocVector(REALSXP, 1));
     REAL(e)[0]=(double)r;
     UNPROTECT(1);
-    profReport("Method %s returned:",mnam);
+    profReport("Method \"%s\" returned:",mnam);
     return e;
   }
   if (*retsig=='Z') {
@@ -622,7 +655,7 @@ SEXP RcallMethod(SEXP par) {
     PROTECT(e=allocVector(LGLSXP, 1));
     LOGICAL(e)[0]=(r)?1:0;
     UNPROTECT(1);
-    profReport("Method %s returned:",mnam);
+    profReport("Method \"%s\" returned:",mnam);
     return e;
   }
   if (*retsig=='D') {
@@ -630,14 +663,14 @@ SEXP RcallMethod(SEXP par) {
     PROTECT(e=allocVector(REALSXP, 1));
     REAL(e)[0]=r;
     UNPROTECT(1);
-    profReport("Method %s returned:",mnam);
+    profReport("Method \"%s\" returned:",mnam);
     return e;
   }
   if (*retsig=='L' || *retsig=='[') {
     jobject gr;
     jobject r=(*env)->CallObjectMethodA(env,o,mid,jpar);
     if (!r) {
-      profReport("Method %s returned NULL:",mnam);
+      profReport("Method \"%s\" returned NULL:",mnam);
       return R_NilValue;
     }
     gr=r;
@@ -645,12 +678,14 @@ SEXP RcallMethod(SEXP par) {
       gr=makeGlobal(env, r);
       if (gr)
 	releaseObject(env, r);
+      else
+	rjprintf(" unable to get global reference to %lx\n", (long)r);
     }
     e=j2SEXP(gr);
-    profReport("Method %s returned [g.ref=%x]:",mnam, gr);
+    profReport("Method \"%s\" returned [g.ref=%x]:",mnam, gr);
     return e;
   }
-  profReport("Method %s has an unknown signature, not called:",mnam);
+  profReport("Method \"%s\" has an unknown signature, not called:",mnam);
   return R_NilValue;
 }
 
@@ -669,18 +704,18 @@ SEXP RcallSyncMethod(SEXP par) {
     error_return("RcallSyncMethod: invalid object parameter");
   if (!o)
     error_return("RcallSyncMethod: attempt to call a method of a NULL object.");
-#ifdef RJAVA_DEBUG
-  rjprintf("RcallSyncMethod:\ object: "); printObject(o);
+#ifdef RJ_DEBUG
+  rjprintf("RcallSyncMethod: object: "); printObject(env, o);
 #endif
   if ((*env)->MonitorEnter(env, o) != JNI_OK) {
-    printf("Rglue.warning: couldn't get monitor on the object, running unsynchronized.\n");
+    REprintf("Rglue.warning: couldn't get monitor on the object, running unsynchronized.\n");
     return RcallMethod(par);
   }
 
   e=RcallMethod(par);
 
   if ((*env)->MonitorExit(env, o) != JNI_OK)
-    printf("Rglue.SERIOUS PROBLEM: MonitorExit failed, subsequent calls may cause a deadlock!\n");
+    REprintf("Rglue.SERIOUS PROBLEM: MonitorExit failed, subsequent calls may cause a deadlock!\n");
 
   return e;
 }
@@ -704,8 +739,8 @@ SEXP RcallStaticMethod(SEXP par) {
   if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
     error_return("RcallStaticMethod: invalid class parameter");
   cnam=CHAR(STRING_ELT(e,0));
-#ifdef RJAVA_DEBUG
-  rjprintf("class: %s\n",cnam);
+#ifdef RJ_DEBUG
+  rjprintf("RcallStaticMethod.class: %s\n",cnam);
 #endif
   cls=getClass(env, cnam);
   if (!cls)
@@ -722,7 +757,7 @@ SEXP RcallStaticMethod(SEXP par) {
   Rpar2jvalue(env,p,jpar,sig,32,256);
   strcat(sig,")");
   strcat(sig,retsig);
-  rjprintf("Method %s signature is %s\n",mnam,sig);
+  rjprintf(" method \"%s\" signature is %s\n",mnam,sig);
   mid=(*env)->GetStaticMethodID(env,cls,mnam,sig);
   if (!mid)
     error_return("RcallStaticMethod: method not found");
@@ -731,7 +766,7 @@ SEXP RcallStaticMethod(SEXP par) {
 #endif
   if (*retsig=='V') {
     (*env)->CallStaticVoidMethodA(env,cls,mid,jpar);
-    profReport("Method %s returned:",mnam);
+    profReport("Method \"%s\" returned (void):",mnam);
     return R_NilValue;
   }
   if (*retsig=='I') {
@@ -739,7 +774,7 @@ SEXP RcallStaticMethod(SEXP par) {
     PROTECT(e=allocVector(INTSXP, 1));
     INTEGER(e)[0]=r;
     UNPROTECT(1);
-    profReport("Method %s returned:",mnam);
+    profReport("Method \"%s\" returned:",mnam);
     return e;
   }
   if (*retsig=='J') {
@@ -747,7 +782,7 @@ SEXP RcallStaticMethod(SEXP par) {
     PROTECT(e=allocVector(REALSXP, 1));
     REAL(e)[0]=(double)r;
     UNPROTECT(1);
-    profReport("Method %s returned:",mnam);
+    profReport("Method \"%s\" returned:",mnam);
     return e;
   }
   if (*retsig=='Z') {
@@ -755,7 +790,7 @@ SEXP RcallStaticMethod(SEXP par) {
     PROTECT(e=allocVector(LGLSXP, 1));
     LOGICAL(e)[0]=(r)?1:0;
     UNPROTECT(1);
-    profReport("Method %s returned:",mnam);
+    profReport("Method \"%s\" returned:",mnam);
     return e;
   }
   if (*retsig=='D') {
@@ -763,7 +798,7 @@ SEXP RcallStaticMethod(SEXP par) {
     PROTECT(e=allocVector(REALSXP, 1));
     REAL(e)[0]=r;
     UNPROTECT(1);
-    profReport("Method %s returned:",mnam);
+    profReport("Method \"%s\" returned:",mnam);
     return e;
   }
   if (*retsig=='L' || *retsig=='[') {
@@ -775,10 +810,10 @@ SEXP RcallStaticMethod(SEXP par) {
       if (gr)
 	releaseObject(env, r);
     }
-    profReport("Method %s returned:",mnam);
+    profReport("Method \"%s\" returned:",mnam);
     return j2SEXP(gr);
   }
-  profReport("Method %s has an unknown sigrature, not called:",mnam);
+  profReport("Method \"%s\" has an unknown sigrature, not called:",mnam);
   return R_NilValue;
 }
 
@@ -802,14 +837,14 @@ SEXP RgetField(SEXP par) {
     error_return("RgetField: invalid object parameter");
   if (!o)
     error_return("RgetField: attempt to get field of a NULL object");
-#ifdef RJAVA_DEBUG
-  rjprintf("object: "); printObject(env, o);
+#ifdef RJ_DEBUG
+  rjprintf("RgetField.object: "); printObject(env, o);
 #endif
   cls=(*env)->GetObjectClass(env,o);
   if (!cls)
     error_return("RgetField: cannot determine object class");
-#ifdef RJAVA_DEBUG
-  rjprintf("class: "); printObject(env, cls);
+#ifdef RJ_DEBUG
+  rjprintf("RgetField.class: "); printObject(env, cls);
 #endif
   e=CAR(p); p=CDR(p);
   if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
@@ -888,12 +923,12 @@ SEXP RcreateObject(SEXP par) {
   if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
     error_return("RcreateObject: invalid class name");
   class=CHAR(STRING_ELT(e,0));
-  rjprintf("new %s(...)\n",class);
+  rjprintf("RcreateObject: new object of class %s\n",class);
   strcpy(sig,"(");
   p=CDR(p);
   Rpar2jvalue(env,p,jpar,sig,32,256);
   strcat(sig,")V");
-  rjprintf("Constructor signature is %s\n",sig);
+  rjprintf(" constructor signature is %s\n",sig);
   o=createObject(env,class,sig,jpar);
   if (!o) return R_NilValue;
   go=makeGlobal(env,o);
@@ -904,10 +939,11 @@ SEXP RcreateObject(SEXP par) {
 
 #ifdef RJ_DEBUG
   {
-    jstring s=callToString(go);
-    const char *c=(*env)->GetStringUTFChars(env, s, 0);
-    rjprintf("New Java object [%s] reference %lx\n", c, (long)go);
-    (*env)->ReleaseStringUTFChars(env, s, c);
+    jstring s=callToString(env, go);
+    const char *c="???";
+    if (s) c=(*env)->GetStringUTFChars(env, s, 0);
+    rjprintf(" new Java object [%s] reference %lx\n", c, (long)go);
+    if (s) (*env)->ReleaseStringUTFChars(env, s, c);
   }
 #endif
   
