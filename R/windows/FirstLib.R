@@ -20,7 +20,7 @@ function(libname, pkgname) {
 	    key<-paste(key,jrever,sep="\\")
 	    micro <- .Call("RegGetStrValue", c(key,"MicroVersion"))
 	    if (!is.null(micro)) dispver <- paste(dispver,micro,sep=".")
-	    cat("using Java Runtime version",dispver,"\n")
+	    #cat("using Java Runtime version",dispver,"\n")
 	    javahome <- .Call("RegGetStrValue",c(key,"JavaHome"))
 	    if (!is.null(javahome)) { # ok, let's try to get the real lib path
 		p <- .Call("RegGetStrValue",c(key,"RuntimeLib"))
@@ -39,7 +39,7 @@ function(libname, pkgname) {
 	    stop("JAVA_HOME is not set")
     }
     if(!nchar(javahome)) stop("JAVA_HOME is not set")
-    else cat("using JAVA_HOME =", javahome, "\n")
+    #else cat("using JAVA_HOME =", javahome, "\n")
     Sys.putenv(PATH=paste(Sys.getenv("PATH"),
                file.path(javahome, "bin", "client"), sep=";"))
     library.dynam("rJava", pkgname, libname)
