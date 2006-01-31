@@ -25,9 +25,23 @@ static JDK1_1InitArgs vm2_args;
 static JDK1_1InitArgs *vm_args;
 #endif  /* finished the version 1.1 material */
 
+/* determine whether eenv chache should be used (has no effect if JNI_CACHE is not set) */
+int use_eenv = 1;
+
+/* cached environment. Do NOT use directly! Always use getJNIEnv()! */
 JNIEnv *eenv;
 
+#ifdef JNI_CACHE
+JNIEnv *getJNIEnvSafe();
 JNIEnv *getJNIEnv() {
+  return (use_eenv)?eenv:getJNIEnvSafe();
+}
+
+JNIEnv *getJNIEnvSafe()
+#else
+JNIEnv *getJNIEnv()
+#endif
+  {
     JNIEnv *env;
     jsize l;
     jint res;
@@ -127,4 +141,8 @@ int initJVM(char *user_classpath) {
 
 void doneJVM() {
   (*jvm)->DestroyJavaVM(jvm);
+}
+
+void RuseJNICache(int *flag) {
+  if (flag) use_eenv=*flag;
 }

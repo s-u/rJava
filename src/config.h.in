@@ -1,49 +1,92 @@
-/* src/config.h.in.  Generated automatically from configure.ac by autoheader.  */
+/* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Define if your system has a working `malloc' function. */
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if your system has a GNU libc compatible `malloc' function, and
+   to 0 otherwise. */
 #undef HAVE_MALLOC
 
-/* Define if you have the `memset' function. */
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
 
-/* Define if you have the `mkdir' function. */
+/* Define to 1 if you have the `mkdir' function. */
 #undef HAVE_MKDIR
 
-/* Define if you have the `rmdir' function. */
+/* Define to 1 if you have the `rmdir' function. */
 #undef HAVE_RMDIR
 
-/* Define if you have the `select' function. */
+/* Define to 1 if you have the `select' function. */
 #undef HAVE_SELECT
 
-/* Define if you have the `socket' function. */
+/* Define to 1 if you have the `socket' function. */
 #undef HAVE_SOCKET
 
-/* Define if you have the <stdlib.h> header file. */
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
-/* Define if you have the <string.h> header file. */
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
-/* Define if you have the <sys/time.h> header file. */
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
 #undef HAVE_SYS_TIME_H
 
-/* Define if you have <sys/wait.h> that is POSIX.1 compatible. */
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have <sys/wait.h> that is POSIX.1 compatible. */
 #undef HAVE_SYS_WAIT_H
 
-/* Define if you have the <unistd.h> header file. */
+/* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Set if caching JNI environment is enabled. */
+#undef JNI_CACHE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #undef RETSIGTYPE
 
-/* Define if you have the ANSI C header files. */
+/* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
 /* Must be defined for platforms with bytesex inverse to intel style */
 #undef SWAPEND
 
-/* Define if you can safely include both <sys/time.h> and <time.h>. */
+/* Set if threading support should be enabled. */
+#undef THREADS
+
+/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
+
+/* Define to rpl_malloc if the replacement function should be used. */
+#undef malloc
