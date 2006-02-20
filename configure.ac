@@ -68,7 +68,7 @@ int main(void) { int i=0x12345678; return (*((char*)&i)==0x78)?0:1; }
 )
 
 if test -z "${JAVA_HOME}" ; then
-  JAVA_PATH=${JAVA_HOME}:${PATH}
+  JAVA_PATH=${JAVA_HOME}:${JAVA_HOME}/jre/bin:${JAVA_HOME}/bin:${PATH}
 else
   JAVA_PATH=${PATH}
 fi
@@ -105,7 +105,7 @@ JAVA_INC="-I${JNI_H}"
 # (well, those are presumably the only platforms supported by Sun's JDK and others don't need this
 # at least as of now - 01/2004)
 jac_found_md=no
-for mddir in . linux solaris ppc irix alpha aix hp-ux genunix cygwin win32; do
+for mddir in . linux solaris ppc irix alpha aix hp-ux genunix cygwin win32 freebsd; do
 AC_CHECK_FILE(${JNI_H}/$mddir/jni_md.h,[JAVA_INC="${JAVA_INC} -I${JNI_H}/$mddir" jac_found_md=yes])
 if test $jac_found_md == yes; then break; fi
 done
