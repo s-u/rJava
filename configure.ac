@@ -67,7 +67,7 @@ int main(void) { int i=0x12345678; return (*((char*)&i)==0x78)?0:1; }
 	]
 )
 
-if test -z "${JAVA_HOME}" ; then
+if test -n "${JAVA_HOME}" ; then
   JAVA_PATH=${JAVA_HOME}:${JAVA_HOME}/jre/bin:${JAVA_HOME}/bin:${PATH}
 else
   JAVA_PATH=${PATH}
