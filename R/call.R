@@ -3,7 +3,7 @@ setClass("jobjRef", representation(jobj="externalptr", jclass="character"), prot
 setClass("jarrayRef", representation("jobjRef", jsig="character"))
 setClass("jfloat", representation("numeric"))
 
-.jinit <- function(classpath=NULL, ..., silent=FALSE) {
+.jinit <- function(classpath=NULL, parameters=NULL, ..., silent=FALSE) {
   # determine path separator
   if (.Platform$OS.type=="windows")
     path.sep<-";"
@@ -27,11 +27,18 @@ setClass("jfloat", representation("numeric"))
   
   if (is.null(classpath)) classpath<-""
   # call the corresponding C routine to initialize JVM
-  xr<-.External("RinitJVM",classpath,PACKAGE="rJava")
+  xr<-.External("RinitJVM", classpath, parameters, PACKAGE="rJava")
   if (xr==-1) stop("Unable to initialize JVM.")
-  if (xr==-2) stop("Another JVM is already running and rJava was unable to attach itself to that JVM.")
-  if (xr==1 && classpath!="" && !silent) warning("Since another JVM is already running, it's not possible to change its class path. Therefore the value of the speficied classpath was ignored.")
-  #.jniInitialized<<-TRUE # hack hack hack - we should use something better ..
+  if (xr==-2) stop("Another JVM is already running and rJava was unable to attach to that JVM.")
+  if (xr==1 && nchar(classpath)>0) {
+    cpr <- try(.jmergeClassPath(classpath), silent=TRUE)
+    if (inherits(cpr, "try-error")) {
+      .jcheck(silent=TRUE)
+      if (!silent) warning("Another JVM is running already and the VM did not allow me to append paths to the class path.")
+    }
+    if (length(parameters)>0 && !silent)
+      warning("Cannot set VM parameters, because VM is running already.")
+  }
 
   # this should remove any lingering .jclass objects from the global env
   # left there by previous versions of rJava
@@ -71,7 +78,7 @@ setClass("jfloat", representation("numeric"))
 # create a new object
 .jnew <- function(class, ...) {
   class <- gsub("\\.","/",class) # allow non-JNI specifiation
-  .jcheck()
+  .jcheck(silent=TRUE)
   o<-.External("RcreateObject", class, ..., PACKAGE="rJava")
   .jcheck()
   if (is.null(o))
@@ -198,4 +205,58 @@ print.jarrayRef <- function(x, ...) {
 
 .jarray <- function(x) {
   .Call("RcreateArray", x, PACKAGE="rJava")
+}
+
+.jmergeClassPath <- function(cp) {
+  ccp <- .jcall("java/lang/System","S","getSystemProperty","java.class.path")
+  ccpc <- strsplit(ccp, .Platform$path.sep)[[1]]
+  cpc <- strsplit(cp, .Platform$path.sep)[[1]]
+  rcp <- cpc[match(cpc, ccpc)]
+  if (length(rcp) > 0) {
+    # the loader requires directories to include trailing slash
+    # Windows: need / or \ ? (untested)
+    dirs <- which(file.info(rcp)$isdir)
+    for (i in dirs)
+      if (substr(rcp[i],nchar(rcp[i]),nchar(rcp[i]))!=.Platform$file.sep)
+        rcp[i]<-paste(rcp[i], .Platform$file.sep, sep='')
+
+    ## this is a hack, really, that exploits the fact that the system class loader
+    ## is in fact a subclass of URLClassLoader and it also subverts protection
+    ## of the addURL class using reflection - yes, bad hack, but we cannot
+    ## replace the system loader with our own, because we may need to attach to
+    ## an existing VM
+    ## The original discussion was at:
+    ## http://forum.java.sun.com/thread.jspa?threadID=300557&start=15&tstart=0
+
+    ## is should probably be run in try(..) because chance are that it will break
+    ## if Sun changes something...
+    cl <- .jcall("java/lang/ClassLoader", "Ljava/lang/ClassLoader;", "getSystemClassLoader")
+    urlc <- .jcall("java/lang/Class", "Ljava/lang/Class;", "forName", "java.net.URL")
+    clc <- .jcall("java/lang/Class", "Ljava/lang/Class;", "forName", "java.net.URLClassLoader")
+    ar <- .jcall("java/lang/reflect/Array", "Ljava/lang/Object;",
+                         "newInstance", .jclassClass, 1:1)
+    .jcall("java/lang/reflect/Array", "V", "set",
+                  .jcast(ar, "java/lang/Object"), 0:0,
+                  .jcast(urlc, "java/lang/Object"))
+    m<-.jcall(clc, "Ljava/lang/reflect/Method;", "getDeclaredMethod", "addURL", .jcast(ar,"[Ljava/lang/Class;"))
+    .jcall(m, "V", "setAccessible", TRUE)
+
+    ar <- .jcall("java/lang/reflect/Array", "Ljava/lang/Object;",
+                 "newInstance", .jclassObject, 1:1)
+    
+    for (fn in rcp) {
+      f <- .jnew("java/io/File", fn)
+      url <- .jcall(f, "Ljava/net/URL;", "toURL")
+      .jcall("java/lang/reflect/Array", "V", "set",
+             .jcast(ar, "java/lang/Object"), 0:0,
+             .jcast(url, "java/lang/Object"))
+      .jcall(m, "Ljava/lang/Object;", "invoke",
+             .jcast(cl, "java/lang/Object"), .jcast(ar, "[Ljava/lang/Object;"))
+    }
+
+    # also adjust the java.class.path property to not confuse others
+    acp <- paste(c(ccp, rcp), collapse=.Platform$path.sep)
+    .jcall("java/lang/System","S","setProperty","java.class.path",as.character(acp))
+  } # if #rcp>0
+  invisible(.jcall("java/lang/System","S","getProperty","java.class.path"))
 }
