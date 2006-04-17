@@ -1,6 +1,7 @@
 ## This file is part of the rJava package - low-level R/Java interface
 ## (C)2006 Simon Urbanek <simon.urbanek@r-project.org>
-## For license terms and disclaimer see README, LICENSE and DESCRIPTION
+## For license terms see DESCRIPTION and/or LICENSE
+##
 ## $Id$
 
 ## define S4 classes
