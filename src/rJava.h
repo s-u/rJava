@@ -37,6 +37,7 @@ jbooleanArray newBooleanArrayI(JNIEnv *env, int *cont, int len);
 jstring newString(JNIEnv *env, char *cont);
 jcharArray newCharArrayI(JNIEnv *env, int *cont, int len);
 jfloatArray newFloatArrayD(JNIEnv *env, double *cont, int len);
+jlongArray newLongArrayD(JNIEnv *env, double *cont, int len);
 jintArray newByteArray(JNIEnv *env, void *cont, int len);
 
 

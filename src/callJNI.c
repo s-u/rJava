@@ -199,6 +199,28 @@ jfloatArray newFloatArrayD(JNIEnv *env, double *cont, int len) {
   return da;
 }
 
+jlongArray newLongArrayD(JNIEnv *env, double *cont, int len) {
+	jlongArray da=(*env)->NewLongArray(env,len);
+	jlong *dae;
+	int i=0;
+	
+	if (!da) return errJNI("newLongArrayD.new(%d) failed",len);
+	dae=(*env)->GetLongArrayElements(env, da, 0);
+	if (!dae) {
+		(*env)->DeleteLocalRef(env,da);
+		return errJNI("newLongArrayD.GetFloatArrayElements failed");
+	}
+	/* we cannot just memcpy since JNI uses long and R uses double */
+	while (i<len) {
+		/* we're effectively rounding to prevent representation issues
+		   however, we still may introduce some errors this way */
+		dae[i]=(jlong)(cont[i]+0.5);
+		i++;
+	}
+	(*env)->ReleaseLongArrayElements(env, da, dae, 0);
+	return da;
+}
+
 jstring newString(JNIEnv *env, char *cont) {
   jstring s=(*env)->NewStringUTF(env, cont);
   return s?s:errJNI("newString(\"%s\") failed",cont);
