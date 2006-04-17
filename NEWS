@@ -1,0 +1,52 @@
+ NEWS/ChangeLog for rJava
+--------------------------
+
+0.3-8	2006-06-17
+     o	.jinit has an additional parameter 'parameters' that allows
+	users to pass additional parameters to the VM (such as -X...)
+
+     o	.jinit now uses a hack (defined in .jmergeClassPath) that
+	allows us to modify the class path of a running VM. This may
+	or may not work for a specific VM, because it is an ugly hack
+	exploiting some implementational features of the VM.
+	See .jmergeClassPath source for reference and explanation.
+
+     o	.jarray now supports the use of .jarray(x) where x is a Java
+	reference. The documentation requires you to use
+	.jarray(list(x)), but since the use of .jarray(x) seems to be
+	a very common mistake, we may as well silently support it.
+
+     o	.jarray has an optional parameter contents.class which allows
+	the global specification of the class type for arrays of
+	objects. (Untested, use with care! In most cases .jcast is
+	probably what you really want.)
+
+     o	Added some more support for floats, longs and byte arrays.
+	(Again, untested)
+
+0.3-7	2006-01-31 (non-public release)
+     o	New, experimental feature has been added - JNI cache. This
+	feature can be enabled by passing --enable-jni-cache argument
+	to configure. Normally, each time we access JVM we retrieve
+	new JNI environment to make sure there are no threading
+	issues. In single-threaded environment this is superfluous, so
+	we may as well cache it. The idea is reduce the
+	overhead. However, the gain is not as huge as expected, so it
+	is not enabled by default. Also note that threads and
+	jni-cache are mutually exclusive.
+
+     o	Another even more experimental feature has been added -
+	support for threads. This feature is enabled by using
+	--enable-threads configure argument. When threads support is
+	enabled, JVM is started on a thread separate from the main
+	thread. Some implementations of AWT classes require
+	this. However, it is not always safe to use, because R event
+	loop is unaware of the separate thread and can deadlock it.
+
+0.3-6	2006-01-30
+0.3-5	2006-01-02
+0.3-4	2005-12-28
+0.3-3	2005-12-20
+0.3	2005-12-19	[finalizers, arrays]
+0.2	2005-09-03	[S4 classes]
+0.1	2003-08-26	[initial release]
