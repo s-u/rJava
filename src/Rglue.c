@@ -32,7 +32,7 @@ long time_ms() {
 #endif
 }
 
-long profilerTime;
+static long profilerTime;
 
 #define profStart() profilerTime=time_ms()
 void profReport(char *fmt, ...) {
@@ -111,6 +111,9 @@ SEXP j2SEXP(JNIEnv *env, jobject o, int releaseLocal) {
   }
 }
 
+static int    jvm_opts=0;
+static char **jvm_optv=0;
+
 #ifdef THREADS
 #include <pthread.h>
 
@@ -132,7 +135,7 @@ void *initJVMthread(void *classpath)
   jclass c;
   JNIEnv *lenv;
 
-  thInitResult=initJVM((char*)classpath);
+  thInitResult=initJVM((char*)classpath, jvm_opts, jvm_optv);
   if (thInitResult) return 0;
 
   init_rJava();
@@ -163,12 +166,25 @@ SEXP RinitJVM(SEXP par)
   SEXP e=CADR(par);
   int r=0;
   
+  jvm_opts=0;
+  jvm_optv=0;
+  
   JavaVM *jvms[32];
   jsize vms=0;
 
   if (TYPEOF(e)==STRSXP && LENGTH(e)>0)
-    c=CHAR(STRING_ELT(e,0));
+	  c=CHAR(STRING_ELT(e,0));
 
+  e = CADDR(par);
+  if (TYPEOF(e)==STRSXP && LENGTH(e)>0) {
+	  int len = LENGTH(e);
+	  jvm_optv=(char**)malloc(sizeof(char*)*len);
+	  while (jvm_opts < len) {
+		  jvm_optv[jvm_opts] = CHAR(STRING_ELT(e, jvm_opts));
+		  jvm_opts++;
+	  }
+  }
+  
   r=JNI_GetCreatedJavaVMs(jvms, 32, &vms);
   if (r) {
     Rf_error("JNI_GetCreatedJavaVMs returned %d\n", r);
@@ -214,11 +230,13 @@ SEXP RinitJVM(SEXP par)
   r = thInitResult;
 #else
   profStart();
-  r=initJVM(c);
+  r=initJVM(c, jvm_opts, jvm_optv);
   init_rJava();
   profReport("init_rJava:");
   rjprintf("RinitJVM(non-threaded): initJVM returned %d\n", r);
 #endif
+  if (jvm_optv) free(jvm_optv);
+  jvm_opts=0;
   PROTECT(e=allocVector(INTSXP,1));
   INTEGER(e)[0]=r;
   UNPROTECT(1);

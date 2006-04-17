@@ -1,7 +1,7 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000307 /* rJava v0.3-7 */
+#define RJAVA_VER 0x000308 /* rJava v0.3-8 */
 
 /* important changes between versions:
    0.3  - uses EXTPTR in jobj slot, adds finalizers
@@ -23,7 +23,7 @@ extern jclass javaObjectClass;
 
 JNIEnv* getJNIEnv();
 
-int initJVM(char *user_classpath);
+int initJVM(char *user_classpath, int opts, char **optv);
 
 /* in callJNI */
 void init_rJava(void);
