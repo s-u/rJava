@@ -273,7 +273,7 @@ print.jarrayRef <- function(x, ...) {
     }
 
     # also adjust the java.class.path property to not confuse others
-    if (length(ccp)>1 || (length(cpp)==1 && nchar(ccp[1])>0))
+    if (length(ccp)>1 || (length(ccp)==1 && nchar(ccp[1])>0))
       rcp <- c(ccp, rcp)
     acp <- paste(rcp, collapse=.Platform$path.sep)
     .jcall("java/lang/System","S","setProperty","java.class.path",as.character(acp))
