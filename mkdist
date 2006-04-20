@@ -24,8 +24,8 @@ if [ ! -e getsp.class ]; then
     javac getsp.java
 fi
 
-echo "Removing CVS stuff ..."
-rm -rf `find . -name CVS`
+echo "Removing CVS and backup files ..."
+find . -name CVS -or -name \*~ | xargs rm -rf
 cd ..
 
 #echo "Updating INDEX ..."
