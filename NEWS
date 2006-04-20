@@ -1,7 +1,11 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.3-8	2006-06-17
+0.3-9	2006-04-20
+     o	fixed a minor bug in Rglue.c that may prevent older
+	compilers from compiling it.
+
+0.3-8	2006-04-17
      o	.jinit has an additional parameter 'parameters' that allows
 	users to pass additional parameters to the VM (such as -X...)
 
