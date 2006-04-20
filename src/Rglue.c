@@ -165,13 +165,12 @@ SEXP RinitJVM(SEXP par)
   char *c=0;
   SEXP e=CADR(par);
   int r=0;
+  JavaVM *jvms[32];
+  jsize vms=0;
   
   jvm_opts=0;
   jvm_optv=0;
   
-  JavaVM *jvms[32];
-  jsize vms=0;
-
   if (TYPEOF(e)==STRSXP && LENGTH(e)>0)
 	  c=CHAR(STRING_ELT(e,0));
 

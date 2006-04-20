@@ -30,7 +30,7 @@
 	to configure. Normally, each time we access JVM we retrieve
 	new JNI environment to make sure there are no threading
 	issues. In single-threaded environment this is superfluous, so
-	we may as well cache it. The idea is reduce the
+	we may as well cache it. The idea is to reduce the
 	overhead. However, the gain is not as huge as expected, so it
 	is not enabled by default. Also note that threads and
 	jni-cache are mutually exclusive.
