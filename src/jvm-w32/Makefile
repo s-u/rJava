@@ -29,7 +29,7 @@ WinRegistry.o: WinRegistry.c
 	$(CC) -O2 -c -o $@ $^ -I$(RHOME)/include
 
 WinRegistry.dll: WinRegistry.o
-	$(CC) --shared -s -o $@ $^ -lR -L$(RHOME)/src/gnuwin32
+	$(CC) --shared -s -o $@ $^ -lR -L$(RHOME)/src/gnuwin32 -L$(RHOME)/bin
 
 # just cleanup everything
 clean:
