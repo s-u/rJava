@@ -11,6 +11,7 @@ if test -z "${R_HOME}"; then
 fi
 CC=`${R_HOME}/bin/R CMD config CC`;
 CFLAGS=`${R_HOME}/bin/R CMD config CFLAGS`
+LIBS=${PKG_LIBS}
 AC_SUBST(R_HOME)
 
 ## enable threads, i.e. Java is running is a separate thread
