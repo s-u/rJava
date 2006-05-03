@@ -19,6 +19,19 @@ else
     rm -rf autom4te*
 fi
 
+if [ ! -e install-sh ]; then
+    echo "Fetching install-sh ..."
+    ams=/usr/share/automake/install-sh
+    if [ ! -e $ams ]; then
+	ams=`ls /usr/share/automake*/install*sh|tail -n 1`
+    fi
+    if [ -z "$ams" -o ! -e "$ams" ]; then
+	echo "*** ERROR: install-sh is not present and I can't find it in /usr/share"
+	exit 2
+    fi
+    cp $ams install-sh
+fi
+
 if [ ! -e getsp.class ]; then
     echo "Compiling getsp.class"
     javac getsp.java
@@ -26,14 +39,52 @@ fi
 
 echo "Removing CVS and backup files ..."
 find . -name CVS -or -name \*~ | xargs rm -rf
-cd ..
 
+if [ ! -e jri/configure ]; then
+    : ${JRI=$SWD/../../../org/rosuda/JRI}
+    if [ ! -e $JRI ]; then
+	echo "*** ERROR: JRI dist is not in the jri subdirectory and JRI env var is not set!"
+	echo " Please set JRI to point to JRI sources or unpack JRI dist into the jri directory"
+	exit 1
+    fi
+    if [ -e $JRI/mkdist ]; then
+	echo "Building JRI dist to include ..."
+	rm -rf /tmp/JRI_*
+	mywd=`pwd`
+	cd $JRI
+	sh mkdist
+	cd /tmp/rJava
+	jf=`ls /tmp/JRI_*|head -n1`;
+	if [ -z "$jf" -o ! -e "$jf" ]; then
+	    echo "*** ERROR: Cannot get JRI distro!"
+	    exit 1
+	fi
+	rm -rf jri
+	mkdir jri 2> /dev/null > /dev/null
+	cd /tmp/rJava
+	tar fvxz $jf
+    else
+	tar fxz $JRI
+    fi
+    if [ -e jri/JRI ]; then
+	rm -rf 1
+	mv jri 1
+	mv 1/JRI jri
+	rm -rf 1
+    fi
+    if [ ! -e jri/Makefile.in ]; then
+	echo "*** ERROR: jri is not correctly set up."
+	exit 1
+    fi
+fi
+
+#cd ..
 #echo "Updating INDEX ..."
 # R CMD Rdindex rJava > rJava/INDEX
 #echo "library(tools)\nsink(\"rJava/INDEX\")\nRdindex(\"rJava/man\")\nsink()" | R --vanilla > /dev/null
 
 echo "Updating version ..."
-cd rJava
+cd /tmp/rJava
 VER=`awk -v ORS= '/rJava v/ { print substr($6,2) }' src/rJava.h`
 echo "rJava version ${VER}"
 cat DESCRIPTION| sed "s/Version:.*/Version: ${VER}/" > d

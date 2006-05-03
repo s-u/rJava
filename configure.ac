@@ -37,6 +37,23 @@ AC_ARG_ENABLE([jni-cache],
 [want_jni_cache="${enableval}"],
 [want_jni_cache=no])
 
+## enable JRI
+AC_ARG_ENABLE([jri],
+[AC_HELP_STRING([--enable-jri],
+		[enable Java to R interface (JRI), which allows Java programs
+		to embed R. @<:@yes@:>@])],
+[want_jri="${enableval}"],
+[want_jri=yes])
+
+
+## enable debug flags
+AC_ARG_ENABLE([debug],
+[AC_HELP_STRING([--enable-debug],
+		[enable debug flags and output. @<:@no@:>@])],
+[want_debug="${enableval}"],
+[want_debug=no])
+
+
 # Checks for programs.
 AC_PROG_CC
 
@@ -146,6 +163,12 @@ int main(void) {
 	[AC_MSG_RESULT([ok])],
 	[AC_MSG_ERROR([One or more JNI types differ from the corresponding native type. You may need to use non-standard compiler flags or a different compiler in order to fix this.])])
 
+AM_CONDITIONAL(WANT_JRI, [test "x${want_jri}" = xyes])
+
+if test "${want_debug}" = yes; then
+  JAVA_INC="-g -DRJ_DEBUG ${JAVA_INC}"
+fi
+
 AC_SUBST(JAVA_LIBS)
 AC_SUBST(JAVA_INC)
 AC_SUBST(JAVA_HOME)
@@ -153,7 +176,7 @@ AC_SUBST(JAVA_LD)
 
 use_threads=no
 AC_MSG_CHECKING([whether threads support is requested])
-if test "${want_threads}" == yes; then
+if test "${want_threads}" = yes; then
   AC_MSG_RESULT([yes])
   AC_MSG_CHECKING([whether threads can be enabled])
   # check whether we can add THREADS support
@@ -169,14 +192,22 @@ else
 fi
 
 AC_MSG_CHECKING([whether JNI cache support is requested])
-if test "${want_jni_cache}" == yes; then
+if test "${want_jni_cache}" = yes; then
   AC_MSG_RESULT([yes])
-  if test "${use_threads}" == yes; then
+  if test "${use_threads}" = yes; then
     AC_MSG_ERROR([Threads and JNI cache cannot be used at the same time, because JNI cache is by definition not thread-safe. Please disable either option.])
   fi
   AC_DEFINE(JNI_CACHE, 1, [Set if caching JNI environment is enabled.])
 else
   AC_MSG_RESULT([no])
+fi
+
+if test "${want_jri}" = yes; then
+  export R_HOME
+  export JAVA_HOME
+  CONFIGURED=1
+  export CONFIGURED
+  AC_CONFIG_SUBDIRS(jri)
 fi
 
 AC_CONFIG_FILES([src/Makevars])

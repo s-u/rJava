@@ -26,5 +26,14 @@ echo "Install WinRegistry"
 mkdir -p inst/libs
 cp src/jvm-w32/WinRegistry.dll inst/libs
 
+if [ -e jri/configure.win ]; then
+    CONFIGURED=1
+    export CONFIGURED
+    export R_HOME
+    cd jri
+    sh configure.win
+    cd ..
+fi
+
 echo "Configuration done."
 

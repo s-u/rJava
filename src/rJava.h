@@ -1,7 +1,7 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x00030a /* rJava v0.3-10 */
+#define RJAVA_VER 0x00030b /* rJava v0.3-11 */
 
 /* important changes between versions:
    0.3  - uses EXTPTR in jobj slot, adds finalizers
