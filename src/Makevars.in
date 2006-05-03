@@ -14,5 +14,5 @@ all: $(SHLIB) @WANT_JRI_TRUE@ jri
 jri:
 	$(MAKE) -C ../jri/
 	-@mkdir -p ../inst/jri
-	@(cp ../jri/src/JRI.jar ../inst/jri/ && cp ../jri/*jri.* ../inst/jri/)
+	@(cp ../jri/src/JRI.jar ../jri/*jri.* ../jri/run ../inst/jri/)
 
