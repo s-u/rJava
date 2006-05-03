@@ -59,8 +59,8 @@ if [ ! -e jri/configure ]; then
 	    echo "*** ERROR: Cannot get JRI distro!"
 	    exit 1
 	fi
-	rm -rf jri
-	mkdir jri 2> /dev/null > /dev/null
+	rm -rf jri JRI
+	#mkdir jri 2> /dev/null > /dev/null
 	cd /tmp/rJava
 	tar fvxz $jf
     else
@@ -73,8 +73,17 @@ if [ ! -e jri/configure ]; then
 	rm -rf 1
     fi
     if [ ! -e jri/Makefile.in ]; then
-	echo "*** ERROR: jri is not correctly set up."
-	exit 1
+	if [ -e JRI/Makefile.in ]; then
+	    mv JRI jri
+	else
+	    echo "*** ERROR: jri is not correctly set up."
+	    exit 1
+	fi
+    fi
+    if [ -e jri/Makefile.in -a -e JRI/Makefile.in ]; then
+	# case-insensitive fs - but we need lower case *sigh*
+	mv JRI 1
+	mv 1 jri
     fi
 fi
 
