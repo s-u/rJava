@@ -36,16 +36,7 @@ setClass("jfloat", representation("numeric"))
   xr<-.External("RinitJVM", classpath, parameters, PACKAGE="rJava")
   if (xr==-1) stop("Unable to initialize JVM.")
   if (xr==-2) stop("Another VM is already running and rJava was unable to attach to that VM.")
-  if (xr==1 && nchar(classpath)>0) {
-    # it's a hack, so we run it in try(..) in case BadThings(TM) happen ...
-    cpr <- try(.jmergeClassPath(classpath), silent=TRUE)
-    if (inherits(cpr, "try-error")) {
-      .jcheck(silent=TRUE)
-      if (!silent) warning("Another VM is running already and the VM did not allow me to append paths to the class path.")
-    }
-    if (length(parameters)>0 && !silent)
-      warning("Cannot set VM parameters, because VM is running already.")
-  }
+  # we'll handle xr==1 later because we need fully initialized rJava for that
 
   # this should remove any lingering .jclass objects from the global env
   # left there by previous versions of rJava
@@ -78,7 +69,19 @@ setClass("jfloat", representation("numeric"))
   assign(".jclass.boolean", .jcast(.jcall(f,"Ljava/lang/Object;","get",.jcast(ic,"java/lang/Object")),"java/lang/Class"), je)
 
   assign(".jzeroRef", .Call("RgetNullReference", PACKAGE="rJava"), je)
-  
+
+  if (xr==1 && nchar(classpath)>0) {
+    # it's a hack, so we run it in try(..) in case BadThings(TM) happen ...
+    cpr <- try(.jmergeClassPath(classpath), silent=TRUE)
+    if (inherits(cpr, "try-error")) {
+      .jcheck(silent=TRUE)
+      if (!silent) warning("Another VM is running already and the VM did not allow me to append paths to the class path.")
+      assign(".jinit.merge.error", cpr, je)
+    }
+    if (length(parameters)>0 && !silent)
+      warning("Cannot set VM parameters, because VM is running already.")
+  }
+
   invisible(xr)
 }
 
