@@ -41,7 +41,6 @@ if [ -e jri/configure.win ]; then
     cd ..
     if [ $BR = 0 ]; then
 	echo "=== JRI built ==="
-	rm -rf inst
 	mkdir -p inst/jri
 	cp jri/src/jri.dll jri/src/JRI.jar inst/jri/
     else
