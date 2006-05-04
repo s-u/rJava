@@ -5,4 +5,6 @@
   Sys.putenv("DYLD_LIBRARY_PATH"=gsub("/usr/X11R6/lib","",Sys.getenv("DYLD_LIBRARY_PATH")))
   Sys.putenv("LD_LIBRARY_PATH"=paste(Sys.getenv("LD_LIBRARY_PATH"),"@JAVA_LD@",sep=':'))
   library.dynam("rJava", pkgname, libname)
+  je <- as.environment(match("package:rJava", search()))
+  assign(".rJava.base.path", paste(libname, pkgname, sep=.Platform$file.sep), je)
 }
