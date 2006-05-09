@@ -191,6 +191,28 @@ setClass("jfloat", representation("numeric"))
   r
 }
 
+# makes sure that a given object is jarrayRef 
+.jcastToArray <- function(obj, signature=NULL, class="", quiet=FALSE) {
+  if (!inherits(obj, "jobjRef") && !inherits(obj, "jarrayRef"))
+    return(.jarray(obj))
+  if (is.null(signature)) {
+    cl <- .jcall(obj, "Ljava/lang/Class;", "getClass")
+    cn <- .jcall(cl, "Ljava/lang/String;", "getName")
+    if (substr(cn,1,1) != "[") {
+      if (quiet)
+        return(obj)
+      else
+        stop("cannot cast to array, object signature is unknown and class name is not an array")
+    }
+    signature <- cn
+  }
+  if (inherits(obj, "jarrayRef")) {
+    obj@jsig <- signature
+    return(obj)
+  }
+  new("jarrayRef",jobj=obj@jobj,jsig=signature,jclass=class)
+}
+
 # creates a new "null" object of the specified class
 # althought it sounds weird, the class is important when passed as
 # a parameter (you can even cast the result)
