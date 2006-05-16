@@ -10,9 +10,9 @@
 .jfield(o, name, simplify=TRUE, true.class=TRUE)
 }
 \arguments{
-  \item{o}{object (Java reference) whose field is to be
-    accessed. Static fields are only supported when accessed through the
-    instance of an object.}
+  \item{o}{Class name or object (Java reference) whose field is to be
+    accessed. Static fields are supported both by specifying the class
+    name or using an instance.}
   \item{name}{name of the field to access}
   \item{simplify}{field accessor methods always return Java objects. If
     set to \code{TRUE}, such object will be converted to scalar type if

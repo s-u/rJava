@@ -101,11 +101,20 @@
 
 ### get the value of a field (static class fields are not supported yet)
 .jfield <- function(o, name, simplify=TRUE, true.class=TRUE) {
-  if (!inherits(o, "jobjRef") && !inherits(o, "jarrayRef"))
-    stop("Object must be a Java reference.")
-  cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
+  if (!inherits(o, "jobjRef") && !inherits(o, "jarrayRef") && !is.character(o))
+    stop("Object must be a Java reference or class name.")
+  if (is.character(o)) {
+    cl <- .jcall("java/lang/Class", "Ljava/lang/Class;", "forName", gsub("/",".",o))
+    .jcheck(silent=TRUE)
+    if (is.null(cl))
+      stop("class not found")
+    o <- .jnull()
+  } else {
+    cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
+    o <- .jcast(o, "java/lang/Object")
+  }
   f <- .jcall(cl, "Ljava/lang/reflect/Field;", "getField", name)
-  r <- .jcall(f,"Ljava/lang/Object;","get",.jcast(o,"java/lang/Object"))
+  r <- .jcall(f,"Ljava/lang/Object;","get",o)
   if (simplify) r <- .jsimplify(r)
   if (true.class && (inherits(r, "jobjRef") || inherits(r, "jarrayRef"))) {
     cl <- .jcall(r, "Ljava/lang/Class;", "getClass")
