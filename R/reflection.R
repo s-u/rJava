@@ -88,13 +88,32 @@
   r
 }
 
+### simplify non-scalar reference to a scalar object if possible
+.jsimplify <- function(o) {
+  if (!inherits(o, "jobjRef") && !inherits(o, "jarrayRef"))
+    return(o)
+  cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
+  cn <- .jcall(cl, "Ljava/lang/String;", "getName")
+  if (cn == "java.lang.Boolean") .jcall(o, "Z", "booleanValue") else
+  if (cn == "java.lang.Integer") .jcall(o, "I", "intValue") else
+  if (cn == "java.lang.Number" || cn == "java.lang.Double" || cn == "java.lang.Float") .jcall(o, "D", "doubleValue") else o
+}
+
 ### get the value of a field (static class fields are not supported yet)
-.jfield <- function(o, name) {
+.jfield <- function(o, name, simplify=TRUE, true.class=TRUE) {
   if (!inherits(o, "jobjRef") && !inherits(o, "jarrayRef"))
     stop("Object must be a Java reference.")
   cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
-  f <- .jcall(cl, "Ljava/lang/reflect/Field;", "getField", m)
-  .jcall(f,"Ljava/lang/Object;","get",.jcast(o,"java/lang/Object"))
+  f <- .jcall(cl, "Ljava/lang/reflect/Field;", "getField", name)
+  r <- .jcall(f,"Ljava/lang/Object;","get",.jcast(o,"java/lang/Object"))
+  if (simplify) r <- .jsimplify(r)
+  if (true.class && (inherits(r, "jobjRef") || inherits(r, "jarrayRef"))) {
+    cl <- .jcall(r, "Ljava/lang/Class;", "getClass")
+    cn <- .jcall(cl, "Ljava/lang/String;", "getName")
+    if (substr(cn,1,1) != '[')
+      r@jclass <- gsub("\\.","/",cn)
+  }
+  r
 }
 
 ### list the fields of a class or object
@@ -116,7 +135,7 @@
   if (is.null(f))
     function(...) .jrcall(o, m, ...)
   else
-    .jcall(f,"Ljava/lang/Object;","get",.jcast(o,"java/lang/Object"))
+    .jsimplify(.jcall(f,"Ljava/lang/Object;","get",.jcast(o,"java/lang/Object")))
 }
 
 "$.jarrayRef" <- `$.jobjRef`
@@ -128,10 +147,16 @@
   .jcheck(silent=TRUE)
   if (is.null(f))
     stop("Field `",field,"' doesn't exist.")
-  if (!inherits(value, "jobjRef"))
-    stop("Sorry, currently only fields with non-primitive types are supported.")
-  .jcall(f,"Ljava/lang/Object;","set",.jcast(o,"java/lang/Object"),.jcast(value,"java/lang/Object"))
-  invisible()
+  if (!inherits(value, "jobjRef")) {
+    if (is.integer(value) && length(value)==1) value <- .jnew("java/lang/Integer", value) else
+    if (is.numeric(value) && length(value)==1) value <- .jnew("java/lang/Double", as.double(value)) else
+    if (is.character(value) && length(value)==1) value <- .jnew("java/lang/String", value) else
+    if (is.logical(value) && length(value)==1) value <- .jnew("java/lang/Boolean", value)
+    if (!inherits(value, "jobjRef"))
+      stop("Sorry, cannot convert `value' to connesponding Java object. Please use Java objects in field assignments.")
+  }
+  .jcall(f,"V","set",.jcast(o,"java/lang/Object"),.jcast(value,"java/lang/Object"))
+  invisible(o)
 }
 
 "$<-.jarrayRef" <- `$<-.jobjRef`
