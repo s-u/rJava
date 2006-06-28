@@ -6,6 +6,11 @@
 
 #include <stdarg.h>
 
+/* pre-2.4 have no S4SXP but used VECSXP instead */
+#ifndef S4SXP
+#define S4SXP VECSXP
+#endif
+
 /* debugging output (enable with -DRJ_DEBUG) */
 #ifdef RJ_DEBUG
 void rjprintf(char *fmt, ...) {
@@ -301,7 +306,7 @@ SEXP Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int
 	strcat(sig,"[Z");
 	jpar[jvpos++].l=newBooleanArrayI(env, LOGICAL(e),LENGTH(e));
       }
-    } else if (TYPEOF(e)==VECSXP) {
+    } else if (TYPEOF(e)==VECSXP || TYPEOF(e)==S4SXP) {
       rjprintf(" general vector of length %d\n", LENGTH(e));
       if (inherits(e,"jobjRef")||inherits(e,"jarrayRef")) {
 	jobject o=(jobject)0;
@@ -309,7 +314,7 @@ SEXP Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int
 	SEXP n=getAttrib(e, R_NamesSymbol);
 	if (TYPEOF(n)!=STRSXP) n=0;
 	rjprintf(" which is in fact a Java object reference\n");
-	if (LENGTH(e)>1) { /* old objects were lists */
+	if (TYPEOF(e)==VECSXP && LENGTH(e)>1) { /* old objects were lists */
 	  error("Old, unsupported S3 Java object encountered.");
 	} else { /* new objects are S4 objects */
 	  SEXP sref, sclass;
