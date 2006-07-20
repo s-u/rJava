@@ -96,7 +96,9 @@
   cn <- .jcall(cl, "Ljava/lang/String;", "getName")
   if (cn == "java.lang.Boolean") .jcall(o, "Z", "booleanValue") else
   if (cn == "java.lang.Integer") .jcall(o, "I", "intValue") else
-  if (cn == "java.lang.Number" || cn == "java.lang.Double" || cn == "java.lang.Float") .jcall(o, "D", "doubleValue") else o
+  if (cn == "java.lang.Number" || cn == "java.lang.Double" || cn == "java.lang.Float") .jcall(o, "D", "doubleValue") else
+  if (cn == "java.lang.String") .jstrVal(.jcast(o, "java/lang/String")) else
+  o
 }
 
 ### get the value of a field (static class fields are not supported yet)
