@@ -254,7 +254,7 @@ print.jarrayRef <- function(x, ...) {
   ccp <- .jcall("java/lang/System","S","getProperty","java.class.path")
   ccpc <- strsplit(ccp, .Platform$path.sep)[[1]]
   cpc <- strsplit(cp, .Platform$path.sep)[[1]]
-  rcp <- cpc[!(cpc %in% ccpc)]
+  rcp <- unique(cpc[!(cpc %in% ccpc)])
   if (length(rcp) > 0) {
     # the loader requires directories to include trailing slash
     # Windows: need / or \ ? (untested)
