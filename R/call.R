@@ -4,99 +4,28 @@
 ##
 ## $Id$
 
-## define S4 classes
-setClass("jobjRef", representation(jobj="externalptr", jclass="character"), prototype=list(jobj=NULL, jclass=NULL))
+## S4 classes (jobjRef is re-defined in .Frist.lib to contain valid jobj)
+setClass("jobjRef", representation(jobj="externalptr", jclass="character"), prototype=list(jobj=NULL, jclass="java/lang/Object"))
 setClass("jarrayRef", representation("jobjRef", jsig="character"))
 setClass("jfloat", representation("numeric"))
-
-.jinit <- function(classpath=NULL, parameters=NULL, ..., silent=FALSE) {
-  # determine path separator
-  if (.Platform$OS.type=="windows")
-    path.sep<-";"
-  else
-    path.sep<-":"
-
-  if (!is.null(classpath)) {
-    classpath<-as.character(classpath)
-    if (length(classpath)>1)
-      classpath<-paste(classpath,collapse=path.sep)
-  }
-  
-  # merge CLASSPATH environment variable if present
-  cp<-Sys.getenv("CLASSPATH")
-  if (!is.null(cp)) {
-    if (is.null(classpath))
-      classpath<-cp
-    else
-      classpath<-paste(classpath,cp,sep=path.sep)
-  }
-  
-  if (is.null(classpath)) classpath<-""
-  # call the corresponding C routine to initialize JVM
-  xr<-.External("RinitJVM", classpath, parameters, PACKAGE="rJava")
-  if (xr==-1) stop("Unable to initialize JVM.")
-  if (xr==-2) stop("Another VM is already running and rJava was unable to attach to that VM.")
-  # we'll handle xr==1 later because we need fully initialized rJava for that
-
-  # this should remove any lingering .jclass objects from the global env
-  # left there by previous versions of rJava
-  pj <- grep("^\\.jclass",ls(1,all=TRUE),value=T)
-  if (length(pj)>0) { 
-    rm(list=pj,pos=1)
-    if (exists(".jniInitialized",1)) rm(list=".jniInitialized",pos=1)
-    if (!silent) warning("rJava found hidden Java objects in your workspace. Internal objects from previous versions of rJava were deleted. Please note that Java objects cannot be saved in the workspace.")
-  }
-  
-  # first, get our environment from the search list
-  je <- as.environment(match("package:rJava", search()))
-  assign(".jniInitialized", TRUE, je)
-  # get cached class objects for reflection
-  assign(".jclassObject", .jcall("java/lang/Class","Ljava/lang/Class;","forName","java.lang.Object"), je)
-  assign(".jclassClass", .jcall("java/lang/Class","Ljava/lang/Class;","forName","java.lang.Class"), je)
-  assign(".jclassString", .jcall("java/lang/Class","Ljava/lang/Class;","forName","java.lang.String"), je)
-
-  ic <- .jcall("java/lang/Class","Ljava/lang/Class;","forName","java.lang.Integer")
-  f<-.jcall(ic,"Ljava/lang/reflect/Field;","getField", "TYPE")
-  assign(".jclass.int", .jcast(.jcall(f,"Ljava/lang/Object;","get",.jcast(ic,"java/lang/Object")),"java/lang/Class"), je)
-  ic <- .jcall("java/lang/Class","Ljava/lang/Class;","forName","java.lang.Double")
-  f<-.jcall(ic,"Ljava/lang/reflect/Field;","getField", "TYPE")
-  assign(".jclass.double", .jcast(.jcall(f,"Ljava/lang/Object;","get",.jcast(ic,"java/lang/Object")),"java/lang/Class"), je)
-  ic <- .jcall("java/lang/Class","Ljava/lang/Class;","forName","java.lang.Float")
-  f<-.jcall(ic,"Ljava/lang/reflect/Field;","getField", "TYPE")
-  assign(".jclass.float", .jcast(.jcall(f,"Ljava/lang/Object;","get",.jcast(ic,"java/lang/Object")),"java/lang/Class"), je)
-  ic <- .jcall("java/lang/Class","Ljava/lang/Class;","forName","java.lang.Boolean")
-  f<-.jcall(ic,"Ljava/lang/reflect/Field;","getField", "TYPE")
-  assign(".jclass.boolean", .jcast(.jcall(f,"Ljava/lang/Object;","get",.jcast(ic,"java/lang/Object")),"java/lang/Class"), je)
-
-  assign(".jzeroRef", .Call("RgetNullReference", PACKAGE="rJava"), je)
-
-  if (xr==1 && nchar(classpath)>0) {
-    # it's a hack, so we run it in try(..) in case BadThings(TM) happen ...
-    cpr <- try(.jmergeClassPath(classpath), silent=TRUE)
-    if (inherits(cpr, "try-error")) {
-      .jcheck(silent=TRUE)
-      if (!silent) warning("Another VM is running already and the VM did not allow me to append paths to the class path.")
-      assign(".jinit.merge.error", cpr, je)
-    }
-    if (length(parameters)>0 && !silent)
-      warning("Cannot set VM parameters, because VM is running already.")
-  }
-
-  invisible(xr)
-}
+setClass("jlong", representation("numeric"))
 
 # create a new object
-.jnew <- function(class, ...) {
+.jnew <- function(class, ..., check=TRUE, silent=FALSE) {
   class <- gsub("\\.","/",class) # allow non-JNI specifiation
-  .jcheck(silent=TRUE)
-  o<-.External("RcreateObject", class, ..., PACKAGE="rJava")
-  .jcheck()
-  if (is.null(o))
-    warning(paste("Unable to create object of the class",class,", returning null reference."))
+  if (check) .jcheck(silent=TRUE)
+  o<-.External("RcreateObject", class, ..., silent=silent, PACKAGE="rJava")
+  if (check) .jcheck(silent=silent)
+  if (is.null(o)) {
+    if (!silent)
+      stop("Failed to create object of class `",class,"'")
+    else
+      o <- .jzeroRef
+  }
   new("jobjRef", jobj=o, jclass=class)
 }
 
-# create a new object reference manually (avoid! for backward compat only)
+# create a new object reference manually (avoid! for backward compat only!) the problem with this is that you need a valid `jobj' which is implementation-dependent so it is undefined outside rJava internals
 .jmkref <- function(jobj, jclass="java/lang/Object") {
   new("jobjRef", jobj=jobj, jclass=jclass)
 }
@@ -136,8 +65,8 @@ setClass("jfloat", representation("numeric"))
   new("jarrayRef", jobj=jobj, jclass="", jsig=sig)
 }
 
-.jcall <- function(obj, returnSig="V", method, ..., evalArray=TRUE, evalString=TRUE, interface="RcallMethod") {
-  .jcheck()
+.jcall <- function(obj, returnSig="V", method, ..., evalArray=TRUE, evalString=TRUE, check=TRUE, interface="RcallMethod") {
+  if (check) .jcheck()
   r<-NULL
   # S is a shortcut for Ljava/lang/String;
   if (returnSig=="S")
@@ -157,13 +86,13 @@ setClass("jfloat", representation("numeric"))
     else
       r <- new("jarrayRef", jobj=r, jclass="", jsig=returnSig)
   } else if (substr(returnSig,1,1)=="L") {
-    if (is.null(r)) return(NULL)
+    if (is.null(r)) return(r)
     
     if (returnSig=="Ljava/lang/String;" && evalString)
       return(.External("RgetStringValue",r, PACKAGE="rJava"))
     r <- new("jobjRef", jobj=r, jclass=substr(returnSig,2,nchar(returnSig)-1))
   }
-  .jcheck()
+  if (check) .jcheck()
   r
 }
 
@@ -172,8 +101,8 @@ setClass("jfloat", representation("numeric"))
   if (is.character(obj))
     return(obj)
   r<-NULL
-  if (!inherits(obj,"jobjRef") && !inherits(obj,"jarrayRef"))
-        stop("can get value of Java objects only")
+  if (!is(obj,"jobjRef"))
+    stop("can get value of Java objects only")
   if (!is.null(obj@jclass) && obj@jclass=="lang/java/String")
     r<-.External("RgetStringValue", obj@jobj, PACKAGE="rJava")
   else
@@ -183,7 +112,7 @@ setClass("jfloat", representation("numeric"))
 
 # casts java object into new.class - without(!) type checking
 .jcast <- function(obj, new.class) {
-  if (!inherits(obj,"jobjRef") && !inherits(obj,"jarrayRef"))
+  if (!is(obj,"jobjRef"))
     stop("connot cast anything but Java objects")
   r<-obj
   new.class <- gsub("\\.","/", new.class) # allow non-JNI specifiation
@@ -193,7 +122,7 @@ setClass("jfloat", representation("numeric"))
 
 # makes sure that a given object is jarrayRef 
 .jcastToArray <- function(obj, signature=NULL, class="", quiet=FALSE) {
-  if (!inherits(obj, "jobjRef") && !inherits(obj, "jarrayRef"))
+  if (!is(obj, "jobjRef"))
     return(.jarray(obj))
   if (is.null(signature)) {
     cl <- .jcall(obj, "Ljava/lang/Class;", "getClass")
@@ -232,15 +161,15 @@ setClass("jfloat", representation("numeric"))
     .jcall("java/lang/System", "S", "getProperty", as.character(key)[1])
 }
 
-print.jobjRef <- function(x, ...) {
-  print(paste("Java-Object: ", .jstrVal(x), sep=''), ...)
-  invisible(x)
-}
+setMethod("show", c(object="jobjRef"), function(object) {
+  print(paste("Java-Object{", .jstrVal(object), "}", sep=''))
+  invisible(NULL)
+})
 
-print.jarrayRef <- function(x, ...) {
-  print(paste("Java-Array-Object",x@jsig,": ", .jstrVal(x), sep=''), ...)
-  invisible(x)
-}
+setMethod("show", c(object="jarrayRef"), function(object) {
+  show(paste("Java-Array-Object",object@jsig,":", .jstrVal(object), sep=''))
+  invisible(NULL)
+})
 
 .jarray <- function(x, contents.class=NULL) {
 # common mistake is to not specify a list but just a single Java object
@@ -250,58 +179,94 @@ print.jarrayRef <- function(x, ...) {
 	.Call("RcreateArray", x, contents.class, PACKAGE="rJava")
 }
 
-.jmergeClassPath <- function(cp) {
-  ccp <- .jcall("java/lang/System","S","getProperty","java.class.path")
-  ccpc <- strsplit(ccp, .Platform$path.sep)[[1]]
-  cpc <- strsplit(cp, .Platform$path.sep)[[1]]
-  rcp <- unique(cpc[!(cpc %in% ccpc)])
-  if (length(rcp) > 0) {
-    # the loader requires directories to include trailing slash
-    # Windows: need / or \ ? (untested)
-    dirs <- which(file.info(rcp)$isdir)
-    for (i in dirs)
-      if (substr(rcp[i],nchar(rcp[i]),nchar(rcp[i]))!=.Platform$file.sep)
-        rcp[i]<-paste(rcp[i], .Platform$file.sep, sep='')
-
-    ## this is a hack, really, that exploits the fact that the system class loader
-    ## is in fact a subclass of URLClassLoader and it also subverts protection
-    ## of the addURL class using reflection - yes, bad hack, but we cannot
-    ## replace the system loader with our own, because we may need to attach to
-    ## an existing VM
-    ## The original discussion and code was at:
-    ## http://forum.java.sun.com/thread.jspa?threadID=300557&start=15&tstart=0
-
-    ## it should probably be run in try(..) because chances are that it will
-    ## break if Sun changes something...
-    cl <- .jcall("java/lang/ClassLoader", "Ljava/lang/ClassLoader;", "getSystemClassLoader")
-    urlc <- .jcall("java/lang/Class", "Ljava/lang/Class;", "forName", "java.net.URL")
-    clc <- .jcall("java/lang/Class", "Ljava/lang/Class;", "forName", "java.net.URLClassLoader")
-    ar <- .jcall("java/lang/reflect/Array", "Ljava/lang/Object;",
-                         "newInstance", .jclassClass, 1:1)
-    .jcall("java/lang/reflect/Array", "V", "set",
-                  .jcast(ar, "java/lang/Object"), 0:0,
-                  .jcast(urlc, "java/lang/Object"))
-    m<-.jcall(clc, "Ljava/lang/reflect/Method;", "getDeclaredMethod", "addURL", .jcast(ar,"[Ljava/lang/Class;"))
-    .jcall(m, "V", "setAccessible", TRUE)
-
-    ar <- .jcall("java/lang/reflect/Array", "Ljava/lang/Object;",
-                 "newInstance", .jclassObject, 1:1)
-    
-    for (fn in rcp) {
-      f <- .jnew("java/io/File", fn)
-      url <- .jcall(f, "Ljava/net/URL;", "toURL")
-      .jcall("java/lang/reflect/Array", "V", "set",
-             .jcast(ar, "java/lang/Object"), 0:0,
-             .jcast(url, "java/lang/Object"))
-      .jcall(m, "Ljava/lang/Object;", "invoke",
-             .jcast(cl, "java/lang/Object"), .jcast(ar, "[Ljava/lang/Object;"))
-    }
-
-    # also adjust the java.class.path property to not confuse others
-    if (length(ccp)>1 || (length(ccp)==1 && nchar(ccp[1])>0))
-      rcp <- c(ccp, rcp)
-    acp <- paste(rcp, collapse=.Platform$path.sep)
-    .jcall("java/lang/System","S","setProperty","java.class.path",as.character(acp))
-  } # if #rcp>0
-  invisible(.jcall("java/lang/System","S","getProperty","java.class.path"))
+# works on EXTPTR or jobjRef or NULL. NULL is always silently converted to .jzeroRef
+.jidenticalRef <- function(a,b) {
+  if (is(a,"jobjRef")) a<-a@jobj
+  if (is(b,"jobjRef")) b<-b@jobj
+  if (is.null(a)) a <- .jzeroRef
+  if (is.null(b)) b <- .jzeroRef
+  if (!inherits(a,"externalptr") || !inherits(b,"externalptr")) stop("Invalid argument to .jidenticalRef, must be a pointer or jobjRef")
+  .Call("RidenticalRef",a,b,PACKAGE="rJava")
 }
+
+# returns TRUE only for NULL or jobjREf with jobj=0x0
+is.jnull <- function(x) {
+  (is.null(x) || (is(x,"jobjRef") && .jidenticalRef(x@jobj,.jzeroRef)))
+}
+
+# should we move this to C?
+.jclassRef <- function(x, silent=FALSE) {
+  if (is.jnull(x)) {
+    if (silent) return(NULL) else stop("null reference has no class")
+  }
+  if (!is(x, "jobjRef")) {
+    if (silent) return(NULL) else stop("invalid object")
+  }
+  cl <- NULL
+  try(cl <- .jcall(x, "Ljava/lang/Class;", "getClass", check=FALSE))
+  .jcheck(silent=TRUE)
+  if (is.jnull(cl) && !silent) stop("cannot get class object")
+  cl
+}
+
+# return class object for a given class name; silent determines whether an error should be thrown on failure (FALSE) or just null reference (TRUE)
+.jfindClass <- function(cl, silent=FALSE) {
+  if (!is.character(cl) || length(cl)!=1)
+    stop("invalid class name")
+  cl<-gsub("/",".",cl)
+  a <- NULL
+  try(a <- .jcall("java/lang/Class","Ljava/lang/Class;","forName",cl,check=FALSE))
+  .jcheck(silent=TRUE)
+  if (!silent && is.jnull(a)) stop("class not found")
+  a
+}
+
+# Java-side inheritance check; NULL inherits from any class, because it can be cast to any class type; cl can be a class name or a jobjRef to a class object
+.jinherits <- function(o, cl) {
+  if (is.jnull(o)) return(TRUE)
+  if (!is(o, "jobjRef")) stop("invalid object")
+  if (is.character(cl)) cl <- .jfindClass(cl)
+  if (!is(cl, "jobjRef")) stop("invalid class object")  
+  ocl <- .jclassRef(o)
+  .Call("RisAssignableFrom", ocl@jobj, cl@jobj, PACKAGE="rJava")
+}
+
+# compares two things which may be Java objects. invokes Object.equals if applicable and thus even different pointers can be equal. if one parameter is not Java object, but scalar string/int/number/boolean then a corresponding Java object is created for comparison
+# strict comparison returns FALSE if Java-reference is compared with non-reference. otherwise conversion into Java scalar object is attempted
+.jequals <- function(a, b, strict=FALSE) {
+  if (is.null(a)) a <- new("jobjRef")
+  if (is.null(b)) b <- new("jobjRef")
+  if (is(a,"jobjRef")) o <- a else
+    if (is(b,"jobjRef")) { o <- b; b <- a } else
+    return(all.equal(a,b))
+  if (!is(b,"jobjRef")) {
+    if (strict) return(FALSE)
+    if (length(b)!=1) { warning("comparison of non-scalar values is always FALSE"); return(FALSE) }
+    if (is.character(b)) b <- .jnew("java/lang/String",b) else
+    if (is.integer(b)) b <- .jnew("java/lang/Integer",b) else
+    if (is.numeric(b)) b <- .jnew("java/lang/Double",b) else
+    if (is.logical(b)) b <- .jnew("java/lang/Boolean", b) else
+    { warning("comparison of non-trivial values to Java objects is always FALSE"); return(FALSE) }
+  }
+  if (is.jnull(a))
+    is.jnull(b)
+  else
+    .jcall(o, "Z", "equals", .jcast(b, "java/lang/Object"))
+}
+
+# map R comparison operators to .jequals
+setMethod("==", c(e1="jobjRef",e2="jobjRef"), function(e1,e2) .jequals(e1,e2))
+setMethod("==", c(e1="jobjRef"), function(e1,e2) .jequals(e1,e2))
+setMethod("==", c(e2="jobjRef"), function(e1,e2) .jequals(e1,e2))
+
+setMethod("!=", c(e1="jobjRef",e2="jobjRef"), function(e1,e2) !.jequals(e1,e2))
+setMethod("!=", c(e1="jobjRef"), function(e1,e2) !.jequals(e1,e2))
+setMethod("!=", c(e2="jobjRef"), function(e1,e2) !.jequals(e1,e2))
+
+# other operators such as <,> could be defined as well, but it will require 'O inherits Comparable' check thus it should be defined in reflection.R
+
+# there is no way to distinguish between double and float in R, so we need to mark floats specifically
+.jfloat <- function(x) new("jfloat", as.numeric(x))
+# the same applies to long
+.jlong <- function(x) new("jlong", as.numeric(x))
+

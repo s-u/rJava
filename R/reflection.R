@@ -139,25 +139,23 @@
 
 ### syntactic sugar to allow object$field and object$methods(...)
 ### first attempts to find a field of that name and then a method
-"$.jobjRef" <- function(o, m, ...) {
-  cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
-  f <- .jcall(cl, "Ljava/lang/reflect/Field;", "getField", m)
+setMethod("$", c(x="jobjRef"), function(x, name) {
+  cl <- .jclassRef(x)
+  f <- .jcall(cl, "Ljava/lang/reflect/Field;", "getField", name)
   .jcheck(silent=TRUE)
   if (is.null(f))
-    function(...) .jrcall(o, m, ...)
+    function(...) .jrcall(x, name, ...)
   else
-    .jsimplify(.jcall(f,"Ljava/lang/Object;","get",.jcast(o,"java/lang/Object")))
-}
-
-"$.jarrayRef" <- `$.jobjRef`
+    .jsimplify(.jcall(f,"Ljava/lang/Object;","get",.jcast(x,"java/lang/Object")))
+})
 
 ### support for object$field<-...
-"$<-.jobjRef" <- function(o, field, value) {
-  cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
-  f <- .jcall(cl, "Ljava/lang/reflect/Field;", "getField", field)
+setMethod("$<-", c(x="jobjRef"), function(x, name, value) {
+  cl <- .jcall(x, "Ljava/lang/Class;", "getClass")
+  f <- .jcall(cl, "Ljava/lang/reflect/Field;", "getField", name)
   .jcheck(silent=TRUE)
   if (is.null(f))
-    stop("Field `",field,"' doesn't exist.")
+    stop("Field `",name,"' doesn't exist.")
   if (!inherits(value, "jobjRef")) {
     if (is.integer(value) && length(value)==1) value <- .jnew("java/lang/Integer", value) else
     if (is.numeric(value) && length(value)==1) value <- .jnew("java/lang/Double", as.double(value)) else
@@ -166,14 +164,9 @@
     if (!inherits(value, "jobjRef"))
       stop("Sorry, cannot convert `value' to connesponding Java object. Please use Java objects in field assignments.")
   }
-  .jcall(f,"V","set",.jcast(o,"java/lang/Object"),.jcast(value,"java/lang/Object"))
-  invisible(o)
-}
-
-"$<-.jarrayRef" <- `$<-.jobjRef`
-
-# there is no way to distinguish between double and float in R, so we need to mark floats specifically
-.jfloat <- function(x) new("jfloat", as.numeric(x))
+  .jcall(f,"V","set",.jcast(x,"java/lang/Object"),.jcast(value,"java/lang/Object"))
+  invisible(x)
+})
 
 # get the class name for an object
 .jclass <- function(o) .jcall(.jcall(o, "Ljava/lang/Class;", "getClass"), "S", "getName")

@@ -15,16 +15,19 @@
     Any parametes that will be passed to the corresponding
     constructor. The parameter types are determined automatically and/or
     taken from the \code{jobjRef} object. For details see
-    \code{\link{.jcall}}.}
+    \code{\link{.jcall}}. Note that all named parameters are discarded.}
   \item{check}{
     If set to \code{TRUE} then \code{\link{.jcheck}} is invoked before
     and after the call to the constructor to clear any pending Java
-    exceptions}
+    exceptions.}
   \item{silent}{
     If set to \code{FALSE} then \code{.jnew} will fail with an error if
     the object cannot be created, otherwise a null-reference is returned
     instead. In addition, this flag is also passed to final
-    \code{.jcheck} if \code{check} above is set to \code{TRUE}.
+    \code{.jcheck} if \code{check} above is set to \code{TRUE}. Note
+    that the error handling also clears exceptions, so
+    \code{check=FALSE, silent=FALSE} is usually not a meaningful
+    combination.
   }
 }
 \value{

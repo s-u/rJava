@@ -1,6 +1,62 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.4-4	2006-06-21
+    o	Fixed bug that prevented loading into existing VM
+	if the classpath contained duplicate items.
+	.jmergeClassPath now filters out duplicate paths.
+
+    o	.jcall and .jnew discard all named parameters that are passed
+	as `...'. Named parameters are now reserved for future call options
+
+    o	Converted all S3-methods into S4 methods.
+	Also `show' is now used instead of `print' and the
+	output format was changed.
+
+    o	Protoype for jobjRef is now a valid null-Object
+
+    o	Added .jequals and corresponding ==, != op methods.
+	Currently == and != operators feature the same behavior as
+	.jequals(...,strict=FALSE), i.e. scalar non-Java objects are
+	converted into Java objects if possible and then compared, so
+	 s <- .jnew("java/lang/String","foo")
+	 s == "foo"  # returns TRUE
+
+    o	Added .jinherits which allows to check Java-side
+	inheritance using JNI (= isAssignableTo).
+
+    o   Added .jfindClass and .jclassRef that return Java
+	class object
+
+    o	Added check parameter to .jcall and .jnew that allows the caller
+	to prevent implicit call to .jcheck
+	It is mainly useful in cases where silent operation
+	is desired (e.g. in conjunction with try).
+	Additionally, silent parameter was added to .jnew
+
+    o	Added is.jnull which is like is.null but also returns
+	TRUE if the supplied Java object is a null-reference
+
+    o	Added jlong class and .jlong function. Those were documented in
+	the tutorial but never really implemented. Still, they may not
+	be supported in all parts of rJava.
+	WARNING: conversion between Java's long and R's jlong is lossy!
+	R stores jlong in doubles so the conversion implies loss of
+	precision.
+
+0.4-3	2006-05-16
+    o	improved, documented and fixed handling of fields
+	.jfield is dedicated accessor with more options
+
+0.4-2	2006-05-08
+    o	Update to JRI 0.2-5 (no change in rJava)
+
+0.4-1	2006-05-05
+    o	Fixed bug in Windows initialization
+
+0.4-0	2006-05-03
+    o	JRI is now included in rJava
+
 0.3-9	2006-04-20
      o	fixed a minor bug in Rglue.c that may prevent older
 	compilers from compiling it.

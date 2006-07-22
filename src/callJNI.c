@@ -48,18 +48,18 @@ void init_rJava(void) {
   (*env)->DeleteLocalRef(env, c);
 }
 
-jobject createObject(JNIEnv *env, char *class, char *sig, jvalue *par) {
+jobject createObject(JNIEnv *env, char *class, char *sig, jvalue *par, int silent) {
   /* va_list ap; */
   jmethodID mid;
   jclass cls;
   jobject o;
 
   cls=(*env)->FindClass(env,class);
-  if (!cls) return errJNI("createObject.FindClass %s failed",class);
+  if (!cls) return silent?0:errJNI("createObject.FindClass %s failed",class);
   mid=(*env)->GetMethodID(env, cls, "<init>", sig);
   if (!mid) {
     (*env)->DeleteLocalRef(env, cls);  
-    return errJNI("createObject.GetMethodID(\"%s\",\"%s\") failed",class,sig);
+    return silent?0:errJNI("createObject.GetMethodID(\"%s\",\"%s\") failed",class,sig);
   }
   
   /*  va_start(ap, sig); */
@@ -67,7 +67,7 @@ jobject createObject(JNIEnv *env, char *class, char *sig, jvalue *par) {
   /* va_end(ap); */
   (*env)->DeleteLocalRef(env, cls);  
   
-  return o?o:errJNI("NewObject(\"%s\",\"%s\",...) failed",class,sig);
+  return (o||silent)?o:errJNI("NewObject(\"%s\",\"%s\",...) failed",class,sig);
 }
 
 void printObject(JNIEnv *env, jobject o) {

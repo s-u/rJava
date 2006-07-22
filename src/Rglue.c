@@ -248,7 +248,9 @@ SEXP RinitJVM(SEXP par)
 }
 
 /** converts parameters in SEXP list to jpar and sig.
-    strcat is used on sig, hence sig must be a valid string already */
+    strcat is used on sig, hence sig must be a valid string already
+    since 0.4-4 we ignore named arguments in par
+*/
 SEXP Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int maxsig) {
   SEXP p=par;
   SEXP e;
@@ -256,6 +258,9 @@ SEXP Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int
   int i=0;
 
   while (p && TYPEOF(p)==LISTSXP && (e=CAR(p))) {
+    /* skip all named arguments */
+    if (TAG(p) && TAG(p)!=R_NilValue) { p=CDR(p); continue; };
+    
     rjprintf("Rpar2jvalue: par %d type %d\n",i,TYPEOF(e));
     if (TYPEOF(e)==STRSXP) {
       rjprintf(" string vector of length %d\n",LENGTH(e));
@@ -289,13 +294,33 @@ SEXP Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int
 	jpar[jvpos++].l=newIntArray(env, INTEGER(e),LENGTH(e));
       }
     } else if (TYPEOF(e)==REALSXP) {
-      rjprintf(" real vector of length %d\n",LENGTH(e));
-      if (LENGTH(e)==1) {
-	strcat(sig,"D");
-	jpar[jvpos++].d=(jdouble)(REAL(e)[0]);
+      if (inherits(e, "jfloat")) {
+	rjprintf(" jfloat vector of length %d\n", LENGTH(e));
+	if (LENGTH(e)==1) {
+	  strcat(sig,"F");
+	  jpar[jvpos++].f=(jfloat)(REAL(e)[0]);
+	} else {
+	  strcat(sig,"[F");
+	  jpar[jvpos++].l=newFloatArrayD(env, REAL(e),LENGTH(e));
+	}
+      } else if (inherits(e, "jlong")) {
+	rjprintf(" jlong vector of length %d\n", LENGTH(e));
+	if (LENGTH(e)==1) {
+	  strcat(sig,"J");
+	  jpar[jvpos++].j=(jlong)(REAL(e)[0]);
+	} else {
+	  strcat(sig,"[J");
+	  jpar[jvpos++].l=newLongArrayD(env, REAL(e),LENGTH(e));
+	}
       } else {
-	strcat(sig,"[D");
-	jpar[jvpos++].l=newDoubleArray(env, REAL(e),LENGTH(e));
+	rjprintf(" real vector of length %d\n",LENGTH(e));
+	if (LENGTH(e)==1) {
+	  strcat(sig,"D");
+	  jpar[jvpos++].d=(jdouble)(REAL(e)[0]);
+	} else {
+	  strcat(sig,"[D");
+	  jpar[jvpos++].l=newDoubleArray(env, REAL(e),LENGTH(e));
+	}
       }
     } else if (TYPEOF(e)==LGLSXP) {
       rjprintf(" logical vector of length %d\n",LENGTH(e));
@@ -789,14 +814,13 @@ SEXP RcallMethod(SEXP par) {
 	  return e;
   }
   if (*retsig=='L' || *retsig=='[') {
-    jobject gr;
     jobject r=(*env)->CallObjectMethodA(env,o,mid,jpar);
     if (!r) {
       profReport("Method \"%s\" returned NULL:",mnam);
       return R_NilValue;
     }
     e=j2SEXP(env, r, 1);
-    profReport("Method \"%s\" returned [g.ref=%x]:",mnam, gr);
+    profReport("Method \"%s\" returned",mnam);
     return e;
   }
   profReport("Method \"%s\" has an unknown signature, not called:",mnam);
@@ -932,7 +956,6 @@ SEXP RcallStaticMethod(SEXP par) {
 	  return e;
   }
   if (*retsig=='L' || *retsig=='[') {
-    jobject gr;
     jobject r=(*env)->CallStaticObjectMethodA(env,cls,mid,jpar);
     profReport("Method \"%s\" returned:",mnam);
     return j2SEXP(env, r, 1);
@@ -1025,7 +1048,6 @@ SEXP RgetField(SEXP par) {
 	  return e;
   }
   if (*retsig=='L' || *retsig=='[') {
-    jobject gr;
     jobject r=(*env)->GetObjectField(env,o,mid);
     return j2SEXP(env, r, 1);
   }
@@ -1037,10 +1059,11 @@ SEXP RgetField(SEXP par) {
 SEXP RcreateObject(SEXP par) {
   SEXP p=par;
   SEXP e;
+  int silent=0;
   char *class;
   char sig[256];
   jvalue jpar[32];
-  jobject o,go;
+  jobject o;
   JNIEnv *env=getJNIEnv();
 
   if (TYPEOF(p)!=LISTSXP) {
@@ -1059,7 +1082,17 @@ SEXP RcreateObject(SEXP par) {
   Rpar2jvalue(env,p,jpar,sig,32,256);
   strcat(sig,")V");
   rjprintf(" constructor signature is %s\n",sig);
-  o=createObject(env,class,sig,jpar);
+
+  /* look for named arguments */
+  while (TYPEOF(p)==LISTSXP) {
+    if (TAG(p) && isSymbol(TAG(p))) {
+      if (TAG(p)==install("silent") && isLogical(CAR(p)) && LENGTH(CAR(p))==1)
+	silent=LOGICAL(CAR(p))[0];
+    }
+    p=CDR(p);
+  }
+
+  o=createObject(env,class,sig,jpar,silent);
   if (!o) return R_NilValue;
 
 #ifdef RJ_DEBUG
@@ -1225,4 +1258,20 @@ SEXP RfreeObject(SEXP par) {
 /** create a NULL external reference */
 SEXP RgetNullReference() {
   return R_MakeExternalPtr(0, R_NilValue, R_NilValue);
+}
+
+/** TRUE if cl1 x; cl2 y = (cl2) x ... is valid */
+SEXP RisAssignableFrom(SEXP cl1, SEXP cl2) {
+  SEXP r;
+  JNIEnv *env=getJNIEnv();
+
+  if (TYPEOF(cl1)!=EXTPTRSXP || TYPEOF(cl2)!=EXTPTRSXP)
+    error("invalid type");
+  if (!env)
+    error("VM not initialized");
+  r=allocVector(LGLSXP,1);
+  LOGICAL(r)[0]=((*env)->IsAssignableFrom(env,
+					  (jclass)EXTPTR_PTR(cl1),
+					  (jclass)EXTPTR_PTR(cl2)));
+  return r;
 }

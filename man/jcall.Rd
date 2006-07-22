@@ -23,7 +23,7 @@
   \item{...}{
     Any parametes that will be passed to the Java method. The parameter
     types are determined automatically and/or taken from the
-    \code{jobjRef} object.}
+    \code{jobjRef} object. All named parameters are discarded.}
   \item{evalArray}{This flag determines whether the array return value
     is evaluated (\code{TRUE}) or passed back as Java object reference
     (\code{FALSE}).}

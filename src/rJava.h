@@ -1,7 +1,7 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000403 /* rJava v0.4-3 */
+#define RJAVA_VER 0x000404 /* rJava v0.4-4 */
 
 /* important changes between versions:
    0.4  - includes JRI
@@ -29,7 +29,7 @@ int initJVM(char *user_classpath, int opts, char **optv);
 /* in callJNI */
 void init_rJava(void);
 
-jobject createObject(JNIEnv *env, char *class, char *sig, jvalue *par);
+jobject createObject(JNIEnv *env, char *class, char *sig, jvalue *par, int silent);
 jclass getClass(JNIEnv *env, char *class);
 
 jdoubleArray newDoubleArray(JNIEnv *env, double *cont, int len);
