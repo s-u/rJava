@@ -11,7 +11,7 @@ setClass("jfloat", representation("numeric"))
 setClass("jlong", representation("numeric"))
 
 # create a new object
-.jnew <- function(class, ..., check=TRUE, silent=FALSE) {
+.jnew <- function(class, ..., check=TRUE, silent=!check) {
   class <- gsub("\\.","/",class) # allow non-JNI specifiation
   if (check) .jcheck(silent=TRUE)
   o<-.External("RcreateObject", class, ..., silent=silent, PACKAGE="rJava")
@@ -162,7 +162,7 @@ setClass("jlong", representation("numeric"))
 }
 
 setMethod("show", c(object="jobjRef"), function(object) {
-  print(paste("Java-Object{", .jstrVal(object), "}", sep=''))
+  if (is.jnull(object)) show("Java-Object<null>") else show(paste("Java-Object{", .jstrVal(object), "}", sep=''))
   invisible(NULL)
 })
 

@@ -7,7 +7,7 @@
   \code{.jnew} create a new Java object
 }
 \usage{
-.jnew(class, ..., check=TRUE, silent=FALSE)
+.jnew(class, ..., check=TRUE, silent=!check)
 }
 \arguments{
   \item{class}{fully qualified class name in JNI notation (e.g. \code{"java/lang/String"}).}
