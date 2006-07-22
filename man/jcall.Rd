@@ -8,7 +8,7 @@
 }
 \usage{
 .jcall(obj, returnSig = "V", method, ..., evalArray = TRUE, 
-    evalString = TRUE, interface = "RcallMethod")
+    evalString = TRUE, check = TRUE, interface = "RcallMethod")
 }
 \arguments{
   \item{obj}{Java object (\code{jobjRef} as returned by
@@ -17,7 +17,8 @@
   \item{returnSig}{Return signature in JNI notation (e.g. "V" for void,
     "[I" for \code{int[]} etc.). For convenience additional type
     \code{"S"} is supported and expanded to
-    \code{"Ljava/lang/String;"}.}
+    \code{"Ljava/lang/String;"}, re-mapping \code{"T"} to represent the
+    type \code{short}.}
   \item{method}{The name of the method to be called}
   \item{...}{
     Any parametes that will be passed to the Java method. The parameter
@@ -28,6 +29,10 @@
     (\code{FALSE}).}
   \item{evalString}{This flag determines whether string result is returned
     as characters or as Java object reference.}
+  \item{check}{If set to \code{TRUE} then checks for exceptions are
+    performed before and after the call using
+    \code{\link{.jcheck}(silent=FALSE)}. This is usually the desired
+    behavior, because all calls fail until an expection is cleared.}
   \item{interface}{This option is experimental and specifies the
     interface used for calling the Java method; the current
     implementation supports two interfaces:
@@ -49,9 +54,23 @@
   present in the method definition requires explicit casting using
   \code{\link{.jcast}}. Passing \code{null} arguments also needs a
   proper class specification with \code{\link{.jnull}}.
+
+  Java types \code{long} and \code{float} have no corresponding types in
+  R and therefore any such parameters must be flagged as such using
+  \code{\link{.jfloat}} and \code{\link{.jlong}} functions respectively.
+
+  Java also distinguishes scalar and array types whereas R doesn't have
+  the concept of a scalar. In R a scalar is basically a vector (called
+  array in Java-speak) of the length 1. Therefore passing vectors of the
+  length 1 is ambiguous. \code{.jcall} assumes that any vector of the
+  length 1 that corresponds to a native Java type is a scalar. All other
+  vectors are passed as arrays. Therefore it is important to use
+  \code{\link{.jarray}} if an arbitrary vector (including those of the
+  length 1) is to be passed as an array parameter.
 }
 \seealso{
-  \code{\link{.jnew}}, \code{\link{.jcast}}, \code{\link{.jnull}}
+  \code{\link{.jnew}}, \code{\link{.jcast}}, \code{\link{.jnull}},
+  \code{\link{.jarray}}
 }
 \examples{
 \dontrun{

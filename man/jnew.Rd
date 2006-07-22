@@ -7,21 +7,32 @@
   \code{.jnew} create a new Java object
 }
 \usage{
-.jnew(class, ...)
+.jnew(class, ..., check=TRUE, silent=FALSE)
 }
 \arguments{
   \item{class}{fully qualified class name in JNI notation (e.g. \code{"java/lang/String"}).}
   \item{...}{
     Any parametes that will be passed to the corresponding
     constructor. The parameter types are determined automatically and/or
-    taken from the \code{jobjRef} object. For details see \code{\link{.jcall}}.}
+    taken from the \code{jobjRef} object. For details see
+    \code{\link{.jcall}}.}
+  \item{check}{
+    If set to \code{TRUE} then \code{\link{.jcheck}} is invoked before
+    and after the call to the constructor to clear any pending Java
+    exceptions}
+  \item{silent}{
+    If set to \code{FALSE} then \code{.jnew} will fail with an error if
+    the object cannot be created, otherwise a null-reference is returned
+    instead. In addition, this flag is also passed to final
+    \code{.jcheck} if \code{check} above is set to \code{TRUE}.
+  }
 }
 \value{
   Returns the reference (\code{jobjRef}) to the newly created object or
-  \code{NULL} if something went wrong.
+  \code{null}-reference (see \code{\link{.jnull}}) if something went wrong.
 }
 \seealso{
-  \code{\link{.jcall}}
+  \code{\link{.jcall}}, \code{\link{.jnull}}
 }
 \examples{
 \dontrun{

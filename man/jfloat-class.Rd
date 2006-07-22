@@ -1,11 +1,18 @@
 \name{jfloat-class}
 \docType{class}
 \alias{jfloat-class}
-
-\title{Class "jfloat" - numeric vector marekd as float }
-\description{ This class wraps a numeric vector to be treated as \code{float} argument when passed to Java. R doesn't distinguish between \code{double} and \code{float}, but Java does. In order to satisfy object types, numeric vectors that should be converted to floats on the Java side must be wrapped in this class.}
+\alias{jlong-class}
+\title{Classes "jfloat" and "jlong" - numeric vector marekd as float or
+  long respectively}
+\description{ This class wraps a numeric vector to be treated as
+  \code{float} or \code{long} argument when passed to Java. R doesn't
+  distinguish between \code{double} and \code{float}, but Java does. In
+  order to satisfy object types, numeric vectors that should be
+  converted to floats or long on the Java side must be wrapped in this
+  class.}
 \section{Objects from the Class}{
-Objects can be created by calling \code{\link{.jfloat}}.
+  Objects can be created by calling \code{\link{.jfloat}} or
+  \code{\link{.jlong}} respectively.
 }
 \section{Slots}{
   \describe{
@@ -13,11 +20,11 @@ Objects can be created by calling \code{\link{.jfloat}}.
   }
 }
 \section{Extends}{
-Class \code{"numeric"}, from data part.
-Class \code{"vector"}, by class \code{"numeric"}.
+  Class \code{"numeric"}, from data part.
+  Class \code{"vector"}, by class \code{"numeric"}.
 }
 \section{Methods}{
-No methods defined with class "jfloat" in the signature.
+  "jfloat" and "jlong" have no methods other than those inherited from "numeric".
 }
 %\references{ ~put references to the literature/web site here ~ }
 \author{ Simon Urbanek }
@@ -26,7 +33,7 @@ No methods defined with class "jfloat" in the signature.
 % ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
- \code{\link{.jfloat}} or \code{\link{.jcall}}
+  \code{\link{.jfloat}}, \code{\link{.jlong}} and \code{\link{.jcall}}
 }
 %\examples{
 %##---- Should be DIRECTLY executable !! ----

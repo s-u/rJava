@@ -1,25 +1,34 @@
 \name{jnull}
 \alias{.jnull}
+\alias{is.jnull}
 \title{
-  Creates a null object reference
+  Java null object reference
 }
 \description{
   \code{.jnull} returns a \code{null} reference of a specified class
-  type.
+  type. The resulting object is of the class \code{jobjRef}.
+
+  \code{is.jnull} is an extension of \code{is.null} that also returns
+  \code{TRUE} if the supplied object it a \code{null} Java reference.
 }
 \usage{
 .jnull(class = "java/lang/Object")
+is.jnull(x)
 }
 \arguments{
   \item{class}{fully qualified target class name in JNI notation
     (e.g. \code{"java/lang/String"}).}
+  \item{x}{object to check}
 }
 \value{
-  Returns a Java object reference (\code{jobjRef}) of a \code{null}
-  object having the specified object class.
+  \code{.jnull} returns a Java object reference (\code{jobjRef}) of a
+  \code{null} object having the specified object class.
+
+  \code{is.jnull} returns \code{TRUE} if \code{is.null(x)} is
+  \code{TRUE} or if \code{x} is a Java \code{null} reference.
 }
 \details{
-  This function is necesary if \code{null} is to be passed as an
+  \code{.jnull} is necesary if \code{null} is to be passed as an
   argument of \code{\link{.jcall}} or \code{\link{.jnew}}, in order to be
   able to find the correct method/constructor.
 
@@ -31,7 +40,11 @@
   Calling \code{.jcall("A",,"run",NULL)} is ambiguous, because it is
   unclear which method is to be used. Therefore rJava requires class
   information with each argument to \code{\link{.jcall}}. If we wanted
-  to run the String-version, we could use \code{.jcall("A",,"run",.jnull("java/lang/String"))}.
+  to run the String-version, we could use
+  \code{.jcall("A",,"run",.jnull("java/lang/String"))}.
+
+  \code{is.jnull} is a test that should be used to determine \code{null}
+  reference.
 }
 \seealso{
   \code{\link{.jcall}}, \code{\link{.jcast}}

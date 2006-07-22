@@ -1,20 +1,24 @@
 \name{JavaAccess}
-\alias{$.jobjRef}
-\alias{$<-.jobjRef}
-\alias{$.jarrayRef}
-\alias{$<-.jarrayRef}
+\alias{$,jobjRef-method}
+\alias{$<-,jobjRef-method}
 \title{
   Field/method operator for Java objects
 }
 \description{
   The \code{$} operator for \code{jobjRef} Java object references provides convenience access to object attributes and calling Java methods.
 }
+\section{Methods}{
+  \describe{
+    \item{\code{$}}{\code{signature(x = "jobjRef")}: ... }
+    \item{\code{$<-}}{\code{signature(x = "jobjRef")}: ... }
+	 }
+}
 \details{
   rJava provies two levels of API: low-level JNI-API in the form of \code{\link{.jcall}} function and high-level reflection API based on the \code{$} operator. The former is very fast, but inflexible. The latter is a convenient way to use Java-like programming at the cost of performance. The reflection API is build around the \code{$} operator on \code{\link{jobjRef-class}} objects that allows to access Java attributes and call object methods.
 
- \code{$.jobjRef} returns either the value of the attribute or calls a method, depending on which name matches first.
+ \code{$} returns either the value of the attribute or calls a method, depending on which name matches first.
 
- \code{$<-.jobjRef} assigns a value to the corresponding Java attribute.
+ \code{$<-} assigns a value to the corresponding Java attribute.
 
  This is just a convenience API. Internally all calls are mapped into \code{\link{.jcall}} calls, therefore the calling conventions and returning objects use the smae rules. For time-critical Java calls \code{\link{.jcall}} should be used directly.
 
