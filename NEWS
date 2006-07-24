@@ -1,6 +1,14 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.4-5	2006-06-24
+    o	Added support for scalar bytes as .jbyte (byte arrays are still
+	natively represented as RAW vectors)
+
+    o	Added .r2j function which allows to push R objects into Java as
+	references. This works only if R is run via JRI, because it
+	requires a working Rengine instance.
+
 0.4-4	2006-06-21
     o	Fixed bug that prevented loading into existing VM
 	if the classpath contained duplicate items.

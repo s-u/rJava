@@ -125,7 +125,7 @@ jintArray newIntArray(JNIEnv *env, int *cont, int len) {
   return da;
 }
 
-jintArray newByteArray(JNIEnv *env, void *cont, int len) {
+jbyteArray newByteArray(JNIEnv *env, void *cont, int len) {
   jbyteArray da=(*env)->NewByteArray(env,len);
   jbyte *dae;
 
@@ -136,6 +136,25 @@ jintArray newByteArray(JNIEnv *env, void *cont, int len) {
     return errJNI("newByteArray.GetByteArrayElements failed");
   }
   memcpy(dae,cont,len);
+  (*env)->ReleaseByteArrayElements(env, da, dae, 0);
+  return da;
+}
+
+jbyteArray newByteArrayI(JNIEnv *env, int *cont, int len) {
+  jbyteArray da=(*env)->NewByteArray(env,len);
+  jbyte* dae;
+  int i=0;
+
+  if (!da) return errJNI("newByteArray.new(%d) failed",len);
+  dae=(*env)->GetByteArrayElements(env, da, 0);
+  if (!dae) {
+    (*env)->DeleteLocalRef(env,da);
+    return errJNI("newByteArray.GetByteArrayElements failed");
+  }
+  while (i<len) {
+    dae[i]=(jbyte)cont[i];
+    i++;
+  }
   (*env)->ReleaseByteArrayElements(env, da, dae, 0);
   return da;
 }

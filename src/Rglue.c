@@ -283,12 +283,18 @@ SEXP Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int
     } else if (TYPEOF(e)==INTSXP) {
       rjprintf(" integer vector of length %d\n",LENGTH(e));
       if (LENGTH(e)==1) {
-	strcat(sig,"I");
-	jpar[jvpos++].i=(jint)(INTEGER(e)[0]);
-	rjprintf("  single int orig=%d, jarg=%d [jvpos=%d]\n",
-	       (INTEGER(e)[0]),
-	       jpar[jvpos-1],
-	       jvpos);
+	if (inherits(e, "jbyte")) {
+	  rjprintf("  (actually a single byte 0x%x)\n", INTEGER(e)[0]);
+	  jpar[jvpos++].b=(jbyte)(INTEGER(e)[0]);
+	  strcat(sig,"B");
+	} else {
+	  strcat(sig,"I");
+	  jpar[jvpos++].i=(jint)(INTEGER(e)[0]);
+	  rjprintf("  single int orig=%d, jarg=%d [jvpos=%d]\n",
+		   (INTEGER(e)[0]),
+		   jpar[jvpos-1],
+		   jvpos);
+	}
       } else {
 	strcat(sig,"[I");
 	jpar[jvpos++].l=newIntArray(env, INTEGER(e),LENGTH(e));
@@ -773,6 +779,14 @@ SEXP RcallMethod(SEXP par) {
     profReport("Method \"%s\" returned:",mnam);
     return e;
   }
+  if (*retsig=='B') {
+    int r=(int) (*env)->CallByteMethodA(env,o,mid,jpar);
+    PROTECT(e=allocVector(INTSXP, 1));
+    INTEGER(e)[0]=r;
+    UNPROTECT(1);
+    profReport("Method \"%s\" returned:",mnam);
+    return e;
+  }
   if (*retsig=='C') {
 	  int r=(int) (*env)->CallCharMethodA(env,o,mid,jpar);
 	  PROTECT(e=allocVector(INTSXP, 1));
@@ -915,6 +929,14 @@ SEXP RcallStaticMethod(SEXP par) {
     profReport("Method \"%s\" returned:",mnam);
     return e;
   }
+  if (*retsig=='B') {
+    int r=(int) (*env)->CallStaticByteMethodA(env,cls,mid,jpar);
+    PROTECT(e=allocVector(INTSXP, 1));
+    INTEGER(e)[0]=r;
+    UNPROTECT(1);
+    profReport("Method \"%s\" returned:",mnam);
+    return e;
+  }
   if (*retsig=='J') {
     jlong r=(*env)->CallStaticLongMethodA(env,cls,mid,jpar);
     PROTECT(e=allocVector(REALSXP, 1));
@@ -1018,6 +1040,13 @@ SEXP RgetField(SEXP par) {
 	  INTEGER(e)[0]=r;
 	  UNPROTECT(1);
 	  return e;
+  }
+  if (*retsig=='B') {
+    int r=(int) (*env)->GetByteField(env,o,mid);
+    PROTECT(e=allocVector(INTSXP, 1));
+    INTEGER(e)[0]=r;
+    UNPROTECT(1);
+    return e;
   }
   if (*retsig=='J') {
     jlong r=(*env)->GetLongField(env,o,mid); /* FIXME: jlong=int ?? */
@@ -1129,7 +1158,11 @@ SEXP RcreateArray(SEXP ar, SEXP cl) {
   switch(TYPEOF(ar)) {
   case INTSXP:
     {
-      if (inherits(ar, "jchar")) {
+      if (inherits(ar, "jbyte")) {
+	jbyteArray a = newByteArrayI(env, INTEGER(ar), LENGTH(ar));
+	if (!a) return R_NilValue;
+	return new_jarrayRef(a, "[B");
+      } else if (inherits(ar, "jchar")) {
 	jcharArray a = newCharArrayI(env, INTEGER(ar), LENGTH(ar));
 	if (!a) return R_NilValue;
 	return new_jarrayRef(a, "[C");

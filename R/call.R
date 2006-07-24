@@ -9,6 +9,8 @@ setClass("jobjRef", representation(jobj="externalptr", jclass="character"), prot
 setClass("jarrayRef", representation("jobjRef", jsig="character"))
 setClass("jfloat", representation("numeric"))
 setClass("jlong", representation("numeric"))
+setClass("jbyte", representation("integer"))
+setClass("jchar", representation("integer"))
 
 # create a new object
 .jnew <- function(class, ..., check=TRUE, silent=!check) {
@@ -269,4 +271,8 @@ setMethod("!=", c(e2="jobjRef"), function(e1,e2) !.jequals(e1,e2))
 .jfloat <- function(x) new("jfloat", as.numeric(x))
 # the same applies to long
 .jlong <- function(x) new("jlong", as.numeric(x))
+# and byte
+.jbyte <- function(x) new("jbyte", as.integer(x))
+# and char (experimental)
+.jchar <- function(x) new("jchar", as.integer(x))
 

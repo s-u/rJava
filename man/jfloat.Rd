@@ -1,8 +1,12 @@
 \name{jfloat}
 \alias{.jfloat}
 \alias{.jlong}
+\alias{.jbyte}
+\alias{.jchar}
 \alias{jfloat}
 \alias{jlong}
+\alias{jbyte}
+\alias{jchar}
 \title{
   Wrap numeric vector as flat Java parameter
 }
@@ -14,14 +18,18 @@
 \usage{
 .jfloat(x)
 .jlong(x)
+.jbyte(x)
+.jchar(x)
 }
 \arguments{
   \item{x}{numeric vector}
 }
 \value{
-  Returns a numeric vector of the class \code{jfloat} or \code{jlong}
+  Returns a numeric vector of the class \code{jfloat}, \code{jlong},
+  \code{jbyte} or \code{jchar}
   that can be used as parameter to Java calls that require
-  \code{float} or \code{long} parameters respectively. 
+  \code{float}, \code{long}, \code{byte} or \code{char} parameters
+  respectively.
 }
 \details{
   R has no native \code{float} or \code{long} type. Numeric vectors are
@@ -35,6 +43,13 @@
   parameter of the \code{long} Java type. Please note that in general R
   has no native type that will hold a \code{long} value, so conversion
   between Java's \code{long} type and R's numeric is potentially lossy.
+
+  \code{.jbyte} is used what a scalar byte is to be passed ot Java. Note
+  that byte arrays are natively passed as RAW vectors, not as
+  \code{.jbyte} arrays.
+  
+  \code{jchar} is strictly experimental and may be based on
+  \code{character} vectors in the future.
 }
 \seealso{
   \code{\link{.jcall}}, \code{\link{jfloat-class}}
