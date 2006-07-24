@@ -3,7 +3,7 @@ PKG_CFLAGS+=@JAVA_INC@
 PKG_LIBS+=@JAVA_LIBS@
 JAVA_HOME=@JAVA_HOME@
 # make SHLIB believe that we know better what the objects are
-#OBJECTS=Rglue.o callJNI.o initJNI.o rJava.o jri.o
+#OBJECTS=Rglue.o callJNI.o initJNI.o rJava.o jri.o jri_glue.o
 
 all: $(SHLIB) @WANT_JRI_TRUE@ jri
 
@@ -14,5 +14,5 @@ all: $(SHLIB) @WANT_JRI_TRUE@ jri
 jri:
 	$(MAKE) -C ../jri/
 	-@mkdir -p ../inst/jri
-	@(cp ../jri/src/JRI.jar ../jri/*jri.* ../jri/run ../inst/jri/)
+	@(cp -r ../jri/src/JRI.jar ../jri/*jri.* ../jri/run ../jri/examples ../inst/jri/)
 

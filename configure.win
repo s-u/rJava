@@ -42,7 +42,7 @@ if [ -e jri/configure.win ]; then
     if [ $BR = 0 ]; then
 	echo "=== JRI built ==="
 	mkdir -p inst/jri
-	cp jri/src/jri.dll jri/src/JRI.jar inst/jri/
+	cp -r jri/src/jri.dll jri/src/JRI.jar jri/examples inst/jri/
     else
 	echo "**** WARNING: JRI could NOT be built" >&2
 	if [ -z "$INGORE" ]; then
