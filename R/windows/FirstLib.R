@@ -1,7 +1,3 @@
-Sys.getRegistrySZ <- function (key, entry, root="HKEY_LOCAL_MACHINE") {
-  .Call("RegGetStrValue",as.character(c(as.character(key),as.character(entry),as.character(root))))
-}
-
 .First.lib <-
 function(libname, pkgname) {
     javahome <- Sys.getenv("JAVA_HOME")
@@ -43,4 +39,6 @@ function(libname, pkgname) {
     Sys.putenv(PATH=paste(Sys.getenv("PATH"),
                file.path(javahome, "bin", "client"), sep=";"))
     library.dynam("rJava", pkgname, libname)
+
+    .jfirst(libname, pkgname)
 }
