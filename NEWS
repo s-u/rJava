@@ -1,6 +1,9 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.4-6	2006-08-20
+    o	Fixed bug in initialization on Windows, introduced in 0.4-4
+
 0.4-5	2006-06-24
     o	Added support for scalar bytes as .jbyte (byte arrays are still
 	natively represented as RAW vectors)
