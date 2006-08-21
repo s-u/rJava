@@ -47,7 +47,9 @@
 }
 \examples{
 \dontrun{
-.jinit(classpath="myClasses.jar")
+## set heap size limit to 512MB (see java -X) and
+## use "myClasses.jar" as the class path
+.jinit(classpath="myClasses.jar", parameters="-Xmx512m")
 }
 }
 \keyword{interface}
