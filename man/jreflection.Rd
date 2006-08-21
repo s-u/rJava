@@ -34,7 +34,7 @@
   signature. That is somewhat easier using the above methods.
 }
 \seealso{
-  \code{\link{.jcall}}, \code{\link{.jnew}}, \code{\link{.jcast}} or \code{link{$.jobjRef}}
+  \code{\link{.jcall}}, \code{\link{.jnew}}, \code{\link{.jcast}} or \code{\link{$,jobjRef-method}}
 }
 \examples{
 \dontrun{

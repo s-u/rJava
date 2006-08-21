@@ -44,7 +44,7 @@
   has no native type that will hold a \code{long} value, so conversion
   between Java's \code{long} type and R's numeric is potentially lossy.
 
-  \code{.jbyte} is used what a scalar byte is to be passed ot Java. Note
+  \code{.jbyte} is used when a scalar byte is to be passed ot Java. Note
   that byte arrays are natively passed as RAW vectors, not as
   \code{.jbyte} arrays.
   
