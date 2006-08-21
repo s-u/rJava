@@ -1293,6 +1293,42 @@ SEXP RgetNullReference() {
   return R_MakeExternalPtr(0, R_NilValue, R_NilValue);
 }
 
+/** check whether there is an exception pending and
+    return the exception if any (NULL otherwise) */
+SEXP RpollException() {
+  JNIEnv *env=getJNIEnv();
+  jthrowable t=(*env)->ExceptionOccurred(env);
+  return t?j2SEXP(env, t, 1):R_NilValue;
+}
+
+/** clear any pending exceptions */
+void RclearException() {
+  JNIEnv *env=getJNIEnv();
+  (*env)->ExceptionClear(env);  
+}
+
+SEXP RthrowException(SEXP ex) {
+  JNIEnv *env=getJNIEnv();
+  jthrowable t=0;
+  SEXP exr;
+  int tr=0;
+  SEXP res;
+
+  if (!inherits(ex, "jobjRef"))
+    error("Invalid throwable object.");
+  
+  exr=GET_SLOT(ex, install("jobj"));
+  if (exr && TYPEOF(exr)==EXTPTRSXP)
+    t=(jthrowable)EXTPTR_PTR(exr);
+  if (!t)
+    error("Throwable must be non-null.");
+  
+  tr = (*env)->Throw(env, t);
+  res = allocVector(INTSXP, 1);
+  INTEGER(res)[0]=tr;
+  return res;
+}
+
 /** TRUE if cl1 x; cl2 y = (cl2) x ... is valid */
 SEXP RisAssignableFrom(SEXP cl1, SEXP cl2) {
   SEXP r;
@@ -1308,3 +1344,4 @@ SEXP RisAssignableFrom(SEXP cl1, SEXP cl2) {
 					  (jclass)EXTPTR_PTR(cl2)));
   return r;
 }
+

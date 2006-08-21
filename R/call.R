@@ -256,6 +256,29 @@ is.jnull <- function(x) {
     .jcall(o, "Z", "equals", .jcast(b, "java/lang/Object"))
 }
 
+## poll for an exception
+.jgetEx <- function(clear=FALSE) {
+  exo <- .Call("RpollException", PACKAGE="rJava")
+  if (is.null(exo)) return(NULL)
+  new("jobjRef", jobj=exo, jclass="java/lang/Throwable")
+}
+
+## explicitly clear any pending exceptions
+.jclear <- function() {
+  .C("RclearException", PACKAGE="rJava")
+  invisible(NULL)
+}
+
+## throw an exception
+.jthrow <- function(exception, message=NULL) {
+  if (is.character(exception))
+    exception <- .jnew(exception, as.character(message))
+  if (is(exception, "jobjRef"))
+    .Call("RthrowException", exception, PACKAGE="rJava")
+  else
+    error("Invalid exception.")
+}
+
 # map R comparison operators to .jequals
 setMethod("==", c(e1="jobjRef",e2="jobjRef"), function(e1,e2) .jequals(e1,e2))
 setMethod("==", c(e1="jobjRef"), function(e1,e2) .jequals(e1,e2))
@@ -275,4 +298,3 @@ setMethod("!=", c(e2="jobjRef"), function(e1,e2) !.jequals(e1,e2))
 .jbyte <- function(x) new("jbyte", as.integer(x))
 # and char (experimental)
 .jchar <- function(x) new("jchar", as.integer(x))
-

@@ -1,7 +1,7 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000406 /* rJava v0.4-6 */
+#define RJAVA_VER 0x000407 /* rJava v0.4-7 */
 
 /* important changes between versions:
    0.4  - includes JRI
@@ -40,7 +40,7 @@ jcharArray newCharArrayI(JNIEnv *env, int *cont, int len);
 jfloatArray newFloatArrayD(JNIEnv *env, double *cont, int len);
 jlongArray newLongArrayD(JNIEnv *env, double *cont, int len);
 jintArray newByteArray(JNIEnv *env, void *cont, int len);
-
+jbyteArray newByteArrayI(JNIEnv *env, int *cont, int len);
 
 jobject makeGlobal(JNIEnv *env, jobject o);
 void releaseObject(JNIEnv *env, jobject o);

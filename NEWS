@@ -1,6 +1,12 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.4-7	(under development)
+    o	Added .jgetEx and .jclear functions for querying and clearing
+	of Java exceptions/throwables.
+
+    o	Added .jthrow to allow throwing of exceptions from R code.
+
 0.4-6	2006-08-20
     o	Fixed bug in initialization on Windows, introduced in 0.4-4
 

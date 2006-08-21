@@ -13,7 +13,8 @@
 \arguments{
   \item{silent}{If set to \code{FALSE} then Java is instructed to print
     the exception on \code{stderr}. Note that Windows Rgui doesn't show
-    \code{stderr} so it will not appear there.}
+    \code{stderr} so it will not appear there (the printing is done
+    internally in the JVM, so there is no simple way to use R's I/O).}
 }
 \value{
   Returns \code{TRUE} if an exception occurred or \code{FALSE} otherwise.
@@ -23,12 +24,12 @@
   obtain programmatical access to thrown exceptions. In addition, some
   internal code clears exceptions (e.g. after some failed JNI calls), so
   it may occasionally not behave as expected. However, this applies only
-  to code called as a side-effect (such as when converting object), so
-  exceptions thrown as a result of directly invoked code are not
+  to code called as a side-effect (such as when converting an object), so
+  exceptions thrown as a result of a directly invoked code are not
   affected.
 
-  Nevertheless more elaborate exception handling system is being
-  developed for rJava 0.5.
+  Nevertheless more elaborate exception handling system is planned
+  for rJava 0.5.
 }
 \seealso{
   \code{\link{.jcall}}

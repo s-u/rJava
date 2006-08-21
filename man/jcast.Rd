@@ -21,8 +21,8 @@
   \code{obj}, changing the object class.
 }
 \details{
-  This function is necesary if the argument of \code{\link{.jcall}} or
-  \code{link{.jnew}} is defined as the superclass of the object to be
+  This function is necessary if a argument of \code{\link{.jcall}} or
+  \code{\link{.jnew}} is defined as the superclass of the object to be
   passed. (See \code{\link{.jcall}}) No type check is performed and the
   original object is not modified.
 }
