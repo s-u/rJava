@@ -2,6 +2,10 @@
 --------------------------
 
 0.4-7	(under development)
+    o	.jevalArray now works with Java objects that have not been
+	cast to a Java array explicitly. The function is now also
+	documented properly.
+
     o	Added .jgetEx and .jclear functions for querying and clearing
 	of Java exceptions/throwables.
 

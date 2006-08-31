@@ -38,10 +38,15 @@ setClass("jchar", representation("integer"))
   jobj<-obj
   sig<-rawJNIRefSignature
   if (is.null(rawJNIRefSignature)) {
-    if(!inherits(obj,"jarrayRef"))
-      stop("The object is not an array reference (jarrayRef).")
+    if(!inherits(obj,"jarrayRef")) {
+      if (!inherits(obj,"jobjRef"))
+        stop("object is not a Java object reference (jobjRef/jarrayRef).")
+      cl <- .jclass(obj)
+      if (is.null(cl) || substr(cl,1,1) != "[")
+        stop("object is not a Java array.")
+      sig <- cl
+    } else sig <- obj@jsig
     jobj<-obj@jobj
-    sig<-obj@jsig
   }
   if (sig=="[I")
     return(.External("RgetIntArrayCont", jobj, PACKAGE="rJava"))
