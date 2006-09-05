@@ -16,7 +16,7 @@ if [ -e /tmp/rJava/configure ]; then
 else 
     echo "Running autoreconf ..."
     autoreconf
-    rm -rf autom4te*
+    rm -rf autom4te* acloc*
 fi
 
 if [ ! -e install-sh ]; then
