@@ -1,7 +1,7 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.4-7	(under development)
+0.4-7	2006-09-05
     o	.jevalArray now works with Java objects that have not been
 	cast to a Java array explicitly. The function is now also
 	documented properly.
