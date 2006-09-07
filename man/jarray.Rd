@@ -21,7 +21,7 @@
   \item{contents.class}{common class of the contained objects, see
     details}
   \item{obj}{Java object reference to an array that is to be evaluated}
-  \item{rawJNIRefSignatire}{JNI signature that whould be used for
+  \item{rawJNIRefSignature}{JNI signature that whould be used for
     conversion. If set to \code{NULL}, the signature is detected
     automatically.}
   \item{silent}{if set to true, warnings are suppressed}
