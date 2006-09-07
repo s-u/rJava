@@ -82,7 +82,7 @@
     if (rcn=="java.lang.Integer") r <- .jcall(r, "I", "intValue")
     else if (rcn=="java.lang.Number" | rcn=="java.lang.Double" | rcn=="java.lang.Float")
       r <- .jcall(r, "D", "doubleValue")
-    else if (rcn=="java.lang.String") r <- .jstrVal(s)
+    else if (rcn=="java.lang.String") r <- .jstrVal(r)
     else if (rcn=="java.lang.Boolean") r <- .jcall(r, "Z", "booleanValue")
   }
   r
