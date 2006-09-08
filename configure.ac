@@ -203,7 +203,7 @@ else
   AC_MSG_RESULT([no])
 fi
 
-AC_MSG_CHECKING([whether JRI was requested])
+AC_MSG_CHECKING([whether JRI is requested])
 if test "${want_jri}" = yes; then
   AC_MSG_RESULT([yes])
   export R_HOME

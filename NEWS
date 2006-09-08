@@ -1,6 +1,10 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.4-8	(under development)
+    o	Added --enable-jri=auto option which will build JRI only if R
+	shared library is present. It is now the default.
+
 0.4-7	2006-09-05
     o	.jevalArray now works with Java objects that have not been
 	cast to a Java array explicitly. The function is now also
