@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(rJava, 0.1, Simon.Urbanek@math.uni-augsburg.de)
+AC_INIT(rJava, 0.4, Simon.Urbanek@r-project.org)
 AC_CONFIG_SRCDIR([src/rJava.c])
 AC_CONFIG_HEADER([src/config.h])
 
@@ -13,6 +13,12 @@ CC=`${R_HOME}/bin/R CMD config CC`;
 CFLAGS=`${R_HOME}/bin/R CMD config CFLAGS`
 LIBS=${PKG_LIBS}
 AC_SUBST(R_HOME)
+
+RLD=`${R_HOME}/bin/R CMD config --ldflags 2>/dev/null`
+has_R_shlib=no
+if test -n "$RLD"; then
+   has_R_shlib=yes
+fi
 
 ## enable threads, i.e. Java is running is a separate thread
 AC_ARG_ENABLE([threads],
@@ -41,9 +47,9 @@ AC_ARG_ENABLE([jni-cache],
 AC_ARG_ENABLE([jri],
 [AC_HELP_STRING([--enable-jri],
 		[enable Java to R interface (JRI), which allows Java programs
-		to embed R. @<:@yes@:>@])],
+		to embed R. @<:@auto@:>@])],
 [want_jri="${enableval}"],
-[want_jri=yes])
+[want_jri=auto])
 
 
 ## enable debug flags
@@ -70,20 +76,6 @@ AC_HEADER_TIME
 
 # Checks for library functions.
 AC_FUNC_MALLOC
-AC_TYPE_SIGNAL
-AC_CHECK_FUNCS([memset mkdir rmdir select socket])
-
-AC_MSG_CHECKING([endianess])
-AC_TRY_RUN(
-	[
-int main(void) { int i=0x12345678; return (*((char*)&i)==0x78)?0:1; }
-	],
-	[AC_MSG_RESULT(intel-like)],
-	[
-		AC_MSG_RESULT(PPC-like)
-		AC_DEFINE(SWAPEND, 1, [Must be defined for platforms with bytesex inverse to intel style])
-	]
-)
 
 if test -n "${JAVA_HOME}" ; then
   JAVA_PATH=${JAVA_HOME}:${JAVA_HOME}/jre/bin:${JAVA_HOME}/bin:${PATH}
@@ -125,7 +117,7 @@ JAVA_INC="-I${JNI_H}"
 jac_found_md=no
 for mddir in . linux solaris ppc irix alpha aix hp-ux genunix cygwin win32 freebsd; do
 AC_CHECK_FILE(${JNI_H}/$mddir/jni_md.h,[JAVA_INC="${JAVA_INC} -I${JNI_H}/$mddir" jac_found_md=yes])
-if test $jac_found_md == yes; then break; fi
+if test ${jac_found_md} = yes; then break; fi
 done
 
 JAVA_LIBS=`${JAVA} -classpath . getsp -libs`
@@ -163,6 +155,11 @@ int main(void) {
 	[AC_MSG_RESULT([ok])],
 	[AC_MSG_ERROR([One or more JNI types differ from the corresponding native type. You may need to use non-standard compiler flags or a different compiler in order to fix this.])])
 
+if test "${want_jri}" = auto; then
+   AC_MSG_CHECKING([whether JRI should be compiled (autodetect)])
+   AC_MSG_RESULT([${has_R_shlib}])
+   want_jri=${has_R_shlib}
+fi
 AM_CONDITIONAL(WANT_JRI, [test "x${want_jri}" = xyes])
 
 AC_MSG_CHECKING([whether debugging output should be enabled])
@@ -206,12 +203,16 @@ else
   AC_MSG_RESULT([no])
 fi
 
+AC_MSG_CHECKING([whether JRI was requested])
 if test "${want_jri}" = yes; then
+  AC_MSG_RESULT([yes])
   export R_HOME
   export JAVA_HOME
   CONFIGURED=1
   export CONFIGURED
   AC_CONFIG_SUBDIRS(jri)
+else
+  AC_MSG_RESULT([no])
 fi
 
 AC_CONFIG_FILES([src/Makevars])
