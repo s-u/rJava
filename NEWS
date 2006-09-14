@@ -1,6 +1,9 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.4-9	2006-09-12
+    o	Update to JRI 0.3-3 which fixes API version mistake which
+
 0.4-8	2006-09-11
     o	Added --enable-jri=auto option which will build JRI only if R
 	shared library is present. It is now the default.
