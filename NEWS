@@ -1,6 +1,13 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.4-10	2006-09-14
+    o	Removed obsolete JNI 1.1 support that is no longer provided
+	in JDK 1.6 and thus prevented rJava from being used with JDK 1.6
+
+    o	Update to JRI 0.3-4 (change compilation to force Java 1.4
+	compatibility even when more recent JDK is used)
+
 0.4-9	2006-09-12
     o	Update to JRI 0.3-3 which fixes API version mistake which
 
