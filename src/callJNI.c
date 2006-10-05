@@ -17,11 +17,13 @@ void RJavaCheckExceptions(int *silent, int *result) {
 }
 
 void* errJNI(char *err, ...) {
+  char msg[512];
   va_list ap;
   va_start(ap, err);
-  vfprintf(stderr, err, ap);
+  msg[511]=0;
+  vsnprintf(msg, 511, err, ap);
+  Rf_warning(msg);
   va_end(ap);
-  fputs("\n",stderr);
   checkExceptions();
   return 0;
 }
