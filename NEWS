@@ -1,11 +1,13 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.4-11  (under development)
+0.4-11  2006-10-10
     o	Replace variadic macros with wrappers (for compilers that don't
 	support ISO C99).
 
     o	Modify JNI error reporting - use warnings instead of direct stderr.
+
+    o	Update to JRI 0.3-5
 
 0.4-10	2006-09-14
     o	Removed obsolete JNI 1.1 support that is no longer provided
