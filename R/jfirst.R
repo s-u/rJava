@@ -6,7 +6,7 @@
 
 # variables in the rJava environment that will be initialized *after* the package is loaded
 # they need to be pre-created at load time and populated later by .jinit
-.delayed.variables <- c(".jniInitialized", ".jclassObject", ".jclassString",
+.delayed.variables <- c(".jniInitialized", ".jclassObject", ".jclassString", ".jclassClass",
                         ".jclass.int", ".jclass.double", ".jclass.float", ".jclass.boolean",
                         ".jinit.merge.error")
 
