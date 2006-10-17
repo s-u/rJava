@@ -7,7 +7,7 @@
   \code{.jcast} returns a Java object reference cast to another Java class.
 }
 \usage{
-.jcast(obj, new.class)
+.jcast(obj, new.class = "java/lang/Object")
 }
 \arguments{
   \item{obj}{a Java object reference}

@@ -1,5 +1,6 @@
-.First.lib <-
+.onLoad <-
 function(libname, pkgname) {
+    require(methods)
     javahome <- Sys.getenv("JAVA_HOME")
     if(!nchar(javahome)) {
 	# let's try to fetch the paths from registry via WinRegistry.dll
@@ -37,7 +38,9 @@ function(libname, pkgname) {
     if(!nchar(javahome)) stop("JAVA_HOME is not set")
     #else cat("using JAVA_HOME =", javahome, "\n")
     Sys.putenv(PATH=paste(Sys.getenv("PATH"),
-               file.path(javahome, "bin", "client"), sep=";"))
+                 file.path(javahome, "bin", "client"),
+                 file.path(javahome, "jre", "bin", "client"),
+                 sep=";"))
     library.dynam("rJava", pkgname, libname)
 
     .jfirst(libname, pkgname)

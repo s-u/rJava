@@ -1,4 +1,5 @@
-.First.lib <- function(libname, pkgname) {
+.onLoad <- function(libname, pkgname) {
+  require(methods)
   # For MacOS X we have to remove /usr/X11R6/lib from the DYLD_LIBRARY_PATH
   # because it would override Apple's OpenGL framework (which is loaded
   # by JavaVM implicitly)

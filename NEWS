@@ -5,6 +5,10 @@
     o	Added documentation for .jthrow, .jclear and .jgetEx and
 	a bugfix in .jgetEx
 
+    o	rJava now uses a namespace. This is still somewhat experimental,
+	because rJava needs to perform some dirty tricks to unseal
+	the namespace during initialization. Please test and report!
+
 0.4-11  2006-10-10
     o	Replace variadic macros with wrappers (for compilers that don't
 	support ISO C99).

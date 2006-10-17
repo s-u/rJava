@@ -4,14 +4,6 @@
 ##
 ## $Id$
 
-## S4 classes (jobjRef is re-defined in .Frist.lib to contain valid jobj)
-setClass("jobjRef", representation(jobj="externalptr", jclass="character"), prototype=list(jobj=NULL, jclass="java/lang/Object"))
-setClass("jarrayRef", representation("jobjRef", jsig="character"))
-setClass("jfloat", representation("numeric"))
-setClass("jlong", representation("numeric"))
-setClass("jbyte", representation("integer"))
-setClass("jchar", representation("integer"))
-
 # create a new object
 .jnew <- function(class, ..., check=TRUE, silent=!check) {
   class <- gsub("\\.","/",class) # allow non-JNI specifiation
@@ -118,7 +110,7 @@ setClass("jchar", representation("integer"))
 }
 
 # casts java object into new.class - without(!) type checking
-.jcast <- function(obj, new.class) {
+.jcast <- function(obj, new.class="java/lang/Object") {
   if (!is(obj,"jobjRef"))
     stop("connot cast anything but Java objects")
   r<-obj
@@ -168,16 +160,6 @@ setClass("jchar", representation("integer"))
     .jcall("java/lang/System", "S", "getProperty", as.character(key)[1])
 }
 
-setMethod("show", c(object="jobjRef"), function(object) {
-  if (is.jnull(object)) show("Java-Object<null>") else show(paste("Java-Object{", .jstrVal(object), "}", sep=''))
-  invisible(NULL)
-})
-
-setMethod("show", c(object="jarrayRef"), function(object) {
-  show(paste("Java-Array-Object",object@jsig,":", .jstrVal(object), sep=''))
-  invisible(NULL)
-})
-
 .jarray <- function(x, contents.class=NULL) {
 # common mistake is to not specify a list but just a single Java object
 # but, well, people just keep doing it so we may as well support it 
@@ -196,7 +178,7 @@ setMethod("show", c(object="jarrayRef"), function(object) {
   .Call("RidenticalRef",a,b,PACKAGE="rJava")
 }
 
-# returns TRUE only for NULL or jobjREf with jobj=0x0
+# returns TRUE only for NULL or jobjRef with jobj=0x0
 is.jnull <- function(x) {
   (is.null(x) || (is(x,"jobjRef") && .jidenticalRef(x@jobj,.jzeroRef)))
 }
@@ -260,17 +242,6 @@ is.jnull <- function(x) {
   else
     .jcall(o, "Z", "equals", .jcast(b, "java/lang/Object"))
 }
-
-# map R comparison operators to .jequals
-setMethod("==", c(e1="jobjRef",e2="jobjRef"), function(e1,e2) .jequals(e1,e2))
-setMethod("==", c(e1="jobjRef"), function(e1,e2) .jequals(e1,e2))
-setMethod("==", c(e2="jobjRef"), function(e1,e2) .jequals(e1,e2))
-
-setMethod("!=", c(e1="jobjRef",e2="jobjRef"), function(e1,e2) !.jequals(e1,e2))
-setMethod("!=", c(e1="jobjRef"), function(e1,e2) !.jequals(e1,e2))
-setMethod("!=", c(e2="jobjRef"), function(e1,e2) !.jequals(e1,e2))
-
-# other operators such as <,> could be defined as well, but it will require 'O inherits Comparable' check thus it should be defined in reflection.R
 
 # there is no way to distinguish between double and float in R, so we need to mark floats specifically
 .jfloat <- function(x) new("jfloat", as.numeric(x))
