@@ -1,6 +1,10 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.4-12	(under development)
+    o	Added documentation for .jthrow, .jclear and .jgetEx and
+	a bugfix in .jgetEx
+
 0.4-11  2006-10-10
     o	Replace variadic macros with wrappers (for compilers that don't
 	support ISO C99).

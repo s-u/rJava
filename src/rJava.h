@@ -1,7 +1,7 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x00040b /* rJava v0.4-11 */
+#define RJAVA_VER 0x00040c /* rJava v0.4-12 */
 
 /* important changes between versions:
    0.4  - includes JRI
