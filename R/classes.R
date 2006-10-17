@@ -1,0 +1,7 @@
+## S4 classes (jobjRef is re-defined in .Frist.lib to contain valid jobj)                                                                                                  
+setClass("jobjRef", representation(jobj="externalptr", jclass="character"), prototype=list(jobj=NULL, jclass="java/lang/Object"))
+setClass("jarrayRef", representation("jobjRef", jsig="character"))
+setClass("jfloat", representation("numeric"))
+setClass("jlong", representation("numeric"))
+setClass("jbyte", representation("integer"))
+setClass("jchar", representation("integer"))
