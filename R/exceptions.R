@@ -4,7 +4,9 @@
 .jgetEx <- function(clear=FALSE) {
   exo <- .Call("RpollException", PACKAGE="rJava")
   if (is.null(exo)) return(NULL)
-  new("jobjRef", jobj=exo, jclass="java/lang/Throwable")
+  x <- new("jobjRef", jobj=exo, jclass="java/lang/Throwable")
+  if (clear) .jclear()
+  x
 }
 
 ## explicitly clear any pending exceptions
