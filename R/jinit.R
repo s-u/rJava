@@ -44,6 +44,8 @@
     if (!silent) warning("rJava found hidden Java objects in your workspace. Internal objects from previous versions of rJava were deleted. Please note that Java objects cannot be saved in the workspace.")
   }
 
+  ##--- HACK-WARNING: we're operating directly on the namespace environment
+  ##                  this could be dangerous.
   for (x in .delayed.variables) unlockBinding(x, .env)
   assign(".jniInitialized", TRUE, .env)
   # get cached class objects for reflection
@@ -75,8 +77,19 @@
     if (length(parameters)>0 && !silent)
       warning("Cannot set VM parameters, because VM is running already.")
   }
-  for (x in .delayed.variables) unlockBinding(x, .env)
-
+  for (x in .delayed.variables) lockBinding(x, .env)
+  
+  ## now we need to update the attached namespace (package env)  as well
+  m <- match(paste("package", getNamespaceName(.env), sep = ":"), search())[1]
+  if (!is.na(m)) { ## only is it is attached
+    pe <- as.environment(m)
+    for (x in .delayed.variables) {
+      unlockBinding(x, pe)
+      pe[[x]] <- .env[[x]]
+      lockBinding(x, pe)
+    }
+  }   
+  
   invisible(xr)
 }
 
