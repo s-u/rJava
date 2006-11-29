@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# to locate JRI the following sequence is used:
+#  - ${JRI}
+#  - ${ORGPATH}/rosuda/JRI (if ORGPATH is set)
+#  - ../../../org/rosuda/JRI
+
 SWD=`pwd`
 echo "Removing previous dist ..."
 rm -rf /tmp/rJava
@@ -41,7 +46,12 @@ echo "Removing CVS/SVN and backup files ..."
 find . -name CVS -or -name .svn -or -name \*~ | xargs rm -rf
 
 if [ ! -e jri/configure ]; then
-    : ${JRI=$SWD/../../../org/rosuda/JRI}
+    if [ -n "${ORGPATH}" ]; then
+	DEFAULTJRI="${ORGPATH}/rosuda/JRI"
+    else
+	DEFAULTJRI="$SWD/../../../org/rosuda/JRI"
+    fi
+    : ${JRI=$DEFAULTJRI}
     if [ ! -e $JRI ]; then
 	echo "*** ERROR: JRI dist is not in the jri subdirectory and JRI env var is not set!"
 	echo " Please set JRI to point to JRI sources or unpack JRI dist into the jri directory"
