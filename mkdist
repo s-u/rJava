@@ -34,11 +34,11 @@ fi
 
 if [ ! -e getsp.class ]; then
     echo "Compiling getsp.class"
-    javac getsp.java
+    javac -target 1.2 -source 1.2 getsp.java
 fi
 
-echo "Removing CVS and backup files ..."
-find . -name CVS -or -name \*~ | xargs rm -rf
+echo "Removing CVS/SVN and backup files ..."
+find . -name CVS -or -name .svn -or -name \*~ | xargs rm -rf
 
 if [ ! -e jri/configure ]; then
     : ${JRI=$SWD/../../../org/rosuda/JRI}
