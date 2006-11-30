@@ -2,6 +2,7 @@
 #include <string.h>
 #include "rJava.h"
 #include <R_ext/Print.h>
+#include <R_ext/Error.h>
 
 void checkExceptions() {
   JNIEnv *env=getJNIEnv();
