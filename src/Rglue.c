@@ -1231,7 +1231,7 @@ SEXP RcreateArray(SEXP ar, SEXP cl) {
 					   arrays), but then we cannot add [L..; */
 					if (*cname == '[') {
 						strcpy(buf, cname);
-					} else
+					} else {
 						buf[0] = '['; buf[1] = 'L'; 
 						strcpy(buf+2, cname);
 						strcat(buf,";");
