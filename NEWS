@@ -1,6 +1,10 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.4-13	(under development)
+    o	Fixed bug in .jarray (and underlying RcreateArray) that was
+	returning wrong class name if the contents class was an array.
+
 0.4-12	2006-11-29
     o	Added documentation for .jthrow, .jclear and .jgetEx and
 	a bugfix in .jgetEx

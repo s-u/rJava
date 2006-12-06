@@ -1227,9 +1227,15 @@ SEXP RcreateArray(SEXP ar, SEXP cl) {
 				if (!ac)
 					error("Cannot find class %s.", cname);
 				if (strlen(cname)<253) {
-					buf[0] = '['; buf[1] = 'L'; 
-					strcpy(buf+2, cname);
-					strcat(buf,";");
+					/* it's valid to have [* for class name (for mmulti-dim
+					   arrays), but then we cannot add [L..; */
+					if (*cname == '[') {
+						strcpy(buf, cname);
+					} else
+						buf[0] = '['; buf[1] = 'L'; 
+						strcpy(buf+2, cname);
+						strcat(buf,";");
+					}
 					sigName = buf;
 				}
 			}
