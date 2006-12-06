@@ -48,7 +48,9 @@
   is made and \code{java/lang/Object} will be used. Use with care and
   only if you know what you're doing - you can always use
   \code{\link{.jcast}} to cast the entire array to another type even if
-  you use a more general object type.
+  you use a more general object type. One typical use is to construct
+  multi-dimensional arrays which mandates passing the array type as
+  \code{contents.class}.
 
   The result is a reference to the newly created array.
 
@@ -68,6 +70,9 @@ b <- .jarray(c("hello","world"))
 print(b)
 c <- .jarray(list(a,b))
 print(c)
+# two-dimensional array resulting in int[2][10]
+d <- .jarray(list(a,a),"[I")
+print(d)
 }
 }
 \keyword{interface}
