@@ -15,6 +15,9 @@
 #include "config.h"
 #endif
 
+/* in callbacks.c */
+extern int RJava_has_control;
+
 /* in rJava.c */
 extern JNIEnv *eenv; /* should NOT be used since not thread-safe; use getJNIEnv instead */
 extern JavaVM *jvm;

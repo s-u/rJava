@@ -11,6 +11,9 @@
 #define S4SXP VECSXP
 #endif
 
+#define BEGIN_RJAVA_CALL { int save_in_RJava = RJava_has_control; RJava_has_control=1; 
+#define END_RJAVA_CALL RJava_has_control = save_in_RJava; }
+
 /* debugging output (enable with -DRJ_DEBUG) */
 #ifdef RJ_DEBUG
 void rjprintf(char *fmt, ...) {
@@ -431,7 +434,9 @@ jstring callToString(JNIEnv *env, jobject o) {
     checkExceptionsX(env, 1);
     return 0;
   }
+  BEGIN_RJAVA_CALL;
   s = (jstring)(*env)->CallObjectMethod(env, o, mid);
+  END_RJAVA_CALL;
   /* do we really need this? */
   releaseObject(env, cls);
   return s;
@@ -770,68 +775,87 @@ SEXP RcallMethod(SEXP par) {
   profReport("Found CID/MID for %s %s:",mnam,sig);
 #endif
   if (*retsig=='V') {
+BEGIN_RJAVA_CALL
     (*env)->CallVoidMethodA(env,o,mid,jpar);
+END_RJAVA_CALL
     _prof(profReport("Method \"%s\" returned:",mnam));
     return R_NilValue;
   }
   if (*retsig=='I') {
+BEGIN_RJAVA_CALL
     int r=(*env)->CallIntMethodA(env,o,mid,jpar);
     PROTECT(e=allocVector(INTSXP, 1));
     INTEGER(e)[0]=r;
     UNPROTECT(1);
+END_RJAVA_CALL
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
   if (*retsig=='B') {
+BEGIN_RJAVA_CALL
     int r=(int) (*env)->CallByteMethodA(env,o,mid,jpar);
     PROTECT(e=allocVector(INTSXP, 1));
     INTEGER(e)[0]=r;
     UNPROTECT(1);
+END_RJAVA_CALL
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
   if (*retsig=='C') {
+BEGIN_RJAVA_CALL
 	  int r=(int) (*env)->CallCharMethodA(env,o,mid,jpar);
 	  PROTECT(e=allocVector(INTSXP, 1));
 	  INTEGER(e)[0]=r;
 	  UNPROTECT(1);
+END_RJAVA_CALL
 	  _prof(profReport("Method \"%s\" returned:",mnam));
 	  return e;
   }
   if (*retsig=='J') { 
+BEGIN_RJAVA_CALL
     jlong r=(*env)->CallLongMethodA(env,o,mid,jpar);
     PROTECT(e=allocVector(REALSXP, 1));
     REAL(e)[0]=(double)r;
     UNPROTECT(1);
+END_RJAVA_CALL
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
   if (*retsig=='Z') {
+BEGIN_RJAVA_CALL
     jboolean r=(*env)->CallBooleanMethodA(env,o,mid,jpar);
     PROTECT(e=allocVector(LGLSXP, 1));
     LOGICAL(e)[0]=(r)?1:0;
     UNPROTECT(1);
+END_RJAVA_CALL
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
   if (*retsig=='D') {
+BEGIN_RJAVA_CALL
     double r=(*env)->CallDoubleMethodA(env,o,mid,jpar);
     PROTECT(e=allocVector(REALSXP, 1));
     REAL(e)[0]=r;
     UNPROTECT(1);
+END_RJAVA_CALL
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
   if (*retsig=='F') {
+BEGIN_RJAVA_CALL
 	  double r= (double) (*env)->CallFloatMethodA(env,o,mid,jpar);
 	  PROTECT(e=allocVector(REALSXP, 1));
 	  REAL(e)[0]=r;
 	  UNPROTECT(1);
+END_RJAVA_CALL
 	  _prof(profReport("Method \"%s\" returned:",mnam));
 	  return e;
   }
   if (*retsig=='L' || *retsig=='[') {
-    jobject r=(*env)->CallObjectMethodA(env,o,mid,jpar);
+    jobject r;
+BEGIN_RJAVA_CALL
+    r=(*env)->CallObjectMethodA(env,o,mid,jpar);
+END_RJAVA_CALL
     if (!r) {
       _prof(profReport("Method \"%s\" returned NULL:",mnam));
       return R_NilValue;
@@ -918,68 +942,87 @@ SEXP RcallStaticMethod(SEXP par) {
   profReport("Found CID/MID for %s %s:",mnam,sig);
 #endif
   if (*retsig=='V') {
+BEGIN_RJAVA_CALL
     (*env)->CallStaticVoidMethodA(env,cls,mid,jpar);
+END_RJAVA_CALL
     _prof(profReport("Method \"%s\" returned (void):",mnam));
     return R_NilValue;
   }
   if (*retsig=='I') {
+BEGIN_RJAVA_CALL
     int r=(*env)->CallStaticIntMethodA(env,cls,mid,jpar);
     PROTECT(e=allocVector(INTSXP, 1));
     INTEGER(e)[0]=r;
     UNPROTECT(1);
+END_RJAVA_CALL
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
   if (*retsig=='B') {
+BEGIN_RJAVA_CALL
     int r=(int) (*env)->CallStaticByteMethodA(env,cls,mid,jpar);
     PROTECT(e=allocVector(INTSXP, 1));
     INTEGER(e)[0]=r;
     UNPROTECT(1);
+END_RJAVA_CALL
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
   if (*retsig=='J') {
+BEGIN_RJAVA_CALL
     jlong r=(*env)->CallStaticLongMethodA(env,cls,mid,jpar);
     PROTECT(e=allocVector(REALSXP, 1));
     REAL(e)[0]=(double)r;
     UNPROTECT(1);
+END_RJAVA_CALL
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
   if (*retsig=='C') {
+BEGIN_RJAVA_CALL
 	  int r=(int) (*env)->CallStaticCharMethodA(env,cls,mid,jpar);
 	  PROTECT(e=allocVector(INTSXP, 1));
 	  INTEGER(e)[0]=r;
 	  UNPROTECT(1);
+END_RJAVA_CALL
 	  _prof(profReport("Method \"%s\" returned:",mnam);)
 	  return e;
   }
   if (*retsig=='Z') {
+BEGIN_RJAVA_CALL
     jboolean r=(*env)->CallStaticBooleanMethodA(env,cls,mid,jpar);
     PROTECT(e=allocVector(LGLSXP, 1));
     LOGICAL(e)[0]=(r)?1:0;
     UNPROTECT(1);
+END_RJAVA_CALL
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
   if (*retsig=='D') {
+BEGIN_RJAVA_CALL
     double r=(*env)->CallStaticDoubleMethodA(env,cls,mid,jpar);
     PROTECT(e=allocVector(REALSXP, 1));
     REAL(e)[0]=r;
     UNPROTECT(1);
+END_RJAVA_CALL
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
   if (*retsig=='F') {
+BEGIN_RJAVA_CALL
 	  double r= (double) (*env)->CallStaticFloatMethodA(env,cls,mid,jpar);
 	  PROTECT(e=allocVector(REALSXP, 1));
 	  REAL(e)[0]=r;
 	  UNPROTECT(1);
+END_RJAVA_CALL
 	  _prof(profReport("Method \"%s\" returned:",mnam));
 	  return e;
   }
   if (*retsig=='L' || *retsig=='[') {
-    jobject r=(*env)->CallStaticObjectMethodA(env,cls,mid,jpar);
+    jobject r;
+BEGIN_RJAVA_CALL
+    r=(*env)->CallStaticObjectMethodA(env,cls,mid,jpar);
+END_RJAVA_CALL
     _prof(profReport("Method \"%s\" returned:",mnam));
     return j2SEXP(env, r, 1);
   }
@@ -1122,7 +1165,9 @@ SEXP RcreateObject(SEXP par) {
     p=CDR(p);
   }
 
+BEGIN_RJAVA_CALL
   o=createObject(env,class,sig,jpar,silent);
+END_RJAVA_CALL
   if (!o) return R_NilValue;
 
 #ifdef RJ_DEBUG
@@ -1291,7 +1336,9 @@ SEXP RfreeObject(SEXP par) {
   else
     error_return("RfreeObject: invalid object parameter");
   _dbg(rjprintf("RfreeObject: release reference %lx\n", (long)o));
+BEGIN_RJAVA_CALL
   releaseGlobal(env, o);
+END_RJAVA_CALL
   return R_NilValue;
 }
 
@@ -1304,14 +1351,19 @@ SEXP RgetNullReference() {
     return the exception if any (NULL otherwise) */
 SEXP RpollException() {
   JNIEnv *env=getJNIEnv();
-  jthrowable t=(*env)->ExceptionOccurred(env);
+  jthrowable t;
+BEGIN_RJAVA_CALL
+  t=(*env)->ExceptionOccurred(env);
+END_RJAVA_CALL
   return t?j2SEXP(env, t, 1):R_NilValue;
 }
 
 /** clear any pending exceptions */
 void RclearException() {
   JNIEnv *env=getJNIEnv();
+BEGIN_RJAVA_CALL
   (*env)->ExceptionClear(env);  
+END_RJAVA_CALL
 }
 
 SEXP RthrowException(SEXP ex) {
@@ -1330,7 +1382,9 @@ SEXP RthrowException(SEXP ex) {
   if (!t)
     error("Throwable must be non-null.");
   
+BEGIN_RJAVA_CALL
   tr = (*env)->Throw(env, t);
+END_RJAVA_CALL
   res = allocVector(INTSXP, 1);
   INTEGER(res)[0]=tr;
   return res;
