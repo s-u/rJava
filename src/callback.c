@@ -26,8 +26,9 @@ static void RJava_ProcessEvents(void *data) {
     write(resout, buf, sizeof(long)*2);
   }
   if (buf[0] == IPCC_CALL_REQUEST) {
+    callbackfn *fn;
     read(ipcin, buf+1, sizeof(long)*2);
-    callbackfn *fn = (callbackfn*) buf[1];
+    fn = (callbackfn*) buf[1];
     RJava_has_control = 1;
     fn((void*) buf[2]);
     RJava_has_control = 0;
