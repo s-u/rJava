@@ -2,10 +2,14 @@
 --------------------------
 
 0.4-13	(under development)
+    o	.jmkref now accepts plain class names (with .)
+
     o	Fixed bug in .jarray (and underlying RcreateArray) that was
 	returning wrong class name if the contents class was an array.
 
     o	Update URL to http://www.rforge.net/rJava/
+
+    o	Update to JRI 0.3-7 (LCons, createRJavaRef, assign XT_NONE) 
 
 0.4-12	2006-11-29
     o	Added documentation for .jthrow, .jclear and .jgetEx and
