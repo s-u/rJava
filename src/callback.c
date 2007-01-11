@@ -1,3 +1,5 @@
+#ifdef ENABLE_JRICB
+
 #include "rJava.h"
 #include <R_ext/eventloop.h>
 #include <unistd.h>
@@ -44,5 +46,7 @@ int RJava_init_loop() {
   resin = pfd[0];
   resout = pfd[1];
   addInputHandler(R_InputHandlers, ipcin, RJava_ProcessEvents, RJavaActivity);
+  return 0;
 }
 
+#endif

@@ -59,6 +59,13 @@ AC_ARG_ENABLE([debug],
 [want_debug="${enableval}"],
 [want_debug=no])
 
+## enable callbacks (experimental)
+AC_ARG_ENABLE([callbacks],
+[AC_HELP_STRING([--enable-callbacks],
+		[enable the support for callbacks from Java into R. This requires JRI and is currently experimental/incomplete. @<:@no@:>@])],
+[want_callbacks="${enableval}"],
+[want_callbacks=no])
+
 
 # Checks for programs.
 AC_PROG_CC
@@ -190,6 +197,18 @@ if test "${want_threads}" = yes; then
   AC_MSG_RESULT([${use_threads}])
 else
   AC_MSG_RESULT([no])
+fi
+
+## enable callbacks if desired
+AC_MSG_CHECKING([whether callbacks support is requested])
+if test "${want_callbacks}" = yes; then
+   AC_MSG_RESULT([yes])
+   if test "${want_jri}" != yes; then
+      AC_MSG_ERROR([Callbacks support can be only enabled if JRI is enabled as well.])
+   fi
+   AC_DEFINE(ENABLE_JRICB, 1, [define if callbacks support is enabled.])
+else
+   AC_MSG_RESULT([no])
 fi
 
 AC_MSG_CHECKING([whether JNI cache support is requested])

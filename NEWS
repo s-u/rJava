@@ -2,14 +2,18 @@
 --------------------------
 
 0.4-13	(under development)
-    o	fix a memory leak (temporary parameters to methods were not
-	propery released, thanks to Erik van Barneveld for supplying a
-	reproducible example).
+    o	Fix Java-side memory leaks (temporary parameters to methods
+	were not propery released, thanks to Erik van Barneveld for
+	supplying a reproducible example).
 
     o	.jmkref now accepts plain class names (with .)
 
-    o	Fixed bug in .jarray (and underlying RcreateArray) that was
+    o	Fix bug in .jarray (and underlying RcreateArray) that was
 	returning wrong class name if the contents class was an array.
+
+    o	Add --enable-callbacks option to configure (disabled by
+	default). The callbacks support is currently incomplete and
+	experimental.
 
     o	Update URL to http://www.rforge.net/rJava/
 

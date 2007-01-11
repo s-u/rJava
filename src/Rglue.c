@@ -16,8 +16,24 @@
 #define S4SXP VECSXP
 #endif
 
+#ifdef ENABLE_JRICB
 #define BEGIN_RJAVA_CALL { int save_in_RJava = RJava_has_control; RJava_has_control=1; {
 #define END_RJAVA_CALL }; RJava_has_control = save_in_RJava; }
+#else
+#define BEGIN_RJAVA_CALL {
+#define END_RJAVA_CALL };
+#endif
+
+/** returns TRUE if JRI has callback support compiled in or FALSE otherwise */
+SEXP RJava_has_jri_cb() {
+  SEXP r = allocVector(LGLSXP, 1);
+#ifdef ENABLE_JRICB
+  LOGICAL(r)[0] = 1;
+#else
+  LOGICAL(r)[0] = 0;
+#endif
+  return r;
+} 
 
 /* debugging output (enable with -DRJ_DEBUG) */
 #ifdef RJ_DEBUG

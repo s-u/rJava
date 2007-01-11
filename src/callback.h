@@ -1,6 +1,10 @@
 #ifndef __CALLBACK_H__
 #define __CALLBACK_H__
 
+#ifdef ENABLE_JRICB
+extern int RJava_has_control;
+#endif
+
 #define RJavaActivity 16
 
 /* all IPC messages are long-alligned */
