@@ -93,7 +93,7 @@ int initJVM(char *user_classpath, int opts, char **optv) {
   if (optv) {
     int i=0;
     while (i<opts) {
-      if (*optv) vm_options[propNum++].optionString = *optv;
+      if (optv[i]) vm_options[propNum++].optionString = optv[i];
       i++;
     }
   }
