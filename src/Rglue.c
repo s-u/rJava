@@ -6,6 +6,11 @@
 
 #include <stdarg.h>
 
+/* max supported # of parameters to Java methdos */
+#ifndef maxJavaPars
+#define maxJavaPars 32
+#endif
+
 /* pre-2.4 have no S4SXP but used VECSXP instead */
 #ifndef S4SXP
 #define S4SXP VECSXP
@@ -280,12 +285,12 @@ int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int 
 	int j=0;
 	jobjectArray sa=(*env)->NewObjectArray(env, LENGTH(e), javaStringClass, 0);
 	if (!sa) { error("Unable to create string array."); return -1; }
-	addtmpo(tmpo, (jobject) 1L);
 	addtmpo(tmpo, sa);
 	while (j<LENGTH(e)) {
 	  jobject s=newString(env, CHAR(STRING_ELT(e,j)));
 	  _dbg(rjprintf (" [%d] \"%s\"\n",j,CHAR(STRING_ELT(e,j))));
 	  (*env)->SetObjectArrayElement(env,sa,j,s);
+	  releaseObject(env, s);
 	  j++;
 	}
 	jpar[jvpos++].l=sa;
@@ -718,6 +723,7 @@ SEXP RgetLongArrayCont(SEXP par) {
 void Rfreejpars(JNIEnv *env, jobject *tmpo) {
   if (!tmpo) return;
   while (*tmpo) {
+#ifdef __REDUNDANT__ /* we don't use it anymore*/
     if ((unsigned long) *tmpo == 1L) { /* special tag for object arrays that need to be deeply released */
       tmpo++;
       {
@@ -734,6 +740,7 @@ void Rfreejpars(JNIEnv *env, jobject *tmpo) {
 	}
       }
     }
+#endif
     _dbg(rjprintf("Rfreepars: releasing %lx\n", (unsigned long) *tmpo));
     releaseObject(env, *tmpo);
     tmpo++;
@@ -747,8 +754,8 @@ void Rfreejpars(JNIEnv *env, jobject *tmpo) {
 SEXP RcallMethod(SEXP par) {
   SEXP p=par, e;
   char sig[256];
-  jvalue jpar[32];
-  jobject tmpo[65];
+  jvalue jpar[maxJavaPars];
+  jobject tmpo[maxJavaPars+1];
   jobject o;
   char *retsig, *mnam;
   jmethodID mid=0;
@@ -949,8 +956,8 @@ SEXP RcallSyncMethod(SEXP par) {
 SEXP RcallStaticMethod(SEXP par) {
   SEXP p=par, e;
   char sig[256];
-  jvalue jpar[32];
-  jobject tmpo[65];
+  jvalue jpar[maxJavaPars];
+  jobject tmpo[maxJavaPars+1];
   char *cnam, *retsig, *mnam;
   jmethodID mid;
   jclass cls;
@@ -1187,8 +1194,8 @@ SEXP RcreateObject(SEXP par) {
   int silent=0;
   char *class;
   char sig[256];
-  jvalue jpar[32];
-  jobject tmpo[65];
+  jvalue jpar[maxJavaPars];
+  jobject tmpo[maxJavaPars+1];
   jobject o;
   JNIEnv *env=getJNIEnv();
 
@@ -1294,7 +1301,9 @@ SEXP RcreateArray(SEXP ar, SEXP cl) {
       int i=0;
       if (!a) return R_NilValue;
       while (i<LENGTH(ar)) {
-	(*env)->SetObjectArrayElement(env, a, i, (*env)->NewStringUTF(env, CHAR(STRING_ELT(ar, i))));
+	jobject so = newString(env, CHAR(STRING_ELT(ar, i)));
+	(*env)->SetObjectArrayElement(env, a, i, so);
+	releaseObject(env, so);
 	i++;
       }
       return new_jarrayRef(a, "[Ljava/lang/String;");
