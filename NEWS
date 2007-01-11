@@ -2,6 +2,10 @@
 --------------------------
 
 0.4-13	(under development)
+    o	fix a memory leak (temporary parameters to methods were not
+	propery released, thanks to Erik van Barneveld for supplying a
+	reproducible example).
+
     o	.jmkref now accepts plain class names (with .)
 
     o	Fixed bug in .jarray (and underlying RcreateArray) that was
