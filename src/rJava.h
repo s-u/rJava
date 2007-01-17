@@ -1,9 +1,10 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x00040d /* rJava v0.4-13 */
+#define RJAVA_VER 0x000500 /* rJava v0.5-0 */
 
 /* important changes between versions:
+   0.5  - integrates JRI, adds callbacks, class-loader and compiler
    0.4  - includes JRI
    0.3  - uses EXTPTR in jobj slot, adds finalizers
    0.2  - uses S4 classes
@@ -24,6 +25,7 @@ extern JavaVM *jvm;
 
 extern jclass javaStringClass;
 extern jclass javaObjectClass;
+extern jclass javaClassClass;
 
 JNIEnv* getJNIEnv();
 
@@ -33,7 +35,7 @@ int initJVM(char *user_classpath, int opts, char **optv);
 void init_rJava(void);
 
 jobject createObject(JNIEnv *env, char *class, char *sig, jvalue *par, int silent);
-jclass getClass(JNIEnv *env, char *class);
+jclass findClass(JNIEnv *env, char *class);
 
 jdoubleArray newDoubleArray(JNIEnv *env, double *cont, int len);
 jintArray newIntArray(JNIEnv *env, int *cont, int len);
@@ -52,4 +54,7 @@ void releaseGlobal(JNIEnv *env, jobject o);
 void printObject(JNIEnv *env, jobject o);
 
 int checkExceptionsX(JNIEnv *env, int silent);
+
+int initClassLoader(JNIEnv *env, jobject cl);
+
 #endif

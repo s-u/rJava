@@ -4,6 +4,10 @@
 #include <R_ext/Print.h>
 #include <R_ext/Error.h>
 
+jclass clClassLoader = (jclass) 0;
+jobject oClassLoader = (jobject) 0;
+static jmethodID midForName;
+
 void checkExceptions() {
   JNIEnv *env=getJNIEnv();
   if (env) checkExceptionsX(env, 0);
@@ -35,7 +39,7 @@ void* errJNI(char *err, ...) {
 void init_rJava(void) {
   jclass c;
   JNIEnv *env=getJNIEnv();
-  if (!env) return; /* initJVM failed, so we cannot proceed */
+  if (!env) return; /* initJVMfailed, so we cannot proceed */
   
   /* get global classes. we make the references explicitely global (although unloading of String/Object is more than unlikely) */
   c=(*env)->FindClass(env, "java/lang/String");
@@ -49,6 +53,44 @@ void init_rJava(void) {
   javaObjectClass=(*env)->NewGlobalRef(env, c);
   if (!javaObjectClass) { errJNI("Unable to create a global reference to the basic Object class"); return; };
   (*env)->DeleteLocalRef(env, c);
+
+  c = (*env)->FindClass(env, "java/lang/Class");
+  if (!c) { errJNI("Unable to find the basic Class class"); return; };
+  javaClassClass=(*env)->NewGlobalRef(env, c);
+  if (!javaClassClass) { errJNI("Unable to create a global reference to the basic Class class"); return; };
+  (*env)->DeleteLocalRef(env, c);
+}
+
+int initClassLoader(JNIEnv *env, jobject cl) {
+  clClassLoader = (*env)->NewGlobalRef(env, (*env)->GetObjectClass(env, cl));
+  /* oClassLoader = (*env)->NewGlobalRef(env, cl); */ oClassLoader = cl;
+  printf("initClassLoader: cl=%x, clCl=%x, jcl=%x\n", oClassLoader, clClassLoader, javaClassClass);
+  midForName = (*env)->GetStaticMethodID(env, javaClassClass, "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
+  printf("initClassLoader: midForName=%d\n", (int) midForName);
+  return 0;
+}
+
+jclass findClass(JNIEnv *env, char *cName) {
+  if (clClassLoader) {
+    char cn[128], *c=cn;
+    jobject cns;
+    jclass cl;
+
+    strcpy(cn, cName);
+    while (*c) { if (*c=='/') *c='.'; c++; };
+    cns = newString(env, cn);
+    /* can we pass 1 or do we have to create a boolean object? */
+    printf("findClass(\"%s\") [with rJava loader]\n", cn);
+    cl = (jclass) (*env)->CallStaticObjectMethod(env, javaClassClass, midForName, cns, (jboolean) 1, oClassLoader);
+    releaseObject(env, cns);
+    printf(" - got %x\n", (unsigned int) cl);
+    if (cl) return cl;
+  }
+  printf("findClass(\"%s\") (no loader)\n", cName);
+
+  { jclass cl = (*env)->FindClass(env, cName);
+  printf(" - got %x\n", (unsigned int) cl); 
+  return cl; }
 }
 
 jobject createObject(JNIEnv *env, char *class, char *sig, jvalue *par, int silent) {
@@ -57,7 +99,7 @@ jobject createObject(JNIEnv *env, char *class, char *sig, jvalue *par, int silen
   jclass cls;
   jobject o;
 
-  cls=(*env)->FindClass(env,class);
+  cls=findClass(env, class);
   if (!cls) return silent?0:errJNI("createObject.FindClass %s failed",class);
   mid=(*env)->GetMethodID(env, cls, "<init>", sig);
   if (!mid) {
@@ -92,11 +134,16 @@ void printObject(JNIEnv *env, jobject o) {
   (*env)->DeleteLocalRef(env, s);
 }
 
+/*
 jclass getClass(JNIEnv *env, char *class) {
   jclass cls;
   cls=(*env)->FindClass(env,class);
   return cls?cls:errJNI("getClass.FindClass %s failed",class);
 }
+*/
+
+/* getClass = findClass   FIXME */
+#define getClass findClass
 
 jdoubleArray newDoubleArray(JNIEnv *env, double *cont, int len) {
   jdoubleArray da=(*env)->NewDoubleArray(env,len);

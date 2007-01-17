@@ -10,6 +10,7 @@ JavaVM *jvm;
 
 jclass javaStringClass;
 jclass javaObjectClass;
+jclass javaClassClass;
 
 #ifdef JNI_VERSION_1_2 
 static JavaVMOption *vm_options;

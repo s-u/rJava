@@ -29,6 +29,14 @@
   }
   
   if (is.null(classpath)) classpath<-""
+  # add rJava/classes for boostrap (so we can get RJavaClassLoader)
+  if (nchar(classpath))
+    classpath <- paste(file.path(.rJava.base.path,"classes"), classpath, sep=.Platform$path.sep)
+  else
+    classpath <- file.path(.rJava.base.path,"classes")
+
+  #cat(">> init CLASSPATH =",classpath,"\n")
+  
   # call the corresponding C routine to initialize JVM
   xr<-.External("RinitJVM", classpath, parameters, PACKAGE="rJava")
   if (xr==-1) stop("Unable to initialize JVM.")
@@ -77,13 +85,27 @@
     if (length(parameters)>0 && !silent)
       warning("Cannot set VM parameters, because VM is running already.")
   }
+
+  ## init class loader
+  lib <- "lib"
+  if (nchar(.Platform$r_arch)) lib <- file.path("lib", .Platform$r_arch)
+  assign(".rJava.class.loader", .jnew("RJavaClassLoader", .rJava.base.path,
+                                      file.path(.rJava.base.path, lib)),
+         .env)
+
+  ##-- set the class for native code
+  .Call("RJava_set_class_loader", .env$.rJava.class.loader@jobj, PACKAGE="rJava")
+
+  ##.Call("RJava_new_class_loader", .rJava.base.path, file.path(.rJava.base.path, lib), PACKAGE="rJava")
+  
+  ## lock namespace bindings
   for (x in .delayed.variables) lockBinding(x, .env)
   
   ## now we need to update the attached namespace (package env)  as well
   m <- match(paste("package", getNamespaceName(.env), sep = ":"), search())[1]
   if (!is.na(m)) { ## only is it is attached
     pe <- as.environment(m)
-    for (x in .delayed.variables) {
+    for (x in .delayed.export.variables) {
       unlockBinding(x, pe)
       pe[[x]] <- .env[[x]]
       lockBinding(x, pe)

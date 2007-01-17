@@ -985,7 +985,7 @@ SEXP RcallStaticMethod(SEXP par) {
     error_return("RcallStaticMethod: invalid class parameter");
   cnam=CHAR(STRING_ELT(e,0));
   _dbg(rjprintf("RcallStaticMethod.class: %s\n",cnam));
-  cls=getClass(env, cnam);
+  cls = findClass(env, cnam);
   if (!cls)
     error_return("RcallStaticMethod: cannot find specified class");
   e=CAR(p); p=CDR(p);
@@ -1347,7 +1347,7 @@ SEXP RcreateArray(SEXP ar, SEXP cl) {
 		if (TYPEOF(cl)==STRSXP && LENGTH(cl)>0) {
 			char *cname = CHAR(STRING_ELT(cl, 0));
 			if (cname) {
-				ac = getClass(env, cname);
+				ac = findClass(env, cname);
 				if (!ac)
 					error("Cannot find class %s.", cname);
 				if (strlen(cname)<253) {
@@ -1485,3 +1485,22 @@ SEXP RisAssignableFrom(SEXP cl1, SEXP cl2) {
   return r;
 }
 
+SEXP RJava_set_class_loader(SEXP ldr) {
+  JNIEnv *env=getJNIEnv();
+  if (TYPEOF(ldr) != EXTPTRSXP)
+    error("invalid type");
+  if (!env)
+    error("VM not initialized");
+  
+  initClassLoader(env, (jobject)EXTPTR_PTR(ldr));
+  return R_NilValue;
+}
+
+/*
+SEXP RJava_new_class_loader(SEXP p1, SEXP p2) {
+  JNIEnv *env=getJNIEnv();
+  
+  
+  initClassLoader(env, (jobject)EXTPTR_PTR(ldr));
+  return R_NilValue;
+  }*/

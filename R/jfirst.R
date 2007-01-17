@@ -6,9 +6,11 @@
 
 # variables in the rJava environment that will be initialized *after* the package is loaded
 # they need to be pre-created at load time and populated later by .jinit
-.delayed.variables <- c(".jniInitialized", ".jclassObject", ".jclassString", ".jclassClass",
-                        ".jclass.int", ".jclass.double", ".jclass.float", ".jclass.boolean",
-                        ".jinit.merge.error")
+.delayed.export.variables <- c(".jniInitialized", ".jclassObject", ".jclassString", ".jclassClass",
+                               ".jclass.int", ".jclass.double", ".jclass.float", ".jclass.boolean",
+                               ".jinit.merge.error")
+# variables that are delayed but not exported are added here
+.delayed.variables <- c(.delayed.export.variables, ".rJava.class.loader")
 
 .jfirst <- function(libname, pkgname) {
   assign(".rJava.base.path", paste(libname, pkgname, sep=.Platform$file.sep), .env)
