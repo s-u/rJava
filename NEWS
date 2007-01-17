@@ -9,6 +9,10 @@
 	were not propery released, thanks to Erik van Barneveld for
 	supplying a reproducible example).
 
+    o	Fix a bug that caused only the first VM parameter to be passed
+	on during initialization (thanks to Bernard Rosman for
+	reporting).
+
     o	.jmkref now accepts plain class names (with .)
 
     o	Fix bug in .jarray (and underlying RcreateArray) that was
