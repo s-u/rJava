@@ -38,8 +38,9 @@ function(libname, pkgname) {
     if(!nchar(javahome)) stop("JAVA_HOME is not set")
     #else cat("using JAVA_HOME =", javahome, "\n")
     Sys.putenv(PATH=paste(Sys.getenv("PATH"),
+                 file.path(javahome, "bin"), # needed for msvcr71.dll in JRE 1.6
                  file.path(javahome, "bin", "client"),
-                 file.path(javahome, "jre", "bin", "client"),
+                 file.path(javahome, "jre", "bin", "client"), # JIC - won't work for modern JRE as they install elsewhere
                  sep=";"))
     library.dynam("rJava", pkgname, libname)
 
