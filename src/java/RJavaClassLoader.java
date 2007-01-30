@@ -1,17 +1,22 @@
 import java.io.*;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Vector;
+import java.util.Enumeration;
 import java.util.zip.*;
 
 public class RJavaClassLoader extends ClassLoader {
     String rJavaPath, rJavaLibPath;
     HashMap libMap;
+    Vector classPath;
 
     public RJavaClassLoader(String path, String libpath) {
 	super();
 	libMap = new HashMap();
+	classPath = new Vector();
 	rJavaPath = path;
 	rJavaLibPath = libpath;
+	classPath.add(path+"/classes");
 	libMap.put("rJava", rJavaLibPath+"/rJava.so");
 	System.out.println("new RJavaClassLoader(\""+path+"\", \""+libpath+"\")");
     }
@@ -37,25 +42,35 @@ public class RJavaClassLoader extends ClassLoader {
     }
     
     protected Class findClass(String name) throws ClassNotFoundException {
-	InputStream ins = null;
 	Class cl = null;
 	System.out.println("RJavaClassLoaaer.findClass(\""+name+"\")");
 
-	try {
-	    ins = findClassInJAR(rJavaPath+"/classes/rJava.jar", name);
-	    if (ins == null) {
-		String classFN = rJavaPath+"/classes/"+classNameToFile(name)+".class";
-		ins = new FileInputStream(classFN);
+	InputStream ins = null;
+
+	for (Enumeration e = classPath.elements() ; e.hasMoreElements() ;) {
+	    String cp = (String) e.nextElement();
+	 
+	    System.out.println(" - trying class path \""+cp+"\"");
+	    try {
+		ins = findClassInJAR(cp, name);
+		if (ins == null) {
+		    String classFN = cp+"/"+classNameToFile(name)+".class";
+		    ins = new FileInputStream(classFN);
+		}
+		if (ins != null) {
+		    byte fc[] = new byte[65536];
+		    int n = ins.read(fc);
+		    ins.close();
+		    System.out.println(" - class length: "+n);
+		    cl = defineClass(name, fc, 0, n);
+		    System.out.println(" - class = "+cl);
+		    return cl;
+		}
+	    } catch (Exception ex) {
+		System.out.println(" * won't work: "+ex.getMessage());
 	    }
-	    byte fc[] = new byte[65536];
-	    int n = ins.read(fc);
-	    ins.close();
-	    System.out.println(" - class length: "+n);
-	    cl = defineClass(name, fc, 0, n);
-	    System.out.println(" - class = "+cl);
-	} catch (Exception ex) {
-	    System.out.println("** exception: "+ex.getMessage());
 	}
+	System.out.println("=== giving up");
 	if (cl == null) {
 	    throw (new ClassNotFoundException());
 	}
@@ -70,6 +85,26 @@ public class RJavaClassLoader extends ClassLoader {
     /** add a library to path mapping for a native library */
     public void addRLibrary(String name, String path) {
 	libMap.put(name, path);
+    }
+
+    public void addClassPath(String cp) {
+	classPath.add(cp);
+    }
+
+    public void addClassPath(String[] cp) {
+	int i = 0;
+	while (i < cp.length) addClassPath(cp[i++]);
+    }
+
+    public String[] getClassPath() {
+	int j = classPath.size();
+	String[] s = new String[j];
+	int i = 0;
+	while (i < j) {
+	    s[i] = (String) classPath.elementAt(i);
+	    i++;
+	}
+	return s;
     }
 
     protected String findLibrary(String name) {
