@@ -102,6 +102,11 @@ fi
 # R CMD Rdindex rJava > rJava/INDEX
 #echo "library(tools)\nsink(\"rJava/INDEX\")\nRdindex(\"rJava/man\")\nsink()" | R --vanilla > /dev/null
 
+echo "Copy Java classes ..."
+cd /tmp/rJava
+mkdir -p inst/classes/boot
+cp src/java/*.class inst/classes/boot
+
 echo "Updating version ..."
 cd /tmp/rJava
 VER=`awk -v ORS= '/rJava v/ { print substr($6,2) }' src/rJava.h`

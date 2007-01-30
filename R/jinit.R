@@ -29,11 +29,11 @@
   }
   
   if (is.null(classpath)) classpath<-""
-  # add rJava/classes for boostrap (so we can get RJavaClassLoader)
+  # add rJava/classes/boot for boostrap (so we can get RJavaClassLoader)
   if (nchar(classpath))
-    classpath <- paste(file.path(.rJava.base.path,"classes"), classpath, sep=.Platform$path.sep)
+    classpath <- paste(file.path(.rJava.base.path,"classes","boot"), classpath, sep=.Platform$path.sep)
   else
-    classpath <- file.path(.rJava.base.path,"classes")
+    classpath <- file.path(.rJava.base.path,"classes","boot")
 
   #cat(">> init CLASSPATH =",classpath,"\n")
   
@@ -87,8 +87,8 @@
   }
 
   ## init class loader
-  lib <- "lib"
-  if (nchar(.Platform$r_arch)) lib <- file.path("lib", .Platform$r_arch)
+  lib <- "libs"
+  if (nchar(.Platform$r_arch)) lib <- file.path("libs", .Platform$r_arch)
   assign(".rJava.class.loader", .jnew("RJavaClassLoader", .rJava.base.path,
                                       file.path(.rJava.base.path, lib)),
          .env)
