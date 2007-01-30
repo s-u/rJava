@@ -1,3 +1,5 @@
+#include "config.h"
+
 #ifdef ENABLE_JRICB
 
 #include "rJava.h"
@@ -7,7 +9,21 @@
 
 int RJava_has_control = 0;
 
+/* ipcin   ->  receives requests on R thread
+   ipcout  <-  write to place requests to main R thread
+   resout  <-  written by main thread to respond
+   resin   ->  read to get info from main thread */
+
 static int ipcin, ipcout, resin, resout;
+
+static struct rJavaInfoBlock_s {
+  int ipcin, ipcout, resin, resout;
+  int *has_control;
+} rJavaInfoBlock;
+
+struct rJavaInfoBlock_s *RJava_get_info_block() {
+  return &rJavaInfoBlock;
+}
 
 typedef void(callbackfn)(void*);
 
@@ -45,6 +61,13 @@ int RJava_init_loop() {
   pipe(pfd);
   resin = pfd[0];
   resout = pfd[1];
+
+  rJavaInfoBlock.ipcin = ipcin;
+  rJavaInfoBlock.ipcout = ipcout;
+  rJavaInfoBlock.resin = resin;
+  rJavaInfoBlock.resout = resout;
+  rJavaInfoBlock.has_control = &RJava_has_control;
+
   addInputHandler(R_InputHandlers, ipcin, RJava_ProcessEvents, RJavaActivity);
   return 0;
 }
