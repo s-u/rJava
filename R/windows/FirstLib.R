@@ -1,6 +1,7 @@
 .onLoad <-
 function(libname, pkgname) {
     require(methods)
+    .setenv <- if (exists("Sys.setenv")) Sys.setenv else Sys.putenv
     javahome <- Sys.getenv("JAVA_HOME")
     if(!nchar(javahome)) {
 	# let's try to fetch the paths from registry via WinRegistry.dll
@@ -27,8 +28,8 @@ function(libname, pkgname) {
 		    # then we won't find the DLL either.
 		    # Note that we just add it to the PATH so if this fails
 		    # we still fall back to the JavaHome entry.
-		    Sys.putenv(PATH=paste(Sys.getenv("PATH"),
-					  substr(p,1,nchar(p)-8),sep=";"))
+		    .setenv(PATH=paste(Sys.getenv("PATH"),
+				 substr(p,1,nchar(p)-8),sep=";"))
 		}
 	    }
 	}
@@ -37,7 +38,7 @@ function(libname, pkgname) {
     }
     if(!nchar(javahome)) stop("JAVA_HOME is not set")
     #else cat("using JAVA_HOME =", javahome, "\n")
-    Sys.putenv(PATH=paste(Sys.getenv("PATH"),
+    .setenv(PATH=paste(Sys.getenv("PATH"),
                  file.path(javahome, "bin"), # needed for msvcr71.dll in JRE 1.6
                  file.path(javahome, "bin", "client"),
                  file.path(javahome, "jre", "bin", "client"), # JIC - won't work for modern JRE as they install elsewhere
