@@ -1496,11 +1496,25 @@ SEXP RJava_set_class_loader(SEXP ldr) {
   return R_NilValue;
 }
 
-/*
 SEXP RJava_new_class_loader(SEXP p1, SEXP p2) {
   JNIEnv *env=getJNIEnv();
   
-  
-  initClassLoader(env, (jobject)EXTPTR_PTR(ldr));
+  char *c1 = CHAR(STRING_ELT(p1, 0));
+  char *c2 = CHAR(STRING_ELT(p2, 0));
+  jstring s1 = newString(env, c1);
+  jstring s2 = newString(env, c2);
+
+  jclass cl = (*env)->FindClass(env, "RJavaClassLoader");
+  Rprintf("find rJavaClassLoader: %x\n", (int) cl);
+  jmethodID mid = (*env)->GetMethodID(env, cl, "<init>", "(Ljava/lang/String;Ljava/lang/String;)V");
+  Rprintf("constructor mid: %x\n", mid);
+  jobject o = (*env)->NewObject(env, cl, mid, s1, s2);
+  Rprintf("new object: %x\n", o);
+  o = makeGlobal(env, o);
+  Rprintf("calling initClassLoader\n");
+  initClassLoader(env, o);
+  releaseObject(env, s1);
+  releaseObject(env, s2);
+  releaseObject(env, cl);
   return R_NilValue;
-  }*/
+}
