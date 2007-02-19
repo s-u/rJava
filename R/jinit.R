@@ -4,19 +4,21 @@
 ##
 ## $Id$
 
-## initialization
+.check.JVM <- function() 
+  .Call("RJava_checkJVM", PACKAGE="rJava")
 
-.jinit <- function(classpath=NULL, parameters=NULL, ..., silent=FALSE) {
-  # determine path separator
-  if (.Platform$OS.type=="windows")
-    path.sep<-";"
-  else
-    path.sep<-":"
+## initialization
+.jinit <- function(classpath=NULL, parameters=getOption("java.parameters"), ..., silent=FALSE, force.init=FALSE) {
+  if (.check.JVM() && !force.init) {
+  }
+  
+  ## determine path separator
+  path.sep <- .Platform$path.sep
 
   if (!is.null(classpath)) {
-    classpath<-as.character(classpath)
-    if (length(classpath)>1)
-      classpath<-paste(classpath,collapse=path.sep)
+    classpath <- as.character(classpath)
+    if (length(classpath))
+      classpath < -paste(classpath,collapse=path.sep)
   }
   
   # merge CLASSPATH environment variable if present
@@ -28,17 +30,13 @@
       classpath<-paste(classpath,cp,sep=path.sep)
   }
   
-  if (is.null(classpath)) classpath<-""
-  # add rJava/classes/boot for boostrap (so we can get RJavaClassLoader)
-  if (nchar(classpath))
-    classpath <- paste(file.path(.rJava.base.path,"classes","boot"), classpath, sep=.Platform$path.sep)
-  else
-    classpath <- file.path(.rJava.base.path,"classes","boot")
+  # set rJava/classes/boot for boostrap (so we can get RJavaClassLoader)
+  boot.classpath <- file.path(.rJava.base.path,"classes","boot")
 
   #cat(">> init CLASSPATH =",classpath,"\n")
   
   # call the corresponding C routine to initialize JVM
-  xr<-.External("RinitJVM", classpath, parameters, PACKAGE="rJava")
+  xr<-.External("RinitJVM", boot.classpath, parameters, PACKAGE="rJava")
   if (xr==-1) stop("Unable to initialize JVM.")
   if (xr==-2) stop("Another VM is already running and rJava was unable to attach to that VM.")
   # we'll handle xr==1 later because we need fully initialized rJava for that
@@ -74,30 +72,48 @@
   f<-.jcall(ic,"Ljava/lang/reflect/Field;","getField", "TYPE")
   assign(".jclass.boolean", .jcast(.jcall(f,"Ljava/lang/Object;","get",.jcast(ic,"java/lang/Object")),"java/lang/Class"), .env)
 
-  if (xr==1 && nchar(classpath)>0) {
-    # it's a hack, so we run it in try(..) in case BadThings(TM) happen ...
-    cpr <- try(.jmergeClassPath(classpath), silent=TRUE)
-    if (inherits(cpr, "try-error")) {
-      .jcheck(silent=TRUE)
-      if (!silent) warning("Another VM is running already and the VM did not allow me to append paths to the class path.")
-      assign(".jinit.merge.error", cpr, .env)
-    }
-    if (length(parameters)>0 && !silent)
-      warning("Cannot set VM parameters, because VM is running already.")
-  }
-
-  ## init class loader
   lib <- "libs"
   if (nchar(.Platform$r_arch)) lib <- file.path("libs", .Platform$r_arch)
-  assign(".rJava.class.loader", .jnew("RJavaClassLoader", .rJava.base.path,
-                                      file.path(.rJava.base.path, lib)),
-         .env)
 
-  ##-- set the class for native code
-  .Call("RJava_set_class_loader", .env$.rJava.class.loader@jobj, PACKAGE="rJava")
+  rjcl <- NULL
+  if (xr==1) { # && nchar(classpath)>0) {
+    # ok, so we're attached to some other JVM - now we need to make sure that
+    # we can load our class loader. If we can't then we have to use our bad hack
+    # to be able to squeeze our loader in
+    rjcl <- .jnew("RJavaClassLoader", .rJava.base.path,
+                                      file.path(.rJava.base.path, lib), check=FALSE)
+    .jcheck(silent=TRUE)
+    if (is.jnull(rjcl)) {
+      ## it's a hack, so we run it in try(..) in case BadThings(TM) happen ...
+      cpr <- try(.jmergeClassPath(boot.classpath), silent=TRUE)
+      if (inherits(cpr, "try-error")) {
+        .jcheck(silent=TRUE)
+        if (!silent) warning("Another VM is running already and the VM did not allow me to append paths to the class path.")
+        assign(".jinit.merge.error", cpr, .env)
+      }
+      if (length(parameters)>0 && !silent)
+        warning("Cannot set VM parameters, because VM is running already.")
+    }
+  }
 
-  ##.Call("RJava_new_class_loader", .rJava.base.path, file.path(.rJava.base.path, lib), PACKAGE="rJava")
+  if (is.jnull(rjcl))
+    rjcl <- .jnew("RJavaClassLoader", .rJava.base.path,
+                  file.path(.rJava.base.path, lib), check=FALSE)
+
+  if (!is.jnull(rjcl)) {
+    ## init class loader
+    assign(".rJava.class.loader", rjcl, .env)
+
+    ##-- set the class for native code
+    .Call("RJava_set_class_loader", .env$.rJava.class.loader@jobj, PACKAGE="rJava")
+
+    ## now it's time to add any additional class paths
+    cpc <- unique(strsplit(classpath, .Platform$path.sep)[[1]])
+    if (length(cpc)) .jaddClassPath(cpc)
+  } else stop("Unable to create a Java class loader.")
   
+  ##.Call("RJava_new_class_loader", .rJava.base.path, file.path(.rJava.base.path, lib), PACKAGE="rJava")
+
   ## lock namespace bindings
   for (x in .delayed.variables) lockBinding(x, .env)
   
@@ -130,10 +146,11 @@
 
     ## this is a hack, really, that exploits the fact that the system class loader
     ## is in fact a subclass of URLClassLoader and it also subverts protection
-    ## of the addURL class using reflection - yes, bad hack, but we cannot
-    ## replace the system loader with our own, because we may need to attach to
-    ## an existing VM
-    ## The original discussion and code was at:
+    ## of the addURL class using reflection - yes, bad hack, but we use it
+    ## only if the boot class path doesn't contain our own class loader so
+    ## we cannot replace the system loader with our own (this will happen when we
+    ## need to attach to an existing VM)
+    ## The original discussion and code for this hack was at:
     ## http://forum.java.sun.com/thread.jspa?threadID=300557&start=15&tstart=0
 
     ## it should probably be run in try(..) because chances are that it will
