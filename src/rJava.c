@@ -112,6 +112,8 @@ int initJVM(char *user_classpath, int opts, char **optv) {
 
 void doneJVM() {
   (*jvm)->DestroyJavaVM(jvm);
+  jvm = 0;
+  eenv = 0;
 }
 
 void RuseJNICache(int *flag) {

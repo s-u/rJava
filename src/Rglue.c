@@ -1485,6 +1485,14 @@ SEXP RisAssignableFrom(SEXP cl1, SEXP cl2) {
   return r;
 }
 
+SEXP RJava_checkJVM() {
+  SEXP r = allocVector(LGLSXP, 1);
+  LOGICAL(r)[0] = 0;
+  if (!jvm || !getJNIEnv()) return r;
+  LOGICAL(r)[0] = 1;
+  return r;
+}
+
 SEXP RJava_set_class_loader(SEXP ldr) {
   JNIEnv *env=getJNIEnv();
   if (TYPEOF(ldr) != EXTPTRSXP)

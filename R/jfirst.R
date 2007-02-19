@@ -19,6 +19,9 @@
   for (x in .delayed.variables) assign(x, NULL, .env)
   assign(".jniInitialized", FALSE, .env)
 
+  # default JVM initialization parameters
+  options("java.parameters"="-Xmx512m")
+  
   ## S4 classes update - all classes are created earlier in classes.R, but jobjRef's prototype is only valid after the dylib is loaded
   setClass("jobjRef", representation(jobj="externalptr", jclass="character"), prototype=list(jobj=.jzeroRef, jclass="java/lang/Object"), where=.env)
 }
