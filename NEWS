@@ -4,6 +4,10 @@
 0.5-0	(under development)
     o	Add custom class loader
 
+    o	Fix a bug in .jcastToArray that produced invalid signatures
+
+    o	Added support for [Z in .jevalArray
+
 0.4-13	2007-01-14
     o	Fix Java-side memory leaks (temporary parameters to methods
 	were not propery released, thanks to Erik van Barneveld for

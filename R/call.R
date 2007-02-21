@@ -45,6 +45,8 @@
     return(.External("RgetIntArrayCont", jobj, PACKAGE="rJava"))
   else if (sig=="[J")
     return(.External("RgetLongArrayCont", jobj, PACKAGE="rJava"))
+  else if (sig=="[Z")
+    return(.External("RgetBoolArrayCont", jobj, PACKAGE="rJava"))
   else if (sig=="[B")
 	return(.External("RgetByteArrayCont", jobj, PACKAGE="rJava"))
   else if (sig=="[D")
@@ -135,6 +137,7 @@
     }
     signature <- cn
   }
+  signature <- gsub('\\.', '/', signature)
   if (inherits(obj, "jarrayRef")) {
     obj@jsig <- signature
     return(obj)

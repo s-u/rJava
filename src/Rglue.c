@@ -605,6 +605,43 @@ SEXP RgetIntArrayCont(SEXP par) {
   return ar;
 }
 
+/** get contents of the boolean array object */
+SEXP RgetBoolArrayCont(SEXP par) {
+  SEXP e=CAR(CDR(par));
+  SEXP ar;
+  jarray o;
+  int l;
+  jboolean *ap;
+  JNIEnv *env=getJNIEnv();
+
+  profStart();
+  if (e==R_NilValue) return e;
+  if (TYPEOF(e)==EXTPTRSXP)
+    o=(jobject)EXTPTR_PTR(e);
+  else
+    error_return("RgetBoolArrayCont: invalid object parameter");
+  _dbg(rjprintf("RgetBoolArrayCont: jarray %x\n",o));
+  if (!o) return R_NilValue;
+  l=(int)(*env)->GetArrayLength(env, o);
+  _dbg(rjprintf(" convert bool array of length %d\n",l));
+  if (l<0) return R_NilValue;
+  ap=(jboolean*)(*env)->GetBooleanArrayElements(env, o, 0);
+  if (!ap)
+    error_return("RgetBoolArrayCont: can't fetch array contents");
+  PROTECT(ar=allocVector(LGLSXP,l));
+  { /* jboolean = byte, logical = int, need to convert */
+    int i = 0;
+    while (i < l) {
+      LOGICAL(ar)[i] = ap[i];
+      i++;
+    }
+  }
+  UNPROTECT(1);
+  (*env)->ReleaseBooleanArrayElements(env, o, ap, 0);
+  _prof(profReport("RgetBoolArrayCont[%d]:",o));
+  return ar;
+}
+
 /** get contents of the byte array object */
 SEXP RgetByteArrayCont(SEXP par) {
 	SEXP e=CAR(CDR(par));
