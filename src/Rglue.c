@@ -1026,12 +1026,16 @@ SEXP RcallStaticMethod(SEXP par) {
   if (!cls)
     error_return("RcallStaticMethod: cannot find specified class");
   e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
+  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1) {
+    releaseObject(env, cls);
     error_return("RcallMethod: invalid return signature parameter");
+  }
   retsig=CHAR(STRING_ELT(e,0));
   e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
+  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1) {
+    releaseObject(env, cls);
     error_return("RcallMethod: invalid method name");
+  }
   mnam=CHAR(STRING_ELT(e,0));
   strcpy(sig,"(");
   Rpar2jvalue(env, p, jpar, sig, 32, 256, tmpo);
@@ -1049,6 +1053,7 @@ BEGIN_RJAVA_CALL
     (*env)->CallStaticVoidMethodA(env,cls,mid,jpar);
 END_RJAVA_CALL
     Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
     _prof(profReport("Method \"%s\" returned (void):",mnam));
     return R_NilValue;
   }
@@ -1060,6 +1065,7 @@ BEGIN_RJAVA_CALL
     UNPROTECT(1);
 END_RJAVA_CALL
     Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
@@ -1071,6 +1077,7 @@ BEGIN_RJAVA_CALL
     UNPROTECT(1);
 END_RJAVA_CALL
     Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
@@ -1082,6 +1089,7 @@ BEGIN_RJAVA_CALL
     UNPROTECT(1);
 END_RJAVA_CALL
     Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
@@ -1093,6 +1101,7 @@ BEGIN_RJAVA_CALL
 	  UNPROTECT(1);
 END_RJAVA_CALL
           Rfreejpars(env, tmpo);
+   releaseObject(env, cls);
 	  _prof(profReport("Method \"%s\" returned:",mnam);)
 	  return e;
   }
@@ -1104,6 +1113,7 @@ BEGIN_RJAVA_CALL
     UNPROTECT(1);
 END_RJAVA_CALL
     Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
@@ -1115,6 +1125,7 @@ BEGIN_RJAVA_CALL
     UNPROTECT(1);
 END_RJAVA_CALL
     Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
@@ -1126,6 +1137,7 @@ BEGIN_RJAVA_CALL
 	  UNPROTECT(1);
 END_RJAVA_CALL
           Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
 	  _prof(profReport("Method \"%s\" returned:",mnam));
 	  return e;
   }
@@ -1135,9 +1147,11 @@ BEGIN_RJAVA_CALL
     r=(*env)->CallStaticObjectMethodA(env,cls,mid,jpar);
 END_RJAVA_CALL
     Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
     _prof(profReport("Method \"%s\" returned:",mnam));
     return j2SEXP(env, r, 1);
   }
+  releaseObject(env, cls);
   _prof(profReport("Method \"%s\" has an unknown sigrature, not called:",mnam));
   return R_NilValue;
 }
@@ -1403,6 +1417,7 @@ SEXP RcreateArray(SEXP ar, SEXP cl) {
 		}
 		{
 			jobjectArray a = (*env)->NewObjectArray(env, LENGTH(ar), ac, 0);
+			if (ac != javaObjectClass) releaseObject(env, ac);
 			i=0;
 			if (!a) error("Cannot create array of objects.");
 			while (i<LENGTH(ar)) {
