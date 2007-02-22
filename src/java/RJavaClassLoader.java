@@ -22,8 +22,8 @@ public class RJavaClassLoader extends ClassLoader {
     }
 
     String classNameToFile(String cls) {
-	// FIXME: convert . to /
-	return cls;
+	// convert . to /
+	return cls.replace('.','/');
     }
 
     InputStream findClassInJAR(String jar, String cl) {
@@ -37,6 +37,7 @@ public class RJavaClassLoader extends ClassLoader {
 		    return ins;
             }
         } catch(Exception e) {
+	    System.err.println("findClassInJAR: exception: "+e.getMessage());
         }
 	return null;
     }
@@ -56,11 +57,29 @@ public class RJavaClassLoader extends ClassLoader {
 		if (ins == null) {
 		    String classFN = cp+"/"+classNameToFile(name)+".class";
 		    ins = new FileInputStream(classFN);
-		}
+		} else
+		    System.out.println("   found in JAR: "+cp);
 		if (ins != null) {
-		    byte fc[] = new byte[65536];
+		    int al = 128*1024;
+		    byte fc[] = new byte[al];
 		    int n = ins.read(fc);
+		    int rp = n;
+		    System.out.println("  loading class file, initial n = "+n);
+		    while (n > 0) {
+			if (rp == al) {
+			    int nexa = al*2;
+			    if (nexa<512*1024) nexa=512*1024;
+			    byte la[] = new byte[nexa];
+			    System.arraycopy(fc, 0, la, 0, al);
+			    fc = la;
+			    al = nexa;
+			}
+			n = ins.read(fc, rp, fc.length-rp);
+			System.out.println("  next n = "+n+" (rp="+rp+", al="+al+")");
+			if (n>0) rp += n;
+		    }
 		    ins.close();
+		    n = rp;
 		    System.out.println(" - class length: "+n);
 		    cl = defineClass(name, fc, 0, n);
 		    System.out.println(" - class = "+cl);
