@@ -18,7 +18,7 @@
   if (!is.null(classpath)) {
     classpath <- as.character(classpath)
     if (length(classpath))
-      classpath < -paste(classpath,collapse=path.sep)
+      classpath <- paste(classpath,collapse=path.sep)
   }
   
   # merge CLASSPATH environment variable if present
