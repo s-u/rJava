@@ -103,6 +103,7 @@ void JRefObjectFinalizer(SEXP ref) {
 
     if (env && o) {
       /* _dbg(rjprintf("  finalizer releases global reference %lx\n", (long)o);) */
+      _mp(MEM_PROF_OUT("R %08x FIN\n", (int)o))
       releaseGlobal(env, o);
     }
   }
@@ -112,7 +113,8 @@ void JRefObjectFinalizer(SEXP ref) {
 SEXP j2SEXP(JNIEnv *env, jobject o, int releaseLocal) {
   if (!env) error("Invalid Java environment in j2SEXP");
   if (o) {
-    jobject go = (*env)->NewGlobalRef(env, o);
+    jobject go = makeGlobal(env, o);
+    _mp(MEM_PROF_OUT("R %08x RNEW %08x\n", (int) go, (int) o))
     if (!go)
       error("Failed to create global reference in Java.");
     _dbg(rjprintf(" j2SEXP: %lx -> %lx (release=%d)\n", (long)o, (long)go, releaseLocal));
@@ -300,6 +302,7 @@ int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int 
       } else {
 	int j=0;
 	jobjectArray sa=(*env)->NewObjectArray(env, LENGTH(e), javaStringClass, 0);
+	_mp(MEM_PROF_OUT("  %08x LNEW string[%d]\n", (int) sa, LENGTH(e)))
 	if (!sa) { error("Unable to create string array."); return -1; }
 	addtmpo(tmpo, sa);
 	while (j<LENGTH(e)) {
@@ -370,7 +373,7 @@ int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int 
 	addtmpo(tmpo, jpar[jvpos++].l=newBooleanArrayI(env, LOGICAL(e),LENGTH(e)));
       }
     } else if (TYPEOF(e)==VECSXP || TYPEOF(e)==S4SXP) {
-      _dbg(rjprintf(" general vector of length %d\n", LENGTH(e)));
+      _dbg(rjprintf(" generic vector of length %d\n", LENGTH(e)));
       if (inherits(e,"jobjRef")||inherits(e,"jarrayRef")) {
 	jobject o=(jobject)0;
 	char *jc=0;
@@ -449,22 +452,24 @@ jstring callToString(JNIEnv *env, jobject o) {
   jstring s;
 
   if (!o) { _dbg(rjprintf("callToString: invoked on a NULL object\n")); return 0; }
-  cls=(*env)->GetObjectClass(env,o);
+  cls=objectClass(env,o);
   if (!cls) {
     _dbg(rjprintf("callToString: can't determine class of the object\n"));
+    releaseObject(env, cls);
     checkExceptionsX(env, 1);
     return 0;
   }
   mid=(*env)->GetMethodID(env, cls, "toString", "()Ljava/lang/String;");
   if (!mid) {
     _dbg(rjprintf("callToString: toString not found for the object\n"));
+    releaseObject(env, cls);
     checkExceptionsX(env, 1);
     return 0;
   }
   BEGIN_RJAVA_CALL;
   s = (jstring)(*env)->CallObjectMethod(env, o, mid);
   END_RJAVA_CALL;
-  /* do we really need this? */
+  _mp(MEM_PROF_OUT("  %08x LNEW object method toString result\n", (int) s))
   releaseObject(env, cls);
   return s;
 }
@@ -833,7 +838,7 @@ SEXP RcallMethod(SEXP par) {
     rjprintf(" method to call: %s on object 0x%x\n",CHAR(STRING_ELT(de,0)),o);
 }
 #endif
-  cls=(*env)->GetObjectClass(env,o);
+  cls=objectClass(env,o);
   if (!cls)
     error_return("RcallMethod: cannot determine object class");
 #ifdef RJ_DEBUG
@@ -862,8 +867,10 @@ SEXP RcallMethod(SEXP par) {
   strcat(sig,retsig);
   _dbg(rjprintf(" method \"%s\" signature is %s\n",mnam,sig));
   mid=(*env)->GetMethodID(env,cls,mnam,sig);
-  if (!mid)
+  if (!mid) {
+    releaseObject(env, cls);
     error_return("RcallMethod: method not found");
+  }
 #if (RJ_PROFILE>1)
   profReport("Found CID/MID for %s %s:",mnam,sig);
 #endif
@@ -872,6 +879,7 @@ BEGIN_RJAVA_CALL
     (*env)->CallVoidMethodA(env,o,mid,jpar);
 END_RJAVA_CALL
     Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
     _prof(profReport("Method \"%s\" returned:",mnam));
     return R_NilValue;
   }
@@ -883,6 +891,7 @@ BEGIN_RJAVA_CALL
     UNPROTECT(1);
 END_RJAVA_CALL
     Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
@@ -894,6 +903,7 @@ BEGIN_RJAVA_CALL
     UNPROTECT(1);
 END_RJAVA_CALL
     Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
@@ -905,6 +915,7 @@ BEGIN_RJAVA_CALL
 	  UNPROTECT(1);
 END_RJAVA_CALL
           Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
 	  _prof(profReport("Method \"%s\" returned:",mnam));
 	  return e;
   }
@@ -916,6 +927,7 @@ BEGIN_RJAVA_CALL
     UNPROTECT(1);
 END_RJAVA_CALL
     Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
@@ -927,6 +939,7 @@ BEGIN_RJAVA_CALL
     UNPROTECT(1);
 END_RJAVA_CALL
     Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
@@ -938,6 +951,7 @@ BEGIN_RJAVA_CALL
     UNPROTECT(1);
 END_RJAVA_CALL
     Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
   }
@@ -949,6 +963,7 @@ BEGIN_RJAVA_CALL
 	  UNPROTECT(1);
 END_RJAVA_CALL
           Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
 	  _prof(profReport("Method \"%s\" returned:",mnam));
 	  return e;
   }
@@ -958,6 +973,8 @@ BEGIN_RJAVA_CALL
     r=(*env)->CallObjectMethodA(env,o,mid,jpar);
 END_RJAVA_CALL
     Rfreejpars(env, tmpo);
+    releaseObject(env, cls);
+    _mp(MEM_PROF_OUT("  %08x LNEW object method \"%s\" result\n", (int) r, mnam))
     if (!r) {
       _prof(profReport("Method \"%s\" returned NULL:",mnam));
       return R_NilValue;
@@ -967,6 +984,7 @@ END_RJAVA_CALL
     return e;
   }
   _prof(profReport("Method \"%s\" has an unknown signature, not called:",mnam));
+  releaseObject(env, cls);
   return R_NilValue;
 }
 
@@ -1146,6 +1164,7 @@ END_RJAVA_CALL
 BEGIN_RJAVA_CALL
     r=(*env)->CallStaticObjectMethodA(env,cls,mid,jpar);
 END_RJAVA_CALL
+  _mp(MEM_PROF_OUT("  %08x LNEW static object method \"%s\" result\n", (int) r, mnam))
     Rfreejpars(env, tmpo);
     releaseObject(env, cls);
     _prof(profReport("Method \"%s\" returned:",mnam));
@@ -1179,29 +1198,36 @@ SEXP RgetField(SEXP par) {
 #ifdef RJ_DEBUG
   rjprintf("RgetField.object: "); printObject(env, o);
 #endif
-  cls=(*env)->GetObjectClass(env,o);
+  cls=objectClass(env,o);
   if (!cls)
     error_return("RgetField: cannot determine object class");
 #ifdef RJ_DEBUG
   rjprintf("RgetField.class: "); printObject(env, cls);
 #endif
   e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
+  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1) {
+    releaseObject(env, cls);
     error_return("RgetField: invalid return signature parameter");
+  }
   retsig=CHAR(STRING_ELT(e,0));
   e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
+  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1) {
+    releaseObject(env, cls);
     error_return("RgetField: invalid field name");
+  }
   mnam=CHAR(STRING_ELT(e,0));
   _dbg(rjprintf("field %s signature is %s\n",mnam,retsig));
   mid=(*env)->GetFieldID(env,cls,mnam,retsig);
-  if (!mid)
+  if (!mid) {
+    releaseObject(env, cls);
     error_return("RgetField: field not found");
+  }
   if (*retsig=='I') {
     int r=(*env)->GetIntField(env,o,mid);
     PROTECT(e=allocVector(INTSXP, 1));
     INTEGER(e)[0]=r;
     UNPROTECT(1);
+    releaseObject(env, cls);
     return e;
   }
   if (*retsig=='C') {
@@ -1209,6 +1235,7 @@ SEXP RgetField(SEXP par) {
 	  PROTECT(e=allocVector(INTSXP, 1));
 	  INTEGER(e)[0]=r;
 	  UNPROTECT(1);
+	  releaseObject(env, cls);
 	  return e;
   }
   if (*retsig=='B') {
@@ -1216,6 +1243,7 @@ SEXP RgetField(SEXP par) {
     PROTECT(e=allocVector(INTSXP, 1));
     INTEGER(e)[0]=r;
     UNPROTECT(1);
+    releaseObject(env, cls);
     return e;
   }
   if (*retsig=='J') {
@@ -1223,6 +1251,7 @@ SEXP RgetField(SEXP par) {
     PROTECT(e=allocVector(REALSXP, 1));
     REAL(e)[0]=(double)r;
     UNPROTECT(1);
+    releaseObject(env, cls);
     return e;
   }
   if (*retsig=='Z') {
@@ -1230,6 +1259,7 @@ SEXP RgetField(SEXP par) {
     PROTECT(e=allocVector(LGLSXP, 1));
     LOGICAL(e)[0]=(r)?1:0;
     UNPROTECT(1);
+    releaseObject(env, cls);
     return e;
   }
   if (*retsig=='D') {
@@ -1237,6 +1267,7 @@ SEXP RgetField(SEXP par) {
     PROTECT(e=allocVector(REALSXP, 1));
     REAL(e)[0]=r;
     UNPROTECT(1);
+    releaseObject(env, cls);
     return e;
   }
   if (*retsig=='F') {
@@ -1244,12 +1275,16 @@ SEXP RgetField(SEXP par) {
 	  PROTECT(e=allocVector(REALSXP, 1));
 	  REAL(e)[0]=r;
 	  UNPROTECT(1);
+    releaseObject(env, cls);
 	  return e;
   }
   if (*retsig=='L' || *retsig=='[') {
     jobject r=(*env)->GetObjectField(env,o,mid);
+    _mp(MEM_PROF_OUT("  %08x LNEW field value\n", (int) r))
+    releaseObject(env, cls);
     return j2SEXP(env, r, 1);
   }
+  releaseObject(env, cls);
   return R_NilValue;
 }
 
@@ -1317,7 +1352,7 @@ SEXP new_jarrayRef(jobject a, char *sig) {
   SEXP oo = eval(LCONS(install("new"),LCONS(mkString("jarrayRef"),R_NilValue)), R_GlobalEnv);
   /* .. and set the slots in C .. */
   if (inherits(oo, "jarrayRef")) {
-    SET_SLOT(oo, install("jobj"), j2SEXP(env, a, 0));
+    SET_SLOT(oo, install("jobj"), j2SEXP(env, a, 1));
     SET_SLOT(oo, install("jclass"), mkString(""));
     SET_SLOT(oo, install("jsig"), mkString(sig));
     return oo;
@@ -1417,6 +1452,7 @@ SEXP RcreateArray(SEXP ar, SEXP cl) {
 		}
 		{
 			jobjectArray a = (*env)->NewObjectArray(env, LENGTH(ar), ac, 0);
+			_mp(MEM_PROF_OUT("  %08x LNEW object[%d]\n", (int)a, LENGTH(ar)))
 			if (ac != javaObjectClass) releaseObject(env, ac);
 			i=0;
 			if (!a) error("Cannot create array of objects.");

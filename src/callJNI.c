@@ -8,6 +8,13 @@ jclass clClassLoader = (jclass) 0;
 jobject oClassLoader = (jobject) 0;
 static jmethodID midForName;
 
+#ifdef MEMPROF
+FILE *memprof_f = 0;
+#endif
+
+/* local to JRI */
+static void releaseLocal(JNIEnv *env, jobject o);
+
 void checkExceptions() {
   JNIEnv *env=getJNIEnv();
   if (env) checkExceptionsX(env, 0);
@@ -82,15 +89,19 @@ jclass findClass(JNIEnv *env, char *cName) {
     /* can we pass 1 or do we have to create a boolean object? */
     printf("findClass(\"%s\") [with rJava loader]\n", cn);
     cl = (jclass) (*env)->CallStaticObjectMethod(env, javaClassClass, midForName, cns, (jboolean) 1, oClassLoader);
+    _mp(MEM_PROF_OUT("  %08x LNEW class\n", (int) cl))
     releaseObject(env, cns);
     printf(" - got %x\n", (unsigned int) cl);
     if (cl) return cl;
   }
   printf("findClass(\"%s\") (no loader)\n", cName);
 
-  { jclass cl = (*env)->FindClass(env, cName);
-  printf(" - got %x\n", (unsigned int) cl); 
-  return cl; }
+  { 
+    jclass cl = (*env)->FindClass(env, cName);
+    _mp(MEM_PROF_OUT("  %08x LNEW class\n", (int) cl))
+    printf(" - got %x\n", (unsigned int) cl); 
+    return cl;
+  }
 }
 
 jobject createObject(JNIEnv *env, char *class, char *sig, jvalue *par, int silent) {
@@ -103,14 +114,15 @@ jobject createObject(JNIEnv *env, char *class, char *sig, jvalue *par, int silen
   if (!cls) return silent?0:errJNI("createObject.FindClass %s failed",class);
   mid=(*env)->GetMethodID(env, cls, "<init>", sig);
   if (!mid) {
-    (*env)->DeleteLocalRef(env, cls);  
+    releaseLocal(env, cls);  
     return silent?0:errJNI("createObject.GetMethodID(\"%s\",\"%s\") failed",class,sig);
   }
   
   /*  va_start(ap, sig); */
   o=(*env)->NewObjectA(env, cls, mid, par);
+  _mp(MEM_PROF_OUT("  %08x LNEW object\n", (int) o))
   /* va_end(ap); */
-  (*env)->DeleteLocalRef(env, cls);  
+  releaseLocal(env, cls);  
   
   return (o||silent)?o:errJNI("NewObject(\"%s\",\"%s\",...) failed",class,sig);
 }
@@ -122,37 +134,27 @@ void printObject(JNIEnv *env, jobject o) {
   const char *c;
 
   cls=(*env)->GetObjectClass(env,o);
-  if (!cls) { errJNI("printObject.GetObjectClass failed"); return ; }
+  if (!cls) { errJNI("printObject.GetObjectClass failed"); releaseLocal(env, cls); return ; }
   mid=(*env)->GetMethodID(env, cls, "toString", "()Ljava/lang/String;");
-  if (!mid) { errJNI("printObject.GetMethodID for toString() failed"); return; }
+  if (!mid) { errJNI("printObject.GetMethodID for toString() failed"); releaseLocal(env, cls); return; }
   s=(*env)->CallObjectMethod(env, o, mid);
-  if (!s) { errJNI("printObject o.toString() call failed"); return; }
+  if (!s) { errJNI("printObject o.toString() call failed"); releaseLocal(env, cls); return; }
   c=(*env)->GetStringUTFChars(env, (jstring)s, 0);
   Rprintf("%s\n",c);
   (*env)->ReleaseStringUTFChars(env, (jstring)s, c);
-  (*env)->DeleteLocalRef(env, cls);  
-  (*env)->DeleteLocalRef(env, s);
+  releaseLocal(env, cls);  
+  releaseLocal(env, s);
 }
-
-/*
-jclass getClass(JNIEnv *env, char *class) {
-  jclass cls;
-  cls=(*env)->FindClass(env,class);
-  return cls?cls:errJNI("getClass.FindClass %s failed",class);
-}
-*/
-
-/* getClass = findClass   FIXME */
-#define getClass findClass
 
 jdoubleArray newDoubleArray(JNIEnv *env, double *cont, int len) {
   jdoubleArray da=(*env)->NewDoubleArray(env,len);
   jdouble *dae;
 
+  _mp(MEM_PROF_OUT("  %08x LNEW double[%d]\n", (int) da, len))
   if (!da) return errJNI("newDoubleArray.new(%d) failed",len);
   dae=(*env)->GetDoubleArrayElements(env, da, 0);
   if (!dae) {
-    (*env)->DeleteLocalRef(env,da);
+    releaseLocal(env, da);
     return errJNI("newDoubleArray.GetDoubleArrayElements failed");
   }
   memcpy(dae,cont,sizeof(jdouble)*len);
@@ -164,10 +166,11 @@ jintArray newIntArray(JNIEnv *env, int *cont, int len) {
   jintArray da=(*env)->NewIntArray(env,len);
   jint *dae;
 
+  _mp(MEM_PROF_OUT("  %08x LNEW int[%d]\n", (int) da, len))
   if (!da) return errJNI("newIntArray.new(%d) failed",len);
   dae=(*env)->GetIntArrayElements(env, da, 0);
   if (!dae) {
-    (*env)->DeleteLocalRef(env,da);
+    releaseLocal(env,da);
     return errJNI("newIntArray.GetIntArrayElements failed");
   }
   memcpy(dae,cont,sizeof(jint)*len);
@@ -179,10 +182,11 @@ jbyteArray newByteArray(JNIEnv *env, void *cont, int len) {
   jbyteArray da=(*env)->NewByteArray(env,len);
   jbyte *dae;
 
+  _mp(MEM_PROF_OUT("  %08x LNEW byte[%d]\n", (int) da, len))
   if (!da) return errJNI("newByteArray.new(%d) failed",len);
   dae=(*env)->GetByteArrayElements(env, da, 0);
   if (!dae) {
-    (*env)->DeleteLocalRef(env,da);
+    releaseLocal(env,da);
     return errJNI("newByteArray.GetByteArrayElements failed");
   }
   memcpy(dae,cont,len);
@@ -195,10 +199,11 @@ jbyteArray newByteArrayI(JNIEnv *env, int *cont, int len) {
   jbyte* dae;
   int i=0;
 
+  _mp(MEM_PROF_OUT("  %08x LNEW byte[%d]\n", (int) da, len))
   if (!da) return errJNI("newByteArray.new(%d) failed",len);
   dae=(*env)->GetByteArrayElements(env, da, 0);
   if (!dae) {
-    (*env)->DeleteLocalRef(env,da);
+    releaseLocal(env,da);
     return errJNI("newByteArray.GetByteArrayElements failed");
   }
   while (i<len) {
@@ -214,10 +219,11 @@ jbooleanArray newBooleanArrayI(JNIEnv *env, int *cont, int len) {
   jboolean *dae;
   int i=0;
 
+  _mp(MEM_PROF_OUT("  %08x LNEW bool[%d]\n", (int) da, len))
   if (!da) return errJNI("newBooleanArrayI.new(%d) failed",len);
   dae=(*env)->GetBooleanArrayElements(env, da, 0);
   if (!dae) {
-    (*env)->DeleteLocalRef(env,da);
+    releaseLocal(env,da);
     return errJNI("newBooleanArrayI.GetBooleanArrayElements failed");
   }
   /* we cannot just memcpy since JNI uses unsigned char and R uses int */
@@ -234,10 +240,11 @@ jcharArray newCharArrayI(JNIEnv *env, int *cont, int len) {
   jchar *dae;
   int i=0;
 
+  _mp(MEM_PROF_OUT("  %08x LNEW char[%d]\n", (int) da, len))
   if (!da) return errJNI("newCharArrayI.new(%d) failed",len);
   dae=(*env)->GetCharArrayElements(env, da, 0);
   if (!dae) {
-    (*env)->DeleteLocalRef(env,da);
+    releaseLocal(env,da);
     return errJNI("newCharArrayI.GetCharArrayElements failed");
   }
   while (i<len) {
@@ -253,10 +260,11 @@ jfloatArray newFloatArrayD(JNIEnv *env, double *cont, int len) {
   jfloat *dae;
   int i=0;
 
+  _mp(MEM_PROF_OUT("  %08x LNEW float[%d]\n", (int) da, len))
   if (!da) return errJNI("newFloatArrayD.new(%d) failed",len);
   dae=(*env)->GetFloatArrayElements(env, da, 0);
   if (!dae) {
-    (*env)->DeleteLocalRef(env,da);
+    releaseLocal(env,da);
     return errJNI("newFloatArrayD.GetFloatArrayElements failed");
   }
   /* we cannot just memcpy since JNI uses float and R uses double */
@@ -273,11 +281,12 @@ jlongArray newLongArrayD(JNIEnv *env, double *cont, int len) {
 	jlong *dae;
 	int i=0;
 	
+	_mp(MEM_PROF_OUT("  %08x LNEW long[%d]\n", (int) da, len))
 	if (!da) return errJNI("newLongArrayD.new(%d) failed",len);
 	dae=(*env)->GetLongArrayElements(env, da, 0);
 	if (!dae) {
-		(*env)->DeleteLocalRef(env,da);
-		return errJNI("newLongArrayD.GetFloatArrayElements failed");
+	  releaseLocal(env, da);
+	  return errJNI("newLongArrayD.GetFloatArrayElements failed");
 	}
 	/* we cannot just memcpy since JNI uses long and R uses double */
 	while (i<len) {
@@ -292,32 +301,59 @@ jlongArray newLongArrayD(JNIEnv *env, double *cont, int len) {
 
 jstring newString(JNIEnv *env, char *cont) {
   jstring s=(*env)->NewStringUTF(env, cont);
+  _mp(MEM_PROF_OUT("  %08x LNEW string \"%s\"\n", (int) s, cont))
   return s?s:errJNI("newString(\"%s\") failed",cont);
 }
 
 void releaseObject(JNIEnv *env, jobject o) {
   /* Rprintf("releaseObject: %lx\n", (long)o);
      printObject(env, o); */
+  _mp(MEM_PROF_OUT("  %08x LREL\n", (int)o))
+  (*env)->DeleteLocalRef(env, o);
+}
+
+jclass objectClass(JNIEnv *env, jobject o) {
+  jclass cls=(*env)->GetObjectClass(env,o);
+  _mp(MEM_PROF_OUT("  %08x LNEW class from object %08x\n", (int) cls, (int) o))
+    return cls;
+}  
+
+static void releaseLocal(JNIEnv *env, jobject o) {
+  _mp(MEM_PROF_OUT("  %08x LREL (JRI-local)\n", (int)o))
   (*env)->DeleteLocalRef(env, o);
 }
 
 jobject makeGlobal(JNIEnv *env, jobject o) {
   jobject g=(*env)->NewGlobalRef(env,o);
+  _mp(MEM_PROF_OUT("G %08x GNEW %08x\n", (int) g, (int) o))
   return g?g:errJNI("makeGlobal: failed to make global reference");
 }
 
 void releaseGlobal(JNIEnv *env, jobject o) {
   /* Rprintf("releaseGlobal: %lx\n", (long)o);
      printObject(env, o); */
+  _mp(MEM_PROF_OUT("G %08x GREL\n", (int) o))
   (*env)->DeleteGlobalRef(env,o);
 }
 
+static jobject nullEx = 0;
+
 int checkExceptionsX(JNIEnv *env, int silent) {
   jthrowable t=(*env)->ExceptionOccurred(env);
+  
+  if (t == nullEx) t = 0; else {
+    if ((*env)->IsSameObject(env, t, 0)) {
+      nullEx = t; t = 0;
+    } else {
+      _mp(MEM_PROF_OUT("  %08x LNEW exception\n", (int) t))
+    }
+  }
+
   if (t) {
     if (!silent)
       (*env)->ExceptionDescribe(env);
     (*env)->ExceptionClear(env);
+    releaseLocal(env, t);
     return 1;
   }
   return 0;

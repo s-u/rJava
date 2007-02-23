@@ -1,6 +1,9 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
+/* memory profiling is now hard-wired to ON */
+#define MEMPROF
+
 #define RJAVA_VER 0x000500 /* rJava v0.5-0 */
 
 /* important changes between versions:
@@ -14,6 +17,16 @@
 
 #ifndef Win32
 #include "config.h"
+#endif
+
+#ifdef MEMPROF
+#include <stdio.h>
+#include <time.h>
+extern FILE* memprof_f;
+#define _mp(X) X
+#define MEM_PROF_OUT(X ...) { if (!memprof_f) memprof_f=fopen("rJava.memprof.txt","a"); if (memprof_f) { long t = time(0); fprintf(memprof_f, "<%08x> %x:%02d ", (int) env, t/60, t%60); fprintf(memprof_f, X); }; }
+#else
+#define _mp(X) 
 #endif
 
 /* in callbacks.c */
@@ -36,6 +49,7 @@ void init_rJava(void);
 
 jobject createObject(JNIEnv *env, char *class, char *sig, jvalue *par, int silent);
 jclass findClass(JNIEnv *env, char *class);
+jclass objectClass(JNIEnv *env, jobject o);
 
 jdoubleArray newDoubleArray(JNIEnv *env, double *cont, int len);
 jintArray newIntArray(JNIEnv *env, int *cont, int len);
