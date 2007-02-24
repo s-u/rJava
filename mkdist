@@ -13,7 +13,7 @@ cp -r ../rJava /tmp
 
 rm /tmp/rJava/mkdist
 rm -f /tmp/rJava/*~ /tmp/rJava/R/*~ /tmp/rJava/src/*~ /tmp/rJava/man/*~
-
+rm -rf /tmp/rJava/aclo* /tmp/rJava/autom*
 cd /tmp/rJava
 if [ -e /tmp/rJava/configure ]; then
     echo "Note: autoreconf is *not* ran automatically if configure exists."
