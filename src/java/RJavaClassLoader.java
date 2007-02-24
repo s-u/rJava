@@ -18,7 +18,6 @@ public class RJavaClassLoader extends ClassLoader {
 	rJavaLibPath = libpath;
 	classPath.add(path+"/classes");
 	libMap.put("rJava", rJavaLibPath+"/rJava.so");
-	System.out.println("new RJavaClassLoader(\""+path+"\", \""+libpath+"\")");
     }
 
     String classNameToFile(String cls) {
@@ -37,34 +36,35 @@ public class RJavaClassLoader extends ClassLoader {
 		    return ins;
             }
         } catch(Exception e) {
-	    System.err.println("findClassInJAR: exception: "+e.getMessage());
+	    // System.err.println("findClassInJAR: exception: "+e.getMessage());
         }
 	return null;
     }
     
     protected Class findClass(String name) throws ClassNotFoundException {
 	Class cl = null;
-	System.out.println("RJavaClassLoaaer.findClass(\""+name+"\")");
+	// System.out.println("RJavaClassLoaaer.findClass(\""+name+"\")");
 
 	InputStream ins = null;
 
 	for (Enumeration e = classPath.elements() ; e.hasMoreElements() ;) {
 	    String cp = (String) e.nextElement();
 	 
-	    System.out.println(" - trying class path \""+cp+"\"");
+	    // System.out.println(" - trying class path \""+cp+"\"");
 	    try {
 		ins = findClassInJAR(cp, name);
 		if (ins == null) {
 		    String classFN = cp+"/"+classNameToFile(name)+".class";
 		    ins = new FileInputStream(classFN);
+		    System.out.print(" RJavaClassLoader: class "+name+" found in file "+classFN);
 		} else
-		    System.out.println("   found in JAR: "+cp);
+		    System.out.print(" RJavaClassLoader: class "+name+" found in JAR: "+cp);
 		if (ins != null) {
 		    int al = 128*1024;
 		    byte fc[] = new byte[al];
 		    int n = ins.read(fc);
 		    int rp = n;
-		    System.out.println("  loading class file, initial n = "+n);
+		    // System.out.println("  loading class file, initial n = "+n);
 		    while (n > 0) {
 			if (rp == al) {
 			    int nexa = al*2;
@@ -75,21 +75,21 @@ public class RJavaClassLoader extends ClassLoader {
 			    al = nexa;
 			}
 			n = ins.read(fc, rp, fc.length-rp);
-			System.out.println("  next n = "+n+" (rp="+rp+", al="+al+")");
+			// System.out.println("  next n = "+n+" (rp="+rp+", al="+al+")");
 			if (n>0) rp += n;
 		    }
 		    ins.close();
 		    n = rp;
-		    System.out.println(" - class length: "+n);
+		    System.out.println(", length: "+n+" bytes");
 		    cl = defineClass(name, fc, 0, n);
-		    System.out.println(" - class = "+cl);
+		    // System.out.println(" - class = "+cl);
 		    return cl;
 		}
 	    } catch (Exception ex) {
-		System.out.println(" * won't work: "+ex.getMessage());
+		// System.out.println(" * won't work: "+ex.getMessage());
 	    }
 	}
-	System.out.println("=== giving up");
+	// System.out.println("=== giving up");
 	if (cl == null) {
 	    throw (new ClassNotFoundException());
 	}
@@ -97,8 +97,8 @@ public class RJavaClassLoader extends ClassLoader {
     }
 
     protected URL findResource(String name) {
-	System.out.println("RJavaClassLoaaer.findResource(\""+name+"\")");
-	return null;
+	System.out.println("RJavaClassLoaaer.findResource(\""+name+"\")  ***unimplemented***");
+	return super.findResource(name);
     }
 
     /** add a library to path mapping for a native library */
@@ -131,7 +131,6 @@ public class RJavaClassLoader extends ClassLoader {
 	//if (name.equals("rJava"))
 	//    return rJavaLibPath+"/"+name+".so";
 
-	// we should provide a way to locate other package's libs
 	String s = (String) libMap.get(name);
 	System.out.println(" - mapping to "+((s==null)?"<none>":s));
 
