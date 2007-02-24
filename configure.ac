@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(rJava, 0.4, Simon.Urbanek@r-project.org)
+AC_INIT(rJava, 0.5, Simon.Urbanek@r-project.org)
 AC_CONFIG_SRCDIR([src/rJava.c])
 AC_CONFIG_HEADER([src/config.h])
 
@@ -58,6 +58,13 @@ AC_ARG_ENABLE([debug],
 		[enable debug flags and output. @<:@no@:>@])],
 [want_debug="${enableval}"],
 [want_debug=no])
+
+## enable memory profiling
+AC_ARG_ENABLE([mem-profile],
+[AC_HELP_STRING([--enable-mem-profile],
+		[enable memory profiling. @<:@debug@:>@])],
+[want_memprof="${enableval}"],
+[want_memprof=debug])
 
 ## enable callbacks (experimental)
 AC_ARG_ENABLE([callbacks],
@@ -172,6 +179,17 @@ AM_CONDITIONAL(WANT_JRI, [test "x${want_jri}" = xyes])
 AC_MSG_CHECKING([whether debugging output should be enabled])
 if test "${want_debug}" = yes; then
   JAVA_INC="-g -DRJ_DEBUG ${JAVA_INC}"
+  AC_MSG_RESULT([yes])
+else
+  AC_MSG_RESULT([no])
+fi
+
+AC_MSG_CHECKING([whether memory profiling is desired])
+if test "${want_memprof}" = debug; then
+   want_memprof="${want_debug}"
+fi
+if test "${want_memprof}" = yes; then
+  AC_DEFINE(MEMPROF, 1, [memory profiling is enabled when defined])
   AC_MSG_RESULT([yes])
 else
   AC_MSG_RESULT([no])

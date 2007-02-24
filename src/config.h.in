@@ -43,6 +43,9 @@
 /* Set if caching JNI environment is enabled. */
 #undef JNI_CACHE
 
+/* memory profiling is enabled when defined */
+#undef MEMPROF
+
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
 

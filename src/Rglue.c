@@ -1614,3 +1614,24 @@ SEXP RJava_new_class_loader(SEXP p1, SEXP p2) {
   releaseObject(env, cl);
   return R_NilValue;
 }
+
+SEXP RJava_set_memprof(SEXP fn) {
+#ifdef MEMPROF
+  char *cFn = CHAR(STRING_ELT(fn, 0));
+  
+  if (memprof_f) fclose(memprof_f);
+  if (cFn && !cFn[0]) {
+    memprof_f = 0; return R_NilValue;
+  }
+  if (!cFn || (cFn[0]=='-' && !cFn[1]))
+    memprof_f = stdout;
+  else
+    memprof_f = fopen(cFn, "a");
+  if (!memprof_f) error("Cannot create memory profile file.");
+  MEM_PROF_OUT("  00000000 REST -- profiling file set --\n");
+  return R_NilValue;
+#else
+  error("Memory profiling support was not enabled in rJava.");
+#endif
+  return R_NilValue;
+}
