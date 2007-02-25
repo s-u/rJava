@@ -8,8 +8,9 @@
 SWD=`pwd`
 echo "Removing previous dist ..."
 rm -rf /tmp/rJava
+mkdir /tmp/rJava
 echo "Copying package base ..."
-cp -r ../rJava /tmp
+cp -r . /tmp/rJava
 
 rm /tmp/rJava/mkdist
 rm -f /tmp/rJava/*~ /tmp/rJava/R/*~ /tmp/rJava/src/*~ /tmp/rJava/man/*~

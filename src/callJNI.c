@@ -134,10 +134,12 @@ void printObject(JNIEnv *env, jobject o) {
   const char *c;
 
   cls=(*env)->GetObjectClass(env,o);
+  _mp(MEM_PROF_OUT("  %08x LNEW class from object %08x (JRI-local)\n", (int)cls, (int)o))
   if (!cls) { errJNI("printObject.GetObjectClass failed"); releaseLocal(env, cls); return ; }
   mid=(*env)->GetMethodID(env, cls, "toString", "()Ljava/lang/String;");
   if (!mid) { errJNI("printObject.GetMethodID for toString() failed"); releaseLocal(env, cls); return; }
   s=(*env)->CallObjectMethod(env, o, mid);
+  _mp(MEM_PROF_OUT("  %08x LNEW object method toString result (JRI-local)\n", (int)s))
   if (!s) { errJNI("printObject o.toString() call failed"); releaseLocal(env, cls); return; }
   c=(*env)->GetStringUTFChars(env, (jstring)s, 0);
   Rprintf("%s\n",c);

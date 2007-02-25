@@ -1339,7 +1339,10 @@ END_RJAVA_CALL
     const char *c="???";
     if (s) c=(*env)->GetStringUTFChars(env, s, 0);
     rjprintf(" new Java object [%s] reference %lx (local)\n", c, (long)o);
-    if (s) (*env)->ReleaseStringUTFChars(env, s, c);
+    if (s) {
+      (*env)->ReleaseStringUTFChars(env, s, c);
+      releaseObject(env, s);
+    }
   }
 #endif
   
@@ -1522,6 +1525,7 @@ SEXP RpollException() {
 BEGIN_RJAVA_CALL
   t=(*env)->ExceptionOccurred(env);
 END_RJAVA_CALL
+  _mp(MEM_PROF_OUT("  %08x LNEW RpollException throwable\n", (int)t))
   return t?j2SEXP(env, t, 1):R_NilValue;
 }
 
@@ -1618,6 +1622,7 @@ SEXP RJava_new_class_loader(SEXP p1, SEXP p2) {
 SEXP RJava_set_memprof(SEXP fn) {
 #ifdef MEMPROF
   char *cFn = CHAR(STRING_ELT(fn, 0));
+  int env = 0; /* we're just faking it so we can call MEM_PROF_OUT */
   
   if (memprof_f) fclose(memprof_f);
   if (cFn && !cFn[0]) {
