@@ -9,8 +9,18 @@
 
 ## initialization
 .jinit <- function(classpath=NULL, parameters=getOption("java.parameters"), ..., silent=FALSE, force.init=FALSE) {
-  if (.check.JVM() && !force.init) {
+  running.classpath <- character()
+  if (.check.JVM()) {
+    running.classpath <- .jclassPath()
+    if (!force.init) {
+      if (length(classpath)) {
+        cpc <- unique(strsplit(classpath, .Platform$path.sep)[[1]])
+        if (length(cpc)) .jaddClassPath(cpc)
+      }
+      return(0)
+    }
   }
+  
   
   ## determine path separator
   path.sep <- .Platform$path.sep
