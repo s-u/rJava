@@ -10,14 +10,44 @@ public class RJavaClassLoader extends ClassLoader {
     HashMap libMap;
     Vector classPath;
 
+    class UnixFile extends java.io.File {
+	long lastModStamp;
+	public Object cache;
+
+	public UnixFile(String fn) {
+	    super((separatorChar != '/')?fn.replace('/',separatorChar):fn);
+	    lastModStamp=0;
+	}
+
+	public boolean hasChanged() {
+	    long curMod = lastModified();
+	    return (curMod != lastModStamp);
+	}
+	
+	public void update() {
+	    lastModStamp = lastModified();
+	}
+    }
+
     public RJavaClassLoader(String path, String libpath) {
 	super();
 	libMap = new HashMap();
 	classPath = new Vector();
 	rJavaPath = path;
 	rJavaLibPath = libpath;
-	classPath.add(path+"/classes");
-	libMap.put("rJava", rJavaLibPath+"/rJava.so");
+	classPath.add(new UnixFile(path+"/classes"));
+	UnixFile so = new UnixFile(rJavaLibPath+"/rJava.so");
+	if (!so.exists())
+	    so = new UnixFile(rJavaLibPath+"/rJava.dll");
+	if (so.exists())
+	    libMap.put("rJava", so);
+	UnixFile jri = new UnixFile(path+"/jri/libjri.so");
+	if (!jri.exists())
+	    jri = new UnixFile(path+"/jri/libjri.jnilib");
+	if (!jri.exists())
+	    jri = new UnixFile(path+"/jri/jri.dll");
+	if (jri.exists())
+	    libMap.put("jri", jri);
     }
 
     String classNameToFile(String cls) {
@@ -25,18 +55,48 @@ public class RJavaClassLoader extends ClassLoader {
 	return cls.replace('.','/');
     }
 
-    InputStream findClassInJAR(String jar, String cl) {
+    InputStream findClassInJAR(UnixFile jar, String cl) {
 	String cfn = classNameToFile(cl)+".class";
+
+	if (jar.cache==null || jar.hasChanged()) {
+	    try {
+		if (jar.cache!=null) ((ZipFile)jar.cache).close();
+	    } catch (Exception tryCloseX) {}
+	    jar.update();
+	    try {
+		jar.cache = new ZipFile(jar);
+	    } catch (Exception zipCacheX) {}
+	    System.out.println("RJavaClassLoader: creating cache for "+jar);
+	}
+        try {
+	    ZipFile zf = (ZipFile) jar.cache;
+	    if (zf == null) return null;
+            ZipEntry e = zf.getEntry(cfn);
+	    if (e != null)
+		return zf.getInputStream(e);
+        } catch(Exception e) {
+	    // System.err.println("findClassInJAR: exception: "+e.getMessage());
+        }
+	return null;
+    }
+    
+    URL findInJARURL(String jar, String fn) {
         try {
             ZipInputStream ins = new ZipInputStream(new FileInputStream(jar));
 	    
             ZipEntry e;
             while ((e=ins.getNextEntry())!=null) {
-		if (e.getName().equals(cfn))
-		    return ins;
-            }
+		if (e.getName().equals(fn)) {
+		    ins.close();
+		    try {
+			return new URL("jar:"+(new UnixFile(jar)).toURL().toString()+"!"+fn);
+		    } catch (Exception ex) {
+		    }
+		    break;
+		}
+	    }
         } catch(Exception e) {
-	    // System.err.println("findClassInJAR: exception: "+e.getMessage());
+	    // System.err.println("findInJAR: exception: "+e.getMessage());
         }
 	return null;
     }
@@ -48,17 +108,19 @@ public class RJavaClassLoader extends ClassLoader {
 	InputStream ins = null;
 
 	for (Enumeration e = classPath.elements() ; e.hasMoreElements() ;) {
-	    String cp = (String) e.nextElement();
+	    UnixFile cp = (UnixFile) e.nextElement();
 	 
 	    // System.out.println(" - trying class path \""+cp+"\"");
 	    try {
-		ins = findClassInJAR(cp, name);
-		if (ins == null) {
-		    String classFN = cp+"/"+classNameToFile(name)+".class";
-		    ins = new FileInputStream(classFN);
-		    System.out.print(" RJavaClassLoader: class "+name+" found in file "+classFN);
-		} else
-		    System.out.print(" RJavaClassLoader: class "+name+" found in JAR: "+cp);
+		ins = null;
+		if (cp.isFile())
+		    ins = findClassInJAR(cp, name);
+		if (ins == null && cp.isDirectory()) {
+		    UnixFile class_f = new UnixFile(cp.getPath()+"/"+classNameToFile(name)+".class");
+		    if (class_f.isFile()) {
+			ins = new FileInputStream(class_f);
+		    }
+		}
 		if (ins != null) {
 		    int al = 128*1024;
 		    byte fc[] = new byte[al];
@@ -80,7 +142,7 @@ public class RJavaClassLoader extends ClassLoader {
 		    }
 		    ins.close();
 		    n = rp;
-		    System.out.println(", length: "+n+" bytes");
+		    System.out.println("RJavaClassLoader: loaded class "+name+", "+n+" bytes");
 		    cl = defineClass(name, fc, 0, n);
 		    // System.out.println(" - class = "+cl);
 		    return cl;
@@ -97,17 +159,40 @@ public class RJavaClassLoader extends ClassLoader {
     }
 
     protected URL findResource(String name) {
-	System.out.println("RJavaClassLoaaer.findResource(\""+name+"\")  ***unimplemented***");
-	return super.findResource(name);
+	System.out.println("RJavaClassLoader: findResource('"+name+"')");
+	for (Enumeration e = classPath.elements() ; e.hasMoreElements() ;) {
+	    UnixFile cp = (UnixFile) e.nextElement();
+	 
+	    try {
+		if (cp.isFile()) {
+		    URL u = findInJARURL(cp.getPath(), name);
+		    if (u != null) {
+			System.out.println(" - found in a JAR file, URL "+u);
+			return u;
+		    }
+		}
+		if (cp.isDirectory()) {
+		    UnixFile res_f = new UnixFile(cp.getPath()+"/"+name);
+		    if (res_f.isFile()) {
+			System.out.println(" - find as a file: "+res_f);
+			return res_f.toURL();
+		    }
+		}
+	    } catch (Exception iox) {
+	    }
+	}
+	return null;
     }
 
     /** add a library to path mapping for a native library */
     public void addRLibrary(String name, String path) {
-	libMap.put(name, path);
+	libMap.put(name, new UnixFile(path));
     }
 
     public void addClassPath(String cp) {
-	classPath.add(cp);
+	UnixFile f = new UnixFile(cp);
+	if (!classPath.contains(f))
+	    classPath.add(f);
     }
 
     public void addClassPath(String[] cp) {
@@ -120,7 +205,7 @@ public class RJavaClassLoader extends ClassLoader {
 	String[] s = new String[j];
 	int i = 0;
 	while (i < j) {
-	    s[i] = (String) classPath.elementAt(i);
+	    s[i] = ((UnixFile) classPath.elementAt(i)).getPath();
 	    i++;
 	}
 	return s;
@@ -131,7 +216,9 @@ public class RJavaClassLoader extends ClassLoader {
 	//if (name.equals("rJava"))
 	//    return rJavaLibPath+"/"+name+".so";
 
-	String s = (String) libMap.get(name);
+	UnixFile u = (UnixFile) libMap.get(name);
+	String s = null;
+	if (u!=null && u.exists()) s=u.getPath();
 	System.out.println(" - mapping to "+((s==null)?"<none>":s));
 
 	return s;
