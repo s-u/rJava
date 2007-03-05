@@ -208,7 +208,10 @@ is.jnull <- function(x) {
     stop("invalid class name")
   cl<-gsub("/",".",cl)
   a <- NULL
-  try(a <- .jcall("java/lang/Class","Ljava/lang/Class;","forName",cl,check=FALSE))
+  if (!is.jnull(.rJava.class.loader))
+    try(a <- .jcall("java/lang/Class","Ljava/lang/Class;","forName",cl,TRUE,.jcast(.rJava.class.loader,"java.lang.ClassLoader"), check=FALSE))
+  else
+    try(a <- .jcall("java/lang/Class","Ljava/lang/Class;","forName",cl,check=FALSE))
   .jcheck(silent=TRUE)
   if (!silent && is.jnull(a)) stop("class not found")
   a
