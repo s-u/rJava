@@ -101,7 +101,7 @@
         if (!silent) warning("Another VM is running already and the VM did not allow me to append paths to the class path.")
         assign(".jinit.merge.error", cpr, .env)
       }
-      if (length(parameters)>0 && !silent)
+      if (length(parameters)>0 && any(parameters!=getOption("java.parameters")) && !silent)
         warning("Cannot set VM parameters, because VM is running already.")
     }
   }
