@@ -1,14 +1,17 @@
 import java.io.*;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Vector;
 import java.util.Enumeration;
 import java.util.zip.*;
 
-public class RJavaClassLoader extends ClassLoader {
+public class RJavaClassLoader extends URLClassLoader {
     String rJavaPath, rJavaLibPath;
     HashMap libMap;
     Vector classPath;
+
+    public boolean useSystem = true;
 
     class UnixFile extends java.io.File {
 	long lastModStamp;
@@ -30,7 +33,7 @@ public class RJavaClassLoader extends ClassLoader {
     }
 
     public RJavaClassLoader(String path, String libpath) {
-	super();
+	super(new URL[] {});
 	libMap = new HashMap();
 	classPath = new Vector();
 	rJavaPath = path;
@@ -103,6 +106,16 @@ public class RJavaClassLoader extends ClassLoader {
     
     protected Class findClass(String name) throws ClassNotFoundException {
 	Class cl = null;
+	if (useSystem) {
+	    try {
+		cl = super.findClass(name);
+		if (cl != null) {
+		    System.out.println("RJavaClassLoader: found class "+name+" using URL loader");
+		    return cl;
+		}
+	    } catch (Exception fnf) {
+	    }	    
+	}
 	// System.out.println("RJavaClassLoaaer.findClass(\""+name+"\")");
 
 	InputStream ins = null;
@@ -158,8 +171,18 @@ public class RJavaClassLoader extends ClassLoader {
 	return cl;
     }
 
-    protected URL findResource(String name) {
+    public URL findResource(String name) {
 	System.out.println("RJavaClassLoader: findResource('"+name+"')");
+	if (useSystem) {
+	    try {
+		URL u = super.findResource(name);
+		if (u != null) {
+		    System.out.println("RJavaClassLoader: found resource in "+u+" using URL loader.");
+		    return u;
+		}
+	    } catch (Exception fre) {
+	    }
+	}
 	for (Enumeration e = classPath.elements() ; e.hasMoreElements() ;) {
 	    UnixFile cp = (UnixFile) e.nextElement();
 	 
@@ -190,6 +213,13 @@ public class RJavaClassLoader extends ClassLoader {
     }
 
     public void addClassPath(String cp) {
+	if (useSystem) {
+	    try {
+		addURL((new UnixFile(cp)).toURL());
+		return;
+	    } catch (Exception ufe) {
+	    }
+	}
 	UnixFile f = new UnixFile(cp);
 	if (!classPath.contains(f))
 	    classPath.add(f);
