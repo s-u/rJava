@@ -12,6 +12,12 @@ mkdir /tmp/rJava
 echo "Copying package base ..."
 cp -r . /tmp/rJava
 
+if [ -e "${SWD}/jri/mkdist" ]; then
+    JRI="${SWD}/jri"
+    rm -rf /tmp/rJava/jri
+    echo "Embedded JRI: ${JRI}"
+fi
+
 rm /tmp/rJava/mkdist
 rm -f /tmp/rJava/*~ /tmp/rJava/R/*~ /tmp/rJava/src/*~ /tmp/rJava/man/*~
 rm -rf /tmp/rJava/aclo* /tmp/rJava/autom*
@@ -53,7 +59,7 @@ if [ ! -e jri/configure ]; then
 	DEFAULTJRI="$SWD/../../../org/rosuda/JRI"
     fi
     : ${JRI=$DEFAULTJRI}
-    if [ ! -e $JRI ]; then
+    if [ ! -e "$JRI" ]; then
 	echo "*** ERROR: JRI dist is not in the jri subdirectory and JRI env var is not set!"
 	echo " Please set JRI to point to JRI sources or unpack JRI dist into the jri directory"
 	exit 1
@@ -70,7 +76,7 @@ if [ ! -e jri/configure ]; then
 	    echo "*** ERROR: Cannot get JRI distro!"
 	    exit 1
 	fi
-	rm -rf jri JRI
+	rm -rf jri JRI ${SWD}/JRI_*
 	#mkdir jri 2> /dev/null > /dev/null
 	cd /tmp/rJava
 	tar fvxz $jf
