@@ -95,7 +95,7 @@
     r <- new("jobjRef", jobj=r, jclass=substr(returnSig,2,nchar(returnSig)-1))
   }
   if (check) .jcheck()
-  r
+  if (.conv.in$.) .convert.in(r) else r
 }
 
 .jstrVal <- function(obj) {
