@@ -1,8 +1,7 @@
-#include "config.h"
+#include "rJava.h"
 
 #ifdef ENABLE_JRICB
 
-#include "rJava.h"
 #include <R_ext/eventloop.h>
 #include <unistd.h>
 #include "callback.h"
