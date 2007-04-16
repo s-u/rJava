@@ -16,9 +16,9 @@
 
 .jpackage <- function(name, moreClasses='', nativeLibrary=FALSE) {
   if (!.jniInitialized) .jinit()
-  classes <- system.file("classes", package=name)
+  classes <- system.file("java", package=name)
   if (nchar(classes)) .jaddClassPath(classes)
-  jar <- system.file("classes", paste(name,".jar",sep=''), package=name)
+  jar <- system.file("java", paste(name,".jar",sep=''), package=name)
   if (nchar(jar)) .jaddClassPath(jar)
   
   if (any(nchar(moreClasses))) {

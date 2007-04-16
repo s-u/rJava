@@ -40,11 +40,11 @@
       classpath<-paste(classpath,cp,sep=path.sep)
   }
   
-  # set rJava/classes/boot for boostrap (so we can get RJavaClassLoader)
-  boot.classpath <- file.path(.rJava.base.path,"classes","boot")
+  # set rJava/java/boot for boostrap (so we can get RJavaClassLoader)
+  boot.classpath <- file.path(.rJava.base.path,"java","boot")
 
   #cat(">> init CLASSPATH =",classpath,"\n")
-  
+  #cat(">> boot class path: ", boot.classpath,"\n")
   # call the corresponding C routine to initialize JVM
   xr<-.External("RinitJVM", boot.classpath, parameters, PACKAGE="rJava")
   if (xr==-1) stop("Unable to initialize JVM.")
