@@ -38,7 +38,7 @@ public class RJavaClassLoader extends URLClassLoader {
 	classPath = new Vector();
 	rJavaPath = path;
 	rJavaLibPath = libpath;
-	classPath.add(new UnixFile(path+"/classes"));
+	classPath.add(new UnixFile(path+"/java"));
 	UnixFile so = new UnixFile(rJavaLibPath+"/rJava.so");
 	if (!so.exists())
 	    so = new UnixFile(rJavaLibPath+"/rJava.dll");
