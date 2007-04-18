@@ -111,8 +111,8 @@ fi
 
 echo "Copy Java classes ..."
 cd /tmp/rJava
-mkdir -p inst/classes/boot
-cp src/java/*.class inst/classes/boot
+mkdir -p inst/java/boot
+cp src/java/*.class inst/java/boot
 
 echo "Updating version ..."
 cd /tmp/rJava

@@ -3,7 +3,7 @@ Version: 0.4-0
 Title: Low-level R to Java interface
 Author: Simon Urbanek <simon.urbanek@r-project.org>
 Maintainer: Simon Urbanek <simon.urbanek@r-project.org>
-Depends: R (>= 2.0.0), methods
+Depends: R (>= 2.5.0), methods
 Description: Low-level interface to Java VM very much like .C/.Call and friends. Allows creation of objects, calling methods and accessing fields.
 License: GPL version 2
 URL: http://www.rforge.net/rJava/

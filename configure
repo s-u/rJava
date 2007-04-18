@@ -312,7 +312,7 @@ ac_includes_default="\
 #endif"
 
 ac_subdirs_all="$ac_subdirs_all jri"
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS R_HOME CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP LIBOBJS JAVA WANT_JRI_TRUE WANT_JRI_FALSE JAVA_LIBS JAVA_INC JAVA_HOME JAVA_LD subdirs LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS R_HOME CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP WANT_JRI_TRUE WANT_JRI_FALSE JAVA_LIBS JAVA_CPPFLAGS JAVA_HOME JAVA JAVAC JAVAH subdirs LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1335,12 +1335,13 @@ if test -z "${R_HOME}"; then
   echo "could not determine R_HOME"
   exit 1
 fi
-CC=`${R_HOME}/bin/R CMD config CC`;
-CFLAGS=`${R_HOME}/bin/R CMD config CFLAGS`
-LIBS=${PKG_LIBS}
+RBIN="${R_HOME}/bin/R"
+CC=`"${RBIN}" CMD config CC`;
+CFLAGS=`"${RBIN}" CMD config CFLAGS`
+LIBS="${PKG_LIBS}"
 
 
-RLD=`${R_HOME}/bin/R CMD config --ldflags 2>/dev/null`
+RLD=`"${RBIN}" CMD config --ldflags 2>/dev/null`
 has_R_shlib=no
 if test -n "$RLD"; then
    has_R_shlib=yes
@@ -3224,428 +3225,64 @@ _ACEOF
 fi
 
 
-# Checks for library functions.
+R_JAVA_HOME=`"${RBIN}" CMD config JAVA_HOME`
+: ${JAVA_HOME="${R_JAVA_HOME}"}
+if test -z "${JAVA_HOME}"; then
+   { { echo "$as_me:$LINENO: error: R was configured without Java support. Please run
+R CMD javareconf
+as root to add Java support to R.
 
-for ac_header in stdlib.h
-do
-as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
-if eval "test \"\${$as_ac_Header+set}\" = set"; then
-  echo "$as_me:$LINENO: checking for $ac_header" >&5
-echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
-if eval "test \"\${$as_ac_Header+set}\" = set"; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
-else
-  # Is the header compilable?
-echo "$as_me:$LINENO: checking $ac_header usability" >&5
-echo $ECHO_N "checking $ac_header usability... $ECHO_C" >&6
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-$ac_includes_default
-#include <$ac_header>
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_header_compiler=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
+If you don't have root privileges, run
+R CMD javareconf -e
+to set all Java-related variables and then install rJava.
+(works with R 2.5.0 only)" >&5
+echo "$as_me: error: R was configured without Java support. Please run
+R CMD javareconf
+as root to add Java support to R.
 
-ac_header_compiler=no
-fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
-echo "${ECHO_T}$ac_header_compiler" >&6
-
-# Is the header present?
-echo "$as_me:$LINENO: checking $ac_header presence" >&5
-echo $ECHO_N "checking $ac_header presence... $ECHO_C" >&6
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <$ac_header>
-_ACEOF
-if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
-  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } >/dev/null; then
-  if test -s conftest.err; then
-    ac_cpp_err=$ac_c_preproc_warn_flag
-    ac_cpp_err=$ac_cpp_err$ac_c_werror_flag
-  else
-    ac_cpp_err=
-  fi
-else
-  ac_cpp_err=yes
-fi
-if test -z "$ac_cpp_err"; then
-  ac_header_preproc=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-  ac_header_preproc=no
-fi
-rm -f conftest.err conftest.$ac_ext
-echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
-echo "${ECHO_T}$ac_header_preproc" >&6
-
-# So?  What about this header?
-case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
-  yes:no: )
-    { echo "$as_me:$LINENO: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&5
-echo "$as_me: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&2;}
-    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the compiler's result" >&5
-echo "$as_me: WARNING: $ac_header: proceeding with the compiler's result" >&2;}
-    ac_header_preproc=yes
-    ;;
-  no:yes:* )
-    { echo "$as_me:$LINENO: WARNING: $ac_header: present but cannot be compiled" >&5
-echo "$as_me: WARNING: $ac_header: present but cannot be compiled" >&2;}
-    { echo "$as_me:$LINENO: WARNING: $ac_header:     check for missing prerequisite headers?" >&5
-echo "$as_me: WARNING: $ac_header:     check for missing prerequisite headers?" >&2;}
-    { echo "$as_me:$LINENO: WARNING: $ac_header: see the Autoconf documentation" >&5
-echo "$as_me: WARNING: $ac_header: see the Autoconf documentation" >&2;}
-    { echo "$as_me:$LINENO: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&5
-echo "$as_me: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&2;}
-    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the preprocessor's result" >&5
-echo "$as_me: WARNING: $ac_header: proceeding with the preprocessor's result" >&2;}
-    { echo "$as_me:$LINENO: WARNING: $ac_header: in the future, the compiler will take precedence" >&5
-echo "$as_me: WARNING: $ac_header: in the future, the compiler will take precedence" >&2;}
-    (
-      cat <<\_ASBOX
-## ------------------------------------------ ##
-## Report this to Simon.Urbanek@r-project.org ##
-## ------------------------------------------ ##
-_ASBOX
-    ) |
-      sed "s/^/$as_me: WARNING:     /" >&2
-    ;;
-esac
-echo "$as_me:$LINENO: checking for $ac_header" >&5
-echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
-if eval "test \"\${$as_ac_Header+set}\" = set"; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  eval "$as_ac_Header=\$ac_header_preproc"
-fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
-
-fi
-if test `eval echo '${'$as_ac_Header'}'` = yes; then
-  cat >>confdefs.h <<_ACEOF
-#define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-
-done
-
-echo "$as_me:$LINENO: checking for GNU libc compatible malloc" >&5
-echo $ECHO_N "checking for GNU libc compatible malloc... $ECHO_C" >&6
-if test "${ac_cv_func_malloc_0_nonnull+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  if test "$cross_compiling" = yes; then
-  ac_cv_func_malloc_0_nonnull=no
-else
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#if STDC_HEADERS || HAVE_STDLIB_H
-# include <stdlib.h>
-#else
-char *malloc ();
-#endif
-
-int
-main ()
-{
-exit (malloc (0) ? 0 : 1);
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_func_malloc_0_nonnull=yes
-else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-( exit $ac_status )
-ac_cv_func_malloc_0_nonnull=no
-fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
-fi
-echo "$as_me:$LINENO: result: $ac_cv_func_malloc_0_nonnull" >&5
-echo "${ECHO_T}$ac_cv_func_malloc_0_nonnull" >&6
-if test $ac_cv_func_malloc_0_nonnull = yes; then
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_MALLOC 1
-_ACEOF
-
-else
-  cat >>confdefs.h <<\_ACEOF
-#define HAVE_MALLOC 0
-_ACEOF
-
-   case $LIBOBJS in
-    "malloc.$ac_objext"   | \
-  *" malloc.$ac_objext"   | \
-    "malloc.$ac_objext "* | \
-  *" malloc.$ac_objext "* ) ;;
-  *) LIBOBJS="$LIBOBJS malloc.$ac_objext" ;;
-esac
-
-
-cat >>confdefs.h <<\_ACEOF
-#define malloc rpl_malloc
-_ACEOF
-
-fi
-
-
-
-
-if test -n "${JAVA_HOME}" ; then
-  JAVA_PATH=${JAVA_HOME}:${JAVA_HOME}/jre/bin:${JAVA_HOME}/bin:${PATH}
-else
-  JAVA_PATH=${PATH}
-fi
-JAVA_PATH=${JAVA_PATH}:/usr/java/bin:/usr/jdk/bin:/usr/lib/java/bin:/usr/lib/jdk/bin:/usr/local/java/bin:/usr/local/jdk/bin:/usr/local/lib/java/bin:/usr/local/lib/jdk/bin
-for ac_prog in java
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-echo "$as_me:$LINENO: checking for $ac_word" >&5
-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
-if test "${ac_cv_path_JAVA+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  case $JAVA in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_JAVA="$JAVA" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in ${JAVA_PATH}
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_JAVA="$as_dir/$ac_word$ac_exec_ext"
-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-
-  ;;
-esac
-fi
-JAVA=$ac_cv_path_JAVA
-
-if test -n "$JAVA"; then
-  echo "$as_me:$LINENO: result: $JAVA" >&5
-echo "${ECHO_T}$JAVA" >&6
-else
-  echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-
-  test -n "$JAVA" && break
-done
-
-
-echo "$as_me:$LINENO: checking Java environment home" >&5
-echo $ECHO_N "checking Java environment home... $ECHO_C" >&6
-
-if test -z "${JAVA_HOME}" ; then
-  JAVA_HOME=`${JAVA} -classpath . getsp java.home`
-fi
-
-if test -z "${JAVA_HOME}" ; then
-  { { echo "$as_me:$LINENO: error: Cannot find any Java environment. Please install JDK and/or set JAVA_HOME correspondingly." >&5
-echo "$as_me: error: Cannot find any Java environment. Please install JDK and/or set JAVA_HOME correspondingly." >&2;}
+If you don't have root privileges, run
+R CMD javareconf -e
+to set all Java-related variables and then install rJava.
+(works with R 2.5.0 only)" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
-echo "$as_me:$LINENO: result: in ${JAVA_HOME}" >&5
-echo "${ECHO_T}in ${JAVA_HOME}" >&6
+: ${JAR=`"${RBIN}" CMD config JAR|sed 's/ERROR:.*//'`}
+: ${JAVA=`"${RBIN}" CMD config JAVA|sed 's/ERROR:.*//'`}
+: ${JAVAC=`"${RBIN}" CMD config JAVAC|sed 's/ERROR:.*//'`}
+: ${JAVAH=`"${RBIN}" CMD config JAVAH|sed 's/ERROR:.*//'`}
+: ${JAVA_CPPFLAGS=`"${RBIN}" CMD config JAVA_CPPFLAGS|sed 's/ERROR:.*//'`}
+: ${JAVA_LIBS=`"${RBIN}" CMD config JAVA_LIBS|sed 's/ERROR:.*//'`}
 
-as_ac_File=`echo "ac_cv_file_${JAVA_HOME}/include/jni.h" | $as_tr_sh`
-echo "$as_me:$LINENO: checking for ${JAVA_HOME}/include/jni.h" >&5
-echo $ECHO_N "checking for ${JAVA_HOME}/include/jni.h... $ECHO_C" >&6
-if eval "test \"\${$as_ac_File+set}\" = set"; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  test "$cross_compiling" = yes &&
-  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
-echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+have_all_flags=yes
+test -z "${JAVA}" || test -z "${JAVAC}" || test -z "${JAVAH}" || \
+test -z "${JAVA_CPPFLAGS}" || test -z "${JAVA_LIB}" || test -z "${JAR}" || \
+have_all_flags=no
+if test "${have_all_flags}" = no; then
+  { { echo "$as_me:$LINENO: error: One or more Java configuration variables are not set.
+Make sure R is configured with full Java support (including JDK). Run
+R CMD javareconf
+as root to add Java support to R.
+
+If you don't have root privileges, run
+R CMD javareconf -e
+to set all Java-related variables and then install rJava." >&5
+echo "$as_me: error: One or more Java configuration variables are not set.
+Make sure R is configured with full Java support (including JDK). Run
+R CMD javareconf
+as root to add Java support to R.
+
+If you don't have root privileges, run
+R CMD javareconf -e
+to set all Java-related variables and then install rJava." >&2;}
    { (exit 1); exit 1; }; }
-if test -r "${JAVA_HOME}/include/jni.h"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_File'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
-if test `eval echo '${'$as_ac_File'}'` = yes; then
-  JNI_H="${JAVA_HOME}/include"
-else
-  as_ac_File=`echo "ac_cv_file_${JAVA_HOME}/jni.h" | $as_tr_sh`
-echo "$as_me:$LINENO: checking for ${JAVA_HOME}/jni.h" >&5
-echo $ECHO_N "checking for ${JAVA_HOME}/jni.h... $ECHO_C" >&6
-if eval "test \"\${$as_ac_File+set}\" = set"; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  test "$cross_compiling" = yes &&
-  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
-echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
-   { (exit 1); exit 1; }; }
-if test -r "${JAVA_HOME}/jni.h"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_File'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
-if test `eval echo '${'$as_ac_File'}'` = yes; then
-  JNI_H="${JAVA_HOME}"
-else
-  as_ac_File=`echo "ac_cv_file_${JAVA_HOME}/../include/jni.h" | $as_tr_sh`
-echo "$as_me:$LINENO: checking for ${JAVA_HOME}/../include/jni.h" >&5
-echo $ECHO_N "checking for ${JAVA_HOME}/../include/jni.h... $ECHO_C" >&6
-if eval "test \"\${$as_ac_File+set}\" = set"; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  test "$cross_compiling" = yes &&
-  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
-echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
-   { (exit 1); exit 1; }; }
-if test -r "${JAVA_HOME}/../include/jni.h"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_File'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
-if test `eval echo '${'$as_ac_File'}'` = yes; then
-  JNI_H="${JAVA_HOME}/../include"
-else
-  { { echo "$as_me:$LINENO: error: jni headers not found. Please make sure you have a proper JDK installed." >&5
-echo "$as_me: error: jni headers not found. Please make sure you have a proper JDK installed." >&2;}
-   { (exit 1); exit 1; }; }
-
-fi
-
-
-fi
-
-
-fi
-
-
-JAVA_INC="-I${JNI_H}"
-
-# Sun's JDK needs jni_md.h in in addition to jni.h and unfortunately it's stored somewhere else ...
-# this should be become more general at some point - so far we're checking linux and solaris only
-# (well, those are presumably the only platforms supported by Sun's JDK and others don't need this
-# at least as of now - 01/2004)
-jac_found_md=no
-for mddir in . linux solaris ppc irix alpha aix hp-ux genunix cygwin win32 freebsd; do
-as_ac_File=`echo "ac_cv_file_${JNI_H}/$mddir/jni_md.h" | $as_tr_sh`
-echo "$as_me:$LINENO: checking for ${JNI_H}/$mddir/jni_md.h" >&5
-echo $ECHO_N "checking for ${JNI_H}/$mddir/jni_md.h... $ECHO_C" >&6
-if eval "test \"\${$as_ac_File+set}\" = set"; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  test "$cross_compiling" = yes &&
-  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
-echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
-   { (exit 1); exit 1; }; }
-if test -r "${JNI_H}/$mddir/jni_md.h"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_File'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
-if test `eval echo '${'$as_ac_File'}'` = yes; then
-  JAVA_INC="${JAVA_INC} -I${JNI_H}/$mddir" jac_found_md=yes
-fi
-
-if test ${jac_found_md} = yes; then break; fi
-done
-
-JAVA_LIBS=`${JAVA} -classpath . getsp -libs`
-JAVA_LIBS="${JAVA_LIBS} -ljvm"
-
-if test `uname` = "Darwin" ; then
-  JAVA_LIBS="-framework JavaVM"
 fi
 
 LIBS="${LIBS} ${JAVA_LIBS}"
-CFLAGS="${CFLAGS} ${JAVA_INC}"
+CFLAGS="${CFLAGS} ${JAVA_CPPFLAGS}"
 
 SAVE_LDLP="${LD_LIBRARY_PATH}"
-JAVA_LD=`${JAVA} getsp java.library.path`
-LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${JAVA_LD}"
+LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${JAVA_LD_LIBRARY_PATH}"
 
 echo "$as_me:$LINENO: checking whether JNI programs can be compiled" >&5
 echo $ECHO_N "checking whether JNI programs can be compiled... $ECHO_C" >&6
@@ -3654,6 +3291,7 @@ cat >conftest.$ac_ext <<_ACEOF
 #include <jni.h>
 int main(void) {
     jobject o;
+    JNI_CreateJavaVM(0, 0, 0);
     return 0;
 }
 
@@ -3696,11 +3334,8 @@ rm -f conftest.err conftest.$ac_objext \
 echo "$as_me:$LINENO: checking JNI data types" >&5
 echo $ECHO_N "checking JNI data types... $ECHO_C" >&6
 if test "$cross_compiling" = yes; then
-  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling
-See \`config.log' for more details." >&5
-echo "$as_me: error: cannot run test program while cross compiling
-See \`config.log' for more details." >&2;}
-   { (exit 1); exit 1; }; }
+  echo "$as_me:$LINENO: result: don't know (cross-compiling)" >&5
+echo "${ECHO_T}don't know (cross-compiling)" >&6
 else
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
@@ -3793,6 +3428,8 @@ fi
 
 
 
+
+
 use_threads=no
 echo "$as_me:$LINENO: checking whether threads support is requested" >&5
 echo $ECHO_N "checking whether threads support is requested... $ECHO_C" >&6
@@ -3866,7 +3503,7 @@ if test "${want_jri}" = yes; then
   echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
   export R_HOME
-  export JAVA_HOME
+  export JAVA_HOME JAVA_CPPFLAGS JAVA_LIBS JAVA_LD_LIBRARY_PATH JAVA JAVAC JAVAH JAR
   CONFIGURED=1
   export CONFIGURED
   ac_aux_dir=
@@ -4535,15 +4172,16 @@ s,@EXEEXT@,$EXEEXT,;t t
 s,@OBJEXT@,$OBJEXT,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
-s,@LIBOBJS@,$LIBOBJS,;t t
-s,@JAVA@,$JAVA,;t t
 s,@WANT_JRI_TRUE@,$WANT_JRI_TRUE,;t t
 s,@WANT_JRI_FALSE@,$WANT_JRI_FALSE,;t t
 s,@JAVA_LIBS@,$JAVA_LIBS,;t t
-s,@JAVA_INC@,$JAVA_INC,;t t
+s,@JAVA_CPPFLAGS@,$JAVA_CPPFLAGS,;t t
 s,@JAVA_HOME@,$JAVA_HOME,;t t
-s,@JAVA_LD@,$JAVA_LD,;t t
+s,@JAVA@,$JAVA,;t t
+s,@JAVAC@,$JAVAC,;t t
+s,@JAVAH@,$JAVAH,;t t
 s,@subdirs@,$subdirs,;t t
+s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF
 

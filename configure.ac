@@ -9,12 +9,13 @@ if test -z "${R_HOME}"; then
   echo "could not determine R_HOME"
   exit 1
 fi
-CC=`${R_HOME}/bin/R CMD config CC`;
-CFLAGS=`${R_HOME}/bin/R CMD config CFLAGS`
-LIBS=${PKG_LIBS}
+RBIN="${R_HOME}/bin/R"
+CC=`"${RBIN}" CMD config CC`;
+CFLAGS=`"${RBIN}" CMD config CFLAGS`
+LIBS="${PKG_LIBS}"
 AC_SUBST(R_HOME)
 
-RLD=`${R_HOME}/bin/R CMD config --ldflags 2>/dev/null`
+RLD=`"${RBIN}" CMD config --ldflags 2>/dev/null`
 has_R_shlib=no
 if test -n "$RLD"; then
    has_R_shlib=yes
@@ -88,71 +89,53 @@ AC_CHECK_HEADERS([string.h sys/time.h unistd.h])
 AC_C_CONST
 AC_HEADER_TIME
 
-# Checks for library functions.
-AC_FUNC_MALLOC
+R_JAVA_HOME=`"${RBIN}" CMD config JAVA_HOME`
+: ${JAVA_HOME="${R_JAVA_HOME}"}
+if test -z "${JAVA_HOME}"; then
+   AC_MSG_ERROR([R was configured without Java support. Please run
+R CMD javareconf
+as root to add Java support to R.
 
-if test -n "${JAVA_HOME}" ; then
-  JAVA_PATH=${JAVA_HOME}:${JAVA_HOME}/jre/bin:${JAVA_HOME}/bin:${PATH}
-else
-  JAVA_PATH=${PATH}
-fi
-JAVA_PATH=${JAVA_PATH}:/usr/java/bin:/usr/jdk/bin:/usr/lib/java/bin:/usr/lib/jdk/bin:/usr/local/java/bin:/usr/local/jdk/bin:/usr/local/lib/java/bin:/usr/local/lib/jdk/bin
-AC_PATH_PROGS(JAVA,java,,${JAVA_PATH})
-
-AC_MSG_CHECKING([Java environment home])
-
-if test -z "${JAVA_HOME}" ; then
-  JAVA_HOME=`${JAVA} -classpath . getsp java.home`
+If you don't have root privileges, run
+R CMD javareconf -e
+to set all Java-related variables and then install rJava.
+(works with R 2.5.0 only)])
 fi
 
-if test -z "${JAVA_HOME}" ; then
-  AC_MSG_ERROR([Cannot find any Java environment. Please install JDK and/or set JAVA_HOME correspondingly.])
-fi
+: ${JAR=`"${RBIN}" CMD config JAR|sed 's/ERROR:.*//'`}
+: ${JAVA=`"${RBIN}" CMD config JAVA|sed 's/ERROR:.*//'`}
+: ${JAVAC=`"${RBIN}" CMD config JAVAC|sed 's/ERROR:.*//'`}
+: ${JAVAH=`"${RBIN}" CMD config JAVAH|sed 's/ERROR:.*//'`}
+: ${JAVA_CPPFLAGS=`"${RBIN}" CMD config JAVA_CPPFLAGS|sed 's/ERROR:.*//'`}
+: ${JAVA_LIBS=`"${RBIN}" CMD config JAVA_LIBS|sed 's/ERROR:.*//'`}
 
-AC_MSG_RESULT([in ${JAVA_HOME}])
+have_all_flags=yes
+test -z "${JAVA}" || test -z "${JAVAC}" || test -z "${JAVAH}" || \
+test -z "${JAVA_CPPFLAGS}" || test -z "${JAVA_LIB}" || test -z "${JAR}" || \
+have_all_flags=no
+if test "${have_all_flags}" = no; then
+  AC_MSG_ERROR([One or more Java configuration variables are not set.
+Make sure R is configured with full Java support (including JDK). Run
+R CMD javareconf
+as root to add Java support to R.
 
-AC_CHECK_FILE(${JAVA_HOME}/include/jni.h,
- [JNI_H="${JAVA_HOME}/include"],
- [AC_CHECK_FILE(${JAVA_HOME}/jni.h,
-  [JNI_H="${JAVA_HOME}"],
-  [AC_CHECK_FILE(${JAVA_HOME}/../include/jni.h,
-   [JNI_H="${JAVA_HOME}/../include"],
-   [AC_MSG_ERROR([jni headers not found. Please make sure you have a proper JDK installed.])
-  ])
- ])
-])
-
-JAVA_INC="-I${JNI_H}"
-
-# Sun's JDK needs jni_md.h in in addition to jni.h and unfortunately it's stored somewhere else ...
-# this should be become more general at some point - so far we're checking linux and solaris only
-# (well, those are presumably the only platforms supported by Sun's JDK and others don't need this
-# at least as of now - 01/2004)
-jac_found_md=no
-for mddir in . linux solaris ppc irix alpha aix hp-ux genunix cygwin win32 freebsd; do
-AC_CHECK_FILE(${JNI_H}/$mddir/jni_md.h,[JAVA_INC="${JAVA_INC} -I${JNI_H}/$mddir" jac_found_md=yes])
-if test ${jac_found_md} = yes; then break; fi
-done
-
-JAVA_LIBS=`${JAVA} -classpath . getsp -libs`
-JAVA_LIBS="${JAVA_LIBS} -ljvm"
-
-if test `uname` = "Darwin" ; then
-  JAVA_LIBS="-framework JavaVM"
+If you don't have root privileges, run
+R CMD javareconf -e
+to set all Java-related variables and then install rJava.])
 fi
 
 LIBS="${LIBS} ${JAVA_LIBS}"
-CFLAGS="${CFLAGS} ${JAVA_INC}"
+CFLAGS="${CFLAGS} ${JAVA_CPPFLAGS}"
 
 SAVE_LDLP="${LD_LIBRARY_PATH}"
-JAVA_LD=`${JAVA} getsp java.library.path`
-LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${JAVA_LD}"
+LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${JAVA_LD_LIBRARY_PATH}"
 
 AC_MSG_CHECKING([whether JNI programs can be compiled])
 AC_LINK_IFELSE([
 #include <jni.h>
 int main(void) {
     jobject o;
+    JNI_CreateJavaVM(0, 0, 0);
     return 0;
 }
 	],[AC_MSG_RESULT(yes)],
@@ -167,7 +150,8 @@ int main(void) {
 }
 	],
 	[AC_MSG_RESULT([ok])],
-	[AC_MSG_ERROR([One or more JNI types differ from the corresponding native type. You may need to use non-standard compiler flags or a different compiler in order to fix this.])])
+	[AC_MSG_ERROR([One or more JNI types differ from the corresponding native type. You may need to use non-standard compiler flags or a different compiler in order to fix this.])],
+	[AC_MSG_RESULT([don't know (cross-compiling)])])
 
 if test "${want_jri}" = auto; then
    AC_MSG_CHECKING([whether JRI should be compiled (autodetect)])
@@ -196,9 +180,11 @@ else
 fi
 
 AC_SUBST(JAVA_LIBS)
-AC_SUBST(JAVA_INC)
+AC_SUBST(JAVA_CPPFLAGS)
 AC_SUBST(JAVA_HOME)
-AC_SUBST(JAVA_LD)
+AC_SUBST(JAVA)
+AC_SUBST(JAVAC)
+AC_SUBST(JAVAH)
 
 use_threads=no
 AC_MSG_CHECKING([whether threads support is requested])
@@ -244,7 +230,7 @@ AC_MSG_CHECKING([whether JRI is requested])
 if test "${want_jri}" = yes; then
   AC_MSG_RESULT([yes])
   export R_HOME
-  export JAVA_HOME
+  export JAVA_HOME JAVA_CPPFLAGS JAVA_LIBS JAVA_LD_LIBRARY_PATH JAVA JAVAC JAVAH JAR
   CONFIGURED=1
   export CONFIGURED
   AC_CONFIG_SUBDIRS(jri)
