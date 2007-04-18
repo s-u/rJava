@@ -71,9 +71,10 @@ void init_rJava(void) {
 int initClassLoader(JNIEnv *env, jobject cl) {
   clClassLoader = (*env)->NewGlobalRef(env, (*env)->GetObjectClass(env, cl));
   /* oClassLoader = (*env)->NewGlobalRef(env, cl); */ oClassLoader = cl;
+#ifdef DEBUG_CL
   printf("initClassLoader: cl=%x, clCl=%x, jcl=%x\n", oClassLoader, clClassLoader, javaClassClass);
+#endif
   midForName = (*env)->GetStaticMethodID(env, javaClassClass, "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
-  printf("initClassLoader: midForName=%d\n", (int) midForName);
   return 0;
 }
 
@@ -87,19 +88,26 @@ jclass findClass(JNIEnv *env, char *cName) {
     while (*c) { if (*c=='/') *c='.'; c++; };
     cns = newString(env, cn);
     /* can we pass 1 or do we have to create a boolean object? */
+#ifdef DEBUG_CL
     printf("findClass(\"%s\") [with rJava loader]\n", cn);
+#endif
     cl = (jclass) (*env)->CallStaticObjectMethod(env, javaClassClass, midForName, cns, (jboolean) 1, oClassLoader);
     _mp(MEM_PROF_OUT("  %08x LNEW class\n", (int) cl))
     releaseObject(env, cns);
+#ifdef DEBUG_CL
     printf(" - got %x\n", (unsigned int) cl);
+#endif
     if (cl) return cl;
   }
+#ifdef DEBUG_CL
   printf("findClass(\"%s\") (no loader)\n", cName);
-
+#endif
   { 
     jclass cl = (*env)->FindClass(env, cName);
     _mp(MEM_PROF_OUT("  %08x LNEW class\n", (int) cl))
+#ifdef DEBUG_CL
     printf(" - got %x\n", (unsigned int) cl); 
+#endif
     return cl;
   }
 }
@@ -142,7 +150,6 @@ void printObject(JNIEnv *env, jobject o) {
   _mp(MEM_PROF_OUT("  %08x LNEW object method toString result (JRI-local)\n", (int)s))
   if (!s) { errJNI("printObject o.toString() call failed"); releaseLocal(env, cls); return; }
   c=(*env)->GetStringUTFChars(env, (jstring)s, 0);
-  Rprintf("%s\n",c);
   (*env)->ReleaseStringUTFChars(env, (jstring)s, c);
   releaseLocal(env, cls);  
   releaseLocal(env, s);
