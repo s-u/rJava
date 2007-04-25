@@ -1,17 +1,33 @@
 .jaddClassPath <- function(path) {
-  invisible(.jcall(rJava:::.rJava.class.loader,"V","addClassPath",as.character(path)))
+    if (!length(path)) return(invisible(NULL))
+    if (!is.jnull(.rJava.class.loader))
+        invisible(.jcall(.rJava.class.loader,"V","addClassPath",as.character(path)))
+    else {
+        cpr <- try(.jmergeClassPath(paste(path,collapse=.Platform$path.sep), silent=TRUE))
+        invisible(!inherits(cpr, "try-error"))
+    }
 }
 
 .jclassPath <- function() {
-  .jcall(rJava:::.rJava.class.loader,"[Ljava/lang/String;","getClassPath")
+    if (is.jnull(.rJava.class.loader)) {
+        cp <- .jcall("java/lang/System", "S", "getProperty", "java.class.path")
+        unlist(strsplit(cp, .Platform$path.sep))
+    } else {
+        .jcall(.rJava.class.loader,"[Ljava/lang/String;","getClassPath")
+    }
 }
 
 .jaddLibrary <- function(name, path) {
-  invisible(.jcall(rJava:::.rJava.class.loader, "V", "addRLibrary", as.character(name)[1], as.character(path)[1]))
+    if (!is.jnull(.rJava.class.loader))
+        invisible(.jcall(.rJava.class.loader, "V", "addRLibrary", as.character(name)[1], as.character(path)[1]))
 }
 
 .jrmLibrary <- function(name) {
   ## FIXME: unimplemented
+}
+
+.jclassLoader <- function() {
+    .rJava.class.loader
 }
 
 .jpackage <- function(name, moreClasses='', nativeLibrary=FALSE) {
