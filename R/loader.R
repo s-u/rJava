@@ -3,7 +3,7 @@
     if (!is.jnull(.rJava.class.loader))
         invisible(.jcall(.rJava.class.loader,"V","addClassPath",as.character(path)))
     else {
-        cpr <- try(.jmergeClassPath(paste(path,collapse=.Platform$path.sep), silent=TRUE))
+        cpr <- try(.jmergeClassPath(paste(path,collapse=.Platform$path.sep)), silent=TRUE)
         invisible(!inherits(cpr, "try-error"))
     }
 }
