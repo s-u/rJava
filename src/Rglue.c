@@ -1585,6 +1585,8 @@ SEXP RJava_checkJVM() {
   return r;
 }
 
+extern int rJava_initialized; /* in callJNI.c */
+
 SEXP RJava_needs_init() {
   SEXP r = allocVector(LGLSXP, 1);
   LOGICAL(r)[0] = rJava_initialized?0:1;
