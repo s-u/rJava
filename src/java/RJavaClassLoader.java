@@ -11,6 +11,8 @@ public class RJavaClassLoader extends URLClassLoader {
     HashMap libMap;
     Vector classPath;
 
+    public static boolean verbose = false;
+
     public boolean useSystem = true;
 
     class UnixFile extends java.io.File {
@@ -69,7 +71,7 @@ public class RJavaClassLoader extends URLClassLoader {
 	    try {
 		jar.cache = new ZipFile(jar);
 	    } catch (Exception zipCacheX) {}
-	    System.out.println("RJavaClassLoader: creating cache for "+jar);
+	    if (verbose) System.out.println("RJavaClassLoader: creating cache for "+jar);
 	}
         try {
 	    ZipFile zf = (ZipFile) jar.cache;
@@ -78,7 +80,7 @@ public class RJavaClassLoader extends URLClassLoader {
 	    if (e != null)
 		return zf.getInputStream(e);
         } catch(Exception e) {
-	    // System.err.println("findClassInJAR: exception: "+e.getMessage());
+	    if (verbose) System.err.println("findClassInJAR: exception: "+e.getMessage());
         }
 	return null;
     }
@@ -99,7 +101,7 @@ public class RJavaClassLoader extends URLClassLoader {
 		}
 	    }
         } catch(Exception e) {
-	    // System.err.println("findInJAR: exception: "+e.getMessage());
+	    if (verbose) System.err.println("findInJAR: exception: "+e.getMessage());
         }
 	return null;
     }
@@ -110,20 +112,20 @@ public class RJavaClassLoader extends URLClassLoader {
 	    try {
 		cl = super.findClass(name);
 		if (cl != null) {
-		    System.out.println("RJavaClassLoader: found class "+name+" using URL loader");
+		    if (verbose) System.out.println("RJavaClassLoader: found class "+name+" using URL loader");
 		    return cl;
 		}
 	    } catch (Exception fnf) {
 	    }	    
 	}
-	// System.out.println("RJavaClassLoaaer.findClass(\""+name+"\")");
+	if (verbose) System.out.println("RJavaClassLoaaer.findClass(\""+name+"\")");
 
 	InputStream ins = null;
 
 	for (Enumeration e = classPath.elements() ; e.hasMoreElements() ;) {
 	    UnixFile cp = (UnixFile) e.nextElement();
 	 
-	    // System.out.println(" - trying class path \""+cp+"\"");
+	    if (verbose) System.out.println(" - trying class path \""+cp+"\"");
 	    try {
 		ins = null;
 		if (cp.isFile())
@@ -155,7 +157,7 @@ public class RJavaClassLoader extends URLClassLoader {
 		    }
 		    ins.close();
 		    n = rp;
-		    System.out.println("RJavaClassLoader: loaded class "+name+", "+n+" bytes");
+		    if (verbose) System.out.println("RJavaClassLoader: loaded class "+name+", "+n+" bytes");
 		    cl = defineClass(name, fc, 0, n);
 		    // System.out.println(" - class = "+cl);
 		    return cl;
@@ -172,12 +174,12 @@ public class RJavaClassLoader extends URLClassLoader {
     }
 
     public URL findResource(String name) {
-	System.out.println("RJavaClassLoader: findResource('"+name+"')");
+	if (verbose) System.out.println("RJavaClassLoader: findResource('"+name+"')");
 	if (useSystem) {
 	    try {
 		URL u = super.findResource(name);
 		if (u != null) {
-		    System.out.println("RJavaClassLoader: found resource in "+u+" using URL loader.");
+		    if (verbose) System.out.println("RJavaClassLoader: found resource in "+u+" using URL loader.");
 		    return u;
 		}
 	    } catch (Exception fre) {
@@ -190,14 +192,14 @@ public class RJavaClassLoader extends URLClassLoader {
 		if (cp.isFile()) {
 		    URL u = findInJARURL(cp.getPath(), name);
 		    if (u != null) {
-			System.out.println(" - found in a JAR file, URL "+u);
+			if (verbose) System.out.println(" - found in a JAR file, URL "+u);
 			return u;
 		    }
 		}
 		if (cp.isDirectory()) {
 		    UnixFile res_f = new UnixFile(cp.getPath()+"/"+name);
 		    if (res_f.isFile()) {
-			System.out.println(" - find as a file: "+res_f);
+			if (verbose) System.out.println(" - find as a file: "+res_f);
 			return res_f.toURL();
 		    }
 		}
@@ -242,15 +244,19 @@ public class RJavaClassLoader extends URLClassLoader {
     }
 
     protected String findLibrary(String name) {
-	System.out.println("RJavaClassLoaaer.findLibrary(\""+name+"\")");
+	if (verbose) System.out.println("RJavaClassLoaaer.findLibrary(\""+name+"\")");
 	//if (name.equals("rJava"))
 	//    return rJavaLibPath+"/"+name+".so";
 
 	UnixFile u = (UnixFile) libMap.get(name);
 	String s = null;
 	if (u!=null && u.exists()) s=u.getPath();
-	System.out.println(" - mapping to "+((s==null)?"<none>":s));
+	if (verbose) System.out.println(" - mapping to "+((s==null)?"<none>":s));
 
 	return s;
+    }
+
+    public static void setDebug(int level) {
+	verbose=(level>0);
     }
 }
