@@ -40,6 +40,8 @@ void* errJNI(char *err, ...) {
   return 0;
 }
 
+int rJava_initialized = 0;
+
 /* initialize internal structures/variables of rJava.
    The JVM initialization was performed before (but may have failed)
 */
@@ -66,6 +68,8 @@ void init_rJava(void) {
   javaClassClass=(*env)->NewGlobalRef(env, c);
   if (!javaClassClass) { errJNI("Unable to create a global reference to the basic Class class"); return; };
   (*env)->DeleteLocalRef(env, c);
+
+  rJava_initialized = 1;
 }
 
 int initClassLoader(JNIEnv *env, jobject cl) {

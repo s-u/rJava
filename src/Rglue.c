@@ -1585,6 +1585,12 @@ SEXP RJava_checkJVM() {
   return r;
 }
 
+SEXP RJava_needs_init() {
+  SEXP r = allocVector(LGLSXP, 1);
+  LOGICAL(r)[0] = rJava_initialized?0:1;
+  return r;
+}
+
 SEXP RJava_set_class_loader(SEXP ldr) {
   JNIEnv *env=getJNIEnv();
   if (TYPEOF(ldr) != EXTPTRSXP)

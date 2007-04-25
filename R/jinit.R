@@ -5,12 +5,14 @@
 ## $Id$
 
 .check.JVM <- function() 
-  .Call("RJava_checkJVM", PACKAGE="rJava")
+    .Call("RJava_checkJVM", PACKAGE="rJava")
+.need.init <- function()
+    .Call("RJava_needs_init", PACKAGE="rJava")
 
 ## initialization
 .jinit <- function(classpath=NULL, parameters=getOption("java.parameters"), ..., silent=FALSE, force.init=FALSE) {
   running.classpath <- character()
-  if (.check.JVM()) {
+  if (!.need.init()) {
     running.classpath <- .jclassPath()
     if (!force.init) {
       if (length(classpath)) {
