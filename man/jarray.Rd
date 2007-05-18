@@ -40,7 +40,7 @@
   example numeric vector creates \code{double[]} array, integer vector
   creates \code{int[]} array, character vector \code{String[]} array and
   so on. If \code{x} is a list, it must contain Java references only (or
-  \code{NULL}s which will be treaded as \code{NULL} references).
+  \code{NULL}s which will be treated as \code{NULL} references).
 
   The \code{contents.class} parameter is used only if \code{x} is a list
   of Java object references and it can specify the class that will be

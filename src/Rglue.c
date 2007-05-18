@@ -1443,7 +1443,9 @@ SEXP RcreateArray(SEXP ar, SEXP cl) {
 					/* it's valid to have [* for class name (for mmulti-dim
 					   arrays), but then we cannot add [L..; */
 					if (*cname == '[') {
-						strcpy(buf, cname);
+						/* we have to add [ prefix to the signature */
+						buf[0] = '[';
+						strcpy(buf+1, cname);
 					} else {
 						buf[0] = '['; buf[1] = 'L'; 
 						strcpy(buf+2, cname);
