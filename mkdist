@@ -5,6 +5,16 @@
 #  - ${ORGPATH}/rosuda/JRI (if ORGPATH is set)
 #  - ../../../org/rosuda/JRI
 
+if [ "$1" = "-h" ]; then
+    echo ''
+    echo " Usage: $0 [-c|-h]"
+    echo ''
+    echo ' Options: -c  clean dist (remove all generated files first)'
+    echo '          -h  this help screen'
+    echo ''
+    exit 0
+fi
+
 SWD=`pwd`
 echo "Removing previous dist ..."
 rm -rf /tmp/rJava
@@ -22,6 +32,11 @@ rm /tmp/rJava/mkdist
 rm -f /tmp/rJava/*~ /tmp/rJava/R/*~ /tmp/rJava/src/*~ /tmp/rJava/man/*~
 rm -rf /tmp/rJava/aclo* /tmp/rJava/autom*
 cd /tmp/rJava
+
+if [ "$1" = "-c" ]; then
+    rm -f configure install-sh jri/configure
+fi
+
 if [ -e /tmp/rJava/configure ]; then
     echo "Note: autoreconf is *not* ran automatically if configure exists."
     echo "      Run it manually if necessary."
@@ -53,10 +68,14 @@ echo "Removing CVS/SVN and backup files ..."
 find . -name CVS -or -name .svn -or -name \*~ | xargs rm -rf
 
 if [ ! -e jri/configure ]; then
-    if [ -n "${ORGPATH}" ]; then
-	DEFAULTJRI="${ORGPATH}/rosuda/JRI"
+    if [ -e "${SWD}/jri/mkdist" ]; then
+	DEFAULTJRI="${SWD}/jri"
     else
-	DEFAULTJRI="$SWD/../../../org/rosuda/JRI"
+	if [ -n "${ORGPATH}" ]; then
+	    DEFAULTJRI="${ORGPATH}/rosuda/JRI"
+	else
+	    DEFAULTJRI="$SWD/../../../org/rosuda/JRI"
+	fi
     fi
     : ${JRI=$DEFAULTJRI}
     if [ ! -e "$JRI" ]; then
