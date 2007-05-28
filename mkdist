@@ -65,7 +65,7 @@ if [ ! -e getsp.class ]; then
 fi
 
 echo "Removing CVS/SVN and backup files ..."
-find . -name CVS -or -name .svn -or -name \*~ | xargs rm -rf
+rm -rf `find . -name CVS -or -name .svn -or -name \*~`
 
 if [ ! -e jri/configure ]; then
     if [ -e "${SWD}/jri/mkdist" ]; then
@@ -90,7 +90,7 @@ if [ ! -e jri/configure ]; then
 	cd $JRI
 	sh mkdist
 	cd /tmp/rJava
-	jf=`ls /tmp/JRI_*|head -n1`;
+	jf=`ls /tmp/JRI_*|sed -n -e 1p`;
 	if [ -z "$jf" -o ! -e "$jf" ]; then
 	    echo "*** ERROR: Cannot get JRI distro!"
 	    exit 1
@@ -135,7 +135,7 @@ cp src/java/*.class inst/java/boot
 
 echo "Updating version ..."
 cd /tmp/rJava
-VER=`awk -v ORS= '/rJava v/ { print substr($6,2) }' src/rJava.h`
+VER=`sed -n -e 's/.*rJava v\([0-9.-]\{1,\}\).*/\1/p' src/rJava.h`
 echo "rJava version ${VER}"
 cat DESCRIPTION| sed "s/Version:.*/Version: ${VER}/" > d
 mv d DESCRIPTION
