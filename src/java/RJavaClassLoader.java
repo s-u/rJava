@@ -11,6 +11,8 @@ public class RJavaClassLoader extends URLClassLoader {
     HashMap libMap;
     Vector classPath;
 
+    public static RJavaClassLoader primaryLoader = null;
+
     public static boolean verbose = false;
 
     public boolean useSystem = true;
@@ -34,8 +36,19 @@ public class RJavaClassLoader extends URLClassLoader {
 	}
     }
 
+    public static RJavaClassLoader getPrimaryLoader() {
+	return primaryLoader;
+    }
+
     public RJavaClassLoader(String path, String libpath) {
 	super(new URL[] {});
+	System.out.println("RJavaClassLoader(\""+path+"\",\""+libpath+"\")");
+	if (primaryLoader==null) {
+	    primaryLoader = this;
+	    System.out.println(" - primary loader");
+	} else {
+	    System.out.println(" - NOT privrary (this="+this+", primary="+primaryLoader+")");
+	}
 	libMap = new HashMap();
 	classPath = new Vector();
 	rJavaPath = path;
@@ -51,8 +64,10 @@ public class RJavaClassLoader extends URLClassLoader {
 	    jri = new UnixFile(path+"/jri/libjri.jnilib");
 	if (!jri.exists())
 	    jri = new UnixFile(path+"/jri/jri.dll");
-	if (jri.exists())
+	if (jri.exists()) {
 	    libMap.put("jri", jri);
+	    System.out.println(" - registered JRI: "+jri);
+	}
     }
 
     String classNameToFile(String cls) {
@@ -108,6 +123,8 @@ public class RJavaClassLoader extends URLClassLoader {
     
     protected Class findClass(String name) throws ClassNotFoundException {
 	Class cl = null;
+	//System.out.println(""+this+".findClass("+name+")");
+	if ("RJavaClassLoader".equals(name)) return getClass();
 	if (useSystem) {
 	    try {
 		cl = super.findClass(name);
@@ -254,6 +271,13 @@ public class RJavaClassLoader extends URLClassLoader {
 	if (verbose) System.out.println(" - mapping to "+((s==null)?"<none>":s));
 
 	return s;
+    }
+
+    public void bootClass(String cName, String mName, String[] args) throws java.lang.IllegalAccessException, java.lang.reflect.InvocationTargetException, java.lang.NoSuchMethodException, java.lang.ClassNotFoundException {
+	Class c = findClass(cName);
+	resolveClass(c);
+	java.lang.reflect.Method m = c.getMethod(mName, new Class[] { String[].class });
+	m.invoke(null, new Object[] { args });
     }
 
     public static void setDebug(int level) {

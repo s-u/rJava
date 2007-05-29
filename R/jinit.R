@@ -92,7 +92,13 @@
     # ok, so we're attached to some other JVM - now we need to make sure that
     # we can load our class loader. If we can't then we have to use our bad hack
     # to be able to squeeze our loader in
-    rjcl <- .jnew("RJavaClassLoader", .rJava.base.path,
+
+    # first, see if this is actually JRIBootstrap so we have a loader already
+    rjcl <- .Call("RJava_primary_class_loader", PACKAGE="rJava")
+    if (is.null(rjcl) || .jidenticalRef(rjcl,.jzeroRef)) rjcl <- NULL
+    else rjcl <- new("jobjRef", jobj=rjcl, jclass="RJavaClassLoader")
+    if (is.jnull(rjcl))
+      rjcl <- .jnew("RJavaClassLoader", .rJava.base.path,
                                       file.path(.rJava.base.path, lib), check=FALSE)
     .jcheck(silent=TRUE)
     if (is.jnull(rjcl)) {

@@ -1606,6 +1606,42 @@ SEXP RJava_set_class_loader(SEXP ldr) {
   return R_NilValue;
 }
 
+SEXP RJava_primary_class_loader() {
+  JNIEnv *env=getJNIEnv();
+  jclass cl = (*env)->FindClass(env, "RJavaClassLoader");
+  Rprintf("RJava_primary_class_loader, cl = %x\n", (int) cl);
+  if (cl) {
+    jmethodID mid = (*env)->GetStaticMethodID(env, cl, "getPrimaryLoader", "()LRJavaClassLoader;");
+    Rprintf(" - mid = %d\n", (int) mid);
+    if (mid) {
+      jobject o = (*env)->CallStaticObjectMethod(env, cl, mid);
+      Rprintf(" - call result = %x\n", (int) o);
+      if (o) {
+	return j2SEXP(env, o, 1);
+      }
+    }
+  }
+  checkExceptionsX(env, 1);
+
+#ifdef NEW123
+  jclass cl = (*env)->FindClass(env, "JRIBootstrap");
+  Rprintf("RJava_primary_class_loader, cl = %x\n", (int) cl);
+  if (cl) {
+    jmethodID mid = (*env)->GetStaticMethodID(env, cl, "getBootRJavaLoader", "()Ljava/lang/Object;");
+    Rprintf(" - mid = %d\n", (int) mid);
+    if (mid) {
+      jobject o = (*env)->CallStaticObjectMethod(env, cl, mid);
+      Rprintf(" - call result = %x\n", (int) o);
+      if (o) {
+	return j2SEXP(env, o, 1);
+      }
+    }
+  }
+  checkExceptionsX(env, 1);
+#endif
+  return R_NilValue; 
+}
+
 SEXP RJava_new_class_loader(SEXP p1, SEXP p2) {
   JNIEnv *env=getJNIEnv();
   
