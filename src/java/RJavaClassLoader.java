@@ -42,12 +42,12 @@ public class RJavaClassLoader extends URLClassLoader {
 
     public RJavaClassLoader(String path, String libpath) {
 	super(new URL[] {});
-	System.out.println("RJavaClassLoader(\""+path+"\",\""+libpath+"\")");
+	if (verbose) System.out.println("RJavaClassLoader(\""+path+"\",\""+libpath+"\")");
 	if (primaryLoader==null) {
 	    primaryLoader = this;
-	    System.out.println(" - primary loader");
+	    if (verbose) System.out.println(" - primary loader");
 	} else {
-	    System.out.println(" - NOT privrary (this="+this+", primary="+primaryLoader+")");
+	    if (verbose) System.out.println(" - NOT privrary (this="+this+", primary="+primaryLoader+")");
 	}
 	libMap = new HashMap();
 	classPath = new Vector();
@@ -66,7 +66,7 @@ public class RJavaClassLoader extends URLClassLoader {
 	    jri = new UnixFile(path+"/jri/jri.dll");
 	if (jri.exists()) {
 	    libMap.put("jri", jri);
-	    System.out.println(" - registered JRI: "+jri);
+	    if (verbose) System.out.println(" - registered JRI: "+jri);
 	}
     }
 
