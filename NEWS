@@ -2,9 +2,8 @@
 --------------------------
 
 0.5-0	(under development)
-    o	Change .jfield API to reflect that of .jcall/.jnew
-	and it uses JNI directly instead of reflection
-	Old API (based on reflection) is availavle as .jrfield
+    o	The implementation of .jfield no longer uses reflection
+	it supports static fileds and .field<-() was added.
 
     o	Consolidate interface code for static/non-static calls
 

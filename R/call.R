@@ -91,7 +91,7 @@
     if (is.null(r)) return(r)
     
     if (returnSig=="Ljava/lang/String;" && evalString)
-      return(.External("RgetStringValue",r, PACKAGE="rJava"))
+      return(.External("RgetStringValue", r, PACKAGE="rJava"))
     r <- new("jobjRef", jobj=r, jclass=substr(returnSig,2,nchar(returnSig)-1))
   }
   if (check) .jcheck()
@@ -250,11 +250,32 @@ is.jnull <- function(x) {
     .jcall(o, "Z", "equals", .jcast(b, "java/lang/Object"))
 }
 
-.jfield <- function(o, sig, name, ...) {
-  if (sig=='S') sig<-"Ljava/lang/String;"
-  if (sig=='T') sig<-"S"
-  .External("RgetField", o, sig, name, ...)
+.jfield <- function(o, name, sig=NULL, true.class=is.null(sig), convert=TRUE) {
+  if (length(sig)) {
+    if (sig=='S') sig<-"Ljava/lang/String;"
+    if (sig=='T') sig<-"S"
+    if (sig=='[S') sig<-"[Ljava/lang/String;"
+    if (sig=='[T') sig<-"[S"
+  }
+  r <- .Call("RgetField", o, sig, as.character(name), as.integer(true.class), PACKAGE="rJava")
+  if (inherits(r, "jobjRef")) {
+    if (substr(r@jclass,1,1) == "[") {
+      if (convert)
+        r <- .jevalArray(r, rawJNIRefSignature=r@jclass)
+      else
+        r <- new("jarrayRef", jobj=r@jobj, jclass=r@jclass, jsig=r@jclass)
+    }
+    if (convert) {
+      if (r@jclass == "Ljava/lang/String;")
+        return(.External("RgetStringValue", r@jobj, PACKAGE="rJava"))
+      if (.conv.in$.) return(.convert.in(r))
+    }
+  }
+  r
 }
+
+".jfield<-" <- function(o, name, value)
+  .Call("RsetField", o, name, value, PACKAGE="rJava")
 
 # there is no way to distinguish between double and float in R, so we need to mark floats specifically
 .jfloat <- function(x) new("jfloat", as.numeric(x))

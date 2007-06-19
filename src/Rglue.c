@@ -281,11 +281,13 @@ SEXP RinitJVM(SEXP par)
 #define addtmpo(T, X) { jobject _o = X; if (_o) { _dbg(rjprintf(" parameter to release later: %lx\n", (unsigned long) _o)); *T=_o; T++;} }
 #define fintmpo(T) { *T = 0; }
 
+
 /** converts parameters in SEXP list to jpar and sig.
     strcat is used on sig, hence sig must be a valid string already
     since 0.4-4 we ignore named arguments in par
+    Note: maxsig is never used and thus the sig buffer could overflow
 */
-int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int maxsig, jobject *tmpo) {
+static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpars, int maxsig, jobject *tmpo) {
   SEXP p=par;
   SEXP e;
   int jvpos=0;
@@ -305,13 +307,17 @@ int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int 
 	int j=0;
 	jobjectArray sa=(*env)->NewObjectArray(env, LENGTH(e), javaStringClass, 0);
 	_mp(MEM_PROF_OUT("  %08x LNEW string[%d]\n", (int) sa, LENGTH(e)))
-	if (!sa) { error("Unable to create string array."); return -1; }
+	if (!sa) {
+	  fintmpo(tmpo);
+	  error("unable to create string array.");
+	  return -1;
+	}
 	addtmpo(tmpo, sa);
 	while (j<LENGTH(e)) {
 	  jobject s=newString(env, CHAR(STRING_ELT(e,j)));
 	  _dbg(rjprintf (" [%d] \"%s\"\n",j,CHAR(STRING_ELT(e,j))));
-	  (*env)->SetObjectArrayElement(env,sa,j,s);
-	  releaseObject(env, s);
+	  (*env)->SetObjectArrayElement(env, sa, j, s);
+	  if (s) releaseObject(env, s);
 	  j++;
 	}
 	jpar[jvpos++].l=sa;
@@ -402,6 +408,7 @@ int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int 
 	if (TYPEOF(n)!=STRSXP) n=0;
 	_dbg(rjprintf(" which is in fact a Java object reference\n"));
 	if (TYPEOF(e)==VECSXP && LENGTH(e)>1) { /* old objects were lists */
+	  fintmpo(tmpo);
 	  error("Old, unsupported S3 Java object encountered.");
 	} else { /* new objects are S4 objects */
 	  SEXP sref, sclass;
@@ -435,10 +442,36 @@ int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpar, int 
     }
     i++;
     p=CDR(p);
+    if (jvpos >= maxpars) break;
   }
   fintmpo(tmpo);
   return jvpos;
 }
+
+/** free parameters that were temporarily allocated */
+static void Rfreejpars(JNIEnv *env, jobject *tmpo) {
+  if (!tmpo) return;
+  while (*tmpo) {
+    _dbg(rjprintf("Rfreepars: releasing %lx\n", (unsigned long) *tmpo));
+    releaseObject(env, *tmpo);
+    tmpo++;
+  }
+}
+
+/** map one parameter into jvalue and determine its signature */
+static jvalue R1par2jvalue(JNIEnv *env, SEXP par, char *sig, jobject *otr) {
+  jobject tmpo[4] = {0, 0};
+  jvalue v[4];
+  int p = Rpar2jvalue(env, CONS(par, R_NilValue), v, sig, 2, 64, tmpo);
+  /* this should never happen, but just in case - we can only assume responsibility for one value ... */
+  if (p != 1 || (tmpo[0] && tmpo[1])) {
+    Rfreejpars(env, tmpo);
+    error("invalid parameter");
+  }
+  *otr = *tmpo;
+  return *v;
+}
+
 
 /** jobjRefInt object : string */
 SEXP RgetStringValue(SEXP par) {
@@ -454,15 +487,12 @@ SEXP RgetStringValue(SEXP par) {
     jverify(e);
     s=(jstring)EXTPTR_PTR(e);
   } else
-    error_return("RgetStringValue: invalid object parameter");
+    error("invalid object parameter");
   if (!s) return R_NilValue;
   c=(*env)->GetStringUTFChars(env, s, 0);
   if (!c)
-    error_return("RgetStringValue: can't retrieve string content");
-  PROTECT(r=allocVector(STRSXP,1));
-  SET_STRING_ELT(r, 0, mkChar(c));
-  UNPROTECT(1);
-  /* _dbg(rjprintf("RgetStringValue: got \"%s\"", c)); */
+    error("cannot retrieve string content");
+  r = mkString(c);
   (*env)->ReleaseStringUTFChars(env, s, c);
   _prof(profReport("RgetStringValue:"));
   return r;
@@ -813,16 +843,6 @@ SEXP RgetLongArrayCont(SEXP par) {
 	return ar;
 }
 
-/** free parameters that were temporarily allocated */
-void Rfreejpars(JNIEnv *env, jobject *tmpo) {
-  if (!tmpo) return;
-  while (*tmpo) {
-    _dbg(rjprintf("Rfreepars: releasing %lx\n", (unsigned long) *tmpo));
-    releaseObject(env, *tmpo);
-    tmpo++;
-  }
-}
-
 /** call specified non-static method on an object
    object (int), return signature (string), method name (string) [, ..parameters ...]
    arrays and objects are returned as IDs (hence not evaluated)
@@ -894,6 +914,7 @@ SEXP RcallMethod(SEXP par) {
     (*env)->GetMethodID(env, cls, mnam, sig):
     (*env)->GetStaticMethodID(env, cls, mnam, sig);
   if (!mid) {
+    Rfreejpars(env, tmpo);
     releaseObject(env, cls);
     error("method %s with signature %s not found", mnam, sig);
   }
@@ -1079,28 +1100,28 @@ SEXP RcallSyncMethod(SEXP par) {
     arrays and objects are returned as IDs (hence not evaluated)
     class name can be in either form / or .
 */
-SEXP RgetField(SEXP par) {
-  SEXP p=par, e;
+SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
   jobject o = 0;
-  const char *retsig, *mnam;
+  SEXP e;
+  const char *retsig, *fnam;
   char *clnam = 0;
-  jfieldID mid;
+  jfieldID fid;
   jclass cls;
+  int tc = asInteger(trueclass);
   JNIEnv *env=getJNIEnv();
 
-  p=CDR(p); e=CAR(p); p=CDR(p);
-  if (e==R_NilValue) return R_NilValue;
-  if (inherits(e, "jobjRef") || inherits(e, "jarrayRef"))
-    e = GET_SLOT(e, install("jobj"));
-  if (TYPEOF(e)==EXTPTRSXP) {
-    jverify(e);
-    o=(jobject)EXTPTR_PTR(e);
-  } else if (TYPEOF(e)==STRSXP && LENGTH(e)==1)
-    clnam = strdup(CHAR(STRING_ELT(e, 0)));
+  if (obj == R_NilValue) return R_NilValue;
+  if (inherits(obj, "jobjRef") || inherits(obj, "jarrayRef"))
+    obj = GET_SLOT(obj, install("jobj"));
+  if (TYPEOF(obj)==EXTPTRSXP) {
+    jverify(obj);
+    o=(jobject)EXTPTR_PTR(obj);
+  } else if (TYPEOF(obj)==STRSXP && LENGTH(obj)==1)
+    clnam = strdup(CHAR(STRING_ELT(obj, 0)));
   else
-    error("RgetField: invalid object parameter");
+    error("invalid object parameter");
   if (!o && !clnam)
-    error("RgetField: attempt to get field of a NULL object");
+    error("cannot access a field of a NULL object");
 #ifdef RJ_DEBUG
   if (o) {
     rjprintf("RgetField.object: "); printObject(env, o);
@@ -1115,38 +1136,64 @@ SEXP RgetField(SEXP par) {
     while(*c) { if (*c=='/') *c='.'; c++; }
     cls = findClass(env, clnam);
     free(clnam);
+    if (!cls) {
+      error("cannot find class %s", CHAR(STRING_ELT(obj, 0)));
+    }
   }
-  if (!cls) {
-    error("RgetField: cannot find class %s", CHAR(STRING_ELT(e, 0)));
-  }
+  if (!cls)
+    error("cannot determine object class");
 #ifdef RJ_DEBUG
   rjprintf("RgetField.class: "); printObject(env, cls);
 #endif
-  e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1) {
-    releaseObject(env, cls);
-    error("RgetField: invalid return signature parameter");
+  if (sig == R_NilValue) {
+    retsig = 0;
+  } else {
+    if (TYPEOF(sig)!=STRSXP || LENGTH(sig)!=1) {
+      releaseObject(env, cls);
+      error("invalid signature parameter");
+    }
+    retsig = CHAR(STRING_ELT(sig,0));
   }
-  retsig = CHAR(STRING_ELT(e,0));
-  e=CAR(p); p=CDR(p);
-  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1) {
+  if (TYPEOF(name)!=STRSXP || LENGTH(name)!=1) {
     releaseObject(env, cls);
-    error("RgetField: invalid field name");
+    error("invalid field name");
   }
-  mnam = CHAR(STRING_ELT(e,0));
-  _dbg(rjprintf("field %s signature is %s\n",mnam,retsig));
-  mid=o?
-    (*env)->GetFieldID(env, cls, mnam, retsig):
-    (*env)->GetStaticFieldID(env, cls, mnam, retsig);
-  if (!mid) {
+  fnam = CHAR(STRING_ELT(name,0));
+  _dbg(rjprintf("field %s signature is %s\n",fnam,retsig));
+  if (retsig) { /* signature unknown, find it */
+    jmethodID mid = (*env)->GetMethodID(env, cls, "getField",
+					 "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
+    if (mid) {
+      jstring s = newString(env, fnam);
+      if (s) {
+	jobject f = (*env)->CallObjectMethod(env, cls, mid, s);
+	_mp(MEM_PROF_OUT("  %08x LNEW object getField result value\n", (int) f))
+	if (f) {
+	  fid = (*env)->FromReflectedField(env, f);
+ //	  releaseObject(env, f);
+	}
+	releaseObject(env, s);
+      }
+    }
+    if (!fid) {
+      releaseObject(env, cls);
+      checkExceptionsX(env, 1);
+      error("unable to determine signature for field '%s'", fnam);
+    }
+  } else {
+    fid=o?
+      (*env)->GetFieldID(env, cls, fnam, retsig):
+      (*env)->GetStaticFieldID(env, cls, fnam, retsig);
+  }
+  if (!fid) {
     releaseObject(env, cls);
-    error("RgetField: field %s not found", mnam);
+    error("RgetField: field %s not found", fnam);
   }
   switch (*retsig) {
   case 'I': {
     int r=o?
-      (*env)->GetIntField(env,o,mid):
-      (*env)->GetStaticIntField(env, cls, mid);
+      (*env)->GetIntField(env,o,fid):
+      (*env)->GetStaticIntField(env, cls, fid);
     e = allocVector(INTSXP, 1);
     INTEGER(e)[0] = r;
     releaseObject(env, cls);
@@ -1154,8 +1201,8 @@ SEXP RgetField(SEXP par) {
   }
   case 'S': {
     jshort r=o?
-      (*env)->GetShortField(env,o,mid):
-      (*env)->GetStaticShortField(env, cls, mid);
+      (*env)->GetShortField(env,o,fid):
+      (*env)->GetStaticShortField(env, cls, fid);
     e = allocVector(INTSXP, 1);
     INTEGER(e)[0] = r;
     releaseObject(env, cls);
@@ -1163,8 +1210,8 @@ SEXP RgetField(SEXP par) {
   }
   case 'C': {
     int r=(int) o?
-      (*env)->GetCharField(env, o, mid):
-      (*env)->GetStaticCharField(env, cls, mid);
+      (*env)->GetCharField(env, o, fid):
+      (*env)->GetStaticCharField(env, cls, fid);
     e = allocVector(INTSXP, 1);
     INTEGER(e)[0] = r;
     releaseObject(env, cls);
@@ -1172,8 +1219,8 @@ SEXP RgetField(SEXP par) {
   }
   case 'B': {
     int r=(int) o?
-      (*env)->GetByteField(env, o, mid):
-      (*env)->GetStaticByteField(env, cls, mid);
+      (*env)->GetByteField(env, o, fid):
+      (*env)->GetStaticByteField(env, cls, fid);
     e = allocVector(INTSXP, 1);
     INTEGER(e)[0] = r;
     releaseObject(env, cls);
@@ -1181,8 +1228,8 @@ SEXP RgetField(SEXP par) {
   }
   case 'J': {
     jlong r=o?
-      (*env)->GetLongField(env, o, mid):
-      (*env)->GetStaticLongField(env, cls, mid);
+      (*env)->GetLongField(env, o, fid):
+      (*env)->GetStaticLongField(env, cls, fid);
     e = allocVector(REALSXP, 1);
     REAL(e)[0] = (double)r;
     releaseObject(env, cls);
@@ -1190,8 +1237,8 @@ SEXP RgetField(SEXP par) {
   }
   case 'Z': {
     jboolean r=o?
-      (*env)->GetBooleanField(env, o, mid):
-      (*env)->GetStaticBooleanField(env, cls, mid);
+      (*env)->GetBooleanField(env, o, fid):
+      (*env)->GetStaticBooleanField(env, cls, fid);
     e = allocVector(LGLSXP, 1);
     LOGICAL(e)[0] = r?1:0;
     releaseObject(env, cls);
@@ -1199,8 +1246,8 @@ SEXP RgetField(SEXP par) {
   }
   case 'D': {
     double r=o?
-      (*env)->GetDoubleField(env, o, mid):
-      (*env)->GetStaticDoubleField(env, cls, mid);
+      (*env)->GetDoubleField(env, o, fid):
+      (*env)->GetStaticDoubleField(env, cls, fid);
     e = allocVector(REALSXP, 1);
     REAL(e)[0] = r;
     releaseObject(env, cls);
@@ -1208,8 +1255,8 @@ SEXP RgetField(SEXP par) {
   }
   case 'F': {
     double r = (double) (o?
-      (*env)->GetFloatField(env, o, mid):
-      (*env)->GetStaticFloatField(env, cls, mid));
+      (*env)->GetFloatField(env, o, fid):
+      (*env)->GetStaticFloatField(env, cls, fid));
     e = allocVector(REALSXP, 1);
     REAL(e)[0] = r;
     releaseObject(env, cls);
@@ -1218,10 +1265,11 @@ SEXP RgetField(SEXP par) {
   case 'L':
   case '[': {
     jobject r = o?
-      (*env)->GetObjectField(env, o, mid):
-      (*env)->GetStaticObjectField(env, cls, mid);
+      (*env)->GetObjectField(env, o, fid):
+      (*env)->GetStaticObjectField(env, cls, fid);
     _mp(MEM_PROF_OUT("  %08x LNEW field value\n", (int) r))
     releaseObject(env, cls);
+    if (tc) return new_jobjRef(env, r, 0);
     if (*retsig=='L') { /* need to fix the class name */
       char *c = strdup(retsig);
       while (*c) { if (*c==';') { *c=0; break; }; c++; }
@@ -1231,8 +1279,110 @@ SEXP RgetField(SEXP par) {
   }
   } /* switch */
   releaseObject(env, cls);
-  error("unsupported field signature '%s'", retsig);
+  error("unknown field signature '%s'", retsig);
   return R_NilValue;
+}
+
+SEXP RsetField(SEXP obj, SEXP name, SEXP value) {
+  jobject o = 0, otr;
+  const char *fnam;
+  char sig[64];
+  char *clnam = 0;
+  jfieldID fid;
+  jclass cls;
+  jvalue jval;
+  JNIEnv *env=getJNIEnv();
+
+  if (obj == R_NilValue) error("cannot set a field of a NULL object");
+  if (inherits(obj, "jobjRef") || inherits(obj, "jarrayRef"))
+    obj = GET_SLOT(obj, install("jobj"));
+  if (TYPEOF(obj)==EXTPTRSXP) {
+    jverify(obj);
+    o=(jobject)EXTPTR_PTR(obj);
+  } else if (TYPEOF(obj)==STRSXP && LENGTH(obj)==1)
+    clnam = strdup(CHAR(STRING_ELT(obj, 0)));
+  else
+    error("invalid object parameter");
+  if (!o && !clnam)
+    error("cannot set a field of a NULL object");
+#ifdef RJ_DEBUG
+  if (o) {
+    rjprintf("RsetField.object: "); printObject(env, o);
+  } else {
+    rjprintf("RsetField.class: %s\n", clnam);
+  }
+#endif
+  if (o)
+    cls = objectClass(env, o);
+  else {
+    char *c = clnam;
+    while(*c) { if (*c=='/') *c='.'; c++; }
+    cls = findClass(env, clnam);
+    if (!cls) {
+      error("cannot find class %s", CHAR(STRING_ELT(obj, 0)));
+    }
+  }
+  if (!cls)
+    error("cannot determine object class");
+#ifdef RJ_DEBUG
+  rjprintf("RsetField.class: "); printObject(env, cls);
+#endif
+  *sig = 0;
+  jval = R1par2jvalue(env, value, sig, &otr);
+  
+  fid = o?(*env)->GetFieldID(env, cls, fnam, sig):
+    (*env)->GetStaticFieldID(env, cls, fnam, sig);
+  if (!fid) {
+    releaseObject(env, cls);
+    if (otr) releaseObject(env, otr);
+    error("cannot find field %s with signature %s", fnam, sig);
+  }
+  switch(*sig) {
+  case 'Z':
+    o?(*env)->SetBooleanField(env, o, fid, jval.z):
+      (*env)->SetStaticBooleanField(env, cls, fid, jval.z);
+    break;
+  case 'C':
+    o?(*env)->SetCharField(env, o, fid, jval.c):
+      (*env)->SetStaticCharField(env, cls, fid, jval.c);
+    break;
+  case 'B':
+    o?(*env)->SetByteField(env, o, fid, jval.b):
+      (*env)->SetStaticByteField(env, cls, fid, jval.b);
+    break;
+  case 'I':
+    o?(*env)->SetIntField(env, o, fid, jval.i):
+      (*env)->SetStaticIntField(env, cls, fid, jval.i);
+    break;
+  case 'D':
+    o?(*env)->SetDoubleField(env, o, fid, jval.d):
+      (*env)->SetStaticDoubleField(env, cls, fid, jval.d);
+    break;
+  case 'F':
+    o?(*env)->SetFloatField(env, o, fid, jval.f):
+      (*env)->SetStaticFloatField(env, cls, fid, jval.f);
+    break;
+  case 'J':
+    o?(*env)->SetLongField(env, o, fid, jval.j):
+      (*env)->SetStaticLongField(env, cls, fid, jval.j);
+    break;
+  case 'S':
+    o?(*env)->SetShortField(env, o, fid, jval.s):
+      (*env)->SetStaticShortField(env, cls, fid, jval.s);
+    break;
+  case '[':
+  case 'L':
+    o?(*env)->SetObjectField(env, o, fid, jval.l):
+      (*env)->SetStaticObjectField(env, cls, fid, jval.l);
+    break;
+  default:
+    releaseObject(env, cls);
+    if (otr) releaseObject(env, otr);
+    error("unknown field sighanture %s", sig);
+  }
+  releaseObject(env, cls);
+  if (otr) releaseObject(env, otr);
+  return value;
 }
 
 /** create new object.
