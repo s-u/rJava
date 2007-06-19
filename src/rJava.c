@@ -59,14 +59,14 @@ JNIEnv *getJNIEnv()
     return env;
 }
 
-int initJVM(char *user_classpath, int opts, char **optv) {
+int initJVM(const char *user_classpath, int opts, char **optv) {
   int total_num_properties, propNum = 0;
   jint res;
   char *classpath;
   
   if(!user_classpath)
     /* use the CLASSPATH environment variable as default */
-    user_classpath = (char*) getenv("CLASSPATH");
+    user_classpath = getenv("CLASSPATH");
   if(!user_classpath) user_classpath = "";
   
   vm_args.version = JNI_VERSION_1_2;

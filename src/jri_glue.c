@@ -14,7 +14,7 @@ SEXP PushToREXP(SEXP clname, SEXP eng, SEXP engCl, SEXP robj) {
   jvalue jpar[4];
   jobject o;
   JNIEnv *env=getJNIEnv();
-  char *cName;
+  const char *cName;
   
   if (!isString(clname) || LENGTH(clname)!=1) error("invalid class name");
   if (!isString(engCl) || LENGTH(engCl)!=1) error("invalid engine class name");

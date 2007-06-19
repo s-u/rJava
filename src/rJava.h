@@ -4,7 +4,10 @@
 #define RJAVA_VER 0x000500 /* rJava v0.5-0 */
 
 /* important changes between versions:
-   0.5  - integrates JRI, adds callbacks, class-loader and compiler
+   3.0  - adds compiler
+   2.0  - integrates JRI, adds callbacks and class-loader
+   1.0
+   0.5
    0.4  - includes JRI
    0.3  - uses EXTPTR in jobj slot, adds finalizers
    0.2  - uses S4 classes
@@ -39,20 +42,21 @@ extern jclass javaClassClass;
 
 JNIEnv* getJNIEnv();
 
-int initJVM(char *user_classpath, int opts, char **optv);
+int initJVM(const char *user_classpath, int opts, char **optv);
 
 /* in callJNI */
 void init_rJava(void);
 
-jobject createObject(JNIEnv *env, char *class, char *sig, jvalue *par, int silent);
-jclass findClass(JNIEnv *env, char *class);
+jobject createObject(JNIEnv *env, const char *class, const char *sig, jvalue *par, int silent);
+jclass findClass(JNIEnv *env, const char *class);
 jclass objectClass(JNIEnv *env, jobject o);
 
 jdoubleArray newDoubleArray(JNIEnv *env, double *cont, int len);
 jintArray newIntArray(JNIEnv *env, int *cont, int len);
 jbooleanArray newBooleanArrayI(JNIEnv *env, int *cont, int len);
-jstring newString(JNIEnv *env, char *cont);
+jstring newString(JNIEnv *env, const char *cont);
 jcharArray newCharArrayI(JNIEnv *env, int *cont, int len);
+jshortArray newShortArrayI(JNIEnv *env, int *cont, int len);
 jfloatArray newFloatArrayD(JNIEnv *env, double *cont, int len);
 jlongArray newLongArrayD(JNIEnv *env, double *cont, int len);
 jintArray newByteArray(JNIEnv *env, void *cont, int len);
@@ -67,5 +71,8 @@ void printObject(JNIEnv *env, jobject o);
 int checkExceptionsX(JNIEnv *env, int silent);
 
 int initClassLoader(JNIEnv *env, jobject cl);
+
+/* this is a hook for de-serialization, unused for now */
+#define jverify(X)
 
 #endif

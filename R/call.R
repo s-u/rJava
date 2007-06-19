@@ -79,9 +79,9 @@
   if (returnSig=="T") returnSig <- "S"
   if (returnSig=="[T") returnSig <- "[S"
   if (inherits(obj,"jobjRef") || inherits(obj,"jarrayRef"))
-    r<-.External("RcallMethod",obj@jobj,returnSig, method, ..., PACKAGE="rJava")
+    r<-.External(interface, obj@jobj, returnSig, method, ..., PACKAGE="rJava")
   else
-    r<-.External("RcallStaticMethod",as.character(obj), returnSig, method, ..., PACKAGE="rJava")
+    r<-.External(interface, as.character(obj), returnSig, method, ..., PACKAGE="rJava")
   if (substr(returnSig,1,1)=="[") {
     if (evalArray)
       r<-.jevalArray(r,rawJNIRefSignature=returnSig)
@@ -146,7 +146,7 @@
 }
 
 # creates a new "null" object of the specified class
-# althought it sounds weird, the class is important when passed as
+# although it sounds weird, the class is important when passed as
 # a parameter (you can even cast the result)
 .jnull <- function(class="java/lang/Object") { 
   new("jobjRef", jobj=.jzeroRef, jclass=class)
@@ -250,11 +250,19 @@ is.jnull <- function(x) {
     .jcall(o, "Z", "equals", .jcast(b, "java/lang/Object"))
 }
 
+.jfield <- function(o, sig, name, ...) {
+  if (sig=='S') sig<-"Ljava/lang/String;"
+  if (sig=='T') sig<-"S"
+  .External("RgetField", o, sig, name, ...)
+}
+
 # there is no way to distinguish between double and float in R, so we need to mark floats specifically
 .jfloat <- function(x) new("jfloat", as.numeric(x))
 # the same applies to long
 .jlong <- function(x) new("jlong", as.numeric(x))
 # and byte
 .jbyte <- function(x) new("jbyte", as.integer(x))
+# and short
+.jshort <- function(x) new("jshort", as.integer(x))
 # and char (experimental)
 .jchar <- function(x) new("jchar", as.integer(x))

@@ -28,7 +28,7 @@ void RJavaCheckExceptions(int *silent, int *result) {
     *result=0;
 }
 
-void* errJNI(char *err, ...) {
+void* errJNI(const char *err, ...) {
   char msg[512];
   va_list ap;
   va_start(ap, err);
@@ -82,7 +82,7 @@ int initClassLoader(JNIEnv *env, jobject cl) {
   return 0;
 }
 
-jclass findClass(JNIEnv *env, char *cName) {
+jclass findClass(JNIEnv *env, const char *cName) {
   if (clClassLoader) {
     char cn[128], *c=cn;
     jobject cns;
@@ -116,7 +116,7 @@ jclass findClass(JNIEnv *env, char *cName) {
   }
 }
 
-jobject createObject(JNIEnv *env, char *class, char *sig, jvalue *par, int silent) {
+jobject createObject(JNIEnv *env, const char *class, const char *sig, jvalue *par, int silent) {
   /* va_list ap; */
   jmethodID mid;
   jclass cls;
@@ -268,6 +268,26 @@ jcharArray newCharArrayI(JNIEnv *env, int *cont, int len) {
   return da;
 }
 
+jshortArray newShortArrayI(JNIEnv *env, int *cont, int len) {
+  jshortArray da=(*env)->NewShortArray(env,len);
+  jshort *dae;
+  int i=0;
+
+  _mp(MEM_PROF_OUT("  %08x LNEW short[%d]\n", (int) da, len))
+  if (!da) return errJNI("newShortArrayI.new(%d) failed",len);
+  dae=(*env)->GetShortArrayElements(env, da, 0);
+  if (!dae) {
+    releaseLocal(env,da);
+    return errJNI("newShortArrayI.GetShortArrayElements failed");
+  }
+  while (i<len) {
+    dae[i]=(jshort)cont[i];
+    i++;
+  }
+  (*env)->ReleaseShortArrayElements(env, da, dae, 0);
+  return da;
+}
+
 jfloatArray newFloatArrayD(JNIEnv *env, double *cont, int len) {
   jfloatArray da=(*env)->NewFloatArray(env,len);
   jfloat *dae;
@@ -312,7 +332,7 @@ jlongArray newLongArrayD(JNIEnv *env, double *cont, int len) {
 	return da;
 }
 
-jstring newString(JNIEnv *env, char *cont) {
+jstring newString(JNIEnv *env, const char *cont) {
   jstring s=(*env)->NewStringUTF(env, cont);
   _mp(MEM_PROF_OUT("  %08x LNEW string \"%s\"\n", (int) s, cont))
   return s?s:errJNI("newString(\"%s\") failed",cont);

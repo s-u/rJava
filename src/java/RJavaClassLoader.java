@@ -283,4 +283,28 @@ public class RJavaClassLoader extends URLClassLoader {
     public static void setDebug(int level) {
 	verbose=(level>0);
     }
+
+    //----- tools -----
+
+    /** Serialize an object to a byte array. (code by CB) */
+    public static byte[] toByte(Object object)
+        throws Exception
+    {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ObjectOutputStream   oos = new ObjectOutputStream((OutputStream) os);
+        oos.writeObject(object);
+        oos.close();
+        return os.toByteArray();
+    }
+
+    /** Deserialize an object from a byte array. (code by CB) */
+    public static Object toObject(byte[] byteArray)
+        throws Exception
+    {
+        InputStream        is = new ByteArrayInputStream(byteArray);
+        ObjectInputStream ois = new ObjectInputStream(is);
+        Object o = (Object) ois.readObject();
+        ois.close();
+        return o;
+    }
 }

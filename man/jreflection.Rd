@@ -26,7 +26,7 @@
 \value{
   Returns a character vector. Each entry corresponds to
   \code{toString()} call on the \code{Constructor} resp. \code{Method} resp. \code{Field}
-  object.}
+  object.
 }
 \details{
   There first two functions are intended to help with finding correct

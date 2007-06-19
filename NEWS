@@ -2,15 +2,33 @@
 --------------------------
 
 0.5-0	(under development)
+    o	Change .jfield API to reflect that of .jcall/.jnew
+	and it uses JNI directly instead of reflection
+	Old API (based on reflection) is availavle as .jrfield
+
+    o	Consolidate interface code for static/non-static calls
+
+    o	Add hooks for de-serialization
+
+    o	Add support for short Java type
+
+    o	Add support for convertors
+
+    o	Fix R-devel compatibility issues
+
+    o	Fix a memory leak in string array handling
+
     o	Use Java settings from R for compilation
 
-    o	Add custom class loader
+    o	Add a custom class loader
 
     o	Fix a bug in .jcastToArray that produced invalid signatures
 
     o	Added support for [Z in .jevalArray
 
     o	Fix a bug in .jarray missing [ prefix for native type arrays
+
+0.4 branch has been branched off the trunk, see 0.4-branch for NEWS
 
 0.4-13	2007-01-14
     o	Fix Java-side memory leaks (temporary parameters to methods

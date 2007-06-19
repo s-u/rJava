@@ -20,16 +20,17 @@
 .jlong(x)
 .jbyte(x)
 .jchar(x)
+.jshort(x)
 }
 \arguments{
   \item{x}{numeric vector}
 }
 \value{
   Returns a numeric vector of the class \code{jfloat}, \code{jlong},
-  \code{jbyte} or \code{jchar}
+  \code{jbyte}, \code{jshort} or \code{jchar}
   that can be used as parameter to Java calls that require
-  \code{float}, \code{long}, \code{byte} or \code{char} parameters
-  respectively.
+  \code{float}, \code{long}, \code{byte}, \code{short} or \code{char}
+  parameters respectively.
 }
 \details{
   R has no native \code{float} or \code{long} type. Numeric vectors are

@@ -102,7 +102,7 @@
 }
 
 ### get the value of a field (static class fields are not supported yet)
-.jfield <- function(o, name, simplify=TRUE, true.class=TRUE) {
+.jrfield <- function(o, name, simplify=TRUE, true.class=TRUE) {
   if (!inherits(o, "jobjRef") && !inherits(o, "jarrayRef") && !is.character(o))
     stop("Object must be a Java reference or class name.")
   if (is.character(o)) {

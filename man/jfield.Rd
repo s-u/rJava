@@ -1,4 +1,4 @@
-\name{jfiled}
+\name{jfield}
 \alias{.jfield}
 \title{
   Obtains the value of a field 
