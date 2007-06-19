@@ -1160,7 +1160,7 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
   }
   fnam = CHAR(STRING_ELT(name,0));
   _dbg(rjprintf("field %s signature is %s\n",fnam,retsig));
-  if (retsig) { /* signature unknown, find it */
+  if (!retsig) { /* signature unknown, find it */
     jmethodID mid = (*env)->GetMethodID(env, cls, "getField",
 					 "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
     if (mid) {
