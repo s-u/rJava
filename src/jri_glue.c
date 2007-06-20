@@ -2,14 +2,11 @@
 #include <Rinternals.h>
 #include "rJava.h"
 
-/* from Rglue.c - we could do without it ... */
-SEXP j2SEXP(JNIEnv *env, jobject o, int releaseLocal);
-
 /* creates a reference to an R object on the Java side 
    1) lock down the object in R
    2) call new Rengine(eng,robj)
  */
-SEXP PushToREXP(SEXP clname, SEXP eng, SEXP engCl, SEXP robj) {
+REPC SEXP PushToREXP(SEXP clname, SEXP eng, SEXP engCl, SEXP robj) {
   char sig[128];
   jvalue jpar[4];
   jobject o;
@@ -32,7 +29,7 @@ SEXP PushToREXP(SEXP clname, SEXP eng, SEXP engCl, SEXP robj) {
 }
 
 /* this is pretty much hard-coded for now - it's picking "xp" attribute */
-SEXP RReleaseREXP(SEXP ptr) {
+REPC SEXP RReleaseREXP(SEXP ptr) {
   jobject o;
   if (TYPEOF(ptr)==EXTPTRSXP) error("invalid object");
   o = (jobject)EXTPTR_PTR(ptr);

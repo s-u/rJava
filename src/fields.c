@@ -69,7 +69,7 @@ static char *findFieldSignature(JNIEnv *env, jclass cls, const char *fnam) {
     arrays and objects are returned as IDs (hence not evaluated)
     class name can be in either form / or .
 */
-SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
+REPC SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
   jobject o = 0;
   SEXP e;
   const char *retsig, *fnam;
@@ -263,7 +263,7 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
   return R_NilValue;
 }
 
-SEXP RsetField(SEXP ref, SEXP name, SEXP value) {
+REPC SEXP RsetField(SEXP ref, SEXP name, SEXP value) {
   jobject o = 0, otr;
   SEXP obj = ref;
   const char *fnam;
