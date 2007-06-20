@@ -37,45 +37,29 @@ static char *classToJNI(const char *cl) {
    + class2JNI mangling */
 static char *findFieldSignature(JNIEnv *env, jclass cls, const char *fnam) {
   char *detsig = 0;
-  jmethodID mid = (*env)->GetMethodID(env, javaClassClass, "getField",
-				      "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
-  if (mid) {
-    jstring s = newString(env, fnam);
-    if (s) {
-      jobject f = (*env)->CallObjectMethod(env, cls, mid, s);
-      _mp(MEM_PROF_OUT("  %08x LNEW object getField result value\n", (int) f))
-      if (f) {
-	jclass clField = objectClass(env, f);
-	if (clField) {
-	  jmethodID mid2 = (*env)->GetMethodID(env, clField, "getType",
-					       "()Ljava/lang/Class;");
-	  if (mid2) {
-	    jobject fcl = (*env)->CallObjectMethod(env, f, mid2);
-	    _mp(MEM_PROF_OUT("  %08x LNEW object getType result value\n", (int) f))
-	    if (fcl) {
-	      jmethodID mid3 = (*env)->GetMethodID(env, javaClassClass,
-						   "getName", "()Ljava/lang/String;");
-	      if (mid3) {
-		jobject fcns = (*env)->CallObjectMethod(env, fcl, mid3);
-		releaseObject(env, fcl);
-		if (fcns) {
-		  const char *fcn = (*env)->GetStringUTFChars(env, fcns, 0);
-		  detsig = classToJNI(fcn);
-		  _dbg(Rprintf("class '%s' -> '%s' sig\n", fcn, detsig));
-		  (*env)->ReleaseStringUTFChars(env, fcns, fcn);
-		  releaseObject(env, fcns);
-		  /* fid = (*env)->FromReflectedField(env, f); */
-		}
-	      } else
-		releaseObject(env, fcl);
-	    }
-	  }
-	  releaseObject(env, clField);
+  jstring s = newString(env, fnam);
+  if (s) {
+    jobject f = (*env)->CallObjectMethod(env, cls, mid_getField, s);
+    _mp(MEM_PROF_OUT("  %08x LNEW object getField result value\n", (int) f))
+    if (f) {
+      jobject fcl = (*env)->CallObjectMethod(env, f, mid_getType);
+      _mp(MEM_PROF_OUT("  %08x LNEW object getType result value\n", (int) f))
+      if (fcl) {
+	jobject fcns = (*env)->CallObjectMethod(env, fcl, mid_getName);
+	releaseObject(env, fcl);
+	if (fcns) {
+	  const char *fcn = (*env)->GetStringUTFChars(env, fcns, 0);
+	  detsig = classToJNI(fcn);
+	  _dbg(Rprintf("class '%s' -> '%s' sig\n", fcn, detsig));
+	  (*env)->ReleaseStringUTFChars(env, fcns, fcn);
+	  releaseObject(env, fcns);
+	  /* fid = (*env)->FromReflectedField(env, f); */
 	}
-	releaseObject(env, f);
-      }
-      releaseObject(env, s);
+      } else
+	releaseObject(env, fcl);
+      releaseObject(env, f);
     }
+    releaseObject(env, s);
   }
   return detsig;
 }

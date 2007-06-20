@@ -3,14 +3,26 @@
 #include <string.h>
 #include <stdio.h>
 
-static int    jvm_opts=0;
-static char **jvm_optv=0;
-
+/* global variables */
 JavaVM *jvm;
 
+/* cached, global objects */
 jclass javaStringClass;
 jclass javaObjectClass;
 jclass javaClassClass;
+jclass javaFieldClass;
+
+/* cached, global method IDs */
+jmethodID mid_forName;
+jmethodID mid_getName;
+jmethodID mid_getType;
+jmethodID mid_getField;
+
+int rJava_initialized = 0;
+
+
+static int    jvm_opts=0;
+static char **jvm_optv=0;
 
 #ifdef JNI_VERSION_1_2 
 static JavaVMOption *vm_options;
@@ -145,6 +157,55 @@ void *initJVMthread(void *classpath)
 }
 
 #endif
+
+
+
+/* initialize internal structures/variables of rJava.
+   The JVM initialization was performed before (but may have failed)
+*/
+void init_rJava(void) {
+  jclass c;
+  JNIEnv *env=getJNIEnv();
+  if (!env) return; /* initJVMfailed, so we cannot proceed */
+  
+  /* get global classes. we make the references explicitely global (although unloading of String/Object is more than unlikely) */
+  c=(*env)->FindClass(env, "java/lang/String");
+  if (!c) error("unable to find the basic String class");
+  javaStringClass=(*env)->NewGlobalRef(env, c);
+  if (!javaStringClass) error("unable to create a global reference to the basic String class");
+  (*env)->DeleteLocalRef(env, c);
+
+  c=(*env)->FindClass(env, "java/lang/Object");
+  if (!c) error("unable to find the basic Object class");
+  javaObjectClass=(*env)->NewGlobalRef(env, c);
+  if (!javaObjectClass) error("unable to create a global reference to the basic Object class");
+  (*env)->DeleteLocalRef(env, c);
+
+  c = (*env)->FindClass(env, "java/lang/Class");
+  if (!c) error("unable to find the basic Class class");
+  javaClassClass=(*env)->NewGlobalRef(env, c);
+  if (!javaClassClass) error("unable to create a global reference to the basic Class class");
+  (*env)->DeleteLocalRef(env, c);
+
+  c = (*env)->FindClass(env, "java/lang/reflect/Field");
+  if (!c) error("unable to find the basic Field class");
+  javaFieldClass=(*env)->NewGlobalRef(env, c);
+  if (!javaFieldClass) error("unable to create a global reference to the basic Class class");
+  (*env)->DeleteLocalRef(env, c);
+
+  mid_forName  = (*env)->GetStaticMethodID(env, javaClassClass, "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
+  if (!mid_forName) error("cannot obtain Class.forName method ID");
+  mid_getName  = (*env)->GetStaticMethodID(env, javaClassClass, "getName", "()Ljava/lang/String;");
+  if (!mid_getName) error("cannot obtain Class.getName method ID");
+  mid_getField = (*env)->GetMethodID(env, javaClassClass, "getField",
+				     "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
+  if (!mid_getField) error("cannot obtain Class.getField method ID");
+  mid_getType  = (*env)->GetMethodID(env, javaFieldClass, "getType",
+				     "()Ljava/lang/Class;");
+  if (!mid_getType) error("cannot obtain Field.getType method ID");
+
+  rJava_initialized = 1;
+}
 
 /** RinitJVM(classpath)
     initializes JVM with the specified class path */

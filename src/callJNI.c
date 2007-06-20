@@ -4,10 +4,6 @@
 #include <R_ext/Print.h>
 #include <R_ext/Error.h>
 
-jclass clClassLoader = (jclass) 0;
-jobject oClassLoader = (jobject) 0;
-static jmethodID midForName;
-
 #ifdef MEMPROF
 FILE *memprof_f = 0;
 #endif
@@ -40,48 +36,6 @@ void* errJNI(const char *err, ...) {
   return 0;
 }
 
-int rJava_initialized = 0;
-
-/* initialize internal structures/variables of rJava.
-   The JVM initialization was performed before (but may have failed)
-*/
-void init_rJava(void) {
-  jclass c;
-  JNIEnv *env=getJNIEnv();
-  if (!env) return; /* initJVMfailed, so we cannot proceed */
-  
-  /* get global classes. we make the references explicitely global (although unloading of String/Object is more than unlikely) */
-  c=(*env)->FindClass(env, "java/lang/String");
-  if (!c) { errJNI("Unable to find the basic String class"); return; };
-  javaStringClass=(*env)->NewGlobalRef(env, c);
-  if (!javaStringClass) { errJNI("Unable to create a global reference to the basic String class"); return; };
-  (*env)->DeleteLocalRef(env, c);
-
-  c=(*env)->FindClass(env, "java/lang/Object");
-  if (!c) { errJNI("Unable to find the basic Object class"); return; };
-  javaObjectClass=(*env)->NewGlobalRef(env, c);
-  if (!javaObjectClass) { errJNI("Unable to create a global reference to the basic Object class"); return; };
-  (*env)->DeleteLocalRef(env, c);
-
-  c = (*env)->FindClass(env, "java/lang/Class");
-  if (!c) { errJNI("Unable to find the basic Class class"); return; };
-  javaClassClass=(*env)->NewGlobalRef(env, c);
-  if (!javaClassClass) { errJNI("Unable to create a global reference to the basic Class class"); return; };
-  (*env)->DeleteLocalRef(env, c);
-
-  rJava_initialized = 1;
-}
-
-int initClassLoader(JNIEnv *env, jobject cl) {
-  clClassLoader = (*env)->NewGlobalRef(env, (*env)->GetObjectClass(env, cl));
-  /* oClassLoader = (*env)->NewGlobalRef(env, cl); */ oClassLoader = cl;
-#ifdef DEBUG_CL
-  printf("initClassLoader: cl=%x, clCl=%x, jcl=%x\n", oClassLoader, clClassLoader, javaClassClass);
-#endif
-  midForName = (*env)->GetStaticMethodID(env, javaClassClass, "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
-  return 0;
-}
-
 jclass findClass(JNIEnv *env, const char *cName) {
   if (clClassLoader) {
     char cn[128], *c=cn;
@@ -92,11 +46,10 @@ jclass findClass(JNIEnv *env, const char *cName) {
     while (*c) { if (*c=='/') *c='.'; c++; };
     cns = newString(env, cn);
     if (!cns) error("unable to create Java string from '%s'", cn);
-    /* can we pass 1 or do we have to create a boolean object? */
 #ifdef DEBUG_CL
     printf("findClass(\"%s\") [with rJava loader]\n", cn);
 #endif
-    cl = (jclass) (*env)->CallStaticObjectMethod(env, javaClassClass, midForName, cns, (jboolean) 1, oClassLoader);
+    cl = (jclass) (*env)->CallStaticObjectMethod(env, javaClassClass, mid_forName, cns, (jboolean) 1, oClassLoader);
     _mp(MEM_PROF_OUT("  %08x LNEW class\n", (int) cl))
     releaseObject(env, cns);
 #ifdef DEBUG_CL

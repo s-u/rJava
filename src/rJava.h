@@ -73,6 +73,16 @@ extern JavaVM *jvm;
 extern jclass javaStringClass;
 extern jclass javaObjectClass;
 extern jclass javaClassClass;
+extern jclass javaFieldClass;
+
+extern jmethodID mid_forName;
+extern jmethodID mid_getName;
+extern jmethodID mid_getType;
+extern jmethodID mid_getField;
+
+/* in loader.c */
+extern jclass   clClassLoader;
+extern jobject  oClassLoader;
 
 /* in Rglue */
 SEXP j2SEXP(JNIEnv *env, jobject o, int releaseLocal);
