@@ -3,10 +3,12 @@
 \alias{.jlong}
 \alias{.jbyte}
 \alias{.jchar}
+\alias{.jshort}
 \alias{jfloat}
 \alias{jlong}
 \alias{jbyte}
 \alias{jchar}
+\alias{jshort}
 \title{
   Wrap numeric vector as flat Java parameter
 }

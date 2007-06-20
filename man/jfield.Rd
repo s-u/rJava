@@ -1,5 +1,6 @@
 \name{jfield}
 \alias{.jfield}
+\alias{.jfield<-}
 \title{
   Obtains the value of a field 
 }
@@ -8,6 +9,7 @@
 }
 \usage{
 .jfield(o, name, sig = NULL, true.class = is.null(sig), convert = TRUE)
+`.jfield<-`(o, name, value)
 }
 \arguments{
   \item{o}{Class name or object (Java reference) whose field is to be
@@ -25,12 +27,20 @@
   \item{convert}{when set to \code{TRUE} all references are converted to
     native types (where possible). Otherwise Java references are
     returned directly.}
+  \item{value}{value to assign into the field. The field signature is
+    determined from the value in the same way that parameter signatures
+    are determined in \code{\link{.jcall}} - be sure to cast the value
+    as necessary, no automatic conversion is done.}
 }
 \value{
-  Contents of the field.
+  \code{.jfield}: contents of the field, \code{.jfield<-}: modified object.
 }
-%\details{
-%}
+\details{
+  The detection of a field signature in \code{.jfield} using reflection
+  is considerably expensive (more than 3 additional method calls have to
+  be performed), therefore it is recommended for time-critical code to
+  specify the field signature beforehand.
+}
 \seealso{
   \code{\link{.jnew}}, \code{\link{.jsimplify}}
 }
