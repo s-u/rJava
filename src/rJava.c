@@ -27,14 +27,14 @@ JNIEnv *getJNIEnv()
     if (!jvm) { /* we're hoping that the JVM pointer won't change :P we fetch it just once */
         res= JNI_GetCreatedJavaVMs(&jvm, 1, &l);
         if (res!=0) {
-            Rf_error("JNI_GetCreatedJavaVMs failed! (result:%d)",(int)res); return 0;
+            error("JNI_GetCreatedJavaVMs failed! (result:%d)",(int)res); return 0;
         }
-        if (l<1)
-	    Rf_error("JNI_GetCreatedJavaVMs said there's no JVM running! Maybe .jinit() would help.");
+        if (l<1) {
+	    error("No running detected. Maybe .jinit() would help.");
     }
     res = (*jvm)->AttachCurrentThread(jvm, (void**) &env, 0);
     if (res!=0) {
-      Rf_error("AttachCurrentThread failed! (result:%d)", (int)res); return 0;
+      error("AttachCurrentThread failed! (result:%d)", (int)res); return 0;
     }
     if (env && !eenv) eenv=env;
     

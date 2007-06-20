@@ -51,6 +51,14 @@ void profReport(char *fmt, ...);
 #define _prof(X)
 #endif
 
+#ifdef ENABLE_JRICB
+#define BEGIN_RJAVA_CALL { int save_in_RJava = RJava_has_control; RJava_has_control=1; {
+#define END_RJAVA_CALL }; RJava_has_control = save_in_RJava; }
+#else
+#define BEGIN_RJAVA_CALL {
+#define END_RJAVA_CALL };
+#endif
+
 /* in callbacks.c */
 extern int RJava_has_control;
 
@@ -69,8 +77,10 @@ extern jclass javaClassClass;
 /* in Rglue */
 SEXP j2SEXP(JNIEnv *env, jobject o, int releaseLocal);
 SEXP new_jobjRef(JNIEnv *env, jobject o, const char *klass);
-jstring callToString(JNIEnv *env, jobject o);
 jvalue  R1par2jvalue(JNIEnv *env, SEXP par, char *sig, jobject *otr);
+
+/* in tools.c */
+jstring callToString(JNIEnv *env, jobject o);
 
 /* in callJNI */
 void init_rJava(void);
