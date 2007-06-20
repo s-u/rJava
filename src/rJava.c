@@ -29,7 +29,7 @@ JNIEnv *getJNIEnv()
         if (res!=0) {
             error("JNI_GetCreatedJavaVMs failed! (result:%d)",(int)res); return 0;
         }
-        if (l<1) {
+        if (l<1)
 	    error("No running detected. Maybe .jinit() would help.");
     }
     res = (*jvm)->AttachCurrentThread(jvm, (void**) &env, 0);

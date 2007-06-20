@@ -84,11 +84,11 @@ static int initJVM(const char *user_classpath, int opts, char **optv, int hooks)
   }
   if (hooks&H_OUT) {
     vm_options[propNum].optionString = "vfprintf";
-    vm_options[propNum++].extraInfo = (void*) vfprintf_hook;
+    vm_options[propNum++].extraInfo  = vfprintf_hook;
   }
   if (hooks&H_EXIT) {
     vm_options[propNum].optionString = "exit";
-    vm_options[propNum++].extraInfo = (void*) exit_hook;
+    vm_options[propNum++].extraInfo  = exit_hook;
   }
   vm_args.nOptions = propNum;
 

@@ -93,7 +93,6 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
   jfieldID fid;
   jclass cls;
   int tc = asInteger(trueclass);
-  int ads = 0;
   JNIEnv *env=getJNIEnv();
 
   if (obj == R_NilValue) return R_NilValue;
@@ -291,10 +290,9 @@ SEXP RsetField(SEXP ref, SEXP name, SEXP value) {
   jvalue jval;
   JNIEnv *env=getJNIEnv();
 
-  if (TYPEOF(name)==STRSXP && LENGTH(name)==1)
-    fnam = CHAR(STRING_ELT(name, 0));
-  else
+  if (TYPEOF(name)!=STRSXP && LENGTH(name)!=1)
     error("invalid field name");
+  fnam = CHAR(STRING_ELT(name, 0));
   if (obj == R_NilValue) error("cannot set a field of a NULL object");
   if (inherits(obj, "jobjRef") || inherits(obj, "jarrayRef"))
     obj = GET_SLOT(obj, install("jobj"));
@@ -340,7 +338,7 @@ SEXP RsetField(SEXP ref, SEXP name, SEXP value) {
       fid = (*env)->GetStaticFieldID(env, cls, fnam, sig);
     }
   } else
-    (*env)->GetStaticFieldID(env, cls, fnam, sig);
+    fid = (*env)->GetStaticFieldID(env, cls, fnam, sig);
   if (!fid) {
     checkExceptionsX(env, 1);
     releaseObject(env, cls);

@@ -552,7 +552,7 @@ END_RJAVA_CALL
 /** like RcallMethod but the call will be synchronized */
 SEXP RcallSyncMethod(SEXP par) {
   SEXP p=par, e;
-  jobject o;
+  jobject o = 0;
   JNIEnv *env=getJNIEnv();
 
   p=CDR(p); e=CAR(p); p=CDR(p);
