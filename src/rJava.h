@@ -14,6 +14,8 @@
    0.1  - first public release */
 
 #include <jni.h>
+#include <R.h>
+#include <Rinternals.h>
 
 #ifndef Win32
 #include "config.h"
@@ -27,6 +29,26 @@ extern FILE* memprof_f;
 #define MEM_PROF_OUT(X ...) { if (memprof_f) { long t = time(0); fprintf(memprof_f, "<%08x> %x:%02d ", (int) env, t/60, t%60); fprintf(memprof_f, X); }; }
 #else
 #define _mp(X) 
+#endif
+
+/* debugging output (enable with -DRJ_DEBUG) */
+#ifdef RJ_DEBUG
+void rjprintf(char *fmt, ...); /* in Rglue.c */
+/* we can't assume ISO C99 (variadic macros), so we have to use one more level of wrappers */
+#define _dbg(X) X
+#else
+#define _dbg(X)
+#endif
+
+/* profiling */
+#ifdef RJ_PROFILE
+#define profStart() profilerTime=time_ms()
+#define _prof(X) X
+long time_ms(); /* those are acutally in Rglue.c */
+void profReport(char *fmt, ...);
+#else
+#define profStart()
+#define _prof(X)
 #endif
 
 /* in callbacks.c */
@@ -43,6 +65,10 @@ extern jclass javaClassClass;
 JNIEnv* getJNIEnv();
 
 int initJVM(const char *user_classpath, int opts, char **optv);
+
+/* in Rglue */
+SEXP j2SEXP(JNIEnv *env, jobject o, int releaseLocal);
+jstring callToString(JNIEnv *env, jobject o);
 
 /* in callJNI */
 void init_rJava(void);
@@ -76,3 +102,4 @@ int initClassLoader(JNIEnv *env, jobject cl);
 #define jverify(X)
 
 #endif
+

@@ -42,24 +42,28 @@
     jobj<-obj@jobj
   }
   if (sig=="[I")
-    return(.External("RgetIntArrayCont", jobj, PACKAGE="rJava"))
+    return(.Call("RgetIntArrayCont", jobj, PACKAGE="rJava"))
   else if (sig=="[J")
-    return(.External("RgetLongArrayCont", jobj, PACKAGE="rJava"))
+    return(.Call("RgetLongArrayCont", jobj, PACKAGE="rJava"))
   else if (sig=="[Z")
-    return(.External("RgetBoolArrayCont", jobj, PACKAGE="rJava"))
+    return(.Call("RgetBoolArrayCont", jobj, PACKAGE="rJava"))
   else if (sig=="[B")
-	return(.External("RgetByteArrayCont", jobj, PACKAGE="rJava"))
+    return(.Call("RgetByteArrayCont", jobj, PACKAGE="rJava"))
   else if (sig=="[D")
-    return(.External("RgetDoubleArrayCont", jobj, PACKAGE="rJava"))
+    return(.Call("RgetDoubleArrayCont", jobj, PACKAGE="rJava"))
+  else if (sig=="[S")
+    return(.Call("RgetShortArrayCont", jobj, PACKAGE="rJava"))
+  else if (sig=="[C")
+    return(.Call("RgetCharArrayCont", jobj, PACKAGE="rJava"))
   else if (sig=="[F")
-    return(.External("RgetFloatArrayCont", jobj, PACKAGE="rJava"))
+    return(.Call("RgetFloatArrayCont", jobj, PACKAGE="rJava"))
   else if (sig=="[Ljava/lang/String;")
-    return(.External("RgetStringArrayCont", jobj, PACKAGE="rJava"))
+    return(.Call("RgetStringArrayCont", jobj, PACKAGE="rJava"))
   else if (substr(sig,1,2)=="[L")
-    return(lapply(.External("RgetObjectArrayCont", jobj, PACKAGE="rJava"),
+    return(lapply(.Call("RgetObjectArrayCont", jobj, PACKAGE="rJava"),
                   function(x) new("jobjRef", jobj=x, jclass=substr(sig,3,nchar(sig)-1)) ))
   else if (substr(sig,1,2)=="[[")
-    return(lapply(.External("RgetObjectArrayCont", jobj, PACKAGE="rJava"),
+    return(lapply(.Call("RgetObjectArrayCont", jobj, PACKAGE="rJava"),
                   function(x) new("jarrayRef", jobj=x, jclass="", jsig=substr(sig,2,nchar(sig))) ))
   # if we don't know how to evaluate this, issue a warning and return the jarrayRef
   if (!silent)
