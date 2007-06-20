@@ -1095,6 +1095,31 @@ SEXP RcallSyncMethod(SEXP par) {
   return e;
 }
 
+static char *classToJNI(const char *cl) {
+  if (*cl=='[') {
+    char *d = strdup(cl);
+    char *c = d;
+    while (*c) { if (*c=='.') *c='/'; c++; }
+    return d;
+  }
+  if (!strcmp(cl, "boolean")) return strdup("Z");
+  if (!strcmp(cl, "byte"))    return strdup("B");
+  if (!strcmp(cl, "int"))     return strdup("I");
+  if (!strcmp(cl, "long"))    return strdup("J");
+  if (!strcmp(cl, "double"))  return strdup("D");
+  if (!strcmp(cl, "short"))   return strdup("S");
+  if (!strcmp(cl, "float"))   return strdup("F");
+  if (!strcmp(cl, "char"))    return strdup("C");
+ 
+  /* anything else is a real class -> wrap into L..; */
+  char *jc = malloc(strlen(cl)+3);
+  *jc='L';
+  strcpy(jc+1, cl);
+  strcat(jc, ";");
+  { char *c=jc; while (*c) { if (*c=='.') *c='/'; c++; } }
+  return jc;
+}
+
 /** get value of a field of an object or class
     object (int), return signature (string), field name (string)
     arrays and objects are returned as IDs (hence not evaluated)
@@ -1104,7 +1129,7 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
   jobject o = 0;
   SEXP e;
   const char *retsig, *fnam;
-  char *clnam = 0;
+  char *clnam = 0, *detsig = 0;
   jfieldID fid;
   jclass cls;
   int tc = asInteger(trueclass);
@@ -1161,7 +1186,7 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
   fnam = CHAR(STRING_ELT(name,0));
   _dbg(rjprintf("field %s signature is %s\n",fnam,retsig));
   if (!retsig) { /* signature unknown, find it */
-    jmethodID mid = (*env)->GetMethodID(env, cls, "getField",
+    jmethodID mid = (*env)->GetMethodID(env, javaClassClass, "getField",
 					 "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
     if (mid) {
       jstring s = newString(env, fnam);
@@ -1169,14 +1194,41 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
 	jobject f = (*env)->CallObjectMethod(env, cls, mid, s);
 	_mp(MEM_PROF_OUT("  %08x LNEW object getField result value\n", (int) f))
 	if (f) {
-	  fid = (*env)->FromReflectedField(env, f);
- //	  releaseObject(env, f);
+	  jclass clField = objectClass(env, f);
+	  if (clField) {
+	    jmethodID mid2 = (*env)->GetMethodID(env, clField, "getType",
+						 "()Ljava/lang/Class;");
+	    if (mid2) {
+	      jobject fcl = (*env)->CallObjectMethod(env, f, mid2);
+	      _mp(MEM_PROF_OUT("  %08x LNEW object getType result value\n", (int) f))
+	      if (fcl) {
+		jmethodID mid3 = (*env)->GetMethodID(env, javaClassClass,
+						     "getName", "()Ljava/lang/String;");
+		if (mid3) {
+		  jobject fcns = (*env)->CallObjectMethod(env, fcl, mid3);
+		  releaseObject(env, fcl);
+		  if (fcns) {
+		    const char *fcn = (*env)->GetStringUTFChars(env, fcns, 0);
+		    retsig = detsig = classToJNI(fcn);
+		    Rprintf("class '%s' -> '%s' sig\n", fcn, detsig);
+		    (*env)->ReleaseStringUTFChars(env, fcns, fcn);
+		    releaseObject(env, fcns);
+		    fid = (*env)->FromReflectedField(env, f);
+		  }
+		} else
+		  releaseObject(env, fcl);
+	      }
+	    }
+	    releaseObject(env, clField);
+	  }
+ 	  releaseObject(env, f);
 	}
 	releaseObject(env, s);
       }
     }
     if (!fid) {
       releaseObject(env, cls);
+      if (detsig) free(detsig);
       checkExceptionsX(env, 1);
       error("unable to determine signature for field '%s'", fnam);
     }
@@ -1187,25 +1239,28 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
   }
   if (!fid) {
     releaseObject(env, cls);
+    if (detsig) free(detsig);
     error("RgetField: field %s not found", fnam);
   }
   switch (*retsig) {
   case 'I': {
     int r=o?
-      (*env)->GetIntField(env,o,fid):
+      (*env)->GetIntField(env, o, fid):
       (*env)->GetStaticIntField(env, cls, fid);
     e = allocVector(INTSXP, 1);
     INTEGER(e)[0] = r;
     releaseObject(env, cls);
+    if (detsig) free(detsig);
     return e;
   }
   case 'S': {
     jshort r=o?
-      (*env)->GetShortField(env,o,fid):
+      (*env)->GetShortField(env, o, fid):
       (*env)->GetStaticShortField(env, cls, fid);
     e = allocVector(INTSXP, 1);
     INTEGER(e)[0] = r;
     releaseObject(env, cls);
+    if (detsig) free(detsig);
     return e;
   }
   case 'C': {
@@ -1215,6 +1270,7 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
     e = allocVector(INTSXP, 1);
     INTEGER(e)[0] = r;
     releaseObject(env, cls);
+    if (detsig) free(detsig);
     return e;
   }
   case 'B': {
@@ -1224,6 +1280,7 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
     e = allocVector(INTSXP, 1);
     INTEGER(e)[0] = r;
     releaseObject(env, cls);
+    if (detsig) free(detsig);
     return e;
   }
   case 'J': {
@@ -1233,6 +1290,7 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
     e = allocVector(REALSXP, 1);
     REAL(e)[0] = (double)r;
     releaseObject(env, cls);
+    if (detsig) free(detsig);
     return e;
   }
   case 'Z': {
@@ -1242,6 +1300,7 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
     e = allocVector(LGLSXP, 1);
     LOGICAL(e)[0] = r?1:0;
     releaseObject(env, cls);
+    if (detsig) free(detsig);
     return e;
   }
   case 'D': {
@@ -1251,6 +1310,7 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
     e = allocVector(REALSXP, 1);
     REAL(e)[0] = r;
     releaseObject(env, cls);
+    if (detsig) free(detsig);
     return e;
   }
   case 'F': {
@@ -1260,25 +1320,37 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
     e = allocVector(REALSXP, 1);
     REAL(e)[0] = r;
     releaseObject(env, cls);
+    if (detsig) free(detsig);
     return e;
   }
   case 'L':
   case '[': {
+    SEXP rv;
     jobject r = o?
       (*env)->GetObjectField(env, o, fid):
       (*env)->GetStaticObjectField(env, cls, fid);
     _mp(MEM_PROF_OUT("  %08x LNEW field value\n", (int) r))
     releaseObject(env, cls);
-    if (tc) return new_jobjRef(env, r, 0);
-    if (*retsig=='L') { /* need to fix the class name */
-      char *c = strdup(retsig);
+    if (tc) {
+      if (detsig) free(detsig);
+      return new_jobjRef(env, r, 0);
+    }
+    if (*retsig=='L') { /* need to fix the class name */      
+      char *d = strdup(retsig), *c = d;
       while (*c) { if (*c==';') { *c=0; break; }; c++; }
-      return new_jobjRef(env, r, c+1);
+      rv = new_jobjRef(env, r, d+1);
+      free(d);
     } else
-      return new_jobjRef(env, r, retsig);
+      rv = new_jobjRef(env, r, retsig);
+    if (detsig) free(detsig);
+    return rv;
   }
   } /* switch */
   releaseObject(env, cls);
+  if (detsig) {
+    free(detsig);
+    error("unknown field signature");
+  }
   error("unknown field signature '%s'", retsig);
   return R_NilValue;
 }
