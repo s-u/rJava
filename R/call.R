@@ -82,6 +82,7 @@
     r<-.External(interface, obj@jobj, returnSig, method, ..., PACKAGE="rJava")
   else
     r<-.External(interface, as.character(obj), returnSig, method, ..., PACKAGE="rJava")
+  if (returnSig=="V") return(invisible(NULL))
   if (substr(returnSig,1,1)=="[") {
     if (evalArray)
       r<-.jevalArray(r,rawJNIRefSignature=returnSig)
@@ -266,7 +267,7 @@ is.jnull <- function(x) {
         r <- new("jarrayRef", jobj=r@jobj, jclass=r@jclass, jsig=r@jclass)
     }
     if (convert) {
-      if (r@jclass == "Ljava/lang/String;")
+      if (r@jclass == "java/lang/String")
         return(.External("RgetStringValue", r@jobj, PACKAGE="rJava"))
       if (.conv.in$.) return(.convert.in(r))
     }

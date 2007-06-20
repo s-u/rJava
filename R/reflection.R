@@ -146,27 +146,14 @@ setMethod("$", c(x="jobjRef"), function(x, name) {
   if (is.null(f))
     function(...) .jrcall(x, name, ...)
   else
-    .jsimplify(.jcall(f,"Ljava/lang/Object;","get",.jcast(x,"java/lang/Object")))
+    .jfield(x, name)
 })
 
 ### support for object$field<-...
-setMethod("$<-", c(x="jobjRef"), function(x, name, value) {
-  cl <- .jcall(x, "Ljava/lang/Class;", "getClass")
-  f <- .jcall(cl, "Ljava/lang/reflect/Field;", "getField", name)
-  .jcheck(silent=TRUE)
-  if (is.null(f))
-    stop("Field `",name,"' doesn't exist.")
-  if (!inherits(value, "jobjRef")) {
-    if (is.integer(value) && length(value)==1) value <- .jnew("java/lang/Integer", value) else
-    if (is.numeric(value) && length(value)==1) value <- .jnew("java/lang/Double", as.double(value)) else
-    if (is.character(value) && length(value)==1) value <- .jnew("java/lang/String", value) else
-    if (is.logical(value) && length(value)==1) value <- .jnew("java/lang/Boolean", value)
-    if (!inherits(value, "jobjRef"))
-      stop("Sorry, cannot convert `value' to connesponding Java object. Please use Java objects in field assignments.")
-  }
-  .jcall(f,"V","set",.jcast(x,"java/lang/Object"),.jcast(value,"java/lang/Object"))
-  invisible(x)
-})
+setMethod("$<-", c(x="jobjRef"), function(x, name, value) .jfield(x, name) <- value)
 
-# get the class name for an object
-.jclass <- function(o) .jcall(.jcall(o, "Ljava/lang/Class;", "getClass"), "S", "getName")
+# get a class name for an object
+.jclass <- function(o, true=TRUE) {
+  if (true) .jcall(.jcall(o, "Ljava/lang/Class;", "getClass"), "S", "getName")
+  else o@jclass
+}

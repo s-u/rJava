@@ -7,35 +7,36 @@
   \code{.jfield} returns the value of the specified field on an object.
 }
 \usage{
-.jfield(o, name, simplify=TRUE, true.class=TRUE)
+.jfield(o, name, sig = NULL, true.class = is.null(sig), convert = TRUE)
 }
 \arguments{
   \item{o}{Class name or object (Java reference) whose field is to be
     accessed. Static fields are supported both by specifying the class
     name or using an instance.}
   \item{name}{name of the field to access}
-  \item{simplify}{field accessor methods always return Java objects. If
-    set to \code{TRUE}, such object will be converted to scalar type if
-    possible (see \code{\link{.jsimplify}}).}
-  \item{true.class}{field accessor methods always return objects of the
-    class \code{java.lang.Object}. If set to \code{TRUE}, the true Java
-    class is determined and the returned object's class will be
-    adjusted.}
+  \item{sig}{signature (JNI type) of the field. If set to \code{NULL}
+    rJava attempts to determine the signature using reflection. For
+    efficiency it is recommended to specify the signature, because
+    the reflection lookup is quite expensive.}
+  \item{true.class}{by default the class of the resulting object matches
+    the siganture of the field. Setting this flag to \code{TRUE} causes
+    \code{.jfield} to use true class name of the resulting object
+    instead. (this flag has no effect on scalar fields)}
+  \item{convert}{when set to \code{TRUE} all references are converted to
+    native types (where possible). Otherwise Java references are
+    returned directly.}
 }
 \value{
   Contents of the field.
 }
-\details{
-  \code{.jfield} uses reflection to access value of a field of a given
-  object.
-}
+%\details{
+%}
 \seealso{
   \code{\link{.jnew}}, \code{\link{.jsimplify}}
 }
 \examples{
 \dontrun{
-z <- .jnew("java/lang/Boolean", TRUE)
-.jfield(z, "TYPE")
+.jfield("java/lang/Boolean", "TYPE")
 }
 }
 \keyword{interface}

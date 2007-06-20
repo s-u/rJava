@@ -91,6 +91,7 @@ jclass findClass(JNIEnv *env, const char *cName) {
     strcpy(cn, cName);
     while (*c) { if (*c=='/') *c='.'; c++; };
     cns = newString(env, cn);
+    if (!cns) error("unable to create Java string from '%s'", cn);
     /* can we pass 1 or do we have to create a boolean object? */
 #ifdef DEBUG_CL
     printf("findClass(\"%s\") [with rJava loader]\n", cn);

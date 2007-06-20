@@ -1120,6 +1120,54 @@ static char *classToJNI(const char *cl) {
   return jc;
 }
 
+/* find field signature using reflection. Basically it is the same as:
+   cls.getField(fnam).getType().getName()
+   + class2JNI mangling */
+static char *findFieldSignature(JNIEnv *env, jclass cls, const char *fnam) {
+  char *detsig = 0;
+  jmethodID mid = (*env)->GetMethodID(env, javaClassClass, "getField",
+				      "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
+  if (mid) {
+    jstring s = newString(env, fnam);
+    if (s) {
+      jobject f = (*env)->CallObjectMethod(env, cls, mid, s);
+      _mp(MEM_PROF_OUT("  %08x LNEW object getField result value\n", (int) f))
+      if (f) {
+	jclass clField = objectClass(env, f);
+	if (clField) {
+	  jmethodID mid2 = (*env)->GetMethodID(env, clField, "getType",
+					       "()Ljava/lang/Class;");
+	  if (mid2) {
+	    jobject fcl = (*env)->CallObjectMethod(env, f, mid2);
+	    _mp(MEM_PROF_OUT("  %08x LNEW object getType result value\n", (int) f))
+	    if (fcl) {
+	      jmethodID mid3 = (*env)->GetMethodID(env, javaClassClass,
+						   "getName", "()Ljava/lang/String;");
+	      if (mid3) {
+		jobject fcns = (*env)->CallObjectMethod(env, fcl, mid3);
+		releaseObject(env, fcl);
+		if (fcns) {
+		  const char *fcn = (*env)->GetStringUTFChars(env, fcns, 0);
+		  detsig = classToJNI(fcn);
+		  _dbg(Rprintf("class '%s' -> '%s' sig\n", fcn, detsig));
+		  (*env)->ReleaseStringUTFChars(env, fcns, fcn);
+		  releaseObject(env, fcns);
+		  /* fid = (*env)->FromReflectedField(env, f); */
+		}
+	      } else
+		releaseObject(env, fcl);
+	    }
+	  }
+	  releaseObject(env, clField);
+	}
+	releaseObject(env, f);
+      }
+      releaseObject(env, s);
+    }
+  }
+  return detsig;
+}
+
 /** get value of a field of an object or class
     object (int), return signature (string), field name (string)
     arrays and objects are returned as IDs (hence not evaluated)
@@ -1133,6 +1181,7 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
   jfieldID fid;
   jclass cls;
   int tc = asInteger(trueclass);
+  int ads = 0;
   JNIEnv *env=getJNIEnv();
 
   if (obj == R_NilValue) return R_NilValue;
@@ -1170,8 +1219,17 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
 #ifdef RJ_DEBUG
   rjprintf("RgetField.class: "); printObject(env, cls);
 #endif
+  if (TYPEOF(name)!=STRSXP || LENGTH(name)!=1) {
+    releaseObject(env, cls);
+    error("invalid field name");
+  }
+  fnam = CHAR(STRING_ELT(name,0));
   if (sig == R_NilValue) {
-    retsig = 0;
+    retsig = detsig = findFieldSignature(env, cls, fnam);
+    if (!retsig) {
+      releaseObject(env, cls);
+      error("unable to detect signature for field '%s'", fnam);
+    }
   } else {
     if (TYPEOF(sig)!=STRSXP || LENGTH(sig)!=1) {
       releaseObject(env, cls);
@@ -1179,65 +1237,20 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
     }
     retsig = CHAR(STRING_ELT(sig,0));
   }
-  if (TYPEOF(name)!=STRSXP || LENGTH(name)!=1) {
-    releaseObject(env, cls);
-    error("invalid field name");
-  }
-  fnam = CHAR(STRING_ELT(name,0));
   _dbg(rjprintf("field %s signature is %s\n",fnam,retsig));
-  if (!retsig) { /* signature unknown, find it */
-    jmethodID mid = (*env)->GetMethodID(env, javaClassClass, "getField",
-					 "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
-    if (mid) {
-      jstring s = newString(env, fnam);
-      if (s) {
-	jobject f = (*env)->CallObjectMethod(env, cls, mid, s);
-	_mp(MEM_PROF_OUT("  %08x LNEW object getField result value\n", (int) f))
-	if (f) {
-	  jclass clField = objectClass(env, f);
-	  if (clField) {
-	    jmethodID mid2 = (*env)->GetMethodID(env, clField, "getType",
-						 "()Ljava/lang/Class;");
-	    if (mid2) {
-	      jobject fcl = (*env)->CallObjectMethod(env, f, mid2);
-	      _mp(MEM_PROF_OUT("  %08x LNEW object getType result value\n", (int) f))
-	      if (fcl) {
-		jmethodID mid3 = (*env)->GetMethodID(env, javaClassClass,
-						     "getName", "()Ljava/lang/String;");
-		if (mid3) {
-		  jobject fcns = (*env)->CallObjectMethod(env, fcl, mid3);
-		  releaseObject(env, fcl);
-		  if (fcns) {
-		    const char *fcn = (*env)->GetStringUTFChars(env, fcns, 0);
-		    retsig = detsig = classToJNI(fcn);
-		    Rprintf("class '%s' -> '%s' sig\n", fcn, detsig);
-		    (*env)->ReleaseStringUTFChars(env, fcns, fcn);
-		    releaseObject(env, fcns);
-		    fid = (*env)->FromReflectedField(env, f);
-		  }
-		} else
-		  releaseObject(env, fcl);
-	      }
-	    }
-	    releaseObject(env, clField);
-	  }
- 	  releaseObject(env, f);
-	}
-	releaseObject(env, s);
-      }
+  
+  if (o) { /* first try non-static fields */
+    fid = (*env)->GetFieldID(env, cls, fnam, retsig);
+    checkExceptionsX(env, 1);
+    if (!fid) { /* if that fails, try static ones */
+      o = 0;
+      fid = (*env)->GetStaticFieldID(env, cls, fnam, retsig);
     }
-    if (!fid) {
-      releaseObject(env, cls);
-      if (detsig) free(detsig);
-      checkExceptionsX(env, 1);
-      error("unable to determine signature for field '%s'", fnam);
-    }
-  } else {
-    fid=o?
-      (*env)->GetFieldID(env, cls, fnam, retsig):
-      (*env)->GetStaticFieldID(env, cls, fnam, retsig);
-  }
+  } else /* no choice if the object was a string */
+    fid = (*env)->GetStaticFieldID(env, cls, fnam, retsig);
+
   if (!fid) {
+    checkExceptionsX(env, 1);
     releaseObject(env, cls);
     if (detsig) free(detsig);
     error("RgetField: field %s not found", fnam);
@@ -1355,8 +1368,9 @@ SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
   return R_NilValue;
 }
 
-SEXP RsetField(SEXP obj, SEXP name, SEXP value) {
+SEXP RsetField(SEXP ref, SEXP name, SEXP value) {
   jobject o = 0, otr;
+  SEXP obj = ref;
   const char *fnam;
   char sig[64];
   char *clnam = 0;
@@ -1365,6 +1379,10 @@ SEXP RsetField(SEXP obj, SEXP name, SEXP value) {
   jvalue jval;
   JNIEnv *env=getJNIEnv();
 
+  if (TYPEOF(name)==STRSXP && LENGTH(name)==1)
+    fnam = CHAR(STRING_ELT(name, 0));
+  else
+    error("invalid field name");
   if (obj == R_NilValue) error("cannot set a field of a NULL object");
   if (inherits(obj, "jobjRef") || inherits(obj, "jarrayRef"))
     obj = GET_SLOT(obj, install("jobj"));
@@ -1402,9 +1420,17 @@ SEXP RsetField(SEXP obj, SEXP name, SEXP value) {
   *sig = 0;
   jval = R1par2jvalue(env, value, sig, &otr);
   
-  fid = o?(*env)->GetFieldID(env, cls, fnam, sig):
+  if (o) {
+    fid = (*env)->GetFieldID(env, cls, fnam, sig);
+    if (!fid) {
+      checkExceptionsX(env, 1);
+      o = 0;
+      fid = (*env)->GetStaticFieldID(env, cls, fnam, sig);
+    }
+  } else
     (*env)->GetStaticFieldID(env, cls, fnam, sig);
   if (!fid) {
+    checkExceptionsX(env, 1);
     releaseObject(env, cls);
     if (otr) releaseObject(env, otr);
     error("cannot find field %s with signature %s", fnam, sig);
@@ -1454,7 +1480,7 @@ SEXP RsetField(SEXP obj, SEXP name, SEXP value) {
   }
   releaseObject(env, cls);
   if (otr) releaseObject(env, otr);
-  return value;
+  return ref;
 }
 
 /** create new object.
@@ -1528,6 +1554,10 @@ static SEXP getObjectClassName(JNIEnv *env, jobject o) {
   cls = objectClass(env, o);
   if (!cls) return mkString("java/jang/Object");
   mid = (*env)->GetMethodID(env, javaClassClass, "getName", "()Ljava/lang/String;");
+  if (!mid) {
+    releaseObject(env, cls);
+    error("unable to get class name");
+  }
   r = (*env)->CallObjectMethod(env, cls, mid);
   _mp(MEM_PROF_OUT("  %08x LNEW object getName result\n", (int) r))
   if (!r) {
@@ -1535,8 +1565,16 @@ static SEXP getObjectClassName(JNIEnv *env, jobject o) {
     releaseObject(env, r);
     error("unable to get class name");
   }
-  cn[127]=0;
-  (*env)->GetStringUTFRegion(env, r, 0, 127, cn);
+  cn[127]=0; *cn=0;
+  {
+    int sl = (*env)->GetStringLength(env, r);
+    if (sl>127) {
+      releaseObject(env, cls);
+      releaseObject(env, r);
+      error("class name is too long");
+    }
+    if (sl) (*env)->GetStringUTFRegion(env, r, 0, sl, cn);
+  }
   { char *c=cn; while(*c) { if (*c=='.') *c='/'; c++; } }
   releaseObject(env, cls);
   releaseObject(env, r);
