@@ -11,12 +11,7 @@ FILE *memprof_f = 0;
 /* local to JRI */
 static void releaseLocal(JNIEnv *env, jobject o);
 
-void checkExceptions() {
-  JNIEnv *env=getJNIEnv();
-  if (env) checkExceptionsX(env, 0);
-}
-
-void RJavaCheckExceptions(int *silent, int *result) {
+REP void RJavaCheckExceptions(int *silent, int *result) {
   JNIEnv *env=getJNIEnv();
   if (env)
     *result=checkExceptionsX(env, *silent);
@@ -24,7 +19,7 @@ void RJavaCheckExceptions(int *silent, int *result) {
     *result=0;
 }
 
-void* errJNI(const char *err, ...) {
+HIDE void* errJNI(const char *err, ...) {
   char msg[512];
   va_list ap;
   va_start(ap, err);
@@ -32,11 +27,11 @@ void* errJNI(const char *err, ...) {
   vsnprintf(msg, 511, err, ap);
   Rf_warning(msg);
   va_end(ap);
-  checkExceptions();
+  checkExceptionsX(getJNIEnv(), 0);
   return 0;
 }
 
-jclass findClass(JNIEnv *env, const char *cName) {
+HIDE jclass findClass(JNIEnv *env, const char *cName) {
   if (clClassLoader) {
     char cn[128], *c=cn;
     jobject cns;
@@ -70,7 +65,7 @@ jclass findClass(JNIEnv *env, const char *cName) {
   }
 }
 
-jobject createObject(JNIEnv *env, const char *class, const char *sig, jvalue *par, int silent) {
+HIDE jobject createObject(JNIEnv *env, const char *class, const char *sig, jvalue *par, int silent) {
   /* va_list ap; */
   jmethodID mid;
   jclass cls;
@@ -93,7 +88,7 @@ jobject createObject(JNIEnv *env, const char *class, const char *sig, jvalue *pa
   return (o||silent)?o:errJNI("NewObject(\"%s\",\"%s\",...) failed",class,sig);
 }
 
-void printObject(JNIEnv *env, jobject o) {
+HIDE void printObject(JNIEnv *env, jobject o) {
   jmethodID mid;
   jclass cls;
   jobject s;
@@ -113,7 +108,7 @@ void printObject(JNIEnv *env, jobject o) {
   releaseLocal(env, s);
 }
 
-jdoubleArray newDoubleArray(JNIEnv *env, double *cont, int len) {
+HIDE jdoubleArray newDoubleArray(JNIEnv *env, double *cont, int len) {
   jdoubleArray da=(*env)->NewDoubleArray(env,len);
   jdouble *dae;
 
@@ -129,7 +124,7 @@ jdoubleArray newDoubleArray(JNIEnv *env, double *cont, int len) {
   return da;
 }
 
-jintArray newIntArray(JNIEnv *env, int *cont, int len) {
+HIDE jintArray newIntArray(JNIEnv *env, int *cont, int len) {
   jintArray da=(*env)->NewIntArray(env,len);
   jint *dae;
 
@@ -145,7 +140,7 @@ jintArray newIntArray(JNIEnv *env, int *cont, int len) {
   return da;
 }
 
-jbyteArray newByteArray(JNIEnv *env, void *cont, int len) {
+HIDE jbyteArray newByteArray(JNIEnv *env, void *cont, int len) {
   jbyteArray da=(*env)->NewByteArray(env,len);
   jbyte *dae;
 
@@ -161,7 +156,7 @@ jbyteArray newByteArray(JNIEnv *env, void *cont, int len) {
   return da;
 }
 
-jbyteArray newByteArrayI(JNIEnv *env, int *cont, int len) {
+HIDE jbyteArray newByteArrayI(JNIEnv *env, int *cont, int len) {
   jbyteArray da=(*env)->NewByteArray(env,len);
   jbyte* dae;
   int i=0;
@@ -181,7 +176,7 @@ jbyteArray newByteArrayI(JNIEnv *env, int *cont, int len) {
   return da;
 }
 
-jbooleanArray newBooleanArrayI(JNIEnv *env, int *cont, int len) {
+HIDE jbooleanArray newBooleanArrayI(JNIEnv *env, int *cont, int len) {
   jbooleanArray da=(*env)->NewBooleanArray(env,len);
   jboolean *dae;
   int i=0;
@@ -202,7 +197,7 @@ jbooleanArray newBooleanArrayI(JNIEnv *env, int *cont, int len) {
   return da;
 }
 
-jcharArray newCharArrayI(JNIEnv *env, int *cont, int len) {
+HIDE jcharArray newCharArrayI(JNIEnv *env, int *cont, int len) {
   jcharArray da=(*env)->NewCharArray(env,len);
   jchar *dae;
   int i=0;
@@ -222,7 +217,7 @@ jcharArray newCharArrayI(JNIEnv *env, int *cont, int len) {
   return da;
 }
 
-jshortArray newShortArrayI(JNIEnv *env, int *cont, int len) {
+HIDE jshortArray newShortArrayI(JNIEnv *env, int *cont, int len) {
   jshortArray da=(*env)->NewShortArray(env,len);
   jshort *dae;
   int i=0;
@@ -242,7 +237,7 @@ jshortArray newShortArrayI(JNIEnv *env, int *cont, int len) {
   return da;
 }
 
-jfloatArray newFloatArrayD(JNIEnv *env, double *cont, int len) {
+HIDE jfloatArray newFloatArrayD(JNIEnv *env, double *cont, int len) {
   jfloatArray da=(*env)->NewFloatArray(env,len);
   jfloat *dae;
   int i=0;
@@ -263,7 +258,7 @@ jfloatArray newFloatArrayD(JNIEnv *env, double *cont, int len) {
   return da;
 }
 
-jlongArray newLongArrayD(JNIEnv *env, double *cont, int len) {
+HIDE jlongArray newLongArrayD(JNIEnv *env, double *cont, int len) {
 	jlongArray da=(*env)->NewLongArray(env,len);
 	jlong *dae;
 	int i=0;
@@ -286,20 +281,20 @@ jlongArray newLongArrayD(JNIEnv *env, double *cont, int len) {
 	return da;
 }
 
-jstring newString(JNIEnv *env, const char *cont) {
+HIDE jstring newString(JNIEnv *env, const char *cont) {
   jstring s=(*env)->NewStringUTF(env, cont);
   _mp(MEM_PROF_OUT("  %08x LNEW string \"%s\"\n", (int) s, cont))
   return s?s:errJNI("newString(\"%s\") failed",cont);
 }
 
-void releaseObject(JNIEnv *env, jobject o) {
+HIDE void releaseObject(JNIEnv *env, jobject o) {
   /* Rprintf("releaseObject: %lx\n", (long)o);
      printObject(env, o); */
   _mp(MEM_PROF_OUT("  %08x LREL\n", (int)o))
   (*env)->DeleteLocalRef(env, o);
 }
 
-jclass objectClass(JNIEnv *env, jobject o) {
+HIDE jclass objectClass(JNIEnv *env, jobject o) {
   jclass cls=(*env)->GetObjectClass(env,o);
   _mp(MEM_PROF_OUT("  %08x LNEW class from object %08x\n", (int) cls, (int) o))
     return cls;
@@ -310,13 +305,13 @@ static void releaseLocal(JNIEnv *env, jobject o) {
   (*env)->DeleteLocalRef(env, o);
 }
 
-jobject makeGlobal(JNIEnv *env, jobject o) {
+HIDE jobject makeGlobal(JNIEnv *env, jobject o) {
   jobject g=(*env)->NewGlobalRef(env,o);
   _mp(MEM_PROF_OUT("G %08x GNEW %08x\n", (int) g, (int) o))
   return g?g:errJNI("makeGlobal: failed to make global reference");
 }
 
-void releaseGlobal(JNIEnv *env, jobject o) {
+HIDE void releaseGlobal(JNIEnv *env, jobject o) {
   /* Rprintf("releaseGlobal: %lx\n", (long)o);
      printObject(env, o); */
   _mp(MEM_PROF_OUT("G %08x GREL\n", (int) o))
@@ -325,7 +320,7 @@ void releaseGlobal(JNIEnv *env, jobject o) {
 
 static jobject nullEx = 0;
 
-int checkExceptionsX(JNIEnv *env, int silent) {
+HIDE int checkExceptionsX(JNIEnv *env, int silent) {
   jthrowable t=(*env)->ExceptionOccurred(env);
   
   if (t == nullEx) t = 0; else {

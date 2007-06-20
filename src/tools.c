@@ -7,7 +7,7 @@
 #include "rJava.h"
 
 /** jobjRefInt object : string */
-SEXP RgetStringValue(SEXP par) {
+REPE SEXP RgetStringValue(SEXP par) {
   SEXP p,e,r;
   jstring s;
   const char *c;
@@ -18,9 +18,11 @@ SEXP RgetStringValue(SEXP par) {
   if (e==R_NilValue) return R_NilValue;
   if (TYPEOF(e)==EXTPTRSXP) {
     jverify(e);
-    s=(jstring)EXTPTR_PTR(e);
-  } else
+    s = (jstring)EXTPTR_PTR(e);
+  } else {
     error("invalid object parameter");
+    s = 0;
+  }
   if (!s) return R_NilValue;
   c=(*env)->GetStringUTFChars(env, s, 0);
   if (!c)
@@ -32,7 +34,7 @@ SEXP RgetStringValue(SEXP par) {
 }
 
 /** calls .toString() of the object and returns the corresponding string java object */
-jstring callToString(JNIEnv *env, jobject o) {
+HIDE jstring callToString(JNIEnv *env, jobject o) {
   jclass cls;
   jmethodID mid;
   jstring s;
@@ -62,7 +64,7 @@ jstring callToString(JNIEnv *env, jobject o) {
 
 /** calls .toString() on the passed object (int/extptr) and returns the string 
     value or NULL if there is no toString method */
-SEXP RtoString(SEXP par) {
+REPE SEXP RtoString(SEXP par) {
   SEXP p,e,r;
   jstring s;
   jobject o;
@@ -91,7 +93,7 @@ SEXP RtoString(SEXP par) {
 }
 
 /* compares two references */
-SEXP RidenticalRef(SEXP ref1, SEXP ref2) {
+REPC SEXP RidenticalRef(SEXP ref1, SEXP ref2) {
   SEXP r;
   if (TYPEOF(ref1)!=EXTPTRSXP || TYPEOF(ref2)!=EXTPTRSXP) return R_NilValue;
   r=allocVector(LGLSXP,1);
@@ -100,12 +102,12 @@ SEXP RidenticalRef(SEXP ref1, SEXP ref2) {
 }
 
 /** create a NULL external reference */
-SEXP RgetNullReference() {
+REPC SEXP RgetNullReference() {
   return R_MakeExternalPtr(0, R_NilValue, R_NilValue);
 }
 
 /** TRUE if cl1 x; cl2 y = (cl2) x ... is valid */
-SEXP RisAssignableFrom(SEXP cl1, SEXP cl2) {
+REPC SEXP RisAssignableFrom(SEXP cl1, SEXP cl2) {
   SEXP r;
   JNIEnv *env=getJNIEnv();
 
@@ -122,7 +124,7 @@ SEXP RisAssignableFrom(SEXP cl1, SEXP cl2) {
   return r;
 }
 
-SEXP RJava_checkJVM() {
+REPC SEXP RJava_checkJVM() {
   SEXP r = allocVector(LGLSXP, 1);
   LOGICAL(r)[0] = 0;
   if (!jvm || !getJNIEnv()) return r;
@@ -132,13 +134,13 @@ SEXP RJava_checkJVM() {
 
 extern int rJava_initialized; /* in callJNI.c */
 
-SEXP RJava_needs_init() {
+REPC SEXP RJava_needs_init() {
   SEXP r = allocVector(LGLSXP, 1);
   LOGICAL(r)[0] = rJava_initialized?0:1;
   return r;
 }
 
-SEXP RJava_set_memprof(SEXP fn) {
+REPC SEXP RJava_set_memprof(SEXP fn) {
 #ifdef MEMPROF
   const char *cFn = CHAR(STRING_ELT(fn, 0));
   int env = 0; /* we're just faking it so we can call MEM_PROF_OUT */

@@ -17,7 +17,7 @@
 #endif
 
 /** returns TRUE if JRI has callback support compiled in or FALSE otherwise */
-SEXP RJava_has_jri_cb() {
+REPC SEXP RJava_has_jri_cb() {
   SEXP r = allocVector(LGLSXP, 1);
 #ifdef ENABLE_JRICB
   LOGICAL(r)[0] = 1;
@@ -29,7 +29,7 @@ SEXP RJava_has_jri_cb() {
 
 /* debugging output (enable with -DRJ_DEBUG) */
 #ifdef RJ_DEBUG
-void rjprintf(char *fmt, ...) {
+HIDE void rjprintf(char *fmt, ...) {
   va_list v;
   va_start(v,fmt);
   Rvprintf(fmt,v);
@@ -45,7 +45,7 @@ void rjprintf(char *fmt, ...) {
 #ifdef RJ_PROFILE
 #include <sys/time.h>
 
-long time_ms() {
+HIDE long time_ms() {
 #ifdef Win32
   return 0; /* in Win32 we have no gettimeofday :( */
 #else
@@ -58,7 +58,7 @@ long time_ms() {
 static long profilerTime;
 
 #define profStart() profilerTime=time_ms()
-void profReport(char *fmt, ...) {
+HIDE void profReport(char *fmt, ...) {
   long npt=time_ms();
   va_list v;
   va_start(v,fmt);
@@ -73,7 +73,7 @@ void profReport(char *fmt, ...) {
 #define _prof(X)
 #endif
 
-void JRefObjectFinalizer(SEXP ref) {
+static void JRefObjectFinalizer(SEXP ref) {
   if (TYPEOF(ref)==EXTPTRSXP) {
     JNIEnv *env=getJNIEnv();
     jobject o = R_ExternalPtrAddr(ref);
@@ -316,7 +316,7 @@ static void Rfreejpars(JNIEnv *env, jobject *tmpo) {
 }
 
 /** map one parameter into jvalue and determine its signature */
-jvalue R1par2jvalue(JNIEnv *env, SEXP par, char *sig, jobject *otr) {
+HIDE jvalue R1par2jvalue(JNIEnv *env, SEXP par, char *sig, jobject *otr) {
   jobject tmpo[4] = {0, 0};
   jvalue v[4];
   int p = Rpar2jvalue(env, CONS(par, R_NilValue), v, sig, 2, 64, tmpo);
@@ -333,7 +333,7 @@ jvalue R1par2jvalue(JNIEnv *env, SEXP par, char *sig, jobject *otr) {
    object (int), return signature (string), method name (string) [, ..parameters ...]
    arrays and objects are returned as IDs (hence not evaluated)
 */
-SEXP RcallMethod(SEXP par) {
+REPE SEXP RcallMethod(SEXP par) {
   SEXP p = par, e;
   char sig[256];
   jvalue jpar[maxJavaPars];
@@ -550,7 +550,7 @@ END_RJAVA_CALL
 }
 
 /** like RcallMethod but the call will be synchronized */
-SEXP RcallSyncMethod(SEXP par) {
+REPE SEXP RcallSyncMethod(SEXP par) {
   SEXP p=par, e;
   jobject o = 0;
   JNIEnv *env=getJNIEnv();
@@ -583,7 +583,7 @@ SEXP RcallSyncMethod(SEXP par) {
 
 /** create new object.
     fully-qualified class in JNI notation (string) [, constructor parameters] */
-SEXP RcreateObject(SEXP par) {
+REPE SEXP RcreateObject(SEXP par) {
   SEXP p=par;
   SEXP e;
   int silent=0;
@@ -645,7 +645,6 @@ END_RJAVA_CALL
 /** returns the name of an object's class (in the form of R string) */
 static SEXP getObjectClassName(JNIEnv *env, jobject o) {
   jclass cls;
-  jmethodID mid;
   jobject r;
   char cn[128];
   if (!o) return mkString("java/jang/Object");
@@ -675,7 +674,7 @@ static SEXP getObjectClassName(JNIEnv *env, jobject o) {
 }
 
 /** creates a new jobjRef object. If klass is NULL then the class is determined from the object (if also o=NULL then the class is set to java/lang/Object) */
-SEXP new_jobjRef(JNIEnv *env, jobject o, const char *klass) {
+HIDE SEXP new_jobjRef(JNIEnv *env, jobject o, const char *klass) {
   SEXP oo = NEW_OBJECT(MAKE_CLASS("jobjRef"));
   if (!inherits(oo, "jobjRef"))
     error("unable to create jobjRef object");
@@ -702,7 +701,7 @@ static SEXP new_jarrayRef(JNIEnv *env, jobject a, const char *sig) {
   return oo;
 }
 
-SEXP RcreateArray(SEXP ar, SEXP cl) {
+REPC SEXP RcreateArray(SEXP ar, SEXP cl) {
   JNIEnv *env=getJNIEnv();
   
   if (ar==R_NilValue) return R_NilValue;
@@ -830,29 +829,9 @@ SEXP RcreateArray(SEXP ar, SEXP cl) {
   return R_NilValue;
 }
 
-/** jobjRefInt object : string */
-SEXP RfreeObject(SEXP par) {
-  SEXP p,e;
-  jobject o;
-  JNIEnv *env=getJNIEnv();
-
-  p=CDR(par); e=CAR(p); p=CDR(p);
-  if (e==R_NilValue) return e;
-  if (TYPEOF(e)==EXTPTRSXP) {
-    jverify(e);
-    o = (jobject)EXTPTR_PTR(e);
-  } else
-    error_return("RfreeObject: invalid object parameter");
-  _dbg(rjprintf("RfreeObject: release reference %lx\n", (long)o));
-BEGIN_RJAVA_CALL
-  releaseGlobal(env, o);
-END_RJAVA_CALL
-  return R_NilValue;
-}
-
 /** check whether there is an exception pending and
     return the exception if any (NULL otherwise) */
-SEXP RpollException() {
+REPC SEXP RpollException() {
   JNIEnv *env=getJNIEnv();
   jthrowable t;
 BEGIN_RJAVA_CALL
@@ -863,14 +842,14 @@ END_RJAVA_CALL
 }
 
 /** clear any pending exceptions */
-void RclearException() {
+REP void RclearException() {
   JNIEnv *env=getJNIEnv();
 BEGIN_RJAVA_CALL
   (*env)->ExceptionClear(env);  
 END_RJAVA_CALL
 }
 
-SEXP RthrowException(SEXP ex) {
+REPC SEXP RthrowException(SEXP ex) {
   JNIEnv *env=getJNIEnv();
   jthrowable t=0;
   SEXP exr;

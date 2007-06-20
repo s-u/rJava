@@ -9,7 +9,7 @@
 jclass   clClassLoader = (jclass) 0;
 jobject  oClassLoader = (jobject) 0;
 
-int initClassLoader(JNIEnv *env, jobject cl) {
+HIDE int initClassLoader(JNIEnv *env, jobject cl) {
   clClassLoader = (*env)->NewGlobalRef(env, (*env)->GetObjectClass(env, cl));
   /* oClassLoader = (*env)->NewGlobalRef(env, cl); */ 
   oClassLoader = cl;
@@ -19,7 +19,7 @@ int initClassLoader(JNIEnv *env, jobject cl) {
   return 0;
 }
 
-SEXP RJava_set_class_loader(SEXP ldr) {
+REPC SEXP RJava_set_class_loader(SEXP ldr) {
   JNIEnv *env=getJNIEnv();
   if (TYPEOF(ldr) != EXTPTRSXP)
     error("invalid type");
@@ -31,7 +31,7 @@ SEXP RJava_set_class_loader(SEXP ldr) {
   return R_NilValue;
 }
 
-SEXP RJava_primary_class_loader() {
+REPC SEXP RJava_primary_class_loader() {
   JNIEnv *env=getJNIEnv();
   jclass cl = (*env)->FindClass(env, "RJavaClassLoader");
   Rprintf("RJava_primary_class_loader, cl = %x\n", (int) cl);
@@ -67,7 +67,7 @@ SEXP RJava_primary_class_loader() {
   return R_NilValue; 
 }
 
-SEXP RJava_new_class_loader(SEXP p1, SEXP p2) {
+REPC SEXP RJava_new_class_loader(SEXP p1, SEXP p2) {
   JNIEnv *env=getJNIEnv();
   
   const char *c1 = CHAR(STRING_ELT(p1, 0));

@@ -10,14 +10,14 @@ int use_eenv = 1;
 JNIEnv *eenv;
 
 #ifdef JNI_CACHE
-JNIEnv *getJNIEnvSafe();
-JNIEnv *getJNIEnv() {
+HIDE JNIEnv *getJNIEnvSafe();
+HIDE JNIEnv *getJNIEnv() {
   return (use_eenv)?eenv:getJNIEnvSafe();
 }
 
-JNIEnv *getJNIEnvSafe()
+HIDE JNIEnv *getJNIEnvSafe()
 #else
-JNIEnv *getJNIEnv()
+HIDE JNIEnv *getJNIEnv()
 #endif
   {
     JNIEnv *env;
@@ -43,6 +43,6 @@ JNIEnv *getJNIEnv()
     return env;
 }
 
-void RuseJNICache(int *flag) {
+REP void RuseJNICache(int *flag) {
   if (flag) use_eenv=*flag;
 }

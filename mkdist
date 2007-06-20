@@ -139,6 +139,18 @@ VER=`sed -n -e 's/.*rJava v\([0-9.-]\{1,\}\).*/\1/p' src/rJava.h`
 echo "rJava version ${VER}"
 cat DESCRIPTION| sed "s/Version:.*/Version: ${VER}/" > d
 mv d DESCRIPTION
+if test -n "${OPTIMIZED}"; then
+    echo "Creating optimized sources ..."
+    echo '#define ONEFILE 1' > src/all
+    for f in `ls src/*.c`; do
+	echo "#line 1 \"$f\"" >> src/all
+	cat $f >> src/all
+	echo '' >> src/all
+    done
+    rm src/*.c
+    mv src/all src/rJava.c
+fi
+
 echo "Creating package ..."
 cd ..
 tar fcz rJava_${VER}.tar.gz rJava

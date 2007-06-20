@@ -17,6 +17,36 @@
 #include <R.h>
 #include <Rinternals.h>
 
+/* flags used in function declarations:
+   HIDE - hidden (used internally in rJava only)
+
+   REP  - R Entry Point - .C convention
+   REPE - R Entry Point - .External convention
+   REPC - R Entry Point - .Call convention
+
+   - inline and/or hide functions that are not externally visible
+   - automatically generate symbol registration table
+ */
+#ifdef ONEFILE
+#ifdef HAVE_STATIC_INLINE
+#define HIDE static inline
+#else
+#define HIDE static
+#endif
+#else
+#define HIDE
+#endif
+#define REP
+#define REPE
+#define REPC
+
+#if defined WIN32 && ! defined Win32
+#define Win32
+#endif
+#if defined Win32 && ! defined WIN32
+#define WIN32
+#endif
+
 #ifndef Win32
 #include "config.h"
 #endif
@@ -65,7 +95,7 @@ extern int RJava_has_control;
 /* in rJava.c */
 extern JNIEnv *eenv; /* should NOT be used since not thread-safe; use getJNIEnv instead */
 
-JNIEnv* getJNIEnv();
+HIDE JNIEnv* getJNIEnv();
 
 /* in init.c */
 extern JavaVM *jvm;
@@ -85,40 +115,38 @@ extern jclass   clClassLoader;
 extern jobject  oClassLoader;
 
 /* in Rglue */
-SEXP j2SEXP(JNIEnv *env, jobject o, int releaseLocal);
-SEXP new_jobjRef(JNIEnv *env, jobject o, const char *klass);
-jvalue  R1par2jvalue(JNIEnv *env, SEXP par, char *sig, jobject *otr);
+HIDE SEXP j2SEXP(JNIEnv *env, jobject o, int releaseLocal);
+HIDE SEXP new_jobjRef(JNIEnv *env, jobject o, const char *klass);
+HIDE jvalue  R1par2jvalue(JNIEnv *env, SEXP par, char *sig, jobject *otr);
 
 /* in tools.c */
-jstring callToString(JNIEnv *env, jobject o);
+HIDE jstring callToString(JNIEnv *env, jobject o);
 
 /* in callJNI */
-void init_rJava(void);
+HIDE jobject createObject(JNIEnv *env, const char *class, const char *sig, jvalue *par, int silent);
+HIDE jclass findClass(JNIEnv *env, const char *class);
+HIDE jclass objectClass(JNIEnv *env, jobject o);
 
-jobject createObject(JNIEnv *env, const char *class, const char *sig, jvalue *par, int silent);
-jclass findClass(JNIEnv *env, const char *class);
-jclass objectClass(JNIEnv *env, jobject o);
+HIDE jdoubleArray newDoubleArray(JNIEnv *env, double *cont, int len);
+HIDE jintArray newIntArray(JNIEnv *env, int *cont, int len);
+HIDE jbooleanArray newBooleanArrayI(JNIEnv *env, int *cont, int len);
+HIDE jstring newString(JNIEnv *env, const char *cont);
+HIDE jcharArray newCharArrayI(JNIEnv *env, int *cont, int len);
+HIDE jshortArray newShortArrayI(JNIEnv *env, int *cont, int len);
+HIDE jfloatArray newFloatArrayD(JNIEnv *env, double *cont, int len);
+HIDE jlongArray newLongArrayD(JNIEnv *env, double *cont, int len);
+HIDE jintArray newByteArray(JNIEnv *env, void *cont, int len);
+HIDE jbyteArray newByteArrayI(JNIEnv *env, int *cont, int len);
 
-jdoubleArray newDoubleArray(JNIEnv *env, double *cont, int len);
-jintArray newIntArray(JNIEnv *env, int *cont, int len);
-jbooleanArray newBooleanArrayI(JNIEnv *env, int *cont, int len);
-jstring newString(JNIEnv *env, const char *cont);
-jcharArray newCharArrayI(JNIEnv *env, int *cont, int len);
-jshortArray newShortArrayI(JNIEnv *env, int *cont, int len);
-jfloatArray newFloatArrayD(JNIEnv *env, double *cont, int len);
-jlongArray newLongArrayD(JNIEnv *env, double *cont, int len);
-jintArray newByteArray(JNIEnv *env, void *cont, int len);
-jbyteArray newByteArrayI(JNIEnv *env, int *cont, int len);
+HIDE jobject makeGlobal(JNIEnv *env, jobject o);
+HIDE void releaseObject(JNIEnv *env, jobject o);
+HIDE void releaseGlobal(JNIEnv *env, jobject o);
 
-jobject makeGlobal(JNIEnv *env, jobject o);
-void releaseObject(JNIEnv *env, jobject o);
-void releaseGlobal(JNIEnv *env, jobject o);
+HIDE void printObject(JNIEnv *env, jobject o);
 
-void printObject(JNIEnv *env, jobject o);
+HIDE int checkExceptionsX(JNIEnv *env, int silent);
 
-int checkExceptionsX(JNIEnv *env, int silent);
-
-int initClassLoader(JNIEnv *env, jobject cl);
+HIDE int initClassLoader(JNIEnv *env, jobject cl);
 
 /* this is a hook for de-serialization, unused for now */
 #define jverify(X)

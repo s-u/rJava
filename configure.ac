@@ -89,6 +89,20 @@ AC_CHECK_HEADERS([string.h sys/time.h unistd.h])
 AC_C_CONST
 AC_HEADER_TIME
 
+AC_CHECKING([whether ${CC} supports static inline])
+can_inline=no
+AC_COMPILE_IFELSE([
+static inline int foo(int a, int b);
+static f = 1;
+static inline int foo(int a, int b) { return a+b; }
+int main(void) {
+    return foo(f,-1);
+}],can_inline=yes)
+AC_MSG_RESULT(${can_inline})
+if test "${can_inline}" = yes; then
+  AC_DEFINE(HAVE_STATIC_INLINE, 1, [Define to 1 when static inline works])
+fi
+
 R_JAVA_HOME=`"${RBIN}" CMD config JAVA_HOME`
 : ${JAVA_HOME="${R_JAVA_HOME}"}
 if test -z "${JAVA_HOME}"; then

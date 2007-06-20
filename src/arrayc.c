@@ -7,7 +7,7 @@
 #include "rJava.h"
 
 /** get contents of the object array in the form of list of ext. pointers */
-SEXP RgetObjectArrayCont(SEXP e) {
+REPC SEXP RgetObjectArrayCont(SEXP e) {
   SEXP ar;
   jarray o;
   int l,i;
@@ -39,7 +39,7 @@ SEXP RgetObjectArrayCont(SEXP e) {
 }
 
 /** get contents of the object array in the form of int* */
-SEXP RgetStringArrayCont(SEXP e) {
+REPC SEXP RgetStringArrayCont(SEXP e) {
   SEXP ar;
   jarray o;
   int l,i;
@@ -87,7 +87,7 @@ SEXP RgetStringArrayCont(SEXP e) {
 }
 
 /** get contents of the integer array object */
-SEXP RgetIntArrayCont(SEXP e) {
+REPC SEXP RgetIntArrayCont(SEXP e) {
   SEXP ar;
   jarray o;
   int l;
@@ -118,7 +118,7 @@ SEXP RgetIntArrayCont(SEXP e) {
 }
 
 /** get contents of the boolean array object */
-SEXP RgetBoolArrayCont(SEXP e) {
+REPC SEXP RgetBoolArrayCont(SEXP e) {
   SEXP ar;
   jarray o;
   int l;
@@ -155,7 +155,7 @@ SEXP RgetBoolArrayCont(SEXP e) {
 }
 
 /** get contents of a character array object */
-SEXP RgetCharArrayCont(SEXP e) {
+REPC SEXP RgetCharArrayCont(SEXP e) {
   SEXP ar;
   jarray o;
   int l;
@@ -192,7 +192,7 @@ SEXP RgetCharArrayCont(SEXP e) {
 }
 
 /** get contents of a short array object */
-SEXP RgetShortArrayCont(SEXP e) {
+REPC SEXP RgetShortArrayCont(SEXP e) {
   SEXP ar;
   jarray o;
   int l;
@@ -229,7 +229,7 @@ SEXP RgetShortArrayCont(SEXP e) {
 }
 
 /** get contents of the byte array object */
-SEXP RgetByteArrayCont(SEXP e) {
+REPC SEXP RgetByteArrayCont(SEXP e) {
   SEXP ar;
   jarray o;
   int l;
@@ -260,7 +260,7 @@ SEXP RgetByteArrayCont(SEXP e) {
 }
 
 /** get contents of the double array object  */
-SEXP RgetDoubleArrayCont(SEXP e) {
+REPC SEXP RgetDoubleArrayCont(SEXP e) {
   SEXP ar;
   jarray o;
   int l;
@@ -291,7 +291,7 @@ SEXP RgetDoubleArrayCont(SEXP e) {
 }
 
 /** get contents of the float array object (double) */
-SEXP RgetFloatArrayCont(SEXP e) {
+REPC SEXP RgetFloatArrayCont(SEXP e) {
   SEXP ar;
   jarray o;
   int l;
@@ -325,7 +325,7 @@ SEXP RgetFloatArrayCont(SEXP e) {
 }
 
 /** get contents of the long array object (int) */
-SEXP RgetLongArrayCont(SEXP e) {
+REPC SEXP RgetLongArrayCont(SEXP e) {
   SEXP ar;
   jarray o;
   int l;

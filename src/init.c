@@ -129,7 +129,7 @@ pthread_mutex_t initMutex = PTHREAD_MUTEX_INITIALIZER;
 int thInitResult = 0;
 int initAWT = 0;
 
-void *initJVMthread(void *classpath)
+static void *initJVMthread(void *classpath)
 {
   int ws;
   jclass c;
@@ -163,7 +163,7 @@ void *initJVMthread(void *classpath)
 /* initialize internal structures/variables of rJava.
    The JVM initialization was performed before (but may have failed)
 */
-void init_rJava(void) {
+static void init_rJava(void) {
   jclass c;
   JNIEnv *env=getJNIEnv();
   if (!env) return; /* initJVMfailed, so we cannot proceed */
@@ -209,7 +209,7 @@ void init_rJava(void) {
 
 /** RinitJVM(classpath)
     initializes JVM with the specified class path */
-SEXP RinitJVM(SEXP par)
+REP SEXP RinitJVM(SEXP par)
 {
   const char *c=0;
   SEXP e=CADR(par);
@@ -291,7 +291,7 @@ SEXP RinitJVM(SEXP par)
   return e;
 }
 
-void doneJVM() {
+REP void doneJVM() {
   (*jvm)->DestroyJavaVM(jvm);
   jvm = 0;
   eenv = 0;
