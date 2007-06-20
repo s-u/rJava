@@ -3,22 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define PATH_SEPARATOR ':'
-#define USER_CLASSPATH "."
-
-JavaVM *jvm;
-
-jclass javaStringClass;
-jclass javaObjectClass;
-jclass javaClassClass;
-
-#ifdef JNI_VERSION_1_2 
-static JavaVMOption *vm_options;
-static JavaVMInitArgs vm_args;
-#else  
-#error "Java/JNI 1.2 or higher is required!"
-#endif
-
 /* determine whether eenv chache should be used (has no effect if JNI_CACHE is not set) */
 int use_eenv = 1;
 
@@ -57,63 +41,6 @@ JNIEnv *getJNIEnv()
     /* if (eenv!=env)
         fprintf(stderr, "Warning! eenv=%x, but env=%x - different environments encountered!\n", eenv, env); */
     return env;
-}
-
-int initJVM(const char *user_classpath, int opts, char **optv) {
-  int total_num_properties, propNum = 0;
-  jint res;
-  char *classpath;
-  
-  if(!user_classpath)
-    /* use the CLASSPATH environment variable as default */
-    user_classpath = getenv("CLASSPATH");
-  if(!user_classpath) user_classpath = "";
-  
-  vm_args.version = JNI_VERSION_1_2;
-  if(JNI_GetDefaultJavaVMInitArgs(&vm_args) != JNI_OK) {
-    Rf_error("JNI 1.2 or higher is required");
-    return -1;    
-  }
-    
-  /* leave room for class.path, and optional jni args */
-  total_num_properties = 3 + opts;
-    
-  vm_options = (JavaVMOption *) calloc(total_num_properties, sizeof(JavaVMOption));
-  vm_args.version = JNI_VERSION_1_2; /* should we do that or keep the drfault? */
-  vm_args.options = vm_options;
-  vm_args.ignoreUnrecognized = JNI_TRUE;
-  
-  classpath = (char*) calloc(24 + strlen(user_classpath), sizeof(char));
-  sprintf(classpath, "-Djava.class.path=%s", user_classpath);
-  
-  vm_options[propNum++].optionString = classpath;   
-  
-  /*   print JNI-related messages */
-  /* vm_options[propNum++].optionString = "-verbose:class,jni"; */
-  
-  if (optv) {
-    int i=0;
-    while (i<opts) {
-      if (optv[i]) vm_options[propNum++].optionString = optv[i];
-      i++;
-    }
-  }
-  vm_args.nOptions = propNum;
-
-  /* Create the Java VM */
-  res = JNI_CreateJavaVM(&jvm,(void **)&eenv, &vm_args);
-  
-  if (res != 0 || eenv == NULL) {
-    Rf_error("Cannot create Java Virtual Machine");
-    return -1;
-  }
-  return 0;
-}
-
-void doneJVM() {
-  (*jvm)->DestroyJavaVM(jvm);
-  jvm = 0;
-  eenv = 0;
 }
 
 void RuseJNICache(int *flag) {

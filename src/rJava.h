@@ -56,15 +56,15 @@ extern int RJava_has_control;
 
 /* in rJava.c */
 extern JNIEnv *eenv; /* should NOT be used since not thread-safe; use getJNIEnv instead */
+
+JNIEnv* getJNIEnv();
+
+/* in init.c */
 extern JavaVM *jvm;
 
 extern jclass javaStringClass;
 extern jclass javaObjectClass;
 extern jclass javaClassClass;
-
-JNIEnv* getJNIEnv();
-
-int initJVM(const char *user_classpath, int opts, char **optv);
 
 /* in Rglue */
 SEXP j2SEXP(JNIEnv *env, jobject o, int releaseLocal);
