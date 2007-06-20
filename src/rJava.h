@@ -68,7 +68,9 @@ int initJVM(const char *user_classpath, int opts, char **optv);
 
 /* in Rglue */
 SEXP j2SEXP(JNIEnv *env, jobject o, int releaseLocal);
+SEXP new_jobjRef(JNIEnv *env, jobject o, const char *klass);
 jstring callToString(JNIEnv *env, jobject o);
+jvalue  R1par2jvalue(JNIEnv *env, SEXP par, char *sig, jobject *otr);
 
 /* in callJNI */
 void init_rJava(void);
