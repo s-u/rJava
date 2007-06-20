@@ -8,7 +8,7 @@
   if (is.null(o)) return (NULL)
   if (is.character(o) & length(o)==1) {
     o<-gsub("/",".",o)
-    cl<-.jcall("java/lang/Class","Ljava/lang/Class;","forName",o)
+    cl<-.jfindClass(o)
   } else if (inherits(o, "jobjRef") || inherits(o, "jarrayRef")) {
     cl<-.jcall(o, "Ljava/lang/Class;", "getClass")
   } else stop("Can operate on a single string or Java object only.")
@@ -23,8 +23,7 @@
 .jconstructors <- function(o) {
   if (is.null(o)) return (NULL)
   if (is.character(o) & length(o)==1) {
-    o<-gsub("/",".",o)
-    cl<-.jcall("java/lang/Class","Ljava/lang/Class;","forName",o)
+    cl<-.jfindClass(o)
   } else if (inherits(o, "jobjRef") || inherits(o, "jarrayRef")) {
     cl<-.jcall(o, "Ljava/lang/Class;", "getClass")
   } else stop("Can operate on a single string or Java object only.")
@@ -35,13 +34,13 @@
 ### reflected call - this high-level call uses reflection to call a method
 ### it is much less efficient than .jcall but doesn't require return type
 ### specification or exact matching of parameter types
-.jrcall <- function(o, method, ...) {
+.jrcall <- function(o, method, ..., simplify=TRUE) {
   if (!is.character(method) | length(method)!=1)
     stop("Invalid method name - must be exactly one character string.")
   if (inherits(o, "jobjRef") || inherits(o, "jarrayRef"))
     cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
   else
-    cl <- .jcall("java/lang/Class", "Ljava/lang/Class;", "forName", gsub("/",".",o))
+    cl <- .jfindClass(o)
   if (is.null(cl))
     stop("Cannot find class of the object.")
   p <- list(...)
@@ -76,15 +75,7 @@
   if (is.null(m))
     stop("Cannot find Java method `",method,"' matching the supplied parameters.")
   r<-.jcall(m, "Ljava/lang/Object;", "invoke", .jcast(if(inherits(o,"jobjRef") || inherits(o, "jarrayRef")) o else cl, "java/lang/Object"), .jcast(op, "[Ljava/lang/Object;"))
-  if (!is.null(r)) {
-    rcl <- .jcall(r, "Ljava/lang/Class;", "getClass")
-    rcn <- .jcall(rcl, "S", "getName")
-    if (rcn=="java.lang.Integer") r <- .jcall(r, "I", "intValue")
-    else if (rcn=="java.lang.Number" | rcn=="java.lang.Double" | rcn=="java.lang.Float")
-      r <- .jcall(r, "D", "doubleValue")
-    else if (rcn=="java.lang.String") r <- .jstrVal(r)
-    else if (rcn=="java.lang.Boolean") r <- .jcall(r, "Z", "booleanValue")
-  }
+  if (simplify && !is.jnull(r)) r <- .jsimplify(r)
   r
 }
 
@@ -92,11 +83,10 @@
 .jsimplify <- function(o) {
   if (!inherits(o, "jobjRef") && !inherits(o, "jarrayRef"))
     return(o)
-  cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
-  cn <- .jcall(cl, "Ljava/lang/String;", "getName")
+  cn <- .jclass(o, true=TRUE)
   if (cn == "java.lang.Boolean") .jcall(o, "Z", "booleanValue") else
-  if (cn == "java.lang.Integer") .jcall(o, "I", "intValue") else
-  if (cn == "java.lang.Number" || cn == "java.lang.Double" || cn == "java.lang.Float") .jcall(o, "D", "doubleValue") else
+  if (cn == "java.lang.Integer" || cn == "java.lang.Short" || cn == "java.lang.Charabter" || cn == "java.lang.Byte") .jcall(o, "I", "intValue") else
+  if (cn == "java.lang.Number" || cn == "java.lang.Double" || cn == "java.lang.Long" || cn == "java.lang.Float") .jcall(o, "D", "doubleValue") else
   if (cn == "java.lang.String") .jstrVal(.jcast(o, "java/lang/String")) else
   o
 }
@@ -106,7 +96,7 @@
   if (!inherits(o, "jobjRef") && !inherits(o, "jarrayRef") && !is.character(o))
     stop("Object must be a Java reference or class name.")
   if (is.character(o)) {
-    cl <- .jcall("java/lang/Class", "Ljava/lang/Class;", "forName", gsub("/",".",o))
+    cl <- .jfindClass(o)
     .jcheck(silent=TRUE)
     if (is.null(cl))
       stop("class not found")
@@ -132,7 +122,7 @@
   if (inherits(o, "jobjRef") || inherits(o, "jarrayRef"))
     cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
   else
-    cl <- .jcall("java/lang/Class", "Ljava/lang/Class;", "forName", gsub("/",".",as.character(o)))
+    cl <- .jfindClass(as.character(o))
   f <- .jcall(cl, "[Ljava/lang/reflect/Field;", "getFields")
   unlist(lapply(f, function(x) .jcall(x, "S", "toString")))
 }
