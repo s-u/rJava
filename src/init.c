@@ -195,7 +195,7 @@ static void init_rJava(void) {
 
   mid_forName  = (*env)->GetStaticMethodID(env, javaClassClass, "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
   if (!mid_forName) error("cannot obtain Class.forName method ID");
-  mid_getName  = (*env)->GetStaticMethodID(env, javaClassClass, "getName", "()Ljava/lang/String;");
+  mid_getName  = (*env)->GetMethodID(env, javaClassClass, "getName", "()Ljava/lang/String;");
   if (!mid_getName) error("cannot obtain Class.getName method ID");
   mid_getField = (*env)->GetMethodID(env, javaClassClass, "getField",
 				     "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
