@@ -2,6 +2,10 @@
 --------------------------
 
 0.5-0	(under development)
+   **	The order of arguments of .jfield has been changed to match
+	the order used in .jcall and the return value is as expected
+	and doesn't need .jsimplify anymore.
+
     o	The implementation of .jfield no longer uses reflection
 	it supports static fileds and .field<-() was added.
 

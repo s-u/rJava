@@ -255,7 +255,7 @@ is.jnull <- function(x) {
     .jcall(o, "Z", "equals", .jcast(b, "java/lang/Object"))
 }
 
-.jfield <- function(o, name, sig=NULL, true.class=is.null(sig), convert=TRUE) {
+.jfield <- function(o, sig=NULL, name, true.class=is.null(sig), convert=TRUE) {
   if (length(sig)) {
     if (sig=='S') sig<-"Ljava/lang/String;"
     if (sig=='T') sig<-"S"
@@ -270,7 +270,7 @@ is.jnull <- function(x) {
       else
         r <- new("jarrayRef", jobj=r@jobj, jclass=r@jclass, jsig=r@jclass)
     }
-    if (convert) {
+    if (convert && inherits(r, "jobjRef")) {
       if (r@jclass == "java/lang/String")
         return(.External("RgetStringValue", r@jobj, PACKAGE="rJava"))
       if (.conv.in$.) return(.convert.in(r))
