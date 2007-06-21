@@ -139,6 +139,7 @@ VER=`sed -n -e 's/.*rJava v\([0-9.-]\{1,\}\).*/\1/p' src/rJava.h`
 echo "rJava version ${VER}"
 cat DESCRIPTION| sed "s/Version:.*/Version: ${VER}/" > d
 mv d DESCRIPTION
+rm -rf tests
 if test -n "${OPTIMIZED}"; then
     echo "Creating optimized sources ..."
     echo '#define ONEFILE 1' > src/all
