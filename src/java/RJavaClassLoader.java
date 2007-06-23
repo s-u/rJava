@@ -235,13 +235,16 @@ public class RJavaClassLoader extends URLClassLoader {
 	if (useSystem) {
 	    try {
 		addURL((new UnixFile(cp)).toURL());
-		return;
+		//return; // we need to add it anyway
 	    } catch (Exception ufe) {
 	    }
 	}
 	UnixFile f = new UnixFile(cp);
-	if (!classPath.contains(f))
+	if (!classPath.contains(f)) {
 	    classPath.add(f);
+	    System.setProperty("java.class.path",
+			       System.getProperty("java.class.path")+":"+f.getPath());
+	}
     }
 
     public void addClassPath(String[] cp) {

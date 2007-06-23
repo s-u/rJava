@@ -30,15 +30,20 @@
     .rJava.class.loader
 }
 
-.jpackage <- function(name, moreClasses='', nativeLibrary=FALSE) {
+.jpackage <- function(name, jars='*', morePaths='', nativeLibrary=FALSE) {
   if (!.jniInitialized) .jinit()
   classes <- system.file("java", package=name)
-  if (nchar(classes)) .jaddClassPath(classes)
-  jar <- system.file("java", paste(name,".jar",sep=''), package=name)
-  if (nchar(jar)) .jaddClassPath(jar)
-  
-  if (any(nchar(moreClasses))) {
-    cl <- as.character(moreClasses)
+  if (nchar(classes)) {
+    .jaddClassPath(classes)
+    if (length(jars)) {
+      if (length(jars)==1 && jars=='*') {
+        jars <- grep(".*\\.jar",list.files(classes,full.names=TRUE),TRUE,value=TRUE)
+        if (length(jars)) .jaddClassPath(jars)
+      } else .jaddClassPath(paste(classes,jars,sep=.Platform$file.sep))
+    }
+  }  
+  if (any(nchar(morePaths))) {
+    cl <- as.character(morePaths)
     cl <- cl[nchar(cl)>0]
     .jaddClassPath(cl)
   }
@@ -50,7 +55,7 @@
       if (nchar(lib))
         .jaddLibrary(name, lib)
       else
-        warning("Native library for `",name,"' was not be found.")
+        warning("Native library for `",name,"' could not be found.")
     }
   } else {
     .jaddLibrary(name, nativeLibrary)

@@ -16,7 +16,7 @@
     running.classpath <- .jclassPath()
     if (!force.init) {
       if (length(classpath)) {
-        cpc <- unique(strsplit(classpath, .Platform$path.sep)[[1]])
+        cpc <- unique(unlist(strsplit(classpath, .Platform$path.sep)))
         if (length(cpc)) .jaddClassPath(cpc)
       }
       return(0)

@@ -11,7 +11,9 @@
 
     o	Consolidate interface code for static/non-static calls
 
-    o	Add hooks for de-serialization
+    o	Add preliminary JRI support from R (see .jengine)
+
+    o	Prepare hooks for de-serialization
 
     o	Add support for short Java type
 
