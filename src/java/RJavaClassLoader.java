@@ -4,6 +4,7 @@ import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Vector;
 import java.util.Enumeration;
+import java.util.StringTokenizer;
 import java.util.zip.*;
 
 public class RJavaClassLoader extends URLClassLoader {
@@ -243,7 +244,7 @@ public class RJavaClassLoader extends URLClassLoader {
 	if (!classPath.contains(f)) {
 	    classPath.add(f);
 	    System.setProperty("java.class.path",
-			       System.getProperty("java.class.path")+":"+f.getPath());
+			       System.getProperty("java.class.path")+File.pathSeparator+f.getPath());
 	}
     }
 
@@ -287,6 +288,42 @@ public class RJavaClassLoader extends URLClassLoader {
 	verbose=(level>0);
     }
 
+    public static String u2w(String fn) {
+        return (java.io.File.separatorChar != '/')?fn.replace('/',java.io.File.separatorChar):fn;
+    }
+
+    public static void main(String[] args) {
+	String rJavaPath = System.getProperty("rjava.path");
+	if (rJavaPath  == null) {
+	    System.err.println("ERROR: rjava.path is not set");
+	    System.exit(2);
+	}
+	String rJavaLib = System.getProperty("rjava.lib");
+	if (rJavaLib == null) { // it is not really used so far, just for rJava.so, so we can guess
+	    rJavaLib = rJavaPath + File.separator + "libs";
+	}
+	RJavaClassLoader cl = new RJavaClassLoader(u2w(rJavaPath), u2w(rJavaLib));
+	String mainClass = System.getProperty("main.class");
+	if (mainClass == null || mainClass.length()<1) {
+	    System.err.println("WARNING: main.class not specified, assuming 'Main'");
+	    mainClass = "Main";
+	}
+	String classPath = System.getProperty("rjava.class.path");
+	if (classPath != null) {
+	    StringTokenizer st = new StringTokenizer(classPath, File.pathSeparator);
+	    while (st.hasMoreTokens()) {
+		String dirname = u2w(st.nextToken());
+		cl.addClassPath(dirname);
+	    }
+	}
+	try {
+	    cl.bootClass(mainClass, "main", args);
+	} catch (Exception ex) { 
+	    System.err.println("ERROR: while running main method: "+ex);
+	    ex.printStackTrace();
+	}
+    }
+    
     //----- tools -----
 
     /** Serialize an object to a byte array. (code by CB) */
