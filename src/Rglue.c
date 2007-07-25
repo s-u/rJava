@@ -399,7 +399,13 @@ REPE SEXP RcallMethod(SEXP par) {
   mid=o?
     (*env)->GetMethodID(env, cls, mnam, sig):
     (*env)->GetStaticMethodID(env, cls, mnam, sig);
+  if (!mid && o) { /* try static method as a fall-back */
+    checkExceptionsX(env, 1);
+    o = 0;
+    mid = (*env)->GetStaticMethodID(env, cls, mnam, sig);
+  }
   if (!mid) {
+    checkExceptionsX(env, 1);
     Rfreejpars(env, tmpo);
     releaseObject(env, cls);
     error("method %s with signature %s not found", mnam, sig);

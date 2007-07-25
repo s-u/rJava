@@ -9,7 +9,9 @@
     o	The implementation of .jfield no longer uses reflection
 	it supports static fileds and .field<-() was added.
 
-    o	Consolidate interface code for static/non-static calls
+    o	Consolidate interface code for static/non-static calls.
+	It is now possible to call a static method using a non-static
+	object.
 
     o	Add preliminary JRI support from R (see .jengine)
 
