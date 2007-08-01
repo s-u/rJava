@@ -34,13 +34,13 @@ REPC SEXP RJava_set_class_loader(SEXP ldr) {
 REPC SEXP RJava_primary_class_loader() {
   JNIEnv *env=getJNIEnv();
   jclass cl = (*env)->FindClass(env, "RJavaClassLoader");
-  Rprintf("RJava_primary_class_loader, cl = %x\n", (int) cl);
+  _dbg(Rprintf("RJava_primary_class_loader, cl = %x\n", (int) cl));
   if (cl) {
     jmethodID mid = (*env)->GetStaticMethodID(env, cl, "getPrimaryLoader", "()LRJavaClassLoader;");
-    Rprintf(" - mid = %d\n", (int) mid);
+    _dbg(Rprintf(" - mid = %d\n", (int) mid));
     if (mid) {
       jobject o = (*env)->CallStaticObjectMethod(env, cl, mid);
-      Rprintf(" - call result = %x\n", (int) o);
+      _dbg(Rprintf(" - call result = %x\n", (int) o));
       if (o) {
 	return j2SEXP(env, o, 1);
       }
@@ -76,13 +76,13 @@ REPC SEXP RJava_new_class_loader(SEXP p1, SEXP p2) {
   jstring s2 = newString(env, c2);
 
   jclass cl = (*env)->FindClass(env, "RJavaClassLoader");
-  Rprintf("find rJavaClassLoader: %x\n", (int) cl);
+  _dbg(Rprintf("find rJavaClassLoader: %x\n", (int) cl));
   jmethodID mid = (*env)->GetMethodID(env, cl, "<init>", "(Ljava/lang/String;Ljava/lang/String;)V");
-  Rprintf("constructor mid: %x\n", mid);
+  _dbg(Rprintf("constructor mid: %x\n", mid));
   jobject o = (*env)->NewObject(env, cl, mid, s1, s2);
-  Rprintf("new object: %x\n", o);
+  _dbg(Rprintf("new object: %x\n", o));
   o = makeGlobal(env, o);
-  Rprintf("calling initClassLoader\n");
+  _dbg(Rprintf("calling initClassLoader\n"));
   initClassLoader(env, o);
   releaseObject(env, s1);
   releaseObject(env, s2);
