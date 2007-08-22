@@ -1,8 +1,9 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.5-0	(under development)
-   **	The order of arguments of .jfield has been changed to match
+0.5-0	2007-08-22
+    o	**API CHANGE**
+	The order of arguments of .jfield has been changed to match
 	the order used in .jcall and the return value is as expected
 	and doesn't need .jsimplify anymore.
 
@@ -12,6 +13,10 @@
     o	Consolidate interface code for static/non-static calls.
 	It is now possible to call a static method using a non-static
 	object.
+
+    o	Add .jpackage function for initialization of Java packages.
+	See documentation for details, packages should no longer
+	use .jinit in their initialization code.
 
     o	Add preliminary JRI support from R (see .jengine)
 
