@@ -3788,10 +3788,13 @@ _ACEOF
 
 fi
 
+{ echo "$as_me:$LINENO: checking Java support in R" >&5
+echo $ECHO_N "checking Java support in R... $ECHO_C" >&6; }
 R_JAVA_HOME=`"${RBIN}" CMD config JAVA_HOME`
 : ${JAVA_HOME="${R_JAVA_HOME}"}
 if test -z "${JAVA_HOME}"; then
-   { { echo "$as_me:$LINENO: error: R was configured without Java support. Please run
+   { { echo "$as_me:$LINENO: error: absent
+R was configured without Java support. Please run
 R CMD javareconf
 as root to add Java support to R.
 
@@ -3799,7 +3802,8 @@ If you don't have root privileges, run
 R CMD javareconf -e
 to set all Java-related variables and then install rJava.
 (works with R 2.5.0 only)" >&5
-echo "$as_me: error: R was configured without Java support. Please run
+echo "$as_me: error: absent
+R was configured without Java support. Please run
 R CMD javareconf
 as root to add Java support to R.
 
@@ -3817,27 +3821,53 @@ fi
 : ${JAVA_CPPFLAGS=`"${RBIN}" CMD config JAVA_CPPFLAGS|sed 's/ERROR:.*//'`}
 : ${JAVA_LIBS=`"${RBIN}" CMD config JAVA_LIBS|sed 's/ERROR:.*//'`}
 
-have_all_flags=yes
-test -z "${JAVA}" || test -z "${JAVAC}" || test -z "${JAVAH}" || \
-test -z "${JAVA_CPPFLAGS}" || test -z "${JAVA_LIB}" || test -z "${JAR}" || \
+{ echo "$as_me:$LINENO: result: present:
+interpreter : '${JAVA}'
+archiver    : '${JAR}'
+compiler    : '${JAVAC}'
+header prep.: '${JAVAH}'
+cpp flags   : '${JAVA_CPPFLAGS}'
+java libs   : '${JAVA_LIBS}'" >&5
+echo "${ECHO_T}present:
+interpreter : '${JAVA}'
+archiver    : '${JAR}'
+compiler    : '${JAVAC}'
+header prep.: '${JAVAH}'
+cpp flags   : '${JAVA_CPPFLAGS}'
+java libs   : '${JAVA_LIBS}'" >&6; }
+
+java_error='One or more Java configuration variables are not set.'
+if test -z "${JAVA}"; then
+   java_error='Java interpreter is missing or not registered in R'
+fi
+if test -z "${JAVAC}"; then
+   java_error='Java Development Kit (JDK) is missing or not registered in R'
+fi
+
 have_all_flags=no
+if test -n "${JAVA}" && test -n "${JAVAC}" && test -n "${JAVAH}" && \
+   test -n "${JAVA_CPPFLAGS}" && test -n "${JAVA_LIBS}" && test -n "${JAR}"; then
+  have_all_flags=yes;
+fi
 if test "${have_all_flags}" = no; then
-  { { echo "$as_me:$LINENO: error: One or more Java configuration variables are not set.
+  { { echo "$as_me:$LINENO: error: ${java_error}
 Make sure R is configured with full Java support (including JDK). Run
 R CMD javareconf
 as root to add Java support to R.
 
 If you don't have root privileges, run
 R CMD javareconf -e
-to set all Java-related variables and then install rJava." >&5
-echo "$as_me: error: One or more Java configuration variables are not set.
+to set all Java-related variables and then install rJava.
+" >&5
+echo "$as_me: error: ${java_error}
 Make sure R is configured with full Java support (including JDK). Run
 R CMD javareconf
 as root to add Java support to R.
 
 If you don't have root privileges, run
 R CMD javareconf -e
-to set all Java-related variables and then install rJava." >&2;}
+to set all Java-related variables and then install rJava.
+" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
@@ -3883,8 +3913,16 @@ else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-	{ { echo "$as_me:$LINENO: error: Cannot compile a simple JNI program. See config.log for details." >&5
-echo "$as_me: error: Cannot compile a simple JNI program. See config.log for details." >&2;}
+	{ { echo "$as_me:$LINENO: error: Cannot compile a simple JNI program. See config.log for details.
+
+Make sure you have Java Development Kit installed and correctly registered in R.
+If in doubt, re-run \"R CMD javareconf\" as root.
+" >&5
+echo "$as_me: error: Cannot compile a simple JNI program. See config.log for details.
+
+Make sure you have Java Development Kit installed and correctly registered in R.
+If in doubt, re-run \"R CMD javareconf\" as root.
+" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
@@ -3954,9 +3992,7 @@ echo $ECHO_N "checking whether JRI should be compiled (autodetect)... $ECHO_C" >
 echo "${ECHO_T}${has_R_shlib}" >&6; }
    want_jri=${has_R_shlib}
 fi
-
-
-if test "x${want_jri}" = xyes; then
+ if test "x${want_jri}" = xyes; then
   WANT_JRI_TRUE=
   WANT_JRI_FALSE='#'
 else

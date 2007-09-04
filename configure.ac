@@ -103,10 +103,12 @@ if test "${can_inline}" = yes; then
   AC_DEFINE(HAVE_STATIC_INLINE, 1, [Define to 1 when static inline works])
 fi
 
+AC_MSG_CHECKING([Java support in R])
 R_JAVA_HOME=`"${RBIN}" CMD config JAVA_HOME`
 : ${JAVA_HOME="${R_JAVA_HOME}"}
 if test -z "${JAVA_HOME}"; then
-   AC_MSG_ERROR([R was configured without Java support. Please run
+   AC_MSG_ERROR([absent
+R was configured without Java support. Please run
 R CMD javareconf
 as root to add Java support to R.
 
@@ -123,19 +125,37 @@ fi
 : ${JAVA_CPPFLAGS=`"${RBIN}" CMD config JAVA_CPPFLAGS|sed 's/ERROR:.*//'`}
 : ${JAVA_LIBS=`"${RBIN}" CMD config JAVA_LIBS|sed 's/ERROR:.*//'`}
 
-have_all_flags=yes
-test -z "${JAVA}" || test -z "${JAVAC}" || test -z "${JAVAH}" || \
-test -z "${JAVA_CPPFLAGS}" || test -z "${JAVA_LIB}" || test -z "${JAR}" || \
+AC_MSG_RESULT([present:
+interpreter : '${JAVA}'
+archiver    : '${JAR}'
+compiler    : '${JAVAC}'
+header prep.: '${JAVAH}'
+cpp flags   : '${JAVA_CPPFLAGS}'
+java libs   : '${JAVA_LIBS}'])
+
+java_error='One or more Java configuration variables are not set.'
+if test -z "${JAVA}"; then
+   java_error='Java interpreter is missing or not registered in R'
+fi
+if test -z "${JAVAC}"; then
+   java_error='Java Development Kit (JDK) is missing or not registered in R'
+fi
+
 have_all_flags=no
+if test -n "${JAVA}" && test -n "${JAVAC}" && test -n "${JAVAH}" && \
+   test -n "${JAVA_CPPFLAGS}" && test -n "${JAVA_LIBS}" && test -n "${JAR}"; then
+  have_all_flags=yes;
+fi
 if test "${have_all_flags}" = no; then
-  AC_MSG_ERROR([One or more Java configuration variables are not set.
+  AC_MSG_ERROR([${java_error}
 Make sure R is configured with full Java support (including JDK). Run
 R CMD javareconf
 as root to add Java support to R.
 
 If you don't have root privileges, run
 R CMD javareconf -e
-to set all Java-related variables and then install rJava.])
+to set all Java-related variables and then install rJava.
+])
 fi
 
 LIBS="${LIBS} ${JAVA_LIBS}"
@@ -153,7 +173,11 @@ int main(void) {
     return 0;
 }
 	],[AC_MSG_RESULT(yes)],
-	[AC_MSG_ERROR([Cannot compile a simple JNI program. See config.log for details.])])
+	[AC_MSG_ERROR([Cannot compile a simple JNI program. See config.log for details.
+
+Make sure you have Java Development Kit installed and correctly registered in R.
+If in doubt, re-run "R CMD javareconf" as root.
+])])
 
 AC_MSG_CHECKING([JNI data types])
 AC_TRY_RUN(

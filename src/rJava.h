@@ -1,13 +1,13 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000500 /* rJava v0.5-0 */
+#define RJAVA_VER 0x000501 /* rJava v0.5-1 */
 
 /* important changes between versions:
    3.0  - adds compiler
-   2.0  - integrates JRI, adds callbacks and class-loader
+   2.0
    1.0
-   0.5
+   0.5  - integrates JRI, adds callbacks and class-loader
    0.4  - includes JRI
    0.3  - uses EXTPTR in jobj slot, adds finalizers
    0.2  - uses S4 classes
