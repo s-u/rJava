@@ -172,9 +172,9 @@ REPC SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
     return e;
   }
   case 'C': {
-    int r=(int) o?
-      (*env)->GetCharField(env, o, fid):
-      (*env)->GetStaticCharField(env, cls, fid);
+    int r=(int) (o?
+		 (*env)->GetCharField(env, o, fid):
+		 (*env)->GetStaticCharField(env, cls, fid));
     e = allocVector(INTSXP, 1);
     INTEGER(e)[0] = r;
     releaseObject(env, cls);
@@ -182,9 +182,9 @@ REPC SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
     return e;
   }
   case 'B': {
-    int r=(int) o?
-      (*env)->GetByteField(env, o, fid):
-      (*env)->GetStaticByteField(env, cls, fid);
+    int r=(int) (o?
+		 (*env)->GetByteField(env, o, fid):
+		 (*env)->GetStaticByteField(env, cls, fid));
     e = allocVector(INTSXP, 1);
     INTEGER(e)[0] = r;
     releaseObject(env, cls);
