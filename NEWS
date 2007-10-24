@@ -1,6 +1,13 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.5-1	(under development)
+
+    o	fix Java environment checks
+
+    o	add support for r.arch system property which allows multi-arch
+	support on platforms that don't have fat binaries (e.g. Linux)
+
 0.5-0	2007-08-22
     o	**API CHANGE**
 	The order of arguments of .jfield has been changed to match
