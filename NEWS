@@ -1,10 +1,10 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.5-1	(under development)
+0.5-1	2007-11-05
     o	fix crashes in Windows when Java calls the vfprintf hook
 
-    o	fix Java environment checks
+    o	enhance Java environment checks, add more specific errors
 
     o	add support for r.arch system property which allows multi-arch
 	support on platforms that don't have fat binaries (e.g. Linux)
