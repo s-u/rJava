@@ -1,6 +1,13 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.5-2	(under development)
+    o	add direct support for raw vectors as method parameters
+	(before .jarray(r) had to be used)
+
+    o	add .jserialize() and .junserialize() functions for
+	Java-serialization (do not confuse with R serialization!)
+
 0.5-1	2007-11-05
     o	fix crashes in Windows when Java calls the vfprintf hook
 

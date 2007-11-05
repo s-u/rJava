@@ -180,6 +180,10 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpa
 	jpar[jvpos++].l=sa;
 	strcat(sig,"[Ljava/lang/String;");
       }
+    } else if (TYPEOF(e)==RAWSXP) {
+      _dbg(rjprintf(" raw vector of length %d\n", LENGTH(e)));
+      strcat(sig,"[B");
+      addtmpo(tmpo, jpar[jvpos++].l=newByteArray(env, RAW(e), LENGTH(e)));
     } else if (TYPEOF(e)==INTSXP) {
       _dbg(rjprintf(" integer vector of length %d\n",LENGTH(e)));
       if (LENGTH(e)==1) {
