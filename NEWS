@@ -2,6 +2,7 @@
 --------------------------
 
 0.5-1	(under development)
+    o	fix crashes in Windows when Java calls the vfprintf hook
 
     o	fix Java environment checks
 

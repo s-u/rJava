@@ -36,7 +36,13 @@ static JavaVMInitArgs vm_args;
 
 static int default_hooks = H_OUT|H_EXIT;
 
-static int vfprintf_hook(FILE *f, const char *fmt, va_list ap) {
+static int JNICALL vfprintf_hook(FILE *f, const char *fmt, va_list ap) {
+#ifdef Win32
+  /* on Windows f doesn't refer to neither stderr nor stdout,
+     so we have no way of finding out the target, so we assume stderr */
+  REvprintf(fmt, ap);
+  return 0;
+#else
   if (f==stderr) {
     REvprintf(fmt, ap);
     return 0;
@@ -45,9 +51,10 @@ static int vfprintf_hook(FILE *f, const char *fmt, va_list ap) {
     return 0;
   }
   return vfprintf(f, fmt, ap);
+#endif
 }
 
-static void exit_hook(int status) {
+static void JNICALL exit_hook(int status) {
   REprintf("\nJava requested System.exit(%d), closing R.\n", status);
   /* FIXME: we could do something smart here such as running a call-back
      into R ... jump into R event loop ... at any rate we cannot return,
