@@ -136,6 +136,8 @@ pthread_mutex_t initMutex = PTHREAD_MUTEX_INITIALIZER;
 int thInitResult = 0;
 int initAWT = 0;
 
+static void init_rJava(void);
+
 static void *initJVMthread(void *classpath)
 {
   int ws;
