@@ -34,7 +34,12 @@ static JavaVMInitArgs vm_args;
 #define H_OUT  1
 #define H_EXIT 2
 
+#ifdef Win32
+/* the hooks are reportedly causing problems on Windows, so disable them by default */
+static int default_hooks = 0;
+#else
 static int default_hooks = H_OUT|H_EXIT;
+#endif
 
 static int JNICALL vfprintf_hook(FILE *f, const char *fmt, va_list ap) {
 #ifdef Win32
