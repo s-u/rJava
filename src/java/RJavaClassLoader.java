@@ -332,6 +332,15 @@ public class RJavaClassLoader extends URLClassLoader {
     
     //----- tools -----
 
+    class RJavaObjectInputStream extends ObjectInputStream {
+	public RJavaObjectInputStream(InputStream in) throws IOException {
+		super(in);
+	}
+	protected Class resolveClass(ObjectStreamClass desc) throws ClassNotFoundException {
+	    return Class.forName(desc.getName(), false, RJavaClassLoader.getPrimaryLoader());
+	}
+    }
+
     /** Serialize an object to a byte array. (code by CB) */
     public static byte[] toByte(Object object)
         throws Exception
@@ -344,13 +353,18 @@ public class RJavaClassLoader extends URLClassLoader {
     }
 
     /** Deserialize an object from a byte array. (code by CB) */
-    public static Object toObject(byte[] byteArray)
+    public Object toObject(byte[] byteArray)
         throws Exception
     {
         InputStream        is = new ByteArrayInputStream(byteArray);
-        ObjectInputStream ois = new ObjectInputStream(is);
+        RJavaObjectInputStream ois = new RJavaObjectInputStream(is);
         Object o = (Object) ois.readObject();
         ois.close();
         return o;
+    }
+
+    public static Object toObjectPL(byte[] byteArray) throws Exception
+    {
+	return RJavaClassLoader.getPrimaryLoader().toObject(byteArray);
     }
 }

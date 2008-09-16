@@ -23,7 +23,7 @@
 	and doesn't need .jsimplify anymore.
 
     o	The implementation of .jfield no longer uses reflection
-	it supports static fileds and .field<-() was added.
+	it supports static fields and .jfield<-() was added.
 
     o	Consolidate interface code for static/non-static calls.
 	It is now possible to call a static method using a non-static
