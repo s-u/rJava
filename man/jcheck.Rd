@@ -10,7 +10,7 @@
   \code{.jcheck} checks the Java VM for any pending exceptions and
   clears them.
 
-  \code{.jthrow} throws a Jva exception.
+  \code{.jthrow} throws a Java exception.
 
   \code{.jgetEx} polls for any pending expections and returns the exception object.
 
@@ -26,8 +26,11 @@
 \arguments{
   \item{silent}{If set to \code{FALSE} then Java is instructed to print
     the exception on \code{stderr}. Note that Windows Rgui doesn't show
-    \code{stderr} so it will not appear there (the printing is done
-    internally in the JVM, so there is no simple way to use R's I/O).}
+    \code{stderr} so it will not appear there (as of rJava 0.5-1 some
+    errors that the JVM prints using the vfprintf callback are passed
+    to R. However, some parts are printed using \code{System.err} in
+    which case the ususal redirection using the \code{System} class
+    can be used by the user).}
   \item{exception}{is either a class name of an exception to create or a
     throwable object reference that is to be thrown.}
   \item{message}{if \code{exception} is a class name then this parameter

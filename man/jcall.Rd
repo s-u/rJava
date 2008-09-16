@@ -49,7 +49,7 @@
 }
 \details{
   \code{.jcall} requires exact match of argument and return types. For
-  higher efficiency \code{.jcall} doens't perform any lookup in the
+  higher efficiency \code{.jcall} doesn't perform any lookup in the
   reflection tables. This means that passing subclasses of the classes
   present in the method definition requires explicit casting using
   \code{\link{.jcast}}. Passing \code{null} arguments also needs a
