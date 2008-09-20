@@ -9,7 +9,7 @@
   type. The resulting object is of the class \code{jobjRef}.
 
   \code{is.jnull} is an extension of \code{is.null} that also returns
-  \code{TRUE} if the supplied object it a \code{null} Java reference.
+  \code{TRUE} if the supplied object is a \code{null} Java reference.
 }
 \usage{
 .jnull(class = "java/lang/Object")
@@ -43,8 +43,8 @@ is.jnull(x)
   to run the String-version, we could use
   \code{.jcall("A",,"run",.jnull("java/lang/String"))}.
 
-  \code{is.jnull} is a test that should be used to determine \code{null}
-  reference.
+  \code{is.jnull} is a test that should be used to determine whether a
+  given Java reference is a \code{null} reference.
 }
 \seealso{
   \code{\link{.jcall}}, \code{\link{.jcast}}

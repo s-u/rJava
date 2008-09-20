@@ -65,16 +65,16 @@
   called by \code{print}) has a side-effect of making a Java call to get
   the string representation of a Java object. This implies that it will
   be impeded by any pending exceptions. Therefore exceptions obtained
-  through \code{.jgetEx} can be stored, but the should not be printed
+  through \code{.jgetEx} can be stored, but should not be printed
   (or otherwise used in Java calls) until after the exception is
-  cleared. In general, all Java calls will fail until the exception is
-  cleared.
+  cleared. In general, all Java calls will fail (possibly silently)
+  until the exception is cleared.
 }
 \seealso{
   \code{\link{.jcall}}, \code{\link{.jnew}}
 }
 \examples{
-\dontrun{
+\donttest{
 # we try to create a bogus object and
 # instruct .jnew to not clear the exception
 # this will raise an exception

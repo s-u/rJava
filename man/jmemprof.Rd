@@ -29,7 +29,7 @@
   profile. Runninng gc may be helpful to get rid of references that can
   be collected in R.
 
-  A simple prel script is provided to analyze the result of the
+  A simple perl script is provided to analyze the result of the
   profiler. Due to its simple text format, it is possible to capture
   entire stdout including the profiler information to have both the
   console context for the allocations and the profile. Memory profiling
@@ -37,11 +37,11 @@
 
   Note that memory profiling support must be compiled in rJava and it is
   by default compiled only if debug mode is enabled (which is not the
-  case by deafult).
+  case by default).
 }
 \examples{
-\dontrun{
-.jmemprof("rJAva.mem.profile.txt")
+\donttest{
+.jmemprof("rJava.mem.profile.txt")
 }
 }
 \keyword{interface}

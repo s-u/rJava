@@ -23,8 +23,8 @@
 \details{
   This function is necessary if a argument of \code{\link{.jcall}} or
   \code{\link{.jnew}} is defined as the superclass of the object to be
-  passed. (See \code{\link{.jcall}}) No type check is performed and the
-  original object is not modified.
+  passed (see \code{\link{.jcall}}). No type checking is performed and
+  the original object is not modified.
 }
 \seealso{
   \code{\link{.jcall}}

@@ -61,7 +61,7 @@
   saved when the Java object is saved. rJava provides an automated way
   of deserializing Java references if they are \code{null} references
   and have a cache attached. This is done on-demand basis whenever a
-  reference to a Java obejct is required.
+  reference to a Java object is required.
 
   Therefore packages can use \code{.jcache} to provide a way of
   creating Java references that persist across sessions. However, they
@@ -79,18 +79,24 @@
   active objects is not a good idea, they should be instantiated by
   functions that operate on the descriptive references instead.
 
-  Important note: the serialization of Java references does NOT take
-  into account any dependencies on the R side. Therefore if you hold a
-  reference to a Java object in R that is also referenced by the
-  serialized Java object on the Java side, then this relationship
+  \emph{Important note:} the serialization of Java references does NOT
+  take into account any dependencies on the R side. Therefore if you
+  hold a reference to a Java object in R that is also referenced by
+  the serialized Java object on the Java side, then this relationship
   cannot be retained upon restore. Instead, two copies of disjoint
   objects will be created which can cause confusion and errorneous
   behavior.
 
+  The cache is attached to the reference external pointer and thus it
+  is shared with all copies of the same reference (even when changed
+  via \code{\link{.jcast}} etc.), but it is independent of other
+  references to the object obtained separately
+  (e.g., via \code{\link{.jcall}} or \code{\link{.jfield}}).
+
   Also note that deserialization (even automated one) requires a
-  running virtual machine. Therefore you must make sure that
-  \code{.jinit} or \code{.jpackage} is used before any Java references
-  are accessed.
+  running virtual machine. Therefore you must make sure that either
+  \code{\link{.jinit}} or \code{\link{.jpackage}} is used before any
+  Java references are accessed.
 }
 %\seealso{
 %}
