@@ -55,7 +55,7 @@
 
   # this should remove any lingering .jclass objects from the global env
   # left there by previous versions of rJava
-  pj <- grep("^\\.jclass",ls(1,all=TRUE),value=TRUE)
+  pj <- grep("^\\.jclass",ls(1,all.names=TRUE),value=TRUE)
   if (length(pj)>0) { 
     rm(list=pj,pos=1)
     if (exists(".jniInitialized",1)) rm(list=".jniInitialized",pos=1)

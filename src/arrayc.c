@@ -270,7 +270,7 @@ REPC SEXP RgetDoubleArrayCont(SEXP e) {
   profStart();
   if (e==R_NilValue) return e;
   if (TYPEOF(e)==EXTPTRSXP) {
-    jverify(o);
+    jverify(e);
     o = (jobject)EXTPTR_PTR(e);
   } else
     error("invalid object parameter");

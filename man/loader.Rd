@@ -22,9 +22,9 @@
 \value{
   \code{.jclassPath} returns a charactger vector listing the class path sequence.
 }
-\details{
-  
-}
+%\details{
+% 
+%}
 %\seealso{
 %  \code{\link{.jpackage}}
 %}

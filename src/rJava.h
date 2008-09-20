@@ -1,12 +1,13 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000502 /* rJava v0.5-2 */
+#define RJAVA_VER 0x000600 /* rJava v0.6-0 */
 
 /* important changes between versions:
    3.0  - adds compiler
    2.0
    1.0
+   0.6  - adds serialization, (auto-)deserialization and cache
    0.5  - integrates JRI, adds callbacks and class-loader
    0.4  - includes JRI
    0.3  - uses EXTPTR in jobj slot, adds finalizers
@@ -148,8 +149,10 @@ HIDE int checkExceptionsX(JNIEnv *env, int silent);
 
 HIDE int initClassLoader(JNIEnv *env, jobject cl);
 
-/* this is a hook for de-serialization, unused for now */
-#define jverify(X)
+HIDE void deserializeSEXP(SEXP o);
+
+/* this is a hook for de-serialization */
+#define jverify(X) if (EXTPTR_PROT(X) != R_NilValue) deserializeSEXP(X)
 
 #endif
 

@@ -96,6 +96,8 @@ REPE SEXP RtoString(SEXP par) {
 REPC SEXP RidenticalRef(SEXP ref1, SEXP ref2) {
   SEXP r;
   if (TYPEOF(ref1)!=EXTPTRSXP || TYPEOF(ref2)!=EXTPTRSXP) return R_NilValue;
+  jverify(ref1);
+  jverify(ref2);
   r=allocVector(LGLSXP,1);
   LOGICAL(r)[0]=(R_ExternalPtrAddr(ref1)==R_ExternalPtrAddr(ref2));
   return r;
