@@ -1,11 +1,11 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.6-0	(under development)
+0.6-0	2008-09-22
     o	add support for object cache - see .jcache() - based
 	on Java serialization
 
-0.5-2	(not released, turned into 0.6-0)
+0.5-2	(never released, turned into 0.6-0)
     o	add direct support for raw vectors as method parameters
 	(before .jarray(r) had to be used)
 
