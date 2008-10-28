@@ -158,11 +158,20 @@ to set all Java-related variables and then install rJava.
 ])
 fi
 
-LIBS="${LIBS} ${JAVA_LIBS}"
-CFLAGS="${CFLAGS} ${JAVA_CPPFLAGS}"
+if test `echo foo | sed -e 's:foo:bar:'` = bar; then
+   JAVA_CPPFLAGS0=`echo ${JAVA_CPPFLAGS} | sed -e 's:$(JAVA_HOME):${JAVA_HOME}:g'`
+   JAVA_LIBS0=`echo ${JAVA_LIBS} | sed -e 's:$(JAVA_HOME):${JAVA_HOME}:g'`
+   JAVA_LD_LIBRARY_PATH0=`echo ${JAVA_LD_LIBRARY_PATH} | sed -e 's:$(JAVA_HOME):${JAVA_HOME}:g'`
+else
+   AC_MSG_WARN([sed is not working properly - the configuration may fail])
+   JAVA_CPPFLAGS0="${JAVA_CPPFLAGS}"
+   JAVA_LIBS0="${JAVA_LIBS}"
+   JAVA_LD_LIBRARY_PATH0="${JAVA_LD_LIBRARY_PATH}"
+fi
 
-SAVE_LDLP="${LD_LIBRARY_PATH}"
-LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${JAVA_LD_LIBRARY_PATH}"
+LIBS="${LIBS} ${JAVA_LIBS0}"
+CFLAGS="${CFLAGS} ${JAVA_CPPFLAGS0}"
+LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${JAVA_LD_LIBRARY_PATH0}"
 
 AC_MSG_CHECKING([whether JNI programs can be compiled])
 AC_LINK_IFELSE([
