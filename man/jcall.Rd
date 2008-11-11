@@ -67,6 +67,24 @@
   vectors are passed as arrays. Therefore it is important to use
   \code{\link{.jarray}} if an arbitrary vector (including those of the
   length 1) is to be passed as an array parameter.
+
+  \emph{Important note about encoding of character vectors:}
+  Java interface always works with strings in UTF-8 encoding, therefore
+  the safest way is to run R in a UTF-8 locale. If that is not
+  possible for some reason, rJava can be used in non-UTF-8 locales,
+  but care must be taken. Since R 2.7.0 it is possible to associate
+  encoding with strings and rJava will flag all strings it produces
+  with the appropriate UTF-8 tag. R will then perform corresponding
+  appropriate conversions where possible (at a cost of speed and
+  memory usage), but 3rd party code may not (e.g. older
+  packages). Also rJava relies on correct encoding flags for strings
+  passed to it and will attempt to perform conversions where
+  necessary. If some 3rd party code produces strings incorreclty
+  flagged, all bets are off.
+
+  Finally, for performance reasons class, method and field names as
+  well as signatures are not always converted and should not contain
+  non-ASCII characters.
 }
 \seealso{
   \code{\link{.jnew}}, \code{\link{.jcast}}, \code{\link{.jnull}},

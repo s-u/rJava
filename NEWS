@@ -4,6 +4,11 @@
 0.6-1	(under development)
     o	substitute $(JAVA_HOME) in configuration flags when necessary
 
+    o	flag generated strings as UTF-8 and convert incoming strings
+	into UTF-8 (see note in ?.jcall for details)
+	This should improve interoperability in non-UTF-8 locales
+	(most prominent example is Windows)
+
 0.6-0	2008-09-22
     o	add support for object cache - see .jcache() - based
 	on Java serialization

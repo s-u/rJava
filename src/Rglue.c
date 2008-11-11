@@ -136,6 +136,14 @@ SEXP j2SEXP(JNIEnv *env, jobject o, int releaseLocal) {
   }
 }
 
+#if R_VERSION >= R_Version(2,7,0)
+/* returns string from a CHARSXP making sure that the result is in UTF-8 */
+const char *rj_char_utf8(SEXP s) {
+	if (Rf_getCharCE(s) == CE_UTF8) return CHAR(s);
+	return Rf_reEnc(CHAR(s), getCharCE(s), CE_UTF8, 0); /* subst. invalid chars: 1=hex, 2=., 3=?, other=skip */
+}
+#endif
+
 HIDE void deserializeSEXP(SEXP o) {
   _dbg(rjprintf("attempt to deserialize %p (clCL=%p, oCL=%p)\n", o, clClassLoader, oClassLoader));
   SEXP s = EXTPTR_PROT(o);
@@ -192,7 +200,7 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpa
       _dbg(rjprintf(" string vector of length %d\n",LENGTH(e)));
       if (LENGTH(e)==1) {
 	strcat(sig,"Ljava/lang/String;");
-	addtmpo(tmpo, jpar[jvpos++].l=newString(env, CHAR(STRING_ELT(e,0))));
+	addtmpo(tmpo, jpar[jvpos++].l=newString(env, CHAR_UTF8(STRING_ELT(e,0))));
       } else {
 	int j=0;
 	jobjectArray sa=(*env)->NewObjectArray(env, LENGTH(e), javaStringClass, 0);
@@ -204,8 +212,8 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpa
 	}
 	addtmpo(tmpo, sa);
 	while (j<LENGTH(e)) {
-	  jobject s=newString(env, CHAR(STRING_ELT(e,j)));
-	  _dbg(rjprintf (" [%d] \"%s\"\n",j,CHAR(STRING_ELT(e,j))));
+	  jobject s=newString(env, CHAR_UTF8(STRING_ELT(e,j)));
+	  _dbg(rjprintf (" [%d] \"%s\"\n",j,CHAR_UTF8(STRING_ELT(e,j))));
 	  (*env)->SetObjectArrayElement(env, sa, j, s);
 	  if (s) releaseObject(env, s);
 	  j++;
@@ -314,12 +322,12 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpa
 	    o=(jobject)0;
 	  sclass=GET_SLOT(e, install("jclass"));
 	  if (sclass && TYPEOF(sclass)==STRSXP && LENGTH(sclass)==1)
-	    jc=CHAR(STRING_ELT(sclass,0));
+	    jc=CHAR_UTF8(STRING_ELT(sclass,0));
 	  if (inherits(e, "jarrayRef") && jc && !*jc) {
 	    /* if it's jarrayRef with jclass "" then it's an uncast array - use sig instead */
 	    sclass=GET_SLOT(e, install("jsig"));
 	    if (sclass && TYPEOF(sclass)==STRSXP && LENGTH(sclass)==1)
-	      jc=CHAR(STRING_ELT(sclass,0));
+	      jc=CHAR_UTF8(STRING_ELT(sclass,0));
 	  }
 	}
 	if (jc) {
@@ -389,7 +397,7 @@ REPE SEXP RcallMethod(SEXP par) {
     jverify(e);
     o = (jobject)EXTPTR_PTR(e);
   } else if (TYPEOF(e)==STRSXP && LENGTH(e)==1)
-    clnam = CHAR(STRING_ELT(e, 0));
+    clnam = CHAR_UTF8(STRING_ELT(e, 0));
   else
     error_return("RcallMethod: invalid object parameter");
   if (!o && !clnam)
@@ -399,7 +407,7 @@ REPE SEXP RcallMethod(SEXP par) {
     SEXP de=CAR(CDR(p));
     rjprintf("RcallMethod (env=%x):\n",env);
     if (TYPEOF(de)==STRSXP && LENGTH(de)>0)
-      rjprintf(" method to call: %s on object 0x%x or class %s\n",CHAR(STRING_ELT(de,0)),o,clnam);
+      rjprintf(" method to call: %s on object 0x%x or class %s\n",CHAR_UTF8(STRING_ELT(de,0)),o,clnam);
   }
 #endif
   if (clnam)
@@ -413,7 +421,7 @@ REPE SEXP RcallMethod(SEXP par) {
 #endif
   e=CAR(p); p=CDR(p);
   if (TYPEOF(e)==STRSXP && LENGTH(e)==1) { /* signature */
-    retsig=CHAR(STRING_ELT(e,0));
+    retsig=CHAR_UTF8(STRING_ELT(e,0));
     /*
       } else if (inherits(e, "jobjRef")) { method object 
     SEXP mexp = GET_SLOT(e, install("jobj"));
@@ -427,7 +435,7 @@ REPE SEXP RcallMethod(SEXP par) {
   e=CAR(p); p=CDR(p);
   if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
     error_return("RcallMethod: invalid method name");
-  mnam = CHAR(STRING_ELT(e,0));
+  mnam = CHAR_UTF8(STRING_ELT(e,0));
   strcpy(sig,"(");
   Rpar2jvalue(env,p,jpar,sig,32,256,tmpo);
   strcat(sig,")");
@@ -646,7 +654,7 @@ REPE SEXP RcreateObject(SEXP par) {
   e=CAR(p); /* second is the class name */
   if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
     error("RcreateObject: invalid class name");
-  class = CHAR(STRING_ELT(e,0));
+  class = CHAR_UTF8(STRING_ELT(e,0));
   _dbg(rjprintf("RcreateObject: new object of class %s\n",class));
   strcpy(sig,"(");
   p=CDR(p);
@@ -787,7 +795,7 @@ REPC SEXP RcreateArray(SEXP ar, SEXP cl) {
       int i = 0;
       if (!a) error("unable to create a string array");
       while (i<LENGTH(ar)) {
-	jobject so = newString(env, CHAR(STRING_ELT(ar, i)));
+	jobject so = newString(env, CHAR_UTF8(STRING_ELT(ar, i)));
 	(*env)->SetObjectArrayElement(env, a, i, so);
 	releaseObject(env, so);
 	i++;
@@ -818,7 +826,7 @@ REPC SEXP RcreateArray(SEXP ar, SEXP cl) {
       }
       /* optional class name for the objects contained in the array */
       if (TYPEOF(cl)==STRSXP && LENGTH(cl)>0) {
-	const char *cname = CHAR(STRING_ELT(cl, 0));
+	const char *cname = CHAR_UTF8(STRING_ELT(cl, 0));
 	if (cname) {
 	  ac = findClass(env, cname);
 	  if (!ac)
