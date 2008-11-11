@@ -85,7 +85,7 @@ REPE SEXP RtoString(SEXP par) {
   }
   c=(*env)->GetStringUTFChars(env, s, 0);
   PROTECT(r=allocVector(STRSXP,1));
-  SET_STRING_ELT(r, 0, mkChar(c));
+  SET_STRING_ELT(r, 0, mkCharUTF8(c));
   UNPROTECT(1);
   (*env)->ReleaseStringUTFChars(env, s, c);
   releaseObject(env, s);

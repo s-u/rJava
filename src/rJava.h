@@ -17,6 +17,7 @@
 #include <jni.h>
 #include <R.h>
 #include <Rinternals.h>
+#include <Rversion.h>
 
 /* flags used in function declarations:
    HIDE - hidden (used internally in rJava only)
@@ -88,6 +89,13 @@ void profReport(char *fmt, ...);
 #else
 #define BEGIN_RJAVA_CALL {
 #define END_RJAVA_CALL };
+#endif
+
+/* define mkCharUTF8 in a compatible fashion */
+#if R_VERSION < R_Version(2,7,0)
+#define mkCharUTF8(X) mkChar(X)
+#else
+#define mkCharUTF8(X) mkCharCE(X, CE_UTF8)
 #endif
 
 /* in callbacks.c */

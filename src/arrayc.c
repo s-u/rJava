@@ -75,7 +75,7 @@ REPC SEXP RgetStringArrayCont(SEXP e) {
     if (!c)
       SET_STRING_ELT(ar, i, R_NaString);
     else {
-      SET_STRING_ELT(ar, i, mkChar(c));
+      SET_STRING_ELT(ar, i, mkCharUTF8(c));
       (*env)->ReleaseStringUTFChars(env, sobj, c);
     }
     if (sobj) releaseObject(env, sobj);
