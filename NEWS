@@ -1,7 +1,7 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.6-1	(under development)
+0.6-1	2008-12-23
     o	substitute $(JAVA_HOME) in configuration flags when necessary
 
     o	flag generated strings as UTF-8 and convert incoming strings
