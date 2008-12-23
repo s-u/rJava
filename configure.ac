@@ -159,9 +159,9 @@ to set all Java-related variables and then install rJava.
 fi
 
 if test `echo foo | sed -e 's:foo:bar:'` = bar; then
-   JAVA_CPPFLAGS0=`echo ${JAVA_CPPFLAGS} | sed -e 's:$(JAVA_HOME):${JAVA_HOME}:g'`
-   JAVA_LIBS0=`echo ${JAVA_LIBS} | sed -e 's:$(JAVA_HOME):${JAVA_HOME}:g'`
-   JAVA_LD_LIBRARY_PATH0=`echo ${JAVA_LD_LIBRARY_PATH} | sed -e 's:$(JAVA_HOME):${JAVA_HOME}:g'`
+   JAVA_CPPFLAGS0=`echo ${JAVA_CPPFLAGS} | sed -e 's:$(JAVA_HOME):'${JAVA_HOME}':g'`
+   JAVA_LIBS0=`echo ${JAVA_LIBS} | sed -e 's:$(JAVA_HOME):'${JAVA_HOME}':g'`
+   JAVA_LD_LIBRARY_PATH0=`echo ${JAVA_LD_LIBRARY_PATH} | sed -e 's:$(JAVA_HOME):'${JAVA_HOME}':g'`
 else
    AC_MSG_WARN([sed is not working properly - the configuration may fail])
    JAVA_CPPFLAGS0="${JAVA_CPPFLAGS}"

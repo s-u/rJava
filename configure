@@ -3872,9 +3872,9 @@ to set all Java-related variables and then install rJava.
 fi
 
 if test `echo foo | sed -e 's:foo:bar:'` = bar; then
-   JAVA_CPPFLAGS0=`echo ${JAVA_CPPFLAGS} | sed -e 's:$(JAVA_HOME):${JAVA_HOME}:g'`
-   JAVA_LIBS0=`echo ${JAVA_LIBS} | sed -e 's:$(JAVA_HOME):${JAVA_HOME}:g'`
-   JAVA_LD_LIBRARY_PATH0=`echo ${JAVA_LD_LIBRARY_PATH} | sed -e 's:$(JAVA_HOME):${JAVA_HOME}:g'`
+   JAVA_CPPFLAGS0=`echo ${JAVA_CPPFLAGS} | sed -e 's:$(JAVA_HOME):'${JAVA_HOME}':g'`
+   JAVA_LIBS0=`echo ${JAVA_LIBS} | sed -e 's:$(JAVA_HOME):'${JAVA_HOME}':g'`
+   JAVA_LD_LIBRARY_PATH0=`echo ${JAVA_LD_LIBRARY_PATH} | sed -e 's:$(JAVA_HOME):'${JAVA_HOME}':g'`
 else
    { echo "$as_me:$LINENO: WARNING: sed is not working properly - the configuration may fail" >&5
 echo "$as_me: WARNING: sed is not working properly - the configuration may fail" >&2;}
@@ -4002,7 +4002,9 @@ echo $ECHO_N "checking whether JRI should be compiled (autodetect)... $ECHO_C" >
 echo "${ECHO_T}${has_R_shlib}" >&6; }
    want_jri=${has_R_shlib}
 fi
- if test "x${want_jri}" = xyes; then
+
+
+if test "x${want_jri}" = xyes; then
   WANT_JRI_TRUE=
   WANT_JRI_FALSE='#'
 else
