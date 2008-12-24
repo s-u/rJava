@@ -27,9 +27,9 @@ AC_ARG_ENABLE([threads],
 		[enable the use of threads, i.e. Java is run on a separate thread.
 		This is necessary for some implementations of AWT. This feature
 		is highly experimental, becasue of synchronization issues, so
-		use with care. @<:@no@:>@])],
+		use with care. @<:@yes@:>@ if supported])],
 [want_threads="${enableval}"],
-[want_threads=no])
+[want_threads=yes])
 
 ## enable JNI-cache
 AC_ARG_ENABLE([jni-cache],
@@ -209,7 +209,7 @@ AM_CONDITIONAL(WANT_JRI, [test "x${want_jri}" = xyes])
 
 AC_MSG_CHECKING([whether debugging output should be enabled])
 if test "${want_debug}" = yes; then
-  JAVA_INC="-g -DRJ_DEBUG ${JAVA_INC}"
+  JAVA_CPPFLAGS="-g -DRJ_DEBUG ${JAVA_CPPFLAGS}"
   AC_MSG_RESULT([yes])
 else
   AC_MSG_RESULT([no])
@@ -234,6 +234,7 @@ AC_SUBST(JAVAC)
 AC_SUBST(JAVAH)
 
 use_threads=no
+THREADS_OBJ=''
 AC_MSG_CHECKING([whether threads support is requested])
 if test "${want_threads}" = yes; then
   AC_MSG_RESULT([yes])
@@ -244,11 +245,14 @@ if test "${want_threads}" = yes; then
   if test "x$UNAME" == "xDarwin"; then
     use_threads=yes
     AC_DEFINE(THREADS, 1, [Set if threading support should be enabled.])
+    THREADS_OBJ='threads.o'
   fi
   AC_MSG_RESULT([${use_threads}])
 else
   AC_MSG_RESULT([no])
 fi
+
+AC_SUBST(THREADS_OBJ)
 
 ## enable callbacks if desired
 AC_MSG_CHECKING([whether callbacks support is requested])

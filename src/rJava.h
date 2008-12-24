@@ -1,12 +1,13 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000601 /* rJava v0.6-1 */
+#define RJAVA_VER 0x000700 /* rJava v0.7-0 */
 
 /* important changes between versions:
    3.0  - adds compiler
    2.0
    1.0
+   0.7  - adds cross-thread communication
    0.6  - adds serialization, (auto-)deserialization and cache
    0.5  - integrates JRI, adds callbacks and class-loader
    0.4  - includes JRI
@@ -101,6 +102,24 @@ void profReport(char *fmt, ...);
 extern const char *rj_char_utf8(SEXP);
 #endif
 
+/* max supported # of parameters to Java methdos */
+#ifndef maxJavaPars
+#define maxJavaPars 32
+#endif
+
+/* structure used to pass arguments across threads */
+typedef struct call_interface {
+	const char *clnam, *retsig, *mnam;
+	char sig[256];
+	jvalue jpar[maxJavaPars];
+	jobject tmpo[maxJavaPars+1];
+	jobject o;
+	jmethodID mid;
+	jclass cls;
+	int silent, done;
+	void *aux;
+} call_interface_t;
+
 /* in callbacks.c */
 extern int RJava_has_control;
 
@@ -133,6 +152,10 @@ HIDE jvalue  R1par2jvalue(JNIEnv *env, SEXP par, char *sig, jobject *otr);
 
 /* in tools.c */
 HIDE jstring callToString(JNIEnv *env, jobject o);
+
+#ifdef THREADS
+#include "threads.h"
+#endif
 
 /* in callJNI */
 HIDE jobject createObject(JNIEnv *env, const char *class, const char *sig, jvalue *par, int silent);

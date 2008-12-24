@@ -2,8 +2,8 @@
 PKG_CPPFLAGS+=-I. @JAVA_CPPFLAGS@
 PKG_LIBS+=@JAVA_LIBS@
 JAVA_HOME=@JAVA_HOME@
-# make SHLIB believe that we know better what the objects are
-#OBJECTS=Rglue.o callJNI.o initJNI.o rJava.o jri.o jri_glue.o
+# make SHLIB believe that we know better what the objects are - needed since threads.o is optional
+OBJECTS=Rglue.o arrayc.o  callJNI.o callback.o fields.o init.o jri_glue.o loader.o rJava.o tools.o @THREADS_OBJ@
 
 all: $(SHLIB) @WANT_JRI_TRUE@ jri
 

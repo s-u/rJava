@@ -671,6 +671,7 @@ JAVA_HOME
 JAVA
 JAVAC
 JAVAH
+THREADS_OBJ
 subdirs
 LIBOBJS
 LTLIBOBJS'
@@ -1258,7 +1259,7 @@ Optional Features:
                           separate thread. This is necessary for some
                           implementations of AWT. This feature is highly
                           experimental, becasue of synchronization issues, so
-                          use with care. [no]
+                          use with care. [yes] if supported
   --enable-jni-cache      enable support for caching of the JNI environment.
                           With this option turned on, the JNI state is stored
                           locally and re-used for subsequent calls. This will
@@ -1744,7 +1745,7 @@ fi
 if test "${enable_threads+set}" = set; then
   enableval=$enable_threads; want_threads="${enableval}"
 else
-  want_threads=no
+  want_threads=yes
 fi
 
 
@@ -4002,9 +4003,7 @@ echo $ECHO_N "checking whether JRI should be compiled (autodetect)... $ECHO_C" >
 echo "${ECHO_T}${has_R_shlib}" >&6; }
    want_jri=${has_R_shlib}
 fi
-
-
-if test "x${want_jri}" = xyes; then
+ if test "x${want_jri}" = xyes; then
   WANT_JRI_TRUE=
   WANT_JRI_FALSE='#'
 else
@@ -4016,7 +4015,7 @@ fi
 { echo "$as_me:$LINENO: checking whether debugging output should be enabled" >&5
 echo $ECHO_N "checking whether debugging output should be enabled... $ECHO_C" >&6; }
 if test "${want_debug}" = yes; then
-  JAVA_INC="-g -DRJ_DEBUG ${JAVA_INC}"
+  JAVA_CPPFLAGS="-g -DRJ_DEBUG ${JAVA_CPPFLAGS}"
   { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
 else
@@ -4050,6 +4049,7 @@ fi
 
 
 use_threads=no
+THREADS_OBJ=''
 { echo "$as_me:$LINENO: checking whether threads support is requested" >&5
 echo $ECHO_N "checking whether threads support is requested... $ECHO_C" >&6; }
 if test "${want_threads}" = yes; then
@@ -4067,6 +4067,7 @@ cat >>confdefs.h <<\_ACEOF
 #define THREADS 1
 _ACEOF
 
+    THREADS_OBJ='threads.o'
   fi
   { echo "$as_me:$LINENO: result: ${use_threads}" >&5
 echo "${ECHO_T}${use_threads}" >&6; }
@@ -4074,6 +4075,8 @@ else
   { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
 fi
+
+
 
 ## enable callbacks if desired
 { echo "$as_me:$LINENO: checking whether callbacks support is requested" >&5
@@ -4846,12 +4849,13 @@ JAVA_HOME!$JAVA_HOME$ac_delim
 JAVA!$JAVA$ac_delim
 JAVAC!$JAVAC$ac_delim
 JAVAH!$JAVAH$ac_delim
+THREADS_OBJ!$THREADS_OBJ$ac_delim
 subdirs!$subdirs$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 59; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 60; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
