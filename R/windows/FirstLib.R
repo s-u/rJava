@@ -49,15 +49,15 @@ function(libname, pkgname) {
                    paste(javahome, "jre", "bin", "client", sep="\\")) # old JRE, won't work for more recent ones that use a separate location
 
     ## add paths only if they are not in already and they exist
-    for (path in add.paths)
+    for (path in unique(add.paths))
         if (!path %in% cpc && file.exists(path)) curPath <- paste(curPath, path, sep=";")
 
-    ## set PATH only if it's not correct already
-    if (!identical(curPath, Sys.getenv("PATH"))) {
+    ## set PATH only if it's not correct already (cannot use identical/isTRUE because of PATH name attribute)
+    if (curPath != Sys.getenv("PATH")) {
       .setenv(PATH=curPath)
       # check the resulting PATH - if they don't match then Windows has truncated it
-      if (!identical(curPath, Sys.getenv("PATH")))
-        warning("WARNING: your Windows system seems to suffer from truncated PATH bug which will likely prevent rJava from loading.\nEither reduce your PATH or read http://support.microsoft.com/kb/906469 on how to fix your system.")
+      if (curPath != Sys.getenv("PATH"))
+        warning("*** WARNING: your Windows system seems to suffer from truncated PATH bug which will likely prevent rJava from loading.\n      Either reduce your PATH or read http://support.microsoft.com/kb/906469 on how to fix your system.")
     }
     
     library.dynam("rJava", pkgname, libname)
