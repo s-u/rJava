@@ -1,10 +1,11 @@
 .onLoad <-
 function(libname, pkgname) {
-    require(methods)
+    require(methods)  ## we should not need this since it should be automatic
     .setenv <- if (exists("Sys.setenv")) Sys.setenv else Sys.putenv
     javahome <- Sys.getenv("JAVA_HOME")
-    if(!nchar(javahome)) {
-	# let's try to fetch the paths from registry via WinRegistry.dll
+    add.paths <- character(0)
+    if(!nchar(javahome)) { ## JAVA_HOME was not set explicitly
+	## let's try to fetch the paths from registry via WinRegistry.dll
 	javahome <- NULL
 	library.dynam("WinRegistry", pkgname, libname)
 	key<-"Software\\JavaSoft\\Java Runtime Environment"
@@ -28,22 +29,37 @@ function(libname, pkgname) {
 		    # then we won't find the DLL either.
 		    # Note that we just add it to the PATH so if this fails
 		    # we still fall back to the JavaHome entry.
-		    .setenv(PATH=paste(Sys.getenv("PATH"),
-				 substr(p,1,nchar(p)-8),sep=";"))
+		    add.paths <- c(add.paths, substr(p,1,nchar(p)-8))
 		}
 	    }
 	}
-	if (is.null(javahome))
-	    stop("JAVA_HOME is not set")
-    }
-    if(!nchar(javahome)) stop("JAVA_HOME is not set")
+      }
+    if(!nchar(javahome))
+        stop("JAVA_HOME is not set and could not be determined from the registry")
     #else cat("using JAVA_HOME =", javahome, "\n")
-    .setenv(PATH=paste(Sys.getenv("PATH"),
-                 file.path(javahome, "bin"), # needed for msvcr71.dll in JRE 1.6
-                 file.path(javahome, "bin", "client"),
-                 file.path(javahome, "jre", "bin", "client"), # JIC - won't work for modern JRE as they install elsewhere
-                 sep=";"))
-    library.dynam("rJava", pkgname, libname)
 
+    ## we need to add Java-related library paths to PATH
+    curPath <- Sys.getenv("PATH")
+    cpc <- strsplit(curPath, ";", fixed=TRUE)[[1]] ## split it up so we can check presence/absence of a path
+
+    ## for some strange reason file.path uses / on Windows so it's useless
+    add.paths <- c(add.paths, # we add a few fall-back defaults:
+                   paste(javahome, "bin", sep="\\"), # needed for msvcr71.dll in JRE 1.6
+                   paste(javahome, "bin", "client", sep="\\"),
+                   paste(javahome, "jre", "bin", "client", sep="\\")) # old JRE, won't work for more recent ones that use a separate location
+
+    ## add paths only if they are not in already and they exist
+    for (path in add.paths)
+        if (!path %in% cpc && file.exists(path)) curPath <- paste(curPath, path, sep=";")
+
+    ## set PATH only if it's not correct already
+    if (!identical(curPath, Sys.getenv("PATH"))) {
+      .setenv(PATH=curPath)
+      # check the resulting PATH - if they don't match then Windows has truncated it
+      if (!identical(curPath, Sys.getenv("PATH")))
+        warning("WARNING: your Windows system seems to suffer from truncated PATH bug which will likely prevent rJava from loading.\nEither reduce your PATH or read http://support.microsoft.com/kb/906469 on how to fix your system.")
+    }
+    
+    library.dynam("rJava", pkgname, libname)
     .jfirst(libname, pkgname)
 }
