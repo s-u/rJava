@@ -174,13 +174,39 @@ HIDE void deserializeSEXP(SEXP o) {
 #define addtmpo(T, X) { jobject _o = X; if (_o) { _dbg(rjprintf(" parameter to release later: %lx\n", (unsigned long) _o)); *T=_o; T++;} }
 #define fintmpo(T) { *T = 0; }
 
+/* concatenate a string to a signature buffer increasing it as necessary */
+static void strcats(sig_buffer_t *sig, const char *add) {
+  int l = strlen(add);
+  int al = sig->len;
+  if (al + l >= sig->maxsig - 1) {
+    sig->maxsig += 8192;
+    if (sig->sig == sig->sigbuf) { /* first-time allocation */
+      char *ns = (char*) malloc(sig->maxsig);
+      memcpy(ns, sig->sig, al + 1);
+      sig->sig = ns;
+    } else /* re-allocation */
+      sig->sig = (char*) realloc(sig->sig, sig->maxsig);
+  }
+  strcpy(sig->sig + al, add);
+  sig->len += l;
+}
+
+/* initialize a signature buffer */
+HIDE void init_sigbuf(sig_buffer_t *sb) {
+  sb->len = 0;
+  sb->maxsig = sizeof(sb->sigbuf);
+  sb->sig = sb->sigbuf;
+}
+
+/* free the content of a signature buffer (if necessary) */
+HIDE void done_sigbuf(sig_buffer_t *sb) { 
+  if (sb->sig != sb->sigbuf) free(sb->sig);
+}
 
 /** converts parameters in SEXP list to jpar and sig.
-    strcat is used on sig, hence sig must be a valid string already
     since 0.4-4 we ignore named arguments in par
-    Note: maxsig is never used and thus the sig buffer could overflow
 */
-static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpars, int maxsig, jobject *tmpo) {
+static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, sig_buffer_t *sig, int maxpars, jobject *tmpo) {
   SEXP p=par;
   SEXP e;
   int jvpos=0;
@@ -194,7 +220,7 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpa
     if (TYPEOF(e)==STRSXP) {
       _dbg(rjprintf(" string vector of length %d\n",LENGTH(e)));
       if (LENGTH(e)==1) {
-	strcat(sig,"Ljava/lang/String;");
+	strcats(sig,"Ljava/lang/String;");
 	addtmpo(tmpo, jpar[jvpos++].l=newString(env, CHAR_UTF8(STRING_ELT(e,0))));
       } else {
 	int j=0;
@@ -214,11 +240,11 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpa
 	  j++;
 	}
 	jpar[jvpos++].l=sa;
-	strcat(sig,"[Ljava/lang/String;");
+	strcats(sig,"[Ljava/lang/String;");
       }
     } else if (TYPEOF(e)==RAWSXP) {
       _dbg(rjprintf(" raw vector of length %d\n", LENGTH(e)));
-      strcat(sig,"[B");
+      strcats(sig,"[B");
       addtmpo(tmpo, jpar[jvpos++].l=newByteArray(env, RAW(e), LENGTH(e)));
     } else if (TYPEOF(e)==INTSXP) {
       _dbg(rjprintf(" integer vector of length %d\n",LENGTH(e)));
@@ -226,17 +252,17 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpa
 	if (inherits(e, "jbyte")) {
 	  _dbg(rjprintf("  (actually a single byte 0x%x)\n", INTEGER(e)[0]));
 	  jpar[jvpos++].b=(jbyte)(INTEGER(e)[0]);
-	  strcat(sig,"B");
+	  strcats(sig,"B");
 	} else if (inherits(e, "jchar")) {
 	  _dbg(rjprintf("  (actually a single character 0x%x)\n", INTEGER(e)[0]));
 	  jpar[jvpos++].c=(jchar)(INTEGER(e)[0]);
-	  strcat(sig,"C");
+	  strcats(sig,"C");
 	} else if (inherits(e, "jshort")) {
 	  _dbg(rjprintf("  (actually a single short 0x%x)\n", INTEGER(e)[0]));
 	  jpar[jvpos++].s=(jshort)(INTEGER(e)[0]);
-	  strcat(sig,"S");
+	  strcats(sig,"S");
 	} else {
-	  strcat(sig,"I");
+	  strcats(sig,"I");
 	  jpar[jvpos++].i=(jint)(INTEGER(e)[0]);
 	  _dbg(rjprintf("  single int orig=%d, jarg=%d [jvpos=%d]\n",
 		   (INTEGER(e)[0]),
@@ -245,16 +271,16 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpa
 	}
       } else {
 	if (inherits(e, "jbyte")) {
-	  strcat(sig,"[B");
+	  strcats(sig,"[B");
 	  addtmpo(tmpo, jpar[jvpos++].l=newByteArrayI(env, INTEGER(e), LENGTH(e)));
 	} else if (inherits(e, "jchar")) {
-	  strcat(sig,"[C");
+	  strcats(sig,"[C");
 	  addtmpo(tmpo, jpar[jvpos++].l=newCharArrayI(env, INTEGER(e), LENGTH(e)));
 	} else if (inherits(e, "jshort")) {
-	  strcat(sig,"[S");
+	  strcats(sig,"[S");
 	  addtmpo(tmpo, jpar[jvpos++].l=newShortArrayI(env, INTEGER(e), LENGTH(e)));
 	} else {
-	  strcat(sig,"[I");
+	  strcats(sig,"[I");
 	  addtmpo(tmpo, jpar[jvpos++].l=newIntArray(env, INTEGER(e), LENGTH(e)));
 	}
       }
@@ -262,38 +288,38 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpa
       if (inherits(e, "jfloat")) {
 	_dbg(rjprintf(" jfloat vector of length %d\n", LENGTH(e)));
 	if (LENGTH(e)==1) {
-	  strcat(sig,"F");
+	  strcats(sig,"F");
 	  jpar[jvpos++].f=(jfloat)(REAL(e)[0]);
 	} else {
-	  strcat(sig,"[F");
+	  strcats(sig,"[F");
 	  addtmpo(tmpo, jpar[jvpos++].l=newFloatArrayD(env, REAL(e),LENGTH(e)));
 	}
       } else if (inherits(e, "jlong")) {
 	_dbg(rjprintf(" jlong vector of length %d\n", LENGTH(e)));
 	if (LENGTH(e)==1) {
-	  strcat(sig,"J");
+	  strcats(sig,"J");
 	  jpar[jvpos++].j=(jlong)(REAL(e)[0]);
 	} else {
-	  strcat(sig,"[J");
+	  strcats(sig,"[J");
 	  addtmpo(tmpo, jpar[jvpos++].l=newLongArrayD(env, REAL(e),LENGTH(e)));
 	}
       } else {
 	_dbg(rjprintf(" real vector of length %d\n",LENGTH(e)));
 	if (LENGTH(e)==1) {
-	  strcat(sig,"D");
+	  strcats(sig,"D");
 	  jpar[jvpos++].d=(jdouble)(REAL(e)[0]);
 	} else {
-	  strcat(sig,"[D");
+	  strcats(sig,"[D");
 	  addtmpo(tmpo, jpar[jvpos++].l=newDoubleArray(env, REAL(e),LENGTH(e)));
 	}
       }
     } else if (TYPEOF(e)==LGLSXP) {
       _dbg(rjprintf(" logical vector of length %d\n",LENGTH(e)));
       if (LENGTH(e)==1) {
-	strcat(sig,"Z");
+	strcats(sig,"Z");
 	jpar[jvpos++].z=(jboolean)(LOGICAL(e)[0]);
       } else {
-	strcat(sig,"[Z");
+	strcats(sig,"[Z");
 	addtmpo(tmpo, jpar[jvpos++].l=newBooleanArrayI(env, LOGICAL(e),LENGTH(e)));
       }
     } else if (TYPEOF(e)==VECSXP || TYPEOF(e)==S4SXP) {
@@ -327,11 +353,11 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, char *sig, int maxpa
 	}
 	if (jc) {
 	  if (*jc!='[') { /* not an array, we assume it's an object of that class */
-	    strcat(sig,"L"); strcat(sig,jc); strcat(sig,";");
+	    strcats(sig,"L"); strcats(sig,jc); strcats(sig,";");
 	  } else /* array signature is passed as-is */
-	    strcat(sig,jc);
+	    strcats(sig,jc);
 	} else
-	  strcat(sig,"Ljava/lang/Object;");
+	  strcats(sig,"Ljava/lang/Object;");
 	jpar[jvpos++].l=o;
       } else {
 	_dbg(rjprintf(" (ignoring)\n"));
@@ -355,11 +381,11 @@ static void Rfreejpars(JNIEnv *env, jobject *tmpo) {
   }
 }
 
-/** map one parameter into jvalue and determine its signature */
-HIDE jvalue R1par2jvalue(JNIEnv *env, SEXP par, char *sig, jobject *otr) {
+/** map one parameter into jvalue and determine its signature (unused in fields.c) */
+HIDE jvalue R1par2jvalue(JNIEnv *env, SEXP par, sig_buffer_t *sig, jobject *otr) {
   jobject tmpo[4] = {0, 0};
   jvalue v[4];
-  int p = Rpar2jvalue(env, CONS(par, R_NilValue), v, sig, 2, 64, tmpo);
+  int p = Rpar2jvalue(env, CONS(par, R_NilValue), v, sig, 2, tmpo);
   /* this should never happen, but just in case - we can only assume responsibility for one value ... */
   if (p != 1 || (tmpo[0] && tmpo[1])) {
     Rfreejpars(env, tmpo);
@@ -375,7 +401,7 @@ HIDE jvalue R1par2jvalue(JNIEnv *env, SEXP par, char *sig, jobject *otr) {
 */
 REPE SEXP RcallMethod(SEXP par) {
   SEXP p = par, e;
-  char sig[256];
+  sig_buffer_t sig;
   jvalue jpar[maxJavaPars];
   jobject tmpo[maxJavaPars+1];
   jobject o = 0;
@@ -431,27 +457,28 @@ REPE SEXP RcallMethod(SEXP par) {
   if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
     error_return("RcallMethod: invalid method name");
   mnam = CHAR_UTF8(STRING_ELT(e,0));
-  strcpy(sig,"(");
-  Rpar2jvalue(env,p,jpar,sig,32,256,tmpo);
-  strcat(sig,")");
-  strcat(sig,retsig);
-  _dbg(rjprintf(" method \"%s\" signature is %s\n",mnam,sig));
+  init_sigbuf(&sig);
+  strcats(&sig, "(");
+  Rpar2jvalue(env, p, jpar, &sig, 32, tmpo);
+  strcats(&sig, ")");
+  strcats(&sig, retsig);
+  _dbg(rjprintf(" method \"%s\" signature is %s\n", mnam, sig.sig));
   mid=o?
-    (*env)->GetMethodID(env, cls, mnam, sig):
-    (*env)->GetStaticMethodID(env, cls, mnam, sig);
+    (*env)->GetMethodID(env, cls, mnam, sig.sig):
+    (*env)->GetStaticMethodID(env, cls, mnam, sig.sig);
   if (!mid && o) { /* try static method as a fall-back */
     checkExceptionsX(env, 1);
     o = 0;
-    mid = (*env)->GetStaticMethodID(env, cls, mnam, sig);
+    mid = (*env)->GetStaticMethodID(env, cls, mnam, sig.sig);
   }
   if (!mid) {
     checkExceptionsX(env, 1);
     Rfreejpars(env, tmpo);
     releaseObject(env, cls);
-    error("method %s with signature %s not found", mnam, sig);
+    error("method %s with signature %s not found", mnam, sig.sig);
   }
 #if (RJ_PROFILE>1)
-  profReport("Found CID/MID for %s %s:",mnam,sig);
+  profReport("Found CID/MID for %s %s:",mnam,sig.sig);
 #endif
   switch (*retsig) {
   case 'V': {
@@ -649,12 +676,13 @@ REPE SEXP RcreateObject(SEXP par) {
 	if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
 		error("RcreateObject: invalid class name");
 	ci.clnam = CHAR_UTF8(STRING_ELT(e,0));
+	init_sigbuf(&ci.sig);
 	_dbg(rjprintf("RcreateObject: new object of class %s\n", ci.clnam));
-	strcpy(ci.sig, "(");
+	strcats(&ci.sig, "(");
 	p = CDR(p);
-	Rpar2jvalue(env, p, ci.jpar, ci.sig, 32, 256, tmpo);
-	strcat(ci.sig, ")V");
-	_dbg(rjprintf(" constructor signature is %s\n", ci.sig));
+	Rpar2jvalue(env, p, ci.jpar, &ci.sig, 32, tmpo);
+	strcats(&ci.sig, ")V");
+	_dbg(rjprintf(" constructor signature is %s\n", ci.sig.sig));
 
 	/* look for named arguments */
 	while (TYPEOF(p)==LISTSXP) {
@@ -679,9 +707,10 @@ REPE SEXP RcreateObject(SEXP par) {
 		o = ci.o;
 	} else {
 BEGIN_RJAVA_CALL
-		o = createObject(env, ci.clnam, ci.sig, ci.jpar, ci.silent);
+		o = createObject(env, ci.clnam, ci.sig.sig, ci.jpar, ci.silent);
 END_RJAVA_CALL
 	}
+	done_sigbuf(&ci.sig);
 	Rfreejpars(env, tmpo);
 	if (!o) return R_NilValue;
 

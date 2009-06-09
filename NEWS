@@ -7,6 +7,8 @@
 
     o	--enable-threads is now the default
 
+    o	support method signatures longer than 256 bytes
+
 0.6-1	2008-12-23
     o	substitute $(JAVA_HOME) in configuration flags when necessary
 

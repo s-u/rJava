@@ -84,8 +84,8 @@ static CallInterface *masterInterface = nil;
 {
 	call_interface_t *ci = (call_interface_t*) ci_ptr;
 	JNIEnv *env = getJNIEnv();
-	_dbg(NSLog(@" - createObject: %p (class '%s', signature '%s', silent '%@')", ci, ci->clnam, ci->sig, ci->silent?@"yes":@"no"));
-	ci->o = createObject(env, ci->clnam, ci->sig, ci->jpar, ci->silent);
+	_dbg(NSLog(@" - createObject: %p (class '%s', signature '%s', silent '%@')", ci, ci->clnam, ci->sig.sig, ci->silent?@"yes":@"no"));
+	ci->o = createObject(env, ci->clnam, ci->sig.sig, ci->jpar, ci->silent);
 	_dbg(NSLog(@"   result: %p", ci->o));
 	ci->done = 1;
 	CFRunLoopRef loop = (CFRunLoopRef) ci->aux;
@@ -103,7 +103,7 @@ static CallInterface *masterInterface = nil;
 
 void thread_createObject(call_interface_t *ci)
 {
-	_dbg(Rprintf("thread_createObject: ci=%p, masterInterface=%p\n (class='%s', sig='%s', silent=%d)\n", ci, masterInterface, ci->clnam, ci->sig, ci->silent));
+	_dbg(Rprintf("thread_createObject: ci=%p, masterInterface=%p\n (class='%s', sig='%s', silent=%d)\n", ci, masterInterface, ci->clnam, ci->sig.sig, ci->silent));
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	if (!masterInterface) {
 		masterInterface = [CallInterface createMasterController];

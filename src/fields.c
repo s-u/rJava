@@ -267,7 +267,7 @@ REPC SEXP RsetField(SEXP ref, SEXP name, SEXP value) {
   jobject o = 0, otr;
   SEXP obj = ref;
   const char *fnam;
-  char sig[64];
+  sig_buffer_t sig;
   char *clnam = 0;
   jfieldID fid;
   jclass cls;
@@ -311,25 +311,26 @@ REPC SEXP RsetField(SEXP ref, SEXP name, SEXP value) {
 #ifdef RJ_DEBUG
   rjprintf("RsetField.class: "); printObject(env, cls);
 #endif
-  *sig = 0;
-  jval = R1par2jvalue(env, value, sig, &otr);
+  init_sigbuf(&sig);
+  jval = R1par2jvalue(env, value, &sig, &otr);
   
   if (o) {
-    fid = (*env)->GetFieldID(env, cls, fnam, sig);
+    fid = (*env)->GetFieldID(env, cls, fnam, sig.sig);
     if (!fid) {
       checkExceptionsX(env, 1);
       o = 0;
-      fid = (*env)->GetStaticFieldID(env, cls, fnam, sig);
+      fid = (*env)->GetStaticFieldID(env, cls, fnam, sig.sig);
     }
   } else
-    fid = (*env)->GetStaticFieldID(env, cls, fnam, sig);
+    fid = (*env)->GetStaticFieldID(env, cls, fnam, sig.sig);
   if (!fid) {
     checkExceptionsX(env, 1);
     releaseObject(env, cls);
     if (otr) releaseObject(env, otr);
-    error("cannot find field %s with signature %s", fnam, sig);
+    done_sigbuf(&sig);
+    error("cannot find field %s with signature %s", fnam, sig.sigbuf);
   }
-  switch(*sig) {
+  switch(sig.sig[0]) {
   case 'Z':
     o?(*env)->SetBooleanField(env, o, fid, jval.z):
       (*env)->SetStaticBooleanField(env, cls, fid, jval.z);
@@ -370,8 +371,10 @@ REPC SEXP RsetField(SEXP ref, SEXP name, SEXP value) {
   default:
     releaseObject(env, cls);
     if (otr) releaseObject(env, otr);
-    error("unknown field sighanture %s", sig);
+    done_sigbuf(&sig);
+    error("unknown field sighanture %s", sig.sigbuf);
   }
+  done_sigbuf(&sig);
   releaseObject(env, cls);
   if (otr) releaseObject(env, otr);
   return ref;
