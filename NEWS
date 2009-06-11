@@ -9,6 +9,8 @@
 
     o	support method signatures longer than 256 bytes
 
+    o	added lib.loc parameter to .jpackage()
+
 0.6-1	2008-12-23
     o	substitute $(JAVA_HOME) in configuration flags when necessary
 

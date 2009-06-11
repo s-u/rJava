@@ -30,9 +30,9 @@
     .rJava.class.loader
 }
 
-.jpackage <- function(name, jars='*', morePaths='', nativeLibrary=FALSE) {
+.jpackage <- function(name, jars='*', morePaths='', nativeLibrary=FALSE, lib.loc=NULL) {
   if (!.jniInitialized) .jinit()
-  classes <- system.file("java", package=name)
+  classes <- system.file("java", package=name, lib.loc=lib.loc)
   if (nchar(classes)) {
     .jaddClassPath(classes)
     if (length(jars)) {
@@ -51,7 +51,7 @@
     if (nativeLibrary) {
       libs <- "libs"
       if (nchar(.Platform$r_arch)) lib <- file.path("libs", .Platform$r_arch)
-      lib <- system.file(libs,paste(name, .Platform$dynlib.ext, sep=''),package=name)
+      lib <- system.file(libs, paste(name, .Platform$dynlib.ext, sep=''), package=name, lib.loc=lib.loc)
       if (nchar(lib))
         .jaddLibrary(name, lib)
       else
