@@ -26,7 +26,7 @@
   \item{nativeLibrary}{a logical determining whether rJava should look
     for native code in the R package's shared object or not.}
   \item{lib.loc}{a character vector with path names of R libraries, or
-    code{NULL} (see \code{\link{system.file}} and examples below).}
+    \code{NULL} (see \code{\link{system.file}} and examples below).}
 
 }
 \value{
