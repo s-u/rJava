@@ -131,7 +131,11 @@ fi
 echo "Copy Java classes ..."
 cd /tmp/rJava
 mkdir -p inst/java/boot
-cp src/java/*.class inst/java/boot
+# copy all complied Java classes and sources
+cp src/java/*.class inst/java
+cp src/java/*.java inst/java
+# move RJavaClassLoader into boot area since it will be loaded by the system class loader
+mv inst/java/RJavaClassLoader* inst/java/boot
 
 echo "Updating version ..."
 cd /tmp/rJava

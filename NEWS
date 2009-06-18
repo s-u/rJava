@@ -7,9 +7,24 @@
 
     o	--enable-threads is now the default
 
+[ported from 0.6-4]
+    o   improve speed of reflection-based API (.jrcall and `$')
+        by using native array support in rJava
+
+    o   try to find the best match in reflection-based API
+        using internal Java code (code and idea by
+        Romain Francois)
+
+    o   added with() method for jobjRef (by Romain Francois), see
+        http://romainfrancois.blog.free.fr/index.php? 
+        post/2009/06/17/with-semantics-for-java-objects-in-rJava
+
+[ported from 0.6-3]
     o	support method signatures longer than 256 bytes
 
     o	added lib.loc parameter to .jpackage()
+
+** 0.6-branch was created for the stable branch **
 
 0.6-1	2008-12-23
     o	substitute $(JAVA_HOME) in configuration flags when necessary
