@@ -14,7 +14,7 @@
 ## Author: Romain Francois <francoisromain@free.fr>
 
 with.jobjRef <- function( data, expr, ...){
-  env <- new.env( )
+  env <- new.env( parent = environment() )
   clazz <- .jcall( data, "Ljava/lang/Class;", "getClass")
   fields <- .jcall( clazz,  "[Ljava/lang/reflect/Field;", "getFields" )
   lapply( fields, function(x ){
@@ -32,8 +32,24 @@ with.jobjRef <- function( data, expr, ...){
                     "[Ljava/lang/reflect/Method;", "getMethods" )
   lapply( methods, function(m){
     n <- .jcall( m, "S", "getName" )
-    assign( n, function(...) .jrcall( data, n, ...), env = env )
+    if(! exists( n, envir = env, mode = "function" ) ){
+      fallback <- tryCatch( match.fun( n ), error = function(e) NULL )
+      assign( n, function(...) {
+        tryCatch( .jrcall( data, n, ...), error = function(e){
+          if( !is.null(fallback) && inherits(fallback, "function") ){
+            fallback( ... )
+          }
+        } )
+      }, env = env )
+    }
   } )
   assign( "this", data, env = env )
   eval( substitute( expr ), env = env )
+}
+
+within.jobjRef <- function(data, expr, ... ){
+  call <- match.call()
+  call[[1]] <- as.name("with")
+  eval( call, parent.frame() )
+  data
 }
