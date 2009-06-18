@@ -83,6 +83,9 @@
   ic <- .jcall("java/lang/Class","Ljava/lang/Class;","forName","java.lang.Boolean")
   f<-.jcall(ic,"Ljava/lang/reflect/Field;","getField", "TYPE")
   assign(".jclass.boolean", .jcast(.jcall(f,"Ljava/lang/Object;","get",.jcast(ic,"java/lang/Object")),"java/lang/Class"), .env)
+  ic <- .jcall("java/lang/Class","Ljava/lang/Class;","forName","java.lang.Void")
+  f<-.jcall(ic,"Ljava/lang/reflect/Field;","getField", "TYPE")
+  assign(".jclass.void", .jcast(.jcall(f,"Ljava/lang/Object;","get",.jcast(ic,"java/lang/Object")),"java/lang/Class"), .env)
 
   lib <- "libs"
   if (nchar(.Platform$r_arch)) lib <- file.path("libs", .Platform$r_arch)

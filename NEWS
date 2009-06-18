@@ -8,8 +8,12 @@
     o	--enable-threads is now the default
 
 [ported from 0.6-4]
+    o	fixed bug in $ getter of fields using old .jfield API
+
     o   improve speed of reflection-based API (.jrcall and `$')
         by using native array support in rJava
+
+    o	reflection API now returns NULL invisibly for void results
 
     o   try to find the best match in reflection-based API
         using internal Java code (code and idea by

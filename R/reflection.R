@@ -77,8 +77,11 @@
   m <- .jcall("RJavaTools", "Ljava/lang/reflect/Method;", "getMethod", cl, method, .jarray(pc,"java/lang/Class"))
   if (is.null(m))
     stop("Cannot find Java method `",method,"' matching the supplied parameters.")
-  r<-.jcall(m, "Ljava/lang/Object;", "invoke", .jcast(if(inherits(o,"jobjRef") || inherits(o, "jarrayRef")) o else cl, "java/lang/Object"), .jarray(p, "java/lang/Object"))
-  if (simplify && !is.jnull(r)) .jsimplify(r) else r
+  ret <- .jcall(m, "Ljava/lang/Class;", "getReturnType")
+  r <- .jcall(m, "Ljava/lang/Object;", "invoke", .jcast(if(inherits(o,"jobjRef") || inherits(o, "jarrayRef")) o else cl, "java/lang/Object"), .jarray(p, "java/lang/Object"))
+  if (simplify && !is.jnull(r)) .jsimplify(r) else
+  if (is.jnull(r) && .jcall(m, "Ljava/lang/Class;", "getReturnType") == .jclass.void) invisible(NULL)
+  else r
 }
 
 ### simplify non-scalar reference to a scalar object if possible
@@ -138,7 +141,7 @@ setMethod("$", c(x="jobjRef"), function(x, name) {
   if (is.null(f))
     function(...) .jrcall(x, name, ...)
   else
-    .jfield(x, name)
+    .jfield(x, , name)
 })
 
 ### support for object$field<-...

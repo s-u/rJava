@@ -8,7 +8,7 @@
 # they need to be pre-created at load time and populated later by .jinit
 .delayed.export.variables <- c(".jniInitialized", ".jclassObject", ".jclassString", ".jclassClass",
                                ".jclass.int", ".jclass.double", ".jclass.float", ".jclass.boolean",
-                               ".jinit.merge.error")
+                               ".jclass.void", ".jinit.merge.error")
 # variables that are delayed but not exported are added here
 .delayed.variables <- c(.delayed.export.variables, ".rJava.class.loader")
 

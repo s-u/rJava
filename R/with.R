@@ -18,7 +18,8 @@ with.jobjRef <- function( data, expr, ...){
   clazz <- .jcall( data, "Ljava/lang/Class;", "getClass")
   fields <- .jcall( clazz,  "[Ljava/lang/reflect/Field;", "getFields" )
   lapply( fields, function(x ){
-    n <- .jcall( x, "S", "getName" ) makeActiveBinding( n, function(v){
+    n <- .jcall( x, "S", "getName" )
+    makeActiveBinding( n, function(v){
       if( missing(v) ){
         ## get
         .jsimplify( .jcall( x, "Ljava/lang/Object;", "get", .jcast( data ) ) )
