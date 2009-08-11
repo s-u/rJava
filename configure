@@ -671,7 +671,6 @@ JAVA_HOME
 JAVA
 JAVAC
 JAVAH
-THREADS_OBJ
 subdirs
 LIBOBJS
 LTLIBOBJS'
@@ -1259,7 +1258,7 @@ Optional Features:
                           separate thread. This is necessary for some
                           implementations of AWT. This feature is highly
                           experimental, becasue of synchronization issues, so
-                          use with care. [yes] if supported
+                          use with care. [no]
   --enable-jni-cache      enable support for caching of the JNI environment.
                           With this option turned on, the JNI state is stored
                           locally and re-used for subsequent calls. This will
@@ -1745,7 +1744,7 @@ fi
 if test "${enable_threads+set}" = set; then
   enableval=$enable_threads; want_threads="${enableval}"
 else
-  want_threads=yes
+  want_threads=no
 fi
 
 
@@ -4049,7 +4048,6 @@ fi
 
 
 use_threads=no
-THREADS_OBJ=''
 { echo "$as_me:$LINENO: checking whether threads support is requested" >&5
 echo $ECHO_N "checking whether threads support is requested... $ECHO_C" >&6; }
 if test "${want_threads}" = yes; then
@@ -4067,7 +4065,6 @@ cat >>confdefs.h <<\_ACEOF
 #define THREADS 1
 _ACEOF
 
-    THREADS_OBJ='threads.o'
   fi
   { echo "$as_me:$LINENO: result: ${use_threads}" >&5
 echo "${ECHO_T}${use_threads}" >&6; }
@@ -4075,8 +4072,6 @@ else
   { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
 fi
-
-
 
 ## enable callbacks if desired
 { echo "$as_me:$LINENO: checking whether callbacks support is requested" >&5
@@ -4849,13 +4844,12 @@ JAVA_HOME!$JAVA_HOME$ac_delim
 JAVA!$JAVA$ac_delim
 JAVAC!$JAVAC$ac_delim
 JAVAH!$JAVAH$ac_delim
-THREADS_OBJ!$THREADS_OBJ$ac_delim
 subdirs!$subdirs$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 60; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 59; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

@@ -7,6 +7,11 @@
 
 #include <stdarg.h>
 
+/* max supported # of parameters to Java methdos */
+#ifndef maxJavaPars
+#define maxJavaPars 32
+#endif
+
 /* pre-2.4 have no S4SXP but used VECSXP instead */
 #ifndef S4SXP
 #define S4SXP VECSXP
@@ -459,7 +464,7 @@ REPE SEXP RcallMethod(SEXP par) {
   mnam = CHAR_UTF8(STRING_ELT(e,0));
   init_sigbuf(&sig);
   strcats(&sig, "(");
-  Rpar2jvalue(env, p, jpar, &sig, 32, tmpo);
+  Rpar2jvalue(env, p, jpar, &sig, maxJavaPars, tmpo);
   strcats(&sig, ")");
   strcats(&sig, retsig);
   _dbg(rjprintf(" method \"%s\" signature is %s\n", mnam, sig.sig));
@@ -475,7 +480,8 @@ REPE SEXP RcallMethod(SEXP par) {
     checkExceptionsX(env, 1);
     Rfreejpars(env, tmpo);
     releaseObject(env, cls);
-    error("method %s with signature %s not found", mnam, sig.sig);
+    done_sigbuf(&sig);
+    error("method %s with signature %s not found", mnam, sig.sigbuf);
   }
 #if (RJ_PROFILE>1)
   profReport("Found CID/MID for %s %s:",mnam,sig.sig);
@@ -654,80 +660,67 @@ REPE SEXP RcallSyncMethod(SEXP par) {
   return e;
 }
 
-
 /** create new object.
     fully-qualified class in JNI notation (string) [, constructor parameters] */
 REPE SEXP RcreateObject(SEXP par) {
-	SEXP p=par;
-	SEXP e;
-	call_interface_t ci;
-	jobject tmpo[maxJavaPars+1];
-	jobject o;
-	JNIEnv *env=getJNIEnv();
-	int aux_thread = 0;
+  SEXP p=par;
+  SEXP e;
+  int silent=0;
+  const char *class;
+  sig_buffer_t sig;
+  jvalue jpar[maxJavaPars];
+  jobject tmpo[maxJavaPars+1];
+  jobject o;
+  JNIEnv *env=getJNIEnv();
 
-	if (TYPEOF(p)!=LISTSXP) {
-		_dbg(rjprintf("Parameter list expected but got type %d.\n",TYPEOF(p)));
-		error_return("RcreateObject: invalid parameter");
-	}
+  if (TYPEOF(p)!=LISTSXP) {
+    _dbg(rjprintf("Parameter list expected but got type %d.\n",TYPEOF(p)));
+    error_return("RcreateObject: invalid parameter");
+  }
 
-	p = CDR(p); /* skip first parameter which is the function name */
-	e = CAR(p); /* second is the class name */
-	if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
-		error("RcreateObject: invalid class name");
-	ci.clnam = CHAR_UTF8(STRING_ELT(e,0));
-	init_sigbuf(&ci.sig);
-	_dbg(rjprintf("RcreateObject: new object of class %s\n", ci.clnam));
-	strcats(&ci.sig, "(");
-	p = CDR(p);
-	Rpar2jvalue(env, p, ci.jpar, &ci.sig, 32, tmpo);
-	strcats(&ci.sig, ")V");
-	_dbg(rjprintf(" constructor signature is %s\n", ci.sig.sig));
+  p=CDR(p); /* skip first parameter which is the function name */
+  e=CAR(p); /* second is the class name */
+  if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
+    error("RcreateObject: invalid class name");
+  class = CHAR_UTF8(STRING_ELT(e,0));
+  _dbg(rjprintf("RcreateObject: new object of class %s\n",class));
+  init_sigbuf(&sig);
+  strcats(&sig, "(");
+  p=CDR(p);
+  Rpar2jvalue(env, p, jpar, &sig, maxJavaPars, tmpo);
+  strcats(&sig, ")V");
+  _dbg(rjprintf(" constructor signature is %s\n",sig.sig));
 
-	/* look for named arguments */
-	while (TYPEOF(p)==LISTSXP) {
-		if (TAG(p) && isSymbol(TAG(p))) {
-			if (TAG(p)==install("silent") && isLogical(CAR(p)) && LENGTH(CAR(p))==1)
-				ci.silent=LOGICAL(CAR(p))[0];
-			if (TAG(p)==install("thread") && isLogical(CAR(p)) && LENGTH(CAR(p))==1)
-				aux_thread = 1;
-		}
-		p=CDR(p);
-	}
+  /* look for named arguments */
+  while (TYPEOF(p)==LISTSXP) {
+    if (TAG(p) && isSymbol(TAG(p))) {
+      if (TAG(p)==install("silent") && isLogical(CAR(p)) && LENGTH(CAR(p))==1)
+	silent=LOGICAL(CAR(p))[0];
+    }
+    p=CDR(p);
+  }
 
-#ifndef THREADS
-	aux_thread = 0; /* if therads are not supported, ignore thread request */
-#endif
-
-	if (aux_thread) {
-		ci.o = 0;
-#ifdef THREADS
-		thread_createObject(&ci);
-#endif
-		o = ci.o;
-	} else {
 BEGIN_RJAVA_CALL
-		o = createObject(env, ci.clnam, ci.sig.sig, ci.jpar, ci.silent);
+  o = createObject(env, class, sig.sig, jpar, silent);
 END_RJAVA_CALL
-	}
-	done_sigbuf(&ci.sig);
-	Rfreejpars(env, tmpo);
-	if (!o) return R_NilValue;
+  done_sigbuf(&sig);
+  Rfreejpars(env, tmpo);
+  if (!o) return R_NilValue;
 
 #ifdef RJ_DEBUG
-	{
-		jstring s = callToString(env, o);
-		const char *c="???";
-		if (s) c=(*env)->GetStringUTFChars(env, s, 0);
-		rjprintf(" new Java object [%s] reference %lx (local)\n", c, (long)o);
-		if (s) {
-			(*env)->ReleaseStringUTFChars(env, s, c);
-			releaseObject(env, s);
-		}
-	}
+  {
+    jstring s=callToString(env, o);
+    const char *c="???";
+    if (s) c=(*env)->GetStringUTFChars(env, s, 0);
+    rjprintf(" new Java object [%s] reference %lx (local)\n", c, (long)o);
+    if (s) {
+      (*env)->ReleaseStringUTFChars(env, s, c);
+      releaseObject(env, s);
+    }
+  }
 #endif
   
-	return j2SEXP(env, o, 1);
+  return j2SEXP(env, o, 1);
 }
 
 /** returns the name of an object's class (in the form of R string) */

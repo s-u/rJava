@@ -1,34 +1,40 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.7-0	(under development)
-    o	adds cross-thread communication support, currently
-	used on Mac OS X to allow Java to run on a separate thread
-
-    o	--enable-threads is now the default
-
-[ported from 0.6-4]
+0.6-4	(under development)
     o	fixed bug in $ getter of fields using old .jfield API
 
-    o   improve speed of reflection-based API (.jrcall and `$')
-        by using native array support in rJava
+    o	improve speed of reflection-based API (.jrcall and `$')
+	by using native array support in rJava
 
     o	reflection API now returns NULL invisibly for void results
 
-    o   try to find the best match in reflection-based API
-        using internal Java code (code and idea by
-        Romain Francois)
+    o	try to find the best match in reflection-based API
+	using internal Java code (code and idea by
+	Romain Francois)
 
-    o   added with() method for jobjRef (by Romain Francois), see
-        http://romainfrancois.blog.free.fr/index.php? 
-        post/2009/06/17/with-semantics-for-java-objects-in-rJava
+    o	added with() method for jobjRef (by Romain Francois), see
+	http://romainfrancois.blog.free.fr/index.php?
+	post/2009/06/17/with-semantics-for-java-objects-in-rJava
 
-[ported from 0.6-3]
-    o	support method signatures longer than 256 bytes
+0.6-3	2009-06-14
+    o	update to JRI 0.4-3 (adds REngine API, enhanced support for
+	environments and references)
+
+    o	allow signatures longer than 256 bytes
 
     o	added lib.loc parameter to .jpackage()
 
-** 0.6-branch was created for the stable branch **
+0.6-2	2009-01-26
+    o	fix --enable-debug to really enable debug code
+
+    o	improve Windows setup (add only paths if they are not already
+	listed and check thier presence first) and warn if the system
+	suffers from PATH truncation bug (or PATH is truncated in
+	general)
+
+[0.6-branch is created as a stable branch -- see trunk for development]
+
 
 0.6-1	2008-12-23
     o	substitute $(JAVA_HOME) in configuration flags when necessary
@@ -38,9 +44,11 @@
 	This should improve interoperability in non-UTF-8 locales
 	(most prominent example is Windows)
 
+
 0.6-0	2008-09-22
     o	add support for object cache - see .jcache() - based
 	on Java serialization
+
 
 0.5-2	(never released, turned into 0.6-0)
     o	add direct support for raw vectors as method parameters
@@ -49,6 +57,7 @@
     o	add .jserialize() and .junserialize() functions for
 	Java-serialization (do not confuse with R serialization!)
 
+
 0.5-1	2007-11-05
     o	fix crashes in Windows when Java calls the vfprintf hook
 
@@ -56,6 +65,7 @@
 
     o	add support for r.arch system property which allows multi-arch
 	support on platforms that don't have fat binaries (e.g. Linux)
+
 
 0.5-0	2007-08-22
     o	**API CHANGE**
@@ -95,6 +105,8 @@
     o	Added support for [Z in .jevalArray
 
     o	Fix a bug in .jarray missing [ prefix for native type arrays
+
+
 
 0.4 branch has been branched off the trunk, see 0.4-branch for NEWS
 
