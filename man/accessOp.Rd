@@ -1,6 +1,7 @@
 \name{JavaAccess}
 \alias{$,jobjRef-method}
 \alias{$<-,jobjRef-method}
+\alias{names,jobjRef-method}
 \title{
   Field/method operator for Java objects
 }
@@ -11,6 +12,7 @@
   \describe{
     \item{\code{$}}{\code{signature(x = "jobjRef")}: ... }
     \item{\code{$<-}}{\code{signature(x = "jobjRef")}: ... }
+    \item{\code{names}}{\code{signature(x = "jobjRef")}: ... }
 	 }
 }
 \details{
@@ -20,9 +22,9 @@
 
  \code{$<-} assigns a value to the corresponding Java attribute.
 
- This is just a convenience API. Internally all calls are mapped into \code{\link{.jcall}} calls, therefore the calling conventions and returning objects use the smae rules. For time-critical Java calls \code{\link{.jcall}} should be used directly.
+ \code{names} returns all fields and methods associated with the object. Method names are followed by \code{(} or \code{()} depending on arity. This use of names is mainly useful for code completion, it is not intended to be used programmatically.
 
-NOTE: This interface is still very experimental! Some type conversions may not work or it may fail to find the method you want. You may need to use \code{\link{.jcall}}, consult \code{\link{.jmethods}}, \code{\link{.jfields}} and possibly apply \code{\link{.jcast}} in such cases. If it is a general problem, please report such issues whith a small reproducible example.
+ This is just a convenience API. Internally all calls are mapped into \code{\link{.jcall}} calls, therefore the calling conventions and returning objects use the same rules. For time-critical Java calls \code{\link{.jcall}} should be used directly.
 }
 \seealso{
   \code{\link{.jcall}}, \code{\link{.jnew}}, \code{\link{jobjRef-class}}
@@ -32,6 +34,7 @@ NOTE: This interface is still very experimental! Some type conversions may not w
 v <- .jnew("java/lang/String","Hello World!")
 v$length()
 v$indexOf("World")
+names(v)
 }
 }
 \keyword{interface}

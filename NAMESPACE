@@ -1,6 +1,6 @@
 exportPattern("^\\.j")
 export(is.jnull, .r2j, .rJava.base.path)
 exportClasses(jobjRef, jarrayRef, jfloat, jlong, jbyte, jchar)
-exportMethods(show, "$", "$<-", "==", "!=")
+exportMethods(show, "$", "$<-", "==", "!=", names)
 S3method(with, jobjRef)
 S3method(within, jobjRef)

@@ -152,3 +152,18 @@ setMethod("$<-", c(x="jobjRef"), function(x, name, value) .jfield(x, name) <- va
   if (true) .jcall(.jcall(o, "Ljava/lang/Class;", "getClass"), "S", "getName")
   else o@jclass
 }
+
+### support for names (useful for completion, thanks to Romain Francois)
+setMethod("names", c(x="jobjRef"), function(x) {
+  cl <- .jcall(x, "Ljava/lang/Class;", "getClass")
+
+  fields <- .jcall(cl, "[Ljava/lang/reflect/Field;", "getFields")
+  fieldnames <- sapply(fields, function(f) .jcall( f, "Ljava/lang/String;", "getName"))
+
+  methodz <- .jcall(cl, "[Ljava/lang/reflect/Method;", "getMethods")
+  methodnames <- sapply(methodz, function(m) .jcall( m, "Ljava/lang/String;", "getName"))
+
+  nargs  <- sapply(methodz, function(m) length(.jcall(m, "[Ljava/lang/Class;", "getParameterTypes" )))
+  methodnames <- paste(methodnames, ifelse( nargs == 0 , "()", "(" ), sep = "")
+  c(fieldnames, methodnames)
+})
