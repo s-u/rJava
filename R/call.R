@@ -40,7 +40,7 @@
       sig <- cl
     } else sig <- obj@jsig
     jobj<-obj@jobj
-  }
+  } else if (is(obj, "jobjRef")) jobj<-obj@jobj
   if (sig=="[I")
     return(.Call("RgetIntArrayCont", jobj, PACKAGE="rJava"))
   else if (sig=="[J")

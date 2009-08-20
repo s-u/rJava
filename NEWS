@@ -4,6 +4,10 @@
 0.6-4	(under development)
     o	fixed bug in $ getter of fields using old .jfield API
 
+    o	fixed a bug in .jevalArray which failed when the signature
+	was specified directly (and subsequently .jfield failed in
+	most cases)
+
     o	improve speed of reflection-based API (.jrcall and `$')
 	by using native array support in rJava
 
