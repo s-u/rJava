@@ -1,12 +1,13 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000604 /* rJava v0.6-4 */
+#define RJAVA_VER 0x000700 /* rJava v0.7-0 */
 
 /* important changes between versions:
    3.0  - adds compiler
    2.0
    1.0
+   0.7  - new reflection code, new REngine API (JRI)
    0.6  - adds serialization, (auto-)deserialization and cache
    0.5  - integrates JRI, adds callbacks and class-loader
    0.4  - includes JRI

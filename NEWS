@@ -1,7 +1,7 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.6-4	(under development)
+0.7-0	2009-08-22
     o	fixed bug in $ getter of fields using old .jfield API
 
     o	fixed a bug in .jevalArray which failed when the signature
@@ -23,6 +23,8 @@
 
     o	added names() method for jobjRef to facilitate code
 	completion (based on code by RF: http://tr.im/w33B)
+
+    o	update to JRI 0.5-0
 
 0.6-3	2009-06-14
     o	update to JRI 0.4-3 (adds REngine API, enhanced support for
