@@ -1,6 +1,8 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.7-1	(under development)
+
 0.7-0	2009-08-22
     o	fixed bug in $ getter of fields using old .jfield API
 
