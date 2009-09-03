@@ -2,6 +2,7 @@
 --------------------------
 
 0.7-1	(under development)
+    o	[RF] added .jinstanceof and %instanceof%
 
 0.7-0	2009-08-22
     o	fixed bug in $ getter of fields using old .jfield API
