@@ -7,3 +7,5 @@ Depends: R (>= 2.5.0), methods
 Description: Low-level interface to Java VM very much like .C/.Call and friends. Allows creation of objects, calling methods and accessing fields.
 License: GPL-2
 URL: http://www.rforge.net/rJava/
+SystemRequirements: java
+
