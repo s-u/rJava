@@ -2,6 +2,8 @@
 --------------------------
 
 0.7-1	(under development)
+    o	[RF] added .jrnew reflection-based constructor resolution
+
     o	[RF] added .jinstanceof and instanceof operator
 
 0.7-0	2009-08-22

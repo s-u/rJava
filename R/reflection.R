@@ -46,6 +46,32 @@
 .primitive.classes = c("java/lang/Byte", "java/lang/Integer", "java/lang/Double", "java/lang/Boolean",
                        "java/lang/Long", "java/lang/Character", "java/lang/Short", "java/lang/Float")
 
+### creates a list of valid java parameters, used in both .jrnew and .jrcall
+._java_valid_objects_list <- function( ... ){
+  p <- lapply(list(...), function(a) {
+    if (inherits(a, "jobjRef") || inherits(a, "jarrayRef")) a 
+    else if (is.null(a)) .jnull() else {
+      cm <- match(class(a)[1], names(.class.to.jclass))
+      if (!any(is.na(cm))) { 
+      	if (length(a) == 1) { 
+      		y <- .jnew(.class.to.jclass[cm], a)
+      		if (.class.to.jclass[cm] %in% .primitive.classes) attr(y, "primitive") <- TRUE
+      		y 
+      	} else .jarray(a)
+      } else {
+        stop("Sorry, parameter type `", cm ,"' is ambiguous or not supported.")
+      }
+    }
+  })
+  p
+}
+
+### returns a list of Class objects
+### this is used in both .jrnew and .jrcall
+._java_class_list <- function( objects_list ){
+	lapply(objects_list, function(x) if (isTRUE(attr(x, "primitive"))) .jfield(x, "Ljava/lang/Class;", "TYPE") else .jcall(x, "Ljava/lang/Class;", "getClass"))
+}
+                       
 ### reflected call - this high-level call uses reflection to call a method
 ### it is much less efficient than .jcall but doesn't require return type
 ### specification or exact matching of parameter types
@@ -60,18 +86,10 @@
     stop("Cannot find class of the object.")
   
   # p is a list of parameters that are formed solely by valid Java objects
-  p <- lapply(list(...), function(a) {
-    if (inherits(a, "jobjRef") || inherits(a, "jarrayRef")) a 
-    else if (is.null(a)) .jnull() else {
-      cm <- match(class(a)[1], names(.class.to.jclass))
-      if (!any(is.na(cm))) { if (length(a) == 1) { y <- .jnew(.class.to.jclass[cm], a); if (.class.to.jclass[cm] %in% .primitive.classes) attr(y, "primitive") <- TRUE; y } else .jarray(a) }
-      else
-        stop("Sorry, parameter type `",pc,"' is ambiguous or not supported.")
-    }
-  })
-
+  p <- ._java_valid_objects_list(...)
+  
   # pc is a list of class objects
-  pc <- lapply(p, function(x) if (isTRUE(attr(x, "primitive"))) .jfield(x, "Ljava/lang/Class;", "TYPE") else .jcall(x, "Ljava/lang/Class;", "getClass"))
+  pc <- ._java_class_list( p )
 
   # use RJavaTools.getMethod instead of reflection since we need to match parameters (thanks to Romain Francois for the idea and code)
   m <- .jcall("RJavaTools", "Ljava/lang/reflect/Method;", "getMethod", cl, method, .jarray(pc,"java/lang/Class"))
@@ -83,6 +101,36 @@
   if (is.jnull(r) && .jcall(m, "Ljava/lang/Class;", "getReturnType") == .jclass.void) invisible(NULL)
   else r
 }
+
+### reflected construction of java objects
+### This uses reflection to call a suitable constructor based 
+### on the classes of the ... it does not require exact match between 
+### the objects and the constructor parameters
+### This is to .jnew what .jrcall is to .jcall
+### This function is typically not called drectly, but used as a 
+### fallback in .jnew
+.jrnew <- function(class, ...) {
+  # allow non-JNI specifiation
+  class <- gsub("\\.","/",class) 
+  
+  # p is a list of parameters that are formed solely by valid Java objects
+  p <- ._java_valid_objects_list(...)
+  
+  # pc is a list of class objects
+  pc <- ._java_class_list( p )
+
+  # use RJavaTools to find the best constructor
+  cons <- .jcall("RJavaTools", "Ljava/lang/reflect/Constructor;", 
+  	"getConstructor", .jfindClass(class), .jarray(pc,"java/lang/Class") )
+  if (is.null(cons))
+    stop("Cannot find Java constructor matching the supplied parameters.")
+  
+  # use the constructor
+  .jcall( cons, "Ljava/lang/Object;", "newInstance", 
+  	.jarray(p, "java/lang/Object") )
+  
+}
+
 
 ### simplify non-scalar reference to a scalar object if possible
 .jsimplify <- function(o) {

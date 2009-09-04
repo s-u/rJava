@@ -5,16 +5,21 @@
 ## $Id$
 
 # create a new object
-.jnew <- function(class, ..., check=TRUE, silent=!check) {
+.jnew <- function(class, ..., check=TRUE, silent=!check, use.reflection = TRUE) {
   class <- gsub("\\.","/",class) # allow non-JNI specifiation
   if (check) .jcheck(silent=TRUE)
   o<-.External("RcreateObject", class, ..., silent=silent, PACKAGE="rJava")
   if (check) .jcheck(silent=silent)
   if (is.null(o)) {
-    if (!silent)
-      stop("Failed to create object of class `",class,"'")
-    else
-      o <- .jzeroRef
+  	  if( use.reflection ){
+  	  	# try to fall back on .jrnew reflection based constructor
+  	  	return( .jrnew( class, ... ) )
+  	  } else{
+    	if (!silent)
+    	  stop("Failed to create object of class `",class,"'")
+    	else
+    	  o <- .jzeroRef
+      }
   }
   new("jobjRef", jobj=o, jclass=class)
 }
