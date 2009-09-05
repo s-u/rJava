@@ -1,5 +1,4 @@
 exportPattern("^\\.j")
-export( "%instanceof%" )
 export(is.jnull, .r2j, .rJava.base.path)
 exportClasses(jobjRef, jarrayRef, jfloat, jlong, jbyte, jchar)
 exportMethods(show, "$", "$<-", "==", "!=", names)
