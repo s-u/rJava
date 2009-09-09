@@ -6,6 +6,12 @@
 
     o	[RF] added .jinstanceof and instanceof operator
 
+    o	when loaded into another JVM (e.g. via JRI), rJava would crash
+	on any call if .jinit() was missing. Now it correctly reports
+	the error.
+
+    o	fixed synchronization issues in both JRI and REngine
+
 0.7-0	2009-08-22
     o	fixed bug in $ getter of fields using old .jfield API
 

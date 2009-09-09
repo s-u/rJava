@@ -141,8 +141,6 @@ pthread_mutex_t initMutex = PTHREAD_MUTEX_INITIALIZER;
 int thInitResult = 0;
 int initAWT = 0;
 
-static void init_rJava(void);
-
 static void *initJVMthread(void *classpath)
 {
   int ws;
@@ -177,9 +175,9 @@ static void *initJVMthread(void *classpath)
 /* initialize internal structures/variables of rJava.
    The JVM initialization was performed before (but may have failed)
 */
-static void init_rJava(void) {
+HIDE void init_rJava(void) {
   jclass c;
-  JNIEnv *env=getJNIEnv();
+  JNIEnv *env = getJNIEnv();
   if (!env) return; /* initJVMfailed, so we cannot proceed */
   
   /* get global classes. we make the references explicitely global (although unloading of String/Object is more than unlikely) */

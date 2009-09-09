@@ -119,6 +119,7 @@ HIDE JNIEnv* getJNIEnv();
 
 /* in init.c */
 extern JavaVM *jvm;
+extern int rJava_initialized;
 
 extern jclass javaStringClass;
 extern jclass javaObjectClass;
@@ -129,6 +130,8 @@ extern jmethodID mid_forName;
 extern jmethodID mid_getName;
 extern jmethodID mid_getType;
 extern jmethodID mid_getField;
+
+HIDE void init_rJava(void);
 
 /* in loader.c */
 extern jclass   clClassLoader;

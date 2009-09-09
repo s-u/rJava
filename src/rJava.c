@@ -23,14 +23,16 @@ HIDE JNIEnv *getJNIEnv()
     JNIEnv *env;
     jsize l;
     jint res;
-    
+
     if (!jvm) { /* we're hoping that the JVM pointer won't change :P we fetch it just once */
-        res= JNI_GetCreatedJavaVMs(&jvm, 1, &l);
-        if (res!=0) {
+        res = JNI_GetCreatedJavaVMs(&jvm, 1, &l);
+        if (res != 0) {
             error("JNI_GetCreatedJavaVMs failed! (result:%d)",(int)res); return 0;
         }
-        if (l<1)
-	    error("No running detected. Maybe .jinit() would help.");
+        if (l < 1)
+	    error("No running JVM detected. Maybe .jinit() would help.");
+	if (!rJava_initialized)
+	    error("rJava was called from a running JVM without .jinit().");
     }
     res = (*jvm)->AttachCurrentThread(jvm, (void**) &env, 0);
     if (res!=0) {
