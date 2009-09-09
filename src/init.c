@@ -263,7 +263,8 @@ REP SEXP RinitJVM(SEXP par)
       }
       if (i==vms) Rf_error("Failed to attach to any existing JVM.");
       else {
-        init_rJava();
+	jvm = jvms[i];
+	init_rJava();
       }
       PROTECT(e=allocVector(INTSXP,1));
       INTEGER(e)[0]=(i==vms)?-2:1;
