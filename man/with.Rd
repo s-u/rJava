@@ -32,7 +32,7 @@ The methods of the object are mapped to standard R functions
 in the environment. 
 
 The fields of the object are mapped to active bindings
-(see \link[base]{makeActiveBinding}) so that they can be accessed
+(see \link{makeActiveBinding}) so that they can be accessed
 and modified from within the environment.
 }
 \value{
@@ -47,25 +47,27 @@ Romain Francois <francoisromain@free.fr>
 	\url{http://java.sun.com/j2se/1.5.0/docs/api/java/lang/reflect/package-summary.html}
 }
 \examples{
-	\dontrun{
-		p <- .jnew( "java/awt/Point", 0L, 0L )
-		with( p, {
-			# x and y and now 0
-			move( 10L, 10L )
-			# x and y are now 10
-			x <- x + y
-		} )
-		
-		f <- within( .jnew( "javax/swing/JFrame" ) , {
-			layout <- .jnew( "java/awt/BorderLayout" )
-			setLayout( layout )
-			add( .jnew( "javax/swing/JLabel", "north" ), layout$NORTH )
-			add( .jnew( "javax/swing/JLabel", "south" ), layout$SOUTH )
-			add( .jnew( "javax/swing/JLabel", "west" ), layout$WEST )
-			add( .jnew( "javax/swing/JLabel", "east" ), layout$EAST )
-			setSize( .jnew( "java/awt/Dimension", 400L, 400L ) )
-			setVisible( TRUE )
-		} )
-	}
+\dontrun{
+
+p <- .jnew( "java/awt/Point", 0L, 0L )
+with( p, {
+	# x and y and now 0
+	move( 10L, 10L )
+	# x and y are now 10
+	x <- x + y
+} )
+
+f <- within( .jnew( "javax/swing/JFrame" ) , {
+	layout <- .jnew( "java/awt/BorderLayout" )
+	setLayout( layout )
+	add( .jnew( "javax/swing/JLabel", "north" ), layout$NORTH )
+	add( .jnew( "javax/swing/JLabel", "south" ), layout$SOUTH )
+	add( .jnew( "javax/swing/JLabel", "west" ), layout$WEST )
+	add( .jnew( "javax/swing/JLabel", "east" ), layout$EAST )
+	setSize( .jnew( "java/awt/Dimension", 400L, 400L ) )
+	setVisible( TRUE )
+} )
+}
+
 }
 \keyword{ classes }
