@@ -71,6 +71,15 @@
 ._java_class_list <- function( objects_list ){
 	lapply(objects_list, function(x) if (isTRUE(attr(x, "primitive"))) .jfield(x, "Ljava/lang/Class;", "TYPE") else .jcall(x, "Ljava/lang/Class;", "getClass"))
 }
+
+### check that the RJavaTools class is loaded
+._check_rjavatools <- function(){
+  ok <- try( .jfindClass( "RJavaTools", silent =FALSE ), silent = TRUE )
+  if( inherits( ok, "try-error" ) ){
+  	 stop( "RJavaTools not available, cannot use reflection .jrnew or .jrcall" )  
+  }
+  
+}
                        
 ### reflected call - this high-level call uses reflection to call a method
 ### it is much less efficient than .jcall but doesn't require return type
@@ -84,6 +93,9 @@
     cl <- .jfindClass(o)
   if (is.null(cl))
     stop("Cannot find class of the object.")
+  
+  # check that the RJavaTools class is available
+  ._check_rjavatools() 
   
   # p is a list of parameters that are formed solely by valid Java objects
   p <- ._java_valid_objects_list(...)
@@ -110,6 +122,9 @@
 ### This function is typically not called drectly, but used as a 
 ### fallback in .jnew
 .jrnew <- function(class, ...) {
+  # check that the RJavaTools class is available
+  ._check_rjavatools() 
+  
   # allow non-JNI specifiation
   class <- gsub("\\.","/",class) 
   
