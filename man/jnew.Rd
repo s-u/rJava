@@ -1,21 +1,18 @@
 \name{jnew}
 \alias{.jnew}
-\alias{.jrnew}
 \title{
   Create a Java object
 }
 \description{
-	\code{.jnew} create a new Java object. \code{.jrnew} creates a
-	new Java object using a reflection mechanism to find the best constructor.
+	\code{.jnew} create a new Java object.
 }
 \usage{
-.jnew(class, ..., check=TRUE, silent=!check, use.reflection=TRUE)
-.jrnew(class, ...)
+.jnew(class, ..., check=TRUE, silent=!check)
 }
 \arguments{
   \item{class}{fully qualified class name in JNI notation (e.g. \code{"java/lang/String"}).}
   \item{...}{
-    Any parametes that will be passed to the corresponding
+    Any parameters that will be passed to the corresponding
     constructor. The parameter types are determined automatically and/or
     taken from the \code{jobjRef} object. For details see
     \code{\link{.jcall}}. Note that all named parameters are discarded.}
@@ -32,14 +29,6 @@
     \code{check=FALSE, silent=FALSE} is usually not a meaningful
     combination.
   }
-  \item{use.reflection}{
-  	  logical. If \code{TRUE}, the \code{.jrnew} construction function will be used as 
-  a fallback if the direct constructor fails
-  }
-}
-\note{
-	The user is not expected to call \code{.jrnew} directly since it is 
-	used by default as a fallback in \code{.jnew}
 }
 \value{
   Returns the reference (\code{jobjRef}) to the newly created object or
@@ -52,12 +41,6 @@
 \dontrun{
 f <- .jnew("java/awt/Frame","Hello")
 .jcall(f,,"setVisible",TRUE)
-
-# this falls back on .jrnew because sa is a String[] rather than an Object[]
-sa <- .jarray("string", "array" )
-l <- .jnew( "javax/swing/JList", sa )
-l <- .jrnew( "javax/swing/JList", sa )
-# this fails: l <- .jnew( "javax/swing/JList", sa, use.reflection = FALSE )
 }
 }
 \keyword{interface}

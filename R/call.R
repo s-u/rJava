@@ -11,13 +11,9 @@
   o<-.External("RcreateObject", class, ..., silent=silent, PACKAGE="rJava")
   if (check) .jcheck(silent=silent)
   if (is.null(o)) {
-  	  if( use.reflection ){
-  	  	# try to fall back on .jrnew reflection based constructor
-  	  	return( .jrnew( class, ... ) )
-  	  } else{
-    	if (!silent)
+  	  if (!silent) {
     	  stop("Failed to create object of class `",class,"'")
-    	else
+      } else {
     	  o <- .jzeroRef
       }
   }

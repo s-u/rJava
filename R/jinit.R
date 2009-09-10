@@ -102,7 +102,7 @@
     else rjcl <- new("jobjRef", jobj=rjcl, jclass="RJavaClassLoader")
     if (is.jnull(rjcl))
       rjcl <- .jnew("RJavaClassLoader", .rJava.base.path,
-                                      file.path(.rJava.base.path, lib), check=FALSE, use.reflection = FALSE )
+                                      file.path(.rJava.base.path, lib), check=FALSE)
     .jcheck(silent=TRUE)
     if (is.jnull(rjcl)) {
       ## it's a hack, so we run it in try(..) in case BadThings(TM) happen ...
@@ -119,7 +119,7 @@
 
   if (is.jnull(rjcl))
     rjcl <- .jnew("RJavaClassLoader", .rJava.base.path,
-                  file.path(.rJava.base.path, lib), check=FALSE, use.reflection = FALSE )
+                  file.path(.rJava.base.path, lib), check=FALSE )
 
   if (!is.jnull(rjcl)) {
     ## init class loader

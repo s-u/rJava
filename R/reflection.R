@@ -46,7 +46,7 @@
 .primitive.classes = c("java/lang/Byte", "java/lang/Integer", "java/lang/Double", "java/lang/Boolean",
                        "java/lang/Long", "java/lang/Character", "java/lang/Short", "java/lang/Float")
 
-### creates a list of valid java parameters, used in both .jrnew and .jrcall
+### creates a list of valid java parameters, used in both .J and .jrcall
 ._java_valid_objects_list <- function( ... ){
   p <- lapply(list(...), function(a) {
     if (inherits(a, "jobjRef") || inherits(a, "jarrayRef")) a 
@@ -67,18 +67,9 @@
 }
 
 ### returns a list of Class objects
-### this is used in both .jrnew and .jrcall
+### this is used in both .J and .jrcall
 ._java_class_list <- function( objects_list ){
 	lapply(objects_list, function(x) if (isTRUE(attr(x, "primitive"))) .jfield(x, "Ljava/lang/Class;", "TYPE") else .jcall(x, "Ljava/lang/Class;", "getClass"))
-}
-
-### check that the RJavaTools class is loaded
-._check_rjavatools <- function(){
-  ok <- try( .jfindClass( "RJavaTools", silent =FALSE ), silent = TRUE )
-  if( inherits( ok, "try-error" ) ){
-  	 stop( "RJavaTools not available, cannot use reflection .jrnew or .jrcall" )  
-  }
-  
 }
                        
 ### reflected call - this high-level call uses reflection to call a method
@@ -93,9 +84,6 @@
     cl <- .jfindClass(o)
   if (is.null(cl))
     stop("Cannot find class of the object.")
-  
-  # check that the RJavaTools class is available
-  ._check_rjavatools() 
   
   # p is a list of parameters that are formed solely by valid Java objects
   p <- ._java_valid_objects_list(...)
@@ -119,11 +107,12 @@
 ### on the classes of the ... it does not require exact match between 
 ### the objects and the constructor parameters
 ### This is to .jnew what .jrcall is to .jcall
-### This function is typically not called drectly, but used as a 
-### fallback in .jnew
-.jrnew <- function(class, ...) {
-  # check that the RJavaTools class is available
-  ._check_rjavatools() 
+.J <- function(class, ...) {
+  # try .jnew first
+  o <- try( .jnew(class, ..., check = FALSE) , silent = TRUE)
+  if( ! inherits( o, "try-error" ) ){
+	return(o)
+  }
   
   # allow non-JNI specifiation
   class <- gsub("\\.","/",class) 

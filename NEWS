@@ -2,7 +2,8 @@
 --------------------------
 
 0.7-1	(under development)
-    o	[RF] added .jrnew reflection-based constructor resolution
+    o	[RF] added .J high-level java constructor (based on reflection 
+    as opposed to complete match as .jnew does)
 
     o	[RF] added .jinstanceof and instanceof operator
 

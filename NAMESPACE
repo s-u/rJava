@@ -1,4 +1,5 @@
 exportPattern("^\\.j")
+export( ".J" )
 export( "%instanceof%" )
 export(is.jnull, .r2j, .rJava.base.path)
 exportClasses(jobjRef, jarrayRef, jfloat, jlong, jbyte, jchar)
