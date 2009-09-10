@@ -5,7 +5,7 @@
 ## $Id$
 
 # create a new object
-.jnew <- function(class, ..., check=TRUE, silent=!check, use.reflection = TRUE) {
+.jnew <- function(class, ..., check=TRUE, silent=!check) {
   class <- gsub("\\.","/",class) # allow non-JNI specifiation
   if (check) .jcheck(silent=TRUE)
   o<-.External("RcreateObject", class, ..., silent=silent, PACKAGE="rJava")
