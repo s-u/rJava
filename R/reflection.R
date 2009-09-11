@@ -88,17 +88,15 @@
   # p is a list of parameters that are formed solely by valid Java objects
   p <- ._java_valid_objects_list(...)
   
-  # pc is a list of class objects
-  pc <- ._java_class_list( p )
-
-  # use RJavaTools.getMethod instead of reflection since we need to match parameters (thanks to Romain Francois for the idea and code)
-  m <- .jcall("RJavaTools", "Ljava/lang/reflect/Method;", "getMethod", cl, method, .jarray(pc,"java/lang/Class"))
-  if (is.null(m))
-    stop("Cannot find Java method `",method,"' matching the supplied parameters.")
-  ret <- .jcall(m, "Ljava/lang/Class;", "getReturnType")
-  r <- .jcall(m, "Ljava/lang/Object;", "invoke", .jcast(if(inherits(o,"jobjRef") || inherits(o, "jarrayRef")) o else cl, "java/lang/Object"), .jarray(p, "java/lang/Object"))
+  # invoke the method directly from the RJavaTools class
+  # ( this throws the actual exception instead of an InvocationTargetException ) 
+  r <- .jcall( "RJavaTools", "Ljava/lang/Object;", "invokeMethod",
+  	cl, .jcast(if(inherits(o,"jobjRef") || inherits(o, "jarrayRef")) o else cl, "java/lang/Object"), 
+  	.jarray( p ) )
+  
+  # simplify if needed and return the object
   if (simplify && !is.jnull(r)) .jsimplify(r) else
-  if (is.jnull(r) && .jcall(m, "Ljava/lang/Class;", "getReturnType") == .jclass.void) invisible(NULL)
+  if (is.jnull(r)) invisible(NULL)
   else r
 }
 
