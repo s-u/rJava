@@ -88,11 +88,16 @@
   # p is a list of parameters that are formed solely by valid Java objects
   p <- ._java_valid_objects_list(...)
   
+  # list of classes
+  pc <- ._java_class_list( p )
+  
   # invoke the method directly from the RJavaTools class
   # ( this throws the actual exception instead of an InvocationTargetException ) 
   r <- .jcall( "RJavaTools", "Ljava/lang/Object;", "invokeMethod",
   	cl, .jcast(if(inherits(o,"jobjRef") || inherits(o, "jarrayRef")) o else cl, "java/lang/Object"), 
-  	.jarray( p ) )
+  	.jnew( "java/lang/String", method), 
+  	.jarray(p, "java/lang/Object"), 
+  	.jarray(pc, "java/lang/Class") )
   
   # simplify if needed and return the object
   if (simplify && !is.jnull(r)) .jsimplify(r) else
@@ -112,9 +117,14 @@
   # p is a list of parameters that are formed solely by valid Java objects
   p <- ._java_valid_objects_list(...)
   
+  # list of classes
+  pc <- ._java_class_list( p )
+
   # use RJavaTools to find create the object
   .jcall("RJavaTools", "Ljava/lang/Object;", 
-  	"newInstance", .jfindClass(class), .jarray(p,"java/lang/Object") )
+  	"newInstance", .jfindClass(class), 
+  	.jarray(p,"java/lang/Object"), 
+  	.jarray(pc,"java/lang/Class") )
 
 }
 
@@ -167,16 +177,37 @@
   unlist(lapply(f, function(x) .jcall(x, "S", "toString")))
 }
 
+._must_be_character_of_length_one <- function(name){
+	if( !is.character(name) || length(name) != 1L ){
+		stop( "'name' must be a character vector of length one" )
+	}
+}
+### checks if the java object x has a field called name
+hasField <- function( x, name ){
+	._must_be_character_of_length_one(name)
+	.jcall( "RJavaTools", "Z", "hasField", 
+		.jcast( x, "java/lang/Object" ), 
+		.jnew( "java/lang/String", name ) )
+}
+
+hasMethod <- function( x, name ){
+	._must_be_character_of_length_one(name)
+	.jcall( "RJavaTools", "Z", "hasMethod", 
+		.jcast( x, "java/lang/Object" ), 
+		.jnew( "java/lang/String", name ) )
+}
+
+
 ### syntactic sugar to allow object$field and object$methods(...)
 ### first attempts to find a field of that name and then a method
 setMethod("$", c(x="jobjRef"), function(x, name) {
-  cl <- .jclassRef(x)
-  f <- .jcall(cl, "Ljava/lang/reflect/Field;", "getField", name)
-  .jcheck(silent=TRUE)
-  if (is.null(f))
-    function(...) .jrcall(x, name, ...)
-  else
-    .jfield(x, , name)
+	if (hasField(x, name) ){
+		.jfield(x, , name)
+	} else if( hasMethod( x, name ) ) {
+		function(...) .jrcall(x, name, ...)
+	} else {
+		stop( sprintf( "no field or method called '%s' ", name ) ) 
+	}
 })
 
 ### support for object$field<-...
