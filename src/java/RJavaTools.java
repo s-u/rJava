@@ -19,34 +19,26 @@ public class RJavaTools {
 	 * @return <code>null</code> if no constructor is found, or the constructor
 	 *
 	 */
-	public static Constructor getConstructor( Class o_clazz, Class[] arg_clazz){
+	public static Constructor getConstructor( Class o_clazz, Class[] arg_clazz) throws SecurityException, NoSuchMethodException {
 		
 		if (o_clazz == null)
 			return null; 
 
+		Constructor cons = null ;
+		
 		/* if there is no argument, try to find a direct match */
 		if (arg_clazz == null || arg_clazz.length == 0) {
-			try {
-				Constructor c = o_clazz.getConstructor( (Class[] )null );
-				if (c != null)
-					return c ;
-			} catch (SecurityException e) {
-			} catch (NoSuchMethodException e) {
-			}
-			
-			// we can bail out here because if there was no match, 
-			// no constructor has zero arguments so further search is futile
-			return null;
+			cons = o_clazz.getConstructor( (Class[] )null );
+			return cons ;
 		}
 
 		/* try to find an exact match */
-		Constructor cons;
 		try {
 			cons = o_clazz.getConstructor(arg_clazz);
 			if (cons != null)
 				return cons ;
-		} catch (SecurityException e) {
 		} catch (NoSuchMethodException e) {
+			/* we catch this one because we want to further search */
 		}
 		
 		/* ok, no exact match was found - we have to walk through all methods */
@@ -70,6 +62,11 @@ public class RJavaTools {
 			if (ok && (cons == null || isMoreSpecific(c, cons)))
 				cons = c; 
 		}
+		
+		if( cons == null ){
+			throw new NoSuchMethodException( "No constructor matching the given parameters" ) ;
+		}
+		
 		return cons; 
 		
 	}
