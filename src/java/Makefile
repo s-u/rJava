@@ -15,7 +15,10 @@ RJavaClassLoader.class: RJavaClassLoader.java
 
 compile: RJavaTools.class RJavaClassLoader.class
 
-test: compile RJavaTools_Test.class
+cleanfortest: 
+	rm -frv RJavaTools*.class
+
+test: cleanfortest RJavaTools.class RJavaTools_Test.class
 	$(JAVA) RJavaTools_Test
 
 run: compile 

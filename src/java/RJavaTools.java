@@ -1,6 +1,6 @@
 import java.lang.reflect.Method ;
 import java.lang.reflect.Constructor ;
-
+import java.lang.reflect.InvocationTargetException ;
 /** 
  * Tools used internally by rJava.
  * 
@@ -8,6 +8,28 @@ import java.lang.reflect.Constructor ;
  * by Romain Francois <francoisromain@free.fr> licensed under GPL v2 or higher.
  */
 public class RJavaTools {
+	
+	/**
+	 * Object creator. Find the best constructor based on the parameter classes
+	 * and invoke newInstance on the resolved constructor
+	 */
+	public static Object newInstance( Class o_clazz, Object[] args ) throws Throwable {
+		Constructor cons; 
+		Class[] arg_clazz = new Class[args.length] ;
+		for( int i=0; i<args.length; i++){
+			arg_clazz[i] = args[i].getClass() ;
+		}
+		cons = getConstructor( o_clazz, arg_clazz );
+		Object o; 
+		try{
+			o = cons.newInstance( args ) ; 
+		} catch( InvocationTargetException e){
+			/* the target exception is much more useful than the reflection wrapper */
+			throw e.getTargetException() ;
+		}
+		return o; 
+	}
+	
 	
 	/**
 	 * Attempts to find the best-matching constructor of the class
