@@ -40,7 +40,8 @@ HIDE void ckx(JNIEnv *env) {
 		env = getJNIEnv();
 		if (!env)
 			error("Unable to retrieve JVM environment.");
-		return ckx(env);
+		ckx(env);
+		return;
 	}
 	/* env is valid and an exception occurred */
 	/* we create the jobj first, because the exception may in theory disappear after being cleared, yet this can be (also in theory) risky as it uses further JNI calls ... */
@@ -54,7 +55,7 @@ HIDE void ckx(JNIEnv *env) {
 			if (mid) {
 				jstring s = (jstring)(*env)->CallObjectMethod(env, x, mid);
 				if (s) {
-					char *c = (*env)->GetStringUTFChars(env, s, 0);
+					const char *c = (*env)->GetStringUTFChars(env, s, 0);
 					if (c) {
 						msg = mkString(c);
 						(*env)->ReleaseStringUTFChars(env, s, c);
