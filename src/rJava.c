@@ -49,6 +49,9 @@ static SEXP getCurrentCall() {
 	/* skip the .External/.Call context to get at the underlying call */
 	if (ctx->nextcontext && (ctx->callflag & CTXT_BUILTIN))
 		ctx = ctx->nextcontext;
+	/* skip .jcheck */
+	if (TYPEOF(ctx->call) == LANGSXP && CAR(ctx->call) == install(".jcheck") && ctx->nextcontext)
+		ctx = ctx->nextcontext;		
 	return ctx->call;
 }
 #else

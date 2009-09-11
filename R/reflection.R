@@ -185,16 +185,25 @@
 ### checks if the java object x has a field called name
 hasField <- function( x, name ){
 	._must_be_character_of_length_one(name)
-	.jcall( "RJavaTools", "Z", "hasField", 
-		.jcast( x, "java/lang/Object" ), 
-		.jnew( "java/lang/String", name ) )
+	.jcall("RJavaTools", "Z", "hasField", .jcast( x, "java/lang/Object" ), name)
 }
 
 hasMethod <- function( x, name ){
 	._must_be_character_of_length_one(name)
-	.jcall( "RJavaTools", "Z", "hasMethod", 
-		.jcast( x, "java/lang/Object" ), 
-		.jnew( "java/lang/String", name ) )
+	.jcall("RJavaTools", "Z", "hasMethod", .jcast( x, "java/lang/Object" ), name)
+}
+
+### the following ones are needed for the static version of $
+classHasField <- function(x, name, static=FALSE) {
+	if (is(x, "jclassName")) x <- x@jobj else if (!is(x, "jobjRef")) x <- .jfindClass(as.character(x))
+	._must_be_character_of_length_one(name)
+	.jcall("RJavaTools", "Z", "classHasField", x, name, static)
+}
+
+classHasMethod <- function(x, name, static=FALSE) {
+	if (is(x, "jclassName")) x <- x@jobj else if (!is(x, "jobjRef")) x <- .jfindClass(as.character(x))
+	._must_be_character_of_length_one(name)
+	.jcall("RJavaTools", "Z", "classHasMethod", x, name, static)
 }
 
 
@@ -219,10 +228,7 @@ setMethod("$<-", c(x="jobjRef"), function(x, name, value) .jfield(x, name) <- va
   else o@jclass
 }
 
-### support for names (useful for completion, thanks to Romain Francois)
-setMethod("names", c(x="jobjRef"), function(x) {
-  cl <- .jcall(x, "Ljava/lang/Class;", "getClass")
-
+classNamesMethod <- function (cl) {
   fields <- .jcall(cl, "[Ljava/lang/reflect/Field;", "getFields")
   fieldnames <- sapply(fields, function(f) .jcall( f, "Ljava/lang/String;", "getName"))
 
@@ -232,4 +238,7 @@ setMethod("names", c(x="jobjRef"), function(x) {
   nargs  <- sapply(methodz, function(m) length(.jcall(m, "[Ljava/lang/Class;", "getParameterTypes" )))
   methodnames <- paste(methodnames, ifelse( nargs == 0 , "()", "(" ), sep = "")
   c(fieldnames, methodnames)
-})
+}
+
+### support for names (useful for completion, thanks to Romain Francois)
+setMethod("names", c(x="jobjRef"), function(x) classNamesMethod(.jcall(x, "Ljava/lang/Class;", "getClass")))

@@ -6,7 +6,7 @@
 
 # create a new object
 .jnew <- function(class, ..., check=TRUE, silent=!check) {
-  class <- gsub("\\.","/",class) # allow non-JNI specifiation
+  class <- gsub("\\.", "/", as.character(class)) # allow non-JNI specifiation
   if (check) .jcheck(silent=TRUE)
   o<-.External("RcreateObject", class, ..., silent=silent, PACKAGE="rJava")
   if (check) .jcheck(silent=silent)
@@ -23,7 +23,7 @@
 # create a new object reference manually (avoid! for backward compat only!) the problem with this is that you need a valid `jobj' which is implementation-dependent so it is undefined outside rJava internals
 # it is now used by JRI.createRJavaRef, though
 .jmkref <- function(jobj, jclass="java/lang/Object") {
-  new("jobjRef", jobj=jobj, jclass=gsub('\\.','/',jclass))
+  new("jobjRef", jobj=jobj, jclass=gsub('\\.','/',as.character(jclass)))
 }
 
 # evaluates an array reference. If rawJNIRefSignature is set, then obj is not assumed to be
@@ -128,7 +128,7 @@
   if (!is(obj,"jobjRef"))
     stop("connot cast anything but Java objects")
   r<-obj
-  new.class <- gsub("\\.","/", new.class) # allow non-JNI specifiation
+  new.class <- gsub("\\.","/", as.character(new.class)) # allow non-JNI specifiation
   r@jclass<-new.class
   r
 }
@@ -153,14 +153,14 @@
     obj@jsig <- signature
     return(obj)
   }
-  new("jarrayRef",jobj=obj@jobj,jsig=signature,jclass=class)
+  new("jarrayRef",jobj=obj@jobj,jsig=signature,jclass=as.character(class))
 }
 
 # creates a new "null" object of the specified class
 # although it sounds weird, the class is important when passed as
 # a parameter (you can even cast the result)
 .jnull <- function(class="java/lang/Object") { 
-  new("jobjRef", jobj=.jzeroRef, jclass=class)
+  new("jobjRef", jobj=.jzeroRef, jclass=as.character(class))
 }
 
 .jcheck <- function(silent=FALSE) {
@@ -215,6 +215,7 @@ is.jnull <- function(x) {
 
 # return class object for a given class name; silent determines whether an error should be thrown on failure (FALSE) or just null reference (TRUE)
 .jfindClass <- function(cl, silent=FALSE) {
+  if (inherits(cl, "jclassName")) return(cl@jobj)
   if (!is.character(cl) || length(cl)!=1)
     stop("invalid class name")
   cl<-gsub("/",".",cl)
@@ -233,7 +234,7 @@ is.jnull <- function(x) {
 .jinherits <- function(o, cl) {
   if (is.jnull(o)) return(TRUE)
   if (!is(o, "jobjRef")) stop("invalid object")
-  if (is.character(cl)) cl <- .jfindClass(cl)
+  if (is.character(cl)) cl <- .jfindClass(cl) else if (inherits(cl, "jclassName")) cl <- cl@jobj
   if (!is(cl, "jobjRef")) stop("invalid class object")  
   ocl <- .jclassRef(o)
   .Call("RisAssignableFrom", ocl@jobj, cl@jobj, PACKAGE="rJava")

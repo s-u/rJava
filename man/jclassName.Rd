@@ -12,6 +12,7 @@ function \code{\link{J}} should be used to create new objects of this class.
 \section{Slots}{
   \describe{
     \item{\code{name}:}{Name of the class (in source code notation)}
+    \item{\code{jobj}:}{Object representing the class in Java}
   }
 }
 \section{Methods}{

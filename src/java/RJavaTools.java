@@ -2,6 +2,7 @@ import java.lang.reflect.Method ;
 import java.lang.reflect.Field ;
 import java.lang.reflect.Constructor ;
 import java.lang.reflect.InvocationTargetException ;
+import java.lang.reflect.Modifier ;
 
 /** 
  * Tools used internally by rJava.
@@ -19,15 +20,51 @@ public class RJavaTools {
 	 * @param o object
 	 * @param name name of the field
 	 *
-	 * @return true if the class of o has the field name
+	 * @return <code>true</code> if the class of <code>o</code> has the field <code>name</code>
 	 */
-	public static boolean hasField(Object o, String name){
-		Field[] fields = o.getClass().getFields();
-		for( int i=0; i<fields.length; i++){
-			if( name.equals( fields[i].getName() ) ) return true ; 
-		}
-		return false; 
+	public static boolean hasField(Object o, String name) {
+		return classHasField(o.getClass(), name, false);
 	}
+	
+	/**
+	 * Checks if the specified class has the given field. The 
+	 * getFields method of Class is used so only public fields are 
+	 * checked
+	 *
+	 * @param cl class object
+	 * @param name name of the field
+	 * @param staticRequired if <code>true</code> then the field is required to be static
+	 *
+	 * @return <code>true</code> if the class <code>cl</code> has the field <code>name</code>
+	 */
+	public static boolean classHasField(Class cl, String name, boolean staticRequired) {
+		Field[] fields = cl.getFields();
+		for (int i = 0; i < fields.length; i++)
+			if(name.equals(fields[i].getName()) && (!staticRequired || ((fields[i].getModifiers() & Modifier.STATIC) != 0)))
+				return true; 
+		return false;
+	}
+	
+	
+	/**
+	 * Checks if the specified class has the given method. The 
+	 * getMethods method of Class is used so only public methods are 
+	 * checked
+	 *
+	 * @param cl class
+	 * @param name name of the method
+	 * @param staticRequired if <code>true</code> then the method is required to be static
+	 *
+	 * @return <code>true</code> if the class <code>cl</code> has the field <code>name</code>
+	 */
+	public static boolean classHasMethod(Class cl, String name, boolean staticRequired) {
+		Method[] methodz = cl.getMethods();
+		for (int i = 0; i < methodz.length; i++)
+			if (name.equals(methodz[i].getName()) && (!staticRequired || ((methodz[i].getModifiers() & Modifier.STATIC) != 0)))
+				return true;
+		return false;
+	}
+	
 	
 	/**
 	 * Checks if the class of the object has the given method. The 
@@ -37,14 +74,10 @@ public class RJavaTools {
 	 * @param o object
 	 * @param name name of the method
 	 *
-	 * @return true if the class of o has the field name
+	 * @return <code>true</code> if the class of <code>o</code> has the field <code>name</code>
 	 */
-	public static boolean hasMethod(Object o, String name){
-		Method[] methodz = o.getClass().getMethods();
-		for( int i=0; i<methodz.length; i++){
-			if( name.equals( methodz[i].getName() ) ) return true ; 
-		}
-		return false; 
+	public static boolean hasMethod(Object o, String name) {
+		return classHasMethod(o.getClass(), name, false); 
 	}
 	
 	
