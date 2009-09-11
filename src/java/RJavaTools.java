@@ -22,7 +22,7 @@ public class RJavaTools {
 	 * @return true if the class of o has the field name
 	 */
 	public static boolean hasField(Object o, String name){
-		Field[] fields = o.getClass().getDeclaredFields();
+		Field[] fields = o.getClass().getFields();
 		for( int i=0; i<fields.length; i++){
 			if( name.equals( fields[i].getName() ) ) return true ; 
 		}
@@ -30,11 +30,31 @@ public class RJavaTools {
 	}
 	
 	/**
+	 * Checks if the class of the object has the given method. The 
+	 * getMethods method of Class is used so only public methods are 
+	 * checked
+	 *
+	 * @param o object
+	 * @param name name of the method
+	 *
+	 * @return true if the class of o has the field name
+	 */
+	public static boolean hasMethod(Object o, String name){
+		Method[] methodz = o.getClass().getMethods();
+		for( int i=0; i<methodz.length; i++){
+			if( name.equals( methodz[i].getName() ) ) return true ; 
+		}
+		return false; 
+	}
+	
+	
+	
+	/**
 	 * Object creator. Find the best constructor based on the parameter classes
 	 * and invoke newInstance on the resolved constructor
 	 */
-	public static Object newInstance( Class o_clazz, Object[] args ) throws Throwable {
-		Constructor cons = getConstructor( o_clazz, getClasses( args ) );
+	public static Object newInstance( Class o_clazz, Object[] args, Class[] clazzes ) throws Throwable {
+		Constructor cons = getConstructor( o_clazz, clazzes );
 		Object o; 
 		try{
 			o = cons.newInstance( args ) ; 
@@ -51,8 +71,8 @@ public class RJavaTools {
 	 * <p>First the appropriate method is resolved by getMethod and
 	 * then invokes the method
 	 */
-	public static Object invokeMethod( Class o_clazz, Object o, String name, Object[] args) throws Throwable {
-		Method m = getMethod( o_clazz, name, getClasses( args ) );
+	public static Object invokeMethod( Class o_clazz, Object o, String name, Object[] args, Class[] clazzes) throws Throwable {
+		Method m = getMethod( o_clazz, name, clazzes );
 		Object out; 
 		try{
 			out = m.invoke( o, args ) ; 
@@ -62,16 +82,6 @@ public class RJavaTools {
 		}
 		return out ; 
 	}
-	
-	private static Class[] getClasses(Object[] objects){
-		int n = objects.length ;
-		Class[] clazzes = new Class[ n ] ;
-		for( int i=0; i<n; i++ ){
-			clazzes[i] = objects.getClass() ;
-		}
-		return clazzes; 
-	}
-	
 	
 	/**
 	 * Attempts to find the best-matching constructor of the class
@@ -148,21 +158,13 @@ public class RJavaTools {
 	 *
 	 * @author Romain Francois <francoisromain@free.fr>
 	 */
-	public static Method getMethod(Class o_clazz, String name, Class[] arg_clazz) {
+	public static Method getMethod(Class o_clazz, String name, Class[] arg_clazz) throws SecurityException, NoSuchMethodException {
 		if (o_clazz == null)
 			return null; 
 
 		/* if there is no argument, try to find a direct match */
 		if (arg_clazz == null || arg_clazz.length == 0) {
-			try {
-				Method m = o_clazz.getMethod(name, (Class[])null);
-				if (m != null)
-					return m ;
-			} catch (SecurityException e) {
-			} catch (NoSuchMethodException e) {
-			}
-			// we can bail out here because if there was no match, no method has zero arguments so further search is futile
-			return null;
+				return o_clazz.getMethod(name, (Class[])null);
 		}
 
 		/* try to find an exact match */
@@ -171,8 +173,8 @@ public class RJavaTools {
 			met = o_clazz.getMethod(name, arg_clazz);
 			if (met != null)
 				return met;
-		} catch (SecurityException e) {
 		} catch (NoSuchMethodException e) {
+			/* we want to search further */
 		}
 		
 		/* ok, no exact match was found - we have to walk through all methods */
@@ -195,6 +197,10 @@ public class RJavaTools {
 			}
 			if (ok && (met == null || isMoreSpecific(m, met))) // it must be the only match so far or more specific than the current match
 				met = m; 
+		}
+		
+		if( met == null ){
+			throw new NoSuchMethodException( "No suitable method for the given parameters" ) ; 
 		}
 		return met; 
 	}
