@@ -114,19 +114,10 @@
   # p is a list of parameters that are formed solely by valid Java objects
   p <- ._java_valid_objects_list(...)
   
-  # pc is a list of class objects
-  pc <- ._java_class_list( p )
+  # use RJavaTools to find create the object
+  .jcall("RJavaTools", "Ljava/lang/Object;", 
+  	"newInstance", .jfindClass(class), .jarray(p,"java/lang/Object") )
 
-  # use RJavaTools to find the best constructor
-  cons <- .jcall("RJavaTools", "Ljava/lang/reflect/Constructor;", 
-  	"getConstructor", .jfindClass(class), .jarray(pc,"java/lang/Class") )
-  if (is.null(cons))
-    stop("Cannot find Java constructor matching the supplied parameters.")
-  
-  # use the constructor
-  .jcall( cons, "Ljava/lang/Object;", "newInstance", 
-  	.jarray(p, "java/lang/Object") )
-  
 }
 
 

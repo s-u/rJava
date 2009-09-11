@@ -94,10 +94,15 @@
     else
       r <- new("jarrayRef", jobj=r, jclass="", jsig=returnSig)
   } else if (substr(returnSig,1,1)=="L") {
-    if (is.null(r)) return(r)
+  	  if (is.null(r)){
+  	  	  if( check ) .jcheck( silent = FALSE )
+  	  	  return(r)
+  	  }
     
-    if (returnSig=="Ljava/lang/String;" && evalString)
-      return(.External("RgetStringValue", r, PACKAGE="rJava"))
+  	if (returnSig=="Ljava/lang/String;" && evalString){
+      if( check ) .jcheck( silent = FALSE )
+  	  return(.External("RgetStringValue", r, PACKAGE="rJava"))
+    }
     r <- new("jobjRef", jobj=r, jclass=substr(returnSig,2,nchar(returnSig)-1))
   }
   if (check) .jcheck()
