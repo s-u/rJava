@@ -1,4 +1,5 @@
 import java.lang.reflect.Method ;
+import java.lang.reflect.Field ;
 import java.lang.reflect.Constructor ;
 import java.lang.reflect.InvocationTargetException ;
 
@@ -9,6 +10,24 @@ import java.lang.reflect.InvocationTargetException ;
  * by Romain Francois <francoisromain@free.fr> licensed under GPL v2 or higher.
  */
 public class RJavaTools {
+	
+	/**
+	 * Checks if the class of the object has the given field. The 
+	 * getFields method of Class is used so only public fields are 
+	 * checked
+	 *
+	 * @param o object
+	 * @param name name of the field
+	 *
+	 * @return true if the class of o has the field name
+	 */
+	public static boolean hasField(Object o, String name){
+		Field[] fields = o.getClass().getDeclaredFields();
+		for( int i=0; i<fields.length; i++){
+			if( name.equals( fields[i].getName() ) ) return true ; 
+		}
+		return false; 
+	}
 	
 	/**
 	 * Object creator. Find the best constructor based on the parameter classes

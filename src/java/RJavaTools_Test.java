@@ -26,6 +26,15 @@ public class RJavaTools_Test {
 		}
 		System.out.println( "PASSED" ) ;
 		
+		System.out.println( "Testing RJavaTools.hasField" ) ;
+		try{
+			hasfield() ;
+		} catch( TestException e ){
+			System.err.println( "FAILED" ) ; 
+		}
+		System.out.println( "PASSED" ) ;
+		
+		
 	}
 	// }}}
 
@@ -101,6 +110,26 @@ public class RJavaTools_Test {
 		
 	}
 	// }}}
+	
+	// {{{ @Test fields
+	private static void hasfield() throws TestException{
+		
+		Point p = new Point() ; 
+		System.out.println( "  java> Point p = new Point()" ) ; 
+		System.out.print( "  hasField( p, 'x' ) " ) ; 
+		if( !RJavaTools.hasField( p, "x" ) ){
+			throw new TestException( " hasField( Point, 'x' ) == false" ) ;
+		}
+		System.out.println( "  true : ok" ) ;
+		
+		System.out.print( "  hasField( p, 'iiiiiiiiiiiii' ) " ) ; 
+		if( RJavaTools.hasField( p, "iiiiiiiiiiiii" ) ){
+			throw new TestException( " hasField( Point, 'iiiiiiiiiiiii' ) == true" ) ;
+		}
+		System.out.println( "  false : ok" ) ;
+		
+	}
+	
 
 	// {{{ TestException class
 	private static class TestException extends Exception{
