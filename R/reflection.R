@@ -108,12 +108,6 @@
 ### the objects and the constructor parameters
 ### This is to .jnew what .jrcall is to .jcall
 .J <- function(class, ...) {
-  # try .jnew first
-  o <- try( .jnew(class, ..., check = FALSE) , silent = TRUE)
-  if( ! inherits( o, "try-error" ) ){
-	return(o)
-  }
-  
   # allow non-JNI specifiation
   class <- gsub("\\.","/",class) 
   

@@ -30,7 +30,7 @@ public class RJavaTools_Test {
 	// }}}
 
   // {{{ @Test constructors 
-	public static void constructors() throws TestException {
+	private static void constructors() throws TestException {
 		/* constructors */ 
 		Constructor cons ;
 		boolean error ; 
