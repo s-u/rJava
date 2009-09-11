@@ -1,7 +1,10 @@
 \name{JavaAccess}
 \alias{$,jobjRef-method}
+\alias{$,jclassName-method}
 \alias{$<-,jobjRef-method}
+\alias{$<-,jclassName-method}
 \alias{names,jobjRef-method}
+\alias{names,jclassName-method}
 \title{
   Field/method operator for Java objects
 }
@@ -11,8 +14,11 @@
 \section{Methods}{
   \describe{
     \item{\code{$}}{\code{signature(x = "jobjRef")}: ... }
+    \item{\code{$}}{\code{signature(x = "jclassName")}: ... }
     \item{\code{$<-}}{\code{signature(x = "jobjRef")}: ... }
+    \item{\code{$<-}}{\code{signature(x = "jclassName")}: ... }
     \item{\code{names}}{\code{signature(x = "jobjRef")}: ... }
+    \item{\code{names}}{\code{signature(x = "jclassName")}: ... }
 	 }
 }
 \details{
@@ -31,10 +37,12 @@
 }
 \examples{
 \dontrun{
-v <- .jnew("java/lang/String","Hello World!")
+v <- new(J("java.lang.String"), "Hello World!")
 v$length()
 v$indexOf("World")
 names(v)
+
+J("java.lang.String")$valueOf(10)
 }
 }
 \keyword{interface}

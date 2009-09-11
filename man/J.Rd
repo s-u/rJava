@@ -1,53 +1,71 @@
-\name{.J}
-\alias{.J}
+\name{J}
+\alias{J}
 \title{
-High level constructor for java objects
+High level API for accessing Java
 }
 \description{
-\code{.J} creates a new Java object
+\code{J} creates a Java class reference or calls a Java method
 }
 \usage{
-.J(class, ...)
+J(class, method, ...)
 }
 \arguments{
   \item{class}{
-fully qualified class name in JNI notation (e.g "java/lang/String" ) or standard java notation (e.g "java.lang.String")
- }
+    java object reference or fully qualified class name in JNI
+    notation (e.g "java/lang/String" ) or standard java notation (e.g
+    "java.lang.String")
+  }
+  \item{method}{
+    if present then \code{J} results in a method call, otherwise it
+    just creates a class name reference.
+  }
   \item{\dots}{
-Any parameters that will be passed to the corresponding constructor. 
-}
+    optional parameters that will be passed to the method (if the
+    \code{method} argument is present)
+  }
 }
 \details{
-The \code{RJavaTools} class is used to find the constructor that matches
-the types of the supplied parameters
+\code{J} is the high-level access to Java.
+
+If the \code{method} argument is missing then \code{code} must be a
+class name and \code{J} creates a class name reference that can be
+used either in a call to \code{new} to create a new Java object
+(e.g. \code{new(J("java.lang.String"), "foo")}) or with \code{$}
+operator to call a static method
+(e.g. \code{J("java.lang.Double")$parseDouble("10.2")}.)
+
+If the \code{method} argument is present then it must be a string
+vector of length one which defines the method to be called on the
+object.
 }
 \value{
-Returns the reference to the newly created object. If a constructor 
-could not be found, an error is generated.
-}
-\author{
-Romain Francois <francoisromain@free.fr> 
+  If \code{method} is missing the the returned value is an object of
+  the class \code{jclassName}. Otherwise the value is the result of
+  the method invocation. In the latter case Java exceptions may be
+  thrown and the function doesn't return.
 }
 \note{
-\code{.J} is more flexible than .jnew but uses reflection so is expected
-to be slower
+\code{J} is a high-level API which is slower than \code{\link{.jnew}}
+or \code{\link{.jcall}} since it has to use reflection to find the
+most suitable method.
 }
 \seealso{
-\code{\link{.jnew}} for the standard, more efficient constructor
+\code{\link{.jcall}}, \code{\link{.jnew}}
 }
 \examples{
 \dontrun{
 
-f <- .J( "java.awt.Frame", "Hello" ) 
-f$setVisible( TRUE )
+J("java.lang.Double")$parseDouble("10.2")
+
+f <- new(J("java.awt.Frame"), "Hello")
+f$setVisible(TRUE)
 
 # String[] strings = new String[]{ "string", "array" } ;
 strings <- .jarray("string", "array" )
 # this uses the JList( Object[] ) constructor 
 # even though the "strings" parameter is a String[] 
-l <- .J( "javax.swing.JList", strings )
+l <- new(J("javax.swing.JList"), strings)
 
 }
 }
 \keyword{interface}
-
