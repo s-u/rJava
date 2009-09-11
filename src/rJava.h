@@ -1,12 +1,13 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000701 /* rJava v0.7-1 */
+#define RJAVA_VER 0x000800 /* rJava v0.8-0 */
 
 /* important changes between versions:
    3.0  - adds compiler
    2.0
    1.0
+   0.8  - new exception handling using Exception condition
    0.7  - new reflection code, new REngine API (JRI)
    0.6  - adds serialization, (auto-)deserialization and cache
    0.5  - integrates JRI, adds callbacks and class-loader
@@ -116,6 +117,8 @@ extern int RJava_has_control;
 extern JNIEnv *eenv; /* should NOT be used since not thread-safe; use getJNIEnv instead */
 
 HIDE JNIEnv* getJNIEnv();
+HIDE void ckx(JNIEnv *env);
+HIDE void clx(JNIEnv *env);
 
 /* in init.c */
 extern JavaVM *jvm;

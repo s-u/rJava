@@ -20,15 +20,24 @@ REP void RJavaCheckExceptions(int *silent, int *result) {
 }
 
 HIDE void* errJNI(const char *err, ...) {
-  char msg[512];
-  va_list ap;
-  va_start(ap, err);
-  msg[511]=0;
-  vsnprintf(msg, 511, err, ap);
-  Rf_warning(msg);
-  va_end(ap);
-  checkExceptionsX(getJNIEnv(), 0);
-  return 0;
+	char msg[512];
+	va_list ap;
+#ifndef RJ_DEBUG
+	/* non-debug version goes straight to ckx - it should never return */
+	ckx(NULL);
+#endif
+	va_start(ap, err);
+	msg[511]=0;
+	vsnprintf(msg, 511, err, ap);
+#ifdef RJ_DEBUG
+	Rf_warning(msg);
+#else
+	Rf_error(msg);
+	/* this never returns and is just a fallback in case ckx doesn't return */
+#endif
+	va_end(ap);
+	checkExceptionsX(getJNIEnv(), 0);
+	return 0;
 }
 
 HIDE jclass findClass(JNIEnv *env, const char *cName) {
@@ -45,6 +54,7 @@ HIDE jclass findClass(JNIEnv *env, const char *cName) {
     printf("findClass(\"%s\") [with rJava loader]\n", cn);
 #endif
     cl = (jclass) (*env)->CallStaticObjectMethod(env, javaClassClass, mid_forName, cns, (jboolean) 1, oClassLoader);
+    clx(env);
     _mp(MEM_PROF_OUT("  %08x LNEW class\n", (int) cl))
     releaseObject(env, cns);
 #ifdef DEBUG_CL
@@ -96,12 +106,12 @@ HIDE void printObject(JNIEnv *env, jobject o) {
 
   cls=(*env)->GetObjectClass(env,o);
   _mp(MEM_PROF_OUT("  %08x LNEW class from object %08x (JRI-local)\n", (int)cls, (int)o))
-  if (!cls) { errJNI("printObject.GetObjectClass failed"); releaseLocal(env, cls); return ; }
+  if (!cls) { releaseLocal(env, cls); errJNI("printObject.GetObjectClass failed"); return ; }
   mid=(*env)->GetMethodID(env, cls, "toString", "()Ljava/lang/String;");
-  if (!mid) { errJNI("printObject.GetMethodID for toString() failed"); releaseLocal(env, cls); return; }
+  if (!mid) { releaseLocal(env, cls); errJNI("printObject.GetMethodID for toString() failed"); return; }
   s=(*env)->CallObjectMethod(env, o, mid);
   _mp(MEM_PROF_OUT("  %08x LNEW object method toString result (JRI-local)\n", (int)s))
-  if (!s) { errJNI("printObject o.toString() call failed"); releaseLocal(env, cls); return; }
+  if (!s) { releaseLocal(env, cls); errJNI("printObject o.toString() call failed"); return; }
   c=(*env)->GetStringUTFChars(env, (jstring)s, 0);
   (*env)->ReleaseStringUTFChars(env, (jstring)s, c);
   releaseLocal(env, cls);  
@@ -332,8 +342,8 @@ HIDE int checkExceptionsX(JNIEnv *env, int silent) {
   }
 
   if (t) {
-    if (!silent)
-      (*env)->ExceptionDescribe(env);
+	  if (!silent) 
+		  ckx(env);
     (*env)->ExceptionClear(env);
     releaseLocal(env, t);
     return 1;
