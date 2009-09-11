@@ -1,6 +1,7 @@
 import java.lang.reflect.Method ;
 import java.lang.reflect.Constructor ;
 import java.lang.reflect.InvocationTargetException ;
+
 /** 
  * Tools used internally by rJava.
  * 
@@ -14,12 +15,7 @@ public class RJavaTools {
 	 * and invoke newInstance on the resolved constructor
 	 */
 	public static Object newInstance( Class o_clazz, Object[] args ) throws Throwable {
-		Constructor cons; 
-		Class[] arg_clazz = new Class[args.length] ;
-		for( int i=0; i<args.length; i++){
-			arg_clazz[i] = args[i].getClass() ;
-		}
-		cons = getConstructor( o_clazz, arg_clazz );
+		Constructor cons = getConstructor( o_clazz, getClasses( args ) );
 		Object o; 
 		try{
 			o = cons.newInstance( args ) ; 
@@ -28,6 +24,33 @@ public class RJavaTools {
 			throw e.getTargetException() ;
 		}
 		return o; 
+	}
+	
+	
+	/**
+	 * Invoke a method of a given class
+	 * <p>First the appropriate method is resolved by getMethod and
+	 * then invokes the method
+	 */
+	public static Object invokeMethod( Class o_clazz, Object o, String name, Object[] args) throws Throwable {
+		Method m = getMethod( o_clazz, name, getClasses( args ) );
+		Object out; 
+		try{
+			out = m.invoke( o, args ) ; 
+		} catch( InvocationTargetException e){
+			/* the target exception is much more useful than the reflection wrapper */
+			throw e.getTargetException() ;
+		}
+		return out ; 
+	}
+	
+	private static Class[] getClasses(Object[] objects){
+		int n = objects.length ;
+		Class[] clazzes = new Class[ n ] ;
+		for( int i=0; i<n; i++ ){
+			clazzes[i] = objects.getClass() ;
+		}
+		return clazzes; 
 	}
 	
 	
