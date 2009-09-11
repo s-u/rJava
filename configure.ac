@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(rJava, 0.5, Simon.Urbanek@r-project.org)
+AC_INIT(rJava, 0.8, Simon.Urbanek@r-project.org)
 AC_CONFIG_SRCDIR([src/rJava.c])
 AC_CONFIG_HEADER([src/config.h])
 
@@ -101,6 +101,28 @@ int main(void) {
 AC_MSG_RESULT(${can_inline})
 if test "${can_inline}" = yes; then
   AC_DEFINE(HAVE_STATIC_INLINE, 1, [Define to 1 when static inline works])
+fi
+
+### from R m4/R.m4 - needed to hack R 2.9.x
+AC_CACHE_CHECK([whether setjmp.h is POSIX.1 compatible],
+               [r_cv_header_setjmp_posix],
+[AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+[[#include <setjmp.h>]],
+[[sigjmp_buf b;
+sigsetjmp(b, 0);
+siglongjmp(b, 1);]])],
+                   [r_cv_header_setjmp_posix=yes],
+                   [r_cv_header_setjmp_posix=no])])
+AC_CHECK_DECLS([sigsetjmp, siglongjmp], , , [#include <setjmp.h>])
+if test "$ac_cv_have_decl_sigsetjmp" = no; then
+  r_cv_header_setjmp_posix=no
+fi
+if test "$ac_cv_have_decl_siglongjmp" = no; then
+  r_cv_header_setjmp_posix=no
+fi
+if test "${r_cv_header_setjmp_posix}" = yes; then
+  AC_DEFINE(HAVE_POSIX_SETJMP, 1,
+            [Define if you have POSIX.1 compatible sigsetjmp/siglongjmp.])
 fi
 
 AC_MSG_CHECKING([Java support in R])

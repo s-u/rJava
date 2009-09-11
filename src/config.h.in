@@ -3,11 +3,22 @@
 /* define if callbacks support is enabled. */
 #undef ENABLE_JRICB
 
+/* Define to 1 if you have the declaration of `siglongjmp', and to 0 if you
+   don't. */
+#undef HAVE_DECL_SIGLONGJMP
+
+/* Define to 1 if you have the declaration of `sigsetjmp', and to 0 if you
+   don't. */
+#undef HAVE_DECL_SIGSETJMP
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
+
+/* Define if you have POSIX.1 compatible sigsetjmp/siglongjmp. */
+#undef HAVE_POSIX_SETJMP
 
 /* Define to 1 when static inline works */
 #undef HAVE_STATIC_INLINE

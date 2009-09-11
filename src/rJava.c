@@ -1,4 +1,5 @@
 #include <R.h>
+#include <Rversion.h>
 #include <Rdefines.h>
 #include "rJava.h"
 #include <stdlib.h>
@@ -10,13 +11,60 @@ int use_eenv = 1;
 /* cached environment. Do NOT use directly! Always use getJNIEnv()! */
 JNIEnv *eenv;
 
+/* -- hack to get at the current call from C code using contexts */
+#if ( R_VERSION >= R_Version(1, 7, 0) )
+#include <setjmp.h>
+
+#ifdef HAVE_POSIX_SETJMP
+#define JMP_BUF sigjmp_buf
+#else
+#define JMP_BUF jmp_buf
+#endif
+
+#ifndef CTXT_BUILTIN
+#define CTXT_BUILTIN 64
+#endif
+
+typedef struct RCNTXT { /* this RCNTXT structure is only partial since we need to get at "call" - it is safe form R 1.7.0 on */
+	struct RCNTXT *nextcontext; /* The next context up the chain <<-- we use this one to skip the .Call/.External call frame */
+	int callflag;               /* The context "type" <<<-- we use this one to skip the .Call/.External call frame */
+	JMP_BUF cjmpbuf;            /* C stack and register information */
+	int cstacktop;              /* Top of the pointer protection stack */
+	int evaldepth;              /* evaluation depth at inception */
+	SEXP promargs;              /* Promises supplied to closure */
+	SEXP callfun;               /* The closure called */
+	SEXP sysparent;             /* environment the closure was called from */
+	SEXP call;                  /* The call that effected this context <<<--- we pass this one to the condition */
+	SEXP cloenv;                /* The environment */
+} RCNTXT;
+
+#ifndef LibExtern
+#define LibExtern extern
+#endif
+
+LibExtern RCNTXT* R_GlobalContext;
+
+static SEXP getCurrentContext() {
+	RCNTXT *ctx = R_GlobalContext;
+	/* skip the .External/.Call context to get at the underlying call */
+	if (ctx->nextcontext && (ctx->callflag & CTXT_BUILTIN))
+		ctx = ctx->nextcontext;
+	return ctx->call;
+}
+#else
+static SEXP getCurrentContext() {
+	return R_NilValue;
+}
+#endif
+/* -- end of hack */
+
 /* throw an exception using R condition code */
 HIDE void throwR(SEXP msg, SEXP jobj) {
 	SEXP cond = PROTECT(allocVector(VECSXP, 3));
 	SEXP names = PROTECT(allocVector(STRSXP, 3));
 	SEXP cln = PROTECT(allocVector(STRSXP, 3));
 	SET_VECTOR_ELT(cond, 0, msg);
-	SET_VECTOR_ELT(cond, 1, R_NilValue); /* I see no way to get "call" without hacking RCNTX */
+	SET_VECTOR_ELT(cond, 1, getCurrentContext());
 	SET_VECTOR_ELT(cond, 2, jobj);
 	SET_STRING_ELT(names, 0, mkChar("message"));
 	SET_STRING_ELT(names, 1, mkChar("call"));
