@@ -4,15 +4,10 @@
 ### reflection tools (inofficial so far, because it returns strings
 ### instead of the reflection objects - it's useful for quick checks,
 ### though)
-.jmethods <- function(o, name=NULL) {
-  if (is.null(o)) return (NULL)
-  if (is.character(o) & length(o)==1) {
-    o<-gsub("/",".",o)
-    cl<-.jfindClass(o)
-  } else if (inherits(o, "jobjRef") || inherits(o, "jarrayRef")) {
-    cl<-.jcall(o, "Ljava/lang/Class;", "getClass")
-  } else stop("Can operate on a single string or Java object only.")
+.jmethods <- function(o, name=NULL, as.obj=FALSE) {
+  cl <- if (is(o, "jobjRef")) .jcall(o, "Ljava/lang/Class;", "getClass") else if (is(o, "jclassName")) o@jobj else .jfindClass(as.character(o))
   ms<-.jcall(cl,"[Ljava/lang/reflect/Method;","getMethods")
+  if (isTRUE(as.obj)) return(ms)
   ss<-unlist(lapply(ms,function(x) .jcall(x,"S","toString")))
   if (!is.null(name))
     grep(paste("\\.",name,"\\(",sep=''),ss,value=TRUE)
@@ -20,14 +15,10 @@
     ss
 }
 
-.jconstructors <- function(o) {
-  if (is.null(o)) return (NULL)
-  if (is.character(o) & length(o)==1) {
-    cl<-.jfindClass(o)
-  } else if (inherits(o, "jobjRef") || inherits(o, "jarrayRef")) {
-    cl<-.jcall(o, "Ljava/lang/Class;", "getClass")
-  } else stop("Can operate on a single string or Java object only.")
+.jconstructors <- function(o, as.obj=FALSE) {
+  cl <- if (is(o, "jobjRef")) .jcall(o, "Ljava/lang/Class;", "getClass") else if (is(o, "jclassName")) o@jobj else .jfindClass(as.character(o))
   cs<-.jcall(cl,"[Ljava/lang/reflect/Constructor;","getConstructors")
+  if (isTRUE(as.obj)) return(cs)
   unlist(lapply(cs,function(x) .jcall(x,"S","toString")))
 }
 
@@ -168,13 +159,12 @@
 }
 
 ### list the fields of a class or object
-.jfields <- function(o) {
-  if (inherits(o, "jobjRef") || inherits(o, "jarrayRef"))
-    cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
-  else
-    cl <- .jfindClass(as.character(o))
+.jfields <- function(o, name=NULL, as.obj=FALSE) {
+  cl <- if (is(o, "jobjRef")) .jcall(o, "Ljava/lang/Class;", "getClass") else if (is(o, "jclassName")) o@jobj else .jfindClass(as.character(o))
   f <- .jcall(cl, "[Ljava/lang/reflect/Field;", "getFields")
-  unlist(lapply(f, function(x) .jcall(x, "S", "toString")))
+  if (isTRUE(as.obj)) return(f)
+  fl <- unlist(lapply(f, function(x) .jcall(x, "S", "toString")))
+  if (!is.null(name)) grep(paste("\\.",name,"$",sep=''), fl) else fl
 }
 
 ._must_be_character_of_length_one <- function(name){
