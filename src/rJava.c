@@ -44,7 +44,7 @@ typedef struct RCNTXT { /* this RCNTXT structure is only partial since we need t
 
 LibExtern RCNTXT* R_GlobalContext;
 
-static SEXP getCurrentContext() {
+static SEXP getCurrentCall() {
 	RCNTXT *ctx = R_GlobalContext;
 	/* skip the .External/.Call context to get at the underlying call */
 	if (ctx->nextcontext && (ctx->callflag & CTXT_BUILTIN))
@@ -52,26 +52,32 @@ static SEXP getCurrentContext() {
 	return ctx->call;
 }
 #else
-static SEXP getCurrentContext() {
+static SEXP getCurrentCall() {
 	return R_NilValue;
 }
 #endif
 /* -- end of hack */
 
-/* throw an exception using R condition code */
-HIDE void throwR(SEXP msg, SEXP jobj) {
+/** throw an exception using R condition code.
+ *  @param msg - message string
+ *  @param jobj - jobjRef object of the exception 
+ *  @param xclass - NULL or class name for the subclass of Exception */
+HIDE void throwR(SEXP msg, SEXP jobj, SEXP xclass) {
+	unsigned int cnbase = (xclass == R_NilValue) ? 0 : 1;
 	SEXP cond = PROTECT(allocVector(VECSXP, 3));
 	SEXP names = PROTECT(allocVector(STRSXP, 3));
-	SEXP cln = PROTECT(allocVector(STRSXP, 3));
+	SEXP cln = PROTECT(allocVector(STRSXP, cnbase + 3));
 	SET_VECTOR_ELT(cond, 0, msg);
-	SET_VECTOR_ELT(cond, 1, getCurrentContext());
+	SET_VECTOR_ELT(cond, 1, getCurrentCall());
 	SET_VECTOR_ELT(cond, 2, jobj);
 	SET_STRING_ELT(names, 0, mkChar("message"));
 	SET_STRING_ELT(names, 1, mkChar("call"));
 	SET_STRING_ELT(names, 2, mkChar("jobj"));
-	SET_STRING_ELT(cln, 0, mkChar("Exception"));
-	SET_STRING_ELT(cln, 1, mkChar("error"));
-	SET_STRING_ELT(cln, 2, mkChar("condition"));
+	if (cnbase)
+		SET_STRING_ELT(cln, 0, xclass);
+	SET_STRING_ELT(cln, cnbase, mkChar("Exception"));
+	SET_STRING_ELT(cln, cnbase + 1, mkChar("error"));
+	SET_STRING_ELT(cln, cnbase + 2, mkChar("condition"));
 	setAttrib(cond, R_NamesSymbol, names);
 	setAttrib(cond, R_ClassSymbol, cln);
 	UNPROTECT(2);
@@ -81,7 +87,7 @@ HIDE void throwR(SEXP msg, SEXP jobj) {
 
 /* check for exceptions and throw them to R level */
 HIDE void ckx(JNIEnv *env) {
-	SEXP xr, xobj, msg = 0;
+	SEXP xr, xobj, msg = 0, xsubclass = R_NilValue, xclass = 0; /* note: we don't bother counting protections becasue we never return */
 	jthrowable x = 0;
 	if (env && !(x = (*env)->ExceptionOccurred(env))) return;
 	if (!env) {
@@ -99,34 +105,56 @@ HIDE void ckx(JNIEnv *env) {
 	{
 		jclass cls = (*env)->GetObjectClass(env, x);
 		if (cls) {
+			jstring cname;
 			jmethodID mid = (*env)->GetMethodID(env, cls, "toString", "()Ljava/lang/String;");
 			if (mid) {
 				jstring s = (jstring)(*env)->CallObjectMethod(env, x, mid);
 				if (s) {
 					const char *c = (*env)->GetStringUTFChars(env, s, 0);
 					if (c) {
-						msg = mkString(c);
+						msg = PROTECT(mkString(c));
 						(*env)->ReleaseStringUTFChars(env, s, c);
 					}
 				}
+			}
+			/* beside toString() we also need to call getName() on cls to get the subclass */
+			cname = (jstring) (*env)->CallObjectMethod(env, cls, mid_getName);
+			if (cname) {
+				const char *c = (*env)->GetStringUTFChars(env, cname, 0);
+				if (c) {
+					/* use only the class name (without package path) as the exception name in R */
+					const char *pt = c, *ls = c;
+					while (*pt) if (*(pt++) == '.') ls = pt;
+					if (*ls == '.') ls++;
+					if (strcmp(ls, "Exception")) /* we already have Exception */
+						xsubclass = PROTECT(mkChar(ls));
+					{ /* convert full class name to JNI notation */
+						char *cn = strdup(c), *d = cn;
+						while (*d) { if (*d == '.') *d = '/'; d++; }
+						xclass = mkString(cn);
+						free(cn);
+					}
+					(*env)->ReleaseStringUTFChars(env, cname, c);
+				}		
+				(*env)->DeleteLocalRef(env, cname);
 			}
 			if ((*env)->ExceptionOccurred(env))
 				(*env)->ExceptionClear(env);
 			(*env)->DeleteLocalRef(env, cls);
 		} else (*env)->ExceptionClear(env);
 		if (!msg)
-			msg = mkString("Java Exception <no description because toString() failed>");
+			msg = PROTECT(mkString("Java Exception <no description because toString() failed>"));
 	}
 	/* delete the local reference to the exception (jobjRef has a global copy) */
 	(*env)->DeleteLocalRef(env, x);
 	/* construct the jobjRef */
 	xr = PROTECT(NEW_OBJECT(MAKE_CLASS("jobjRef")));
 	if (inherits(xr, "jobjRef")) {
-		SET_SLOT(xr, install("jclass"), mkString("java/lang/Throwable") /* getObjectClassName(env, x) */);
+		SET_SLOT(xr, install("jclass"), xclass ? xclass : mkString("java/lang/Throwable"));
 		SET_SLOT(xr, install("jobj"), xobj);
 	}
 	/* and off to R .. (we're keeping xr protected) */
-	throwR(msg, xr);
+	throwR(msg, xr, xsubclass);
 	/* throwR never returns so don't even bother ... */
 }
 

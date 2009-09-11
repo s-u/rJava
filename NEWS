@@ -5,12 +5,20 @@
     o	new exception handling was introduced:
 
 	Java exceptions are mapped to Exeception conditions which can
-	be used to catch the exception at R level.
+	be used to catch the exception at R level. The class name
+	(without package path) of the exception is used as the
+	subclass of Exception such that targetted handlers can be used:
+	tryCatch(.jnew("foo"), NoClassDefFoundError=function(e) ...)
 
-	In addition JNI code now causes an error instead of a warning.
+	In addition JNI code now causes an error instead of a warning,
+	however, some errors internal to JNI may not have an associated
+	Java exception and thus will fire the usual simpleError
+	condition.
 
-	Consequently exception obejcts are now supplied in e$jobj
-	of the handler and .jgetEx() becomes obsolete.
+	As a consequence of the new error handling exception obejcts
+	are now supplied in e$jobj of the handler and .jgetEx()
+	becomes obsolete.
+
 
 0.7-1	(under development)
     o	[RF] added .J high-level java constructor (based on reflection 
