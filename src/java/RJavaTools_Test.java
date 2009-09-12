@@ -88,6 +88,22 @@ public class RJavaTools_Test {
 		}
 		success() ;
 		
+		System.out.println( "Testing RJavaTools.getStaticFields" ) ;
+		try{
+			getstaticfields() ;
+		} catch( TestException e ){
+			fails(e);  
+		}
+		success() ;
+		
+		System.out.println( "Testing RJavaTools.getStaticMethods" ) ;
+		try{
+			getstaticmethods() ;
+		} catch( TestException e ){
+			fails(e);  
+		}
+		success() ;
+		
 		System.out.println( "Testing RJavaTools.getMethod" ) ;
 		System.out.println( "NOT YET AVAILABLE" ) ;
 		
@@ -520,6 +536,69 @@ public class RJavaTools_Test {
 		System.out.println( "  false : ok" ) ;
 
 	}
+	// }}}
+	
+	// {{{ @Test getstaticfields
+	private static void getstaticfields() throws TestException{
+		Field[] f ;
+		
+		System.out.print( "    * getStaticFields( RJavaTools_Test ) " ) ;
+		f = RJavaTools.getStaticFields( RJavaTools_Test.class ) ;
+		if( f.length != 1 ){
+			throw new TestException( " getStaticFields( RJavaTools_Test ).length != 1" ) ;
+		}
+		if( ! "static_x".equals( f[0].getName() ) ){
+			throw new TestException( " getStaticFields( RJavaTools_Test )[0] != 'static_x'" ) ;
+		}
+		System.out.println( "  : ok" ) ;
+		
+		System.out.print( "    * getStaticFields( Object ) " ) ;
+		f = RJavaTools.getStaticFields( Object.class ) ;
+		if( f != null ){
+			throw new TestException( " getStaticFields( Object ) != null" ) ;
+		}
+		System.out.println( "  : ok" ) ;
+		
+	}
+	// }}}
+	
+	// {{{ @Test getstaticmethods
+	private static void getstaticmethods() throws TestException{
+		Method[] m ;
+		
+		// {{{ getStaticMethods( RJavaTools_Test )
+		System.out.print( "    * getStaticMethods( RJavaTools_Test ) " ) ;
+		m = RJavaTools.getStaticMethods( RJavaTools_Test.class ) ;
+		String[] expected = new String[]{ "getStaticX" , "main" };
+		int count = 0; 
+		if( m.length != expected.length ){
+			throw new TestException( " getStaticMethods( RJavaTools_Test ).length != 2" ) ;
+		}
+		for( int i=0; i<m.length; i++){
+			for( int j=0; j<expected.length; j++ ){
+				if( m[i].getName().equals( expected[j] ) ){
+					count++; 
+					break ; // the j loop
+				}
+			}
+		}
+		if( count != expected.length ){
+			throw new TestException( " getStaticMethods( RJavaTools_Test ) != c('main', 'getStaticX') " ) ;
+		}
+		System.out.println( "  : ok" ) ;
+		// }}}
+		
+		// {{{ getStaticMethods( Object )
+		System.out.print( "    * getStaticMethods( Object ) " ) ;
+		m = RJavaTools.getStaticMethods( Object.class ) ;
+		if( m != null ){
+			throw new TestException( " getStaticMethods( Object ) != null" ) ;
+		}
+		System.out.println( "  : ok" ) ;
+		// }}}
+		
+	}
+	// }}}
 	
 	// {{{ TestException class
 	private static class TestException extends Exception{

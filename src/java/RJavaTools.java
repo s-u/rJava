@@ -15,6 +15,64 @@ import java.util.Vector ;
  */
 public class RJavaTools {
 	
+	// getStaticFields and getStaticMethods are almost 
+	// identical, generics would help here
+	
+	/**
+	 * Returns the static fields of the class
+	 *
+	 * @param cl class 
+	 * @return an array of static fields
+	 */
+	public static Field[] getStaticFields( Class cl ){
+		Field[] members = cl.getFields() ;
+		Vector vec = new Vector() ;
+		if( members.length == 0 ){
+			return null;  
+		}
+		int n = members.length ; 
+		for( int i=0; i<n; i++){
+			Field memb = members[i] ;
+			if( isStatic( memb ) ){
+				vec.add( memb ) ; 
+			}
+		}
+		if( vec.size() == 0 ){
+			return null ;
+		}
+		Field[] out = new Field[ vec.size() ] ;
+		vec.toArray( out ) ; 
+		return out ; 
+	}
+	
+	/**
+	 * Returns the static methods of the class
+	 *
+	 * @param cl class 
+	 * @return an array of static fields
+	 */
+	public static Method[] getStaticMethods( Class cl ){
+		Method[] members = cl.getMethods() ;
+		Vector vec = new Vector() ;
+		if( members.length == 0 ){
+			return null;  
+		}
+		int n = members.length ; 
+		for( int i=0; i<n; i++){
+			Method memb = members[i] ;
+			if( isStatic( memb ) ){
+				vec.add( memb ) ; 
+			}
+		}
+		if( vec.size() == 0 ){
+			return null ;
+		}
+		Method[] out = new Method[ vec.size() ] ;
+		vec.toArray( out ) ; 
+		return out ; 
+	}
+	
+	
 	/**
 	 * Returns the names of the fields of a given class
 	 *
