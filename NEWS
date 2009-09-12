@@ -29,6 +29,8 @@
 	An additional class jclassName was created to support static
 	calls to accessor methods such as $ and calls to new().
 
+    o   [RF] added with.jclassName and within.jclassName to support
+        "with" semantics on static fields and methods of java classes
 
 0.7-1	(under development)
     o	[RF] added .J high-level java constructor (based on reflection 

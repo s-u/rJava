@@ -1,23 +1,28 @@
 \name{with.jobjRef}
 \alias{with.jobjRef}
 \alias{within.jobjRef}
+\alias{with.jclassName}
+\alias{within.jclassName}
 \title{
-with and within methods for Java objects
+with and within methods for Java objects and class names
 }
 \description{
 Convenience wrapper that allow calling methods of 
-Java object from within the object.
+Java object and classes from within the object (or class).
 }
 \usage{
 \S3method{with}{jobjRef}(data, expr, ...)
 \S3method{within}{jobjRef}(data, expr, ...)
+
+\S3method{with}{jclassName}(data, expr, ...)
+\S3method{within}{jclassName}(data, expr, ...)
 }
 \arguments{
  \item{data}{
-A Java object reference. See \link{jobjRef-class}
+ A Java object reference or a java class name. See \code{\link{J}}
 }
  \item{expr}{
-expression to evaluate
+R expression to evaluate
 }
  \item{\dots}{
 ignored
@@ -29,11 +34,13 @@ that contains a mapping between the public fields
 and methods of the object. 
 
 The methods of the object are mapped to standard R functions
-in the environment. 
+in the environment. In case of classes, only static methods
+are used.
 
 The fields of the object are mapped to active bindings
 (see \link{makeActiveBinding}) so that they can be accessed
-and modified from within the environment.
+and modified from within the environment. For classes, only 
+static fields are used.
 }
 \value{
 	\code{with} returns the value of the expression and 
@@ -67,6 +74,11 @@ f <- within( .jnew( "javax/swing/JFrame" ) , {
 	setSize( .jnew( "java/awt/Dimension", 400L, 400L ) )
 	setVisible( TRUE )
 } )
+
+Double <- J("java.lang.Double")
+with( Double, MIN_VALUE )
+with( Double, parseDouble( "10.2" ) )
+
 }
 
 }
