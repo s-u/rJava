@@ -3,6 +3,9 @@ import java.lang.reflect.Field ;
 import java.lang.reflect.Constructor ;
 import java.lang.reflect.InvocationTargetException ;
 import java.lang.reflect.Modifier ;
+import java.lang.reflect.Member ;
+
+import java.util.Vector ; 
 
 /** 
  * Tools used internally by rJava.
@@ -11,6 +14,89 @@ import java.lang.reflect.Modifier ;
  * by Romain Francois <francoisromain@free.fr> licensed under GPL v2 or higher.
  */
 public class RJavaTools {
+	
+	/**
+	 * Returns the names of the fields of a given class
+	 *
+	 * @param cl class 
+	 * @param staticRequired if true only static fields are returned
+	 * @return the public (and maybe only static) names of the fields. 
+	 */
+	public static String[] getFieldNames( Class cl, boolean staticRequired ){
+		return getMemberNames( cl.getFields(), staticRequired ) ; 
+	}
+	
+	/**
+	 * Returns the completion names of the methods of a given class. 
+	 * See the getMethodCompletionName method below
+	 *
+	 * @param cl class 
+	 * @param staticRequired if true only static methods are returned
+	 * @return the public (and maybe only static) names of the methods. 
+	 */
+	public static String[] getMethodNames( Class cl, boolean staticRequired ){
+		return getMemberNames( cl.getMethods(), staticRequired ) ;
+	}
+	
+	private static String[] getMemberNames(Member[] members, boolean staticRequired){
+		String[] result = null ;
+		int nm = members.length ;
+		if( nm == 0 ){
+			return new String[0] ;
+		}
+		if( staticRequired ){
+			Vector names = new Vector();
+			for( int i=0; i<nm; i++ ){
+				Member member = members[i] ; 
+				if( isStatic( member ) ){
+					names.add( getCompletionName(member) ) ; 
+				}
+			}
+			if( names.size() == 0 ){
+				return new String[0] ;
+			}
+			result = new String[ names.size() ] ;
+		  names.toArray( result ) ; 
+		} else{ 
+			/* don't need the vector */
+			result = new String[nm] ;
+			for( int i=0; i<nm; i++ ){
+				result[i] = getCompletionName( members[i] ) ;
+			}
+		}
+		return  result; 
+	}
+	
+	/**
+	 * Completion name of a member. 
+	 * 
+	 * <p>For fields, it just returns the name of the fields
+	 *
+	 * <p>For methods, this returns the name of the method
+	 * plus a suffix that depends on the number of arguments of the method.
+	 * 
+	 * <p>The string "()" is added 
+	 * if the method has no arguments, and the string "(" is added
+	 * if the method has one or more arguments.
+	 */
+	public static String getCompletionName(Member m){
+		if( m instanceof Field ) return m.getName();
+		if( m instanceof Method ){
+			String suffix = ( ((Method)m).getParameterTypes().length == 0 ) ? ")" : "" ;
+			return m.getName() + "(" + suffix ;
+		}
+		return "" ;
+	}
+	 
+	/**
+	 * Indicates if a member of a Class (field, method ) is static
+	 * 
+	 * @param member class member
+	 * @return true if the member is static
+	 */
+	public static boolean isStatic( Member member ){
+		return (member.getModifiers() & Modifier.STATIC) != 0  ;
+	}
 	
 	/**
 	 * Checks if the class of the object has the given field. The 
