@@ -218,17 +218,16 @@ setMethod("$<-", c(x="jobjRef"), function(x, name, value) .jfield(x, name) <- va
   else o@jclass
 }
 
-classNamesMethod <- function (cl) {
-  fields <- .jcall(cl, "[Ljava/lang/reflect/Field;", "getFields")
-  fieldnames <- sapply(fields, function(f) .jcall( f, "Ljava/lang/String;", "getName"))
-
-  methodz <- .jcall(cl, "[Ljava/lang/reflect/Method;", "getMethods")
-  methodnames <- sapply(methodz, function(m) .jcall( m, "Ljava/lang/String;", "getName"))
-
-  nargs  <- sapply(methodz, function(m) length(.jcall(m, "[Ljava/lang/Class;", "getParameterTypes" )))
-  methodnames <- paste(methodnames, ifelse( nargs == 0 , "()", "(" ), sep = "")
+### get completion names from RJavaTools
+classNamesMethod <- function (cl, static.only = TRUE ) {
+  fieldnames <- .jcall( "RJavaTools", "[Ljava/lang/String;", 
+  	"getFieldNames", cl, static.only ) 
+  methodnames <- .jcall( "RJavaTools", "[Ljava/lang/String;", 
+  	"getMethodNames", cl, static.only )
   c(fieldnames, methodnames)
 }
 
 ### support for names (useful for completion, thanks to Romain Francois)
-setMethod("names", c(x="jobjRef"), function(x) classNamesMethod(.jcall(x, "Ljava/lang/Class;", "getClass")))
+setMethod("names", c(x="jobjRef"), function(x) {
+	classNamesMethod(.jcall(x, "Ljava/lang/Class;", "getClass"), static.only = FALSE )
+})

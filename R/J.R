@@ -8,7 +8,7 @@ setMethod("$", c(x="jclassName"), function(x, name) {
 	if (classHasField(x@jobj, name, TRUE)) .jfield(x@name, , name) else if (classHasMethod(x@jobj, name, TRUE)) function(...) .jrcall(x@name, name, ...) else stop("no static field or method called `", name, "' in `", x@name, "'")
 })
 setMethod("$<-", c(x="jclassName"), function(x, name, value) .jfield(x@name, name) <- value)
-setMethod("names", c(x="jclassName"), function(x) classNamesMethod(x@jobj))
+setMethod("names", c(x="jclassName"), function(x) classNamesMethod(x@jobj, static.only = TRUE ) )
 setMethod("show", c(object="jclassName"), function(object) invisible(show(paste("Java-Class-Name:",object@name))))
 setMethod("as.character", c(x="jclassName"), function(x, ...) x@name)
 
