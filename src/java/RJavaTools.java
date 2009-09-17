@@ -232,12 +232,19 @@ public class RJavaTools {
 	 */
 	public static Object newInstance( Class o_clazz, Object[] args, Class[] clazzes ) throws Throwable {
 		Constructor cons = getConstructor( o_clazz, clazzes );
+		
+		/* enforcing accessibility (workaround for bug 128) */
+		boolean access = cons.isAccessible(); 
+		cons.setAccessible( true ); 
+		
 		Object o; 
 		try{
 			o = cons.newInstance( args ) ; 
 		} catch( InvocationTargetException e){
 			/* the target exception is much more useful than the reflection wrapper */
 			throw e.getTargetException() ;
+		} finally{
+			cons.setAccessible( access ); 
 		}
 		return o; 
 	}
@@ -250,12 +257,19 @@ public class RJavaTools {
 	 */
 	public static Object invokeMethod( Class o_clazz, Object o, String name, Object[] args, Class[] clazzes) throws Throwable {
 		Method m = getMethod( o_clazz, name, clazzes );
+		
+		/* enforcing accessibility (workaround for bug 128) */
+		boolean access = m.isAccessible(); 
+		m.setAccessible( true ); 
+		
 		Object out; 
 		try{
 			out = m.invoke( o, args ) ; 
 		} catch( InvocationTargetException e){
 			/* the target exception is much more useful than the reflection wrapper */
 			throw e.getTargetException() ;
+		} finally{
+			m.setAccessible( access ); 
 		}
 		return out ; 
 	}

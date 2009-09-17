@@ -5,7 +5,9 @@ import java.lang.reflect.Constructor ;
 import javax.swing.JButton ;
 import javax.swing.ImageIcon ;
 import java.lang.reflect.* ;
-
+import java.util.Map ;
+import java.util.Set ;
+import java.util.HashMap; 
 
 public class RJavaTools_Test {
 
@@ -103,14 +105,19 @@ public class RJavaTools_Test {
 			fails(e);  
 		}
 		success() ;
+
+		System.out.println( "Testing RJavaTools.invokeMethod" ) ;
+		try{
+			invokemethod() ;
+		} catch( TestException e ){
+			fails(e);  
+		}
+		success() ;
 		
 		System.out.println( "Testing RJavaTools.getMethod" ) ;
 		System.out.println( "NOT YET AVAILABLE" ) ;
 		
 		System.out.println( "Testing RJavaTools.newInstance" ) ;
-		System.out.println( "NOT YET AVAILABLE" ) ;
-		
-		System.out.println( "Testing RJavaTools.invokeMethod" ) ;
 		System.out.println( "NOT YET AVAILABLE" ) ;
 		
 	}
@@ -561,7 +568,7 @@ public class RJavaTools_Test {
 		
 	}
 	// }}}
-	
+	 
 	// {{{ @Test getstaticmethods
 	private static void getstaticmethods() throws TestException{
 		Method[] m ;
@@ -597,6 +604,24 @@ public class RJavaTools_Test {
 		System.out.println( "  : ok" ) ;
 		// }}}
 		
+	}
+	// }}}
+	
+	// {{{ @Test invokeMethod
+	private static void invokemethod() throws TestException{
+		
+		// {{{ enforcing accessibility
+		System.out.print( "  * testing enforcing accessibility (bug# 128)" ) ; 
+		Map map = new HashMap(); 
+		map.put( "x", "x" ) ; 
+		Set set = map.entrySet() ; 
+		try{
+			Object o = RJavaTools.invokeMethod( set.getClass(), set, "iterator", (Object[])null, (Class[])null );
+		} catch( Throwable e){
+			throw new TestException( "not able to enforce accessibility" ) ; 
+		}
+		System.out.println( " : ok " ) ;
+		// }}}
 	}
 	// }}}
 	
