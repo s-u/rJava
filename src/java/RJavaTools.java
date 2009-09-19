@@ -204,6 +204,21 @@ public class RJavaTools {
 	}
 	
 	/**
+	 * Checks if the class of the object has the given inner class. The 
+	 * getClasses method of Class is used so only public classes are 
+	 * checked
+	 *
+	 * @param o object
+	 * @param name (simple) name of the inner class
+	 *
+	 * @return <code>true</code> if the class of <code>o</code> has the class <code>name</code>
+	 */
+	public static boolean hasClass(Object o, String name) {
+		return classHasClass(o.getClass(), name, false);
+	}
+	
+	
+	/**
 	 * Checks if the specified class has the given field. The 
 	 * getFields method of Class is used so only public fields are 
 	 * checked
@@ -232,7 +247,7 @@ public class RJavaTools {
 	 * @param name name of the method
 	 * @param staticRequired if <code>true</code> then the method is required to be static
 	 *
-	 * @return <code>true</code> if the class <code>cl</code> has the field <code>name</code>
+	 * @return <code>true</code> if the class <code>cl</code> has the method <code>name</code>
 	 */
 	public static boolean classHasMethod(Class cl, String name, boolean staticRequired) {
 		Method[] methodz = cl.getMethods();
@@ -242,6 +257,24 @@ public class RJavaTools {
 		return false;
 	}
 	
+	/**
+	 * Checks if the specified class has the given inner class. The 
+	 * getClasses method of Class is used so only public classes are 
+	 * checked
+	 *
+	 * @param cl class
+	 * @param name name of the inner class
+	 * @param staticRequired if <code>true</code> then the method is required to be static
+	 *
+	 * @return <code>true</code> if the class <code>cl</code> has the field <code>name</code>
+	 */
+	public static boolean classHasClass(Class cl, String name, boolean staticRequired) {
+		Class[] clazzes = cl.getClasses();
+		for (int i = 0; i < clazzes.length; i++)
+			if (name.equals(clazzes[i].getSimpleName()) && (!staticRequired || isStatic( clazzes[i] ) ) )
+				return true;
+		return false;
+	}
 	
 	/**
 	 * Checks if the class of the object has the given method. The 

@@ -50,6 +50,30 @@ public class RJavaTools_Test {
 		}
 		success() ;
 		
+		System.out.println( "Testing RJavaTools.classHasClass" ) ;
+		try{
+			classhasclass() ;
+		} catch( TestException e ){
+			fails(e);  
+		}
+		success() ;
+	
+		System.out.println( "Testing RJavaTools.hasField" ) ;
+		try{
+			hasfield() ;
+		} catch( TestException e ){
+			fails(e);  
+		}
+		success() ;
+		
+		System.out.println( "Testing RJavaTools.hasClass" ) ;
+		try{
+			hasclass() ;
+		} catch( TestException e ){
+			fails(e);  
+		}
+		success() ;
+		
 		System.out.println( "Testing RJavaTools.hasMethod" ) ;
 		try{
 			hasmethod() ;
@@ -524,8 +548,51 @@ public class RJavaTools_Test {
 	}
 	// }}}
 
+	// {{{ @Test hasclass
+	private static void hasclass() throws TestException{
+		
+		RJavaTools_Test ob = new RJavaTools_Test(); 
+		
+		System.out.print( "    * hasClass( RJavaTools_Test, 'TestException' ) " ) ; 
+		if( ! RJavaTools.hasClass( ob, "TestException" ) ){
+			throw new TestException( " hasClass( RJavaTools_Test, 'TestException' ) == false" ) ;
+		}
+		System.out.println( "  true : ok" ) ;
+
+		System.out.print( "    * hasClass( RJavaTools_Test, 'DummyNonStaticClass' ) " ) ; 
+		if( ! RJavaTools.hasClass( ob, "DummyNonStaticClass" ) ){
+			throw new TestException( " hasClass( RJavaTools_Test, 'DummyNonStaticClass' ) == false" ) ;
+		}
+		System.out.println( "  true : ok" ) ;
+
+	}
+	// }}}
+	
 	// {{{ @Test classhasfield
 	private static void classhasfield() throws TestException{
+
+	}
+	// }}}
+	
+	// {{{ @Test classhasclass
+	private static void classhasclass() throws TestException{
+		System.out.print( "    * classHasClass( RJavaTools_Test, 'TestException', true ) " ) ; 
+		if( ! RJavaTools.classHasClass( RJavaTools_Test.class , "TestException", true ) ){
+			throw new TestException( " classHasClass( RJavaTools_Test, 'TestException', true ) == false" ) ;
+		}
+		System.out.println( "  true : ok" ) ;
+
+		System.out.print( "    * classHasClass( RJavaTools_Test, 'DummyNonStaticClass', true ) " ) ; 
+		if( RJavaTools.classHasClass( RJavaTools_Test.class , "DummyNonStaticClass", true ) ){
+			throw new TestException( " classHasClass( RJavaTools_Test, 'DummyNonStaticClass', true ) == true" ) ;
+		}
+		System.out.println( "  false : ok" ) ;
+
+		System.out.print( "    * classHasClass( RJavaTools_Test, 'DummyNonStaticClass', false ) " ) ; 
+		if( ! RJavaTools.classHasClass( RJavaTools_Test.class , "DummyNonStaticClass", false ) ){
+			throw new TestException( " classHasClass( RJavaTools_Test, 'DummyNonStaticClass', false ) == false" ) ;
+		}
+		System.out.println( "  true : ok" ) ;
 
 	}
 	// }}}
