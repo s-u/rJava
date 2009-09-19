@@ -53,19 +53,25 @@ most suitable method.
 \code{\link{.jcall}}, \code{\link{.jnew}}
 }
 \examples{
+
 \dontrun{
-
-J("java.lang.Double")$parseDouble("10.2")
-
 f <- new(J("java.awt.Frame"), "Hello")
 f$setVisible(TRUE)
+}
+
+\dontshow{.jinit()}
+
+J("java.lang.Double")$parseDouble("10.2")
+J("java.lang.Double", "parseDouble", "10.2" )
+
+Double <- J("java.lang.Double")
+Double$parseDouble( "10.2")
 
 # String[] strings = new String[]{ "string", "array" } ;
 strings <- .jarray("string", "array" )
 # this uses the JList( Object[] ) constructor 
 # even though the "strings" parameter is a String[] 
-l <- new(J("javax.swing.JList"), strings)
+l <- new( J("javax.swing.JList"), strings)
 
-}
 }
 \keyword{interface}
