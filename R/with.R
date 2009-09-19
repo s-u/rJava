@@ -13,40 +13,46 @@
 ##
 ## Author: Romain Francois <francoisromain@free.fr>
 
-## TODO[romain] : there is some code duplication between with.jobjRef
-##                and with.jclassName
+._populate_with_fields_and_methods <- function( env, fields, methods, data, only.static = FALSE ){
+	object <- if( only.static ) .jnull() else .jcast( data )
+	
+	lapply( fields, function(x ){
+  	  n <- .jcall( x, "S", "getName" )
+  	  makeActiveBinding( n, function(v){
+  	    if( missing(v) ){
+  	      ## get
+  	      .jsimplify( .jcall( x, "Ljava/lang/Object;", "get", object ) )
+  	    } else {
+  	      .jcall( x, "V", "set", object, v )
+  	    }
+  	  }, env )
+  	} )
+
+  	lapply( methods, function(m){
+  	  n <- .jcall( m, "S", "getName" )
+  	  if(! exists( n, envir = env, mode = "function" ) ){
+  	    fallback <- tryCatch( match.fun( n ), error = function(e) NULL )
+  	    assign( n, function(...) {
+  	      tryCatch( .jrcall( if(only.static) data@name else data , n, ...), error = function(e){
+  	        if( !is.null(fallback) && inherits(fallback, "function") ){
+  	          fallback( ... )
+  	        }
+  	      } )
+  	    }, env = env )
+  	  }
+  	} )
+}
 
 with.jobjRef <- function( data, expr, ...){
   env <- new.env( parent = environment() )
   clazz <- .jcall( data, "Ljava/lang/Class;", "getClass")
+  
   fields <- .jcall( clazz,  "[Ljava/lang/reflect/Field;", "getFields" )
-  lapply( fields, function(x ){
-    n <- .jcall( x, "S", "getName" )
-    makeActiveBinding( n, function(v){
-      if( missing(v) ){
-        ## get
-        .jsimplify( .jcall( x, "Ljava/lang/Object;", "get", .jcast( data ) ) )
-      } else {
-        .jfield( data, n ) <- v
-      }
-    }, env )
-  } )
-  methods <- .jcall( clazz,
-                    "[Ljava/lang/reflect/Method;", "getMethods" )
-  lapply( methods, function(m){
-    n <- .jcall( m, "S", "getName" )
-    if(! exists( n, envir = env, mode = "function" ) ){
-      fallback <- tryCatch( match.fun( n ), error = function(e) NULL )
-      assign( n, function(...) {
-        tryCatch( .jrcall( data, n, ...), error = function(e){
-          if( !is.null(fallback) && inherits(fallback, "function") ){
-            fallback( ... )
-          }
-        } )
-      }, env = env )
-    }
-  } )
+  methods <- .jcall( clazz, "[Ljava/lang/reflect/Method;", "getMethods" )
+  ._populate_with_fields_and_methods( env, fields, methods, data, only.static = FALSE )
+
   assign( "this", data, env = env )
+
   eval( substitute( expr ), env = env )
 }
 
@@ -60,35 +66,14 @@ within.jobjRef <- function(data, expr, ... ){
 with.jclassName <- function( data, expr, ... ){
 	env <- new.env( parent = environment() )
 	clazz <- data@jobj
-	static_fields  <- .jcall( "RJavaTools", "[Ljava/lang/reflect/Field;",  "getStaticFields",  clazz )
 	
-	lapply( static_fields, function(x ){
-	  n <- .jcall( x, "S", "getName" )
-	  makeActiveBinding( n, function(v){
-	    if( missing(v) ){
-	      ## get
-	      .jsimplify( .jcall( x, "Ljava/lang/Object;", "get", .jnull() ) )
-	    } else {
-	      .jcall( x, "V", "set", .jnull(), v )
-	    }
-	  }, env )
-	} )
-
+	static_fields  <- .jcall( "RJavaTools", "[Ljava/lang/reflect/Field;",  "getStaticFields",  clazz )
 	static_methods <- .jcall( "RJavaTools", "[Ljava/lang/reflect/Method;",  "getStaticMethods",  clazz )
-	lapply( static_methods, function(m){
-  	  n <- .jcall( m, "S", "getName" )
-  	  if(! exists( n, envir = env, mode = "function" ) ){
-  	    fallback <- tryCatch( match.fun( n ), error = function(e) NULL )
-  	    assign( n, function(...) {
-  	      tryCatch( .jrcall( data@name , n, ...), error = function(e){
-  	        if( !is.null(fallback) && inherits(fallback, "function") ){
-  	          fallback( ... )
-  	        }
-  	      } )
-  	    }, env = env )
-  	  }
-  	} )
-    eval( substitute( expr ), env = env )
+	
+	._populate_with_fields_and_methods( env, static_fields, 
+		static_methods, data, only.static = TRUE )
+
+	eval( substitute( expr ), env = env )
 }
 
 within.jclassName <- function(data, expr, ... ){
