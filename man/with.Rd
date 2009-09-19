@@ -74,6 +74,9 @@ f <- within( .jnew( "javax/swing/JFrame" ) , {
 	setSize( .jnew( "java/awt/Dimension", 400L, 400L ) )
 	setVisible( TRUE )
 } )
+}
+
+\dontshow{.jinit()}
 
 Double <- J("java.lang.Double")
 with( Double, MIN_VALUE )
@@ -84,6 +87,13 @@ with( Double, parseDouble( "10.2" ) )
 HashMap <- J("java.util.HashMap")
 with( HashMap, new( SimpleEntry, "key", "value" ) )
 with( HashMap, SimpleEntry )
+
+with( J("java.lang.System"), getProperty("java.home") )
+
+\dontshow{
+stopifnot( with( Double, parseDouble("10.0") ) == 10.0 )
+d <- new( Double, "10.0") 
+stopifnot( with( d, doubleValue() ) == 10.0 )
 }
 
 }
