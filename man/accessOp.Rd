@@ -33,16 +33,22 @@
  This is just a convenience API. Internally all calls are mapped into \code{\link{.jcall}} calls, therefore the calling conventions and returning objects use the same rules. For time-critical Java calls \code{\link{.jcall}} should be used directly.
 }
 \seealso{
-  \code{\link{.jcall}}, \code{\link{.jnew}}, \code{\link{jobjRef-class}}
+  \code{\link{J}}, \code{\link{.jcall}}, \code{\link{.jnew}}, \code{\link{jobjRef-class}}
 }
 \examples{
-\dontrun{
+\dontshow{.jinit()}
+
 v <- new(J("java.lang.String"), "Hello World!")
 v$length()
 v$indexOf("World")
 names(v)
 
-J("java.lang.String")$valueOf(10)
+\dontshow{
+stopifnot( v$length() == 12L )
+stopifnot( v$indexOf("World") == 6L ) 
 }
+
+J("java.lang.String")$valueOf(10)
+
 }
 \keyword{interface}
