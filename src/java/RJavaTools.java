@@ -15,8 +15,41 @@ import java.util.Vector ;
  */
 public class RJavaTools {
 	
-	// getStaticFields and getStaticMethods are almost 
-	// identical, generics would help here
+	/**
+	 * Returns the static inner classes of the class
+	 * 
+	 * @param cl class
+	 * @return an array of classes or null if cl does not have static inner classes
+	 */
+	public static Class[] getStaticClasses(Class cl){
+		 Class[] clazzes = cl.getClasses(); 
+		 if( clazzes == null ) return null; 
+		 
+		 Vector vec = new Vector() ;
+		 int n = clazzes.length; 
+		 for( int i=0; i<n; i++){
+			Class clazz = clazzes[i] ;
+			if( isStatic( clazz ) ){
+				vec.add( clazz ) ; 
+			}
+		}
+		if( vec.size() == 0 ){
+			return null ;
+		}
+		Class[] out = new Class[ vec.size() ] ;
+		vec.toArray( out ) ; 
+		return out ; 
+	}
+	
+	/**
+	 * Indicates if a class is static
+	 * 
+	 * @param clazz class
+	 * @return true if the class is static
+	 */
+	public static boolean isStatic( Class clazz ){
+		return (clazz.getModifiers() & Modifier.STATIC) != 0  ;
+	}
 	
 	/**
 	 * Returns the static fields of the class
@@ -26,10 +59,10 @@ public class RJavaTools {
 	 */
 	public static Field[] getStaticFields( Class cl ){
 		Field[] members = cl.getFields() ;
-		Vector vec = new Vector() ;
 		if( members.length == 0 ){
 			return null;  
 		}
+		Vector vec = new Vector() ;
 		int n = members.length ; 
 		for( int i=0; i<n; i++){
 			Field memb = members[i] ;

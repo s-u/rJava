@@ -106,6 +106,14 @@ public class RJavaTools_Test {
 		}
 		success() ;
 
+		System.out.println( "Testing RJavaTools.getStaticClasses" ) ;
+		try{
+			getstaticclasses() ;
+		} catch( TestException e ){
+			fails(e);  
+		}
+		success() ;
+	
 		System.out.println( "Testing RJavaTools.invokeMethod" ) ;
 		try{
 			invokemethod() ;
@@ -363,7 +371,26 @@ public class RJavaTools_Test {
 			throw new TestException( e.getMessage() ) ;
 		}
 		// }}}
-	
+
+		/* classes */
+		
+		// {{{ isStatic(RJavaTools_Test.TestException) -> true 
+		System.out.print( "    * isStatic(RJavaTools_Test.TestException )" ) ;
+		Class cl = RJavaTools_Test.TestException.class ; 
+		if( ! RJavaTools.isStatic( cl ) ){
+			throw new TestException( "isStatic(RJavaTools_Test.TestException) == false" ) ; 
+		}
+		System.out.println( " = true  : ok " ) ;
+		// }}}
+		
+		// {{{ isStatic(RJavaTools_Test.DummyNonStaticClass) -> false 
+		System.out.print( "    * isStatic(RJavaTools_Test.DummyNonStaticClass )" ) ;
+		cl = RJavaTools_Test.DummyNonStaticClass.class ; 
+		if( RJavaTools.isStatic( cl ) ){
+			throw new TestException( "isStatic(RJavaTools_Test.DummyNonStaticClass) == true" ) ; 
+		}
+		System.out.println( " = false : ok " ) ;
+		// }}}
 	}
 	// }}}
 	
@@ -607,6 +634,34 @@ public class RJavaTools_Test {
 	}
 	// }}}
 	
+	// {{{ @Test getstaticmethods
+	private static void getstaticclasses() throws TestException{
+		Class[] clazzes ;
+		
+		// {{{ getStaticClasses( Object )
+		System.out.print( "    * getStaticClasses( Object ) " ) ;
+		clazzes = RJavaTools.getStaticClasses( Object.class ) ;
+		if( clazzes != null ){
+			throw new TestException( " getStaticClasses( Object ) != null" ) ;
+		}
+		System.out.println( "  : ok" ) ;
+		// }}}
+		
+		// {{{ getStaticClasses( RJavaTools_Test )
+		System.out.print( "    * getStaticClasses( RJavaTools_Test ) " ) ;
+		clazzes = RJavaTools.getStaticClasses( RJavaTools_Test.class ) ;
+		if( clazzes.length != 1 ){
+			throw new TestException( " getStaticClasses( RJavaTools_Test ).length != 1" ) ;
+		}
+		if( clazzes[0] != RJavaTools_Test.TestException.class ){
+			throw new TestException( " getStaticClasses( RJavaTools_Test ) != RJavaTools_Test.TestException" ) ;
+		}
+		System.out.println( "  : ok" ) ;
+		// }}}
+		
+	}
+	// }}}
+	
 	// {{{ @Test invokeMethod
 	private static void invokemethod() throws TestException{
 		
@@ -626,11 +681,15 @@ public class RJavaTools_Test {
 	// }}}
 	
 	// {{{ TestException class
-	private static class TestException extends Exception{
+	public static class TestException extends Exception{
 		public TestException( String message ){
 			super( message ) ;
 		}
 	}
+	// }}}
+	
+	// {{{ Dummy
+	public class DummyNonStaticClass{}
 	// }}}
 	
 }
