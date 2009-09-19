@@ -5,7 +5,16 @@ setGeneric("new")
 setMethod("new", signature(Class="jclassName"), function(Class, ...) .J(Class@name, ...))
 ## this may need some more sophisticated implementation - we just ignore fields for now ...
 setMethod("$", c(x="jclassName"), function(x, name) {
-	if (classHasField(x@jobj, name, TRUE)) .jfield(x@name, , name) else if (classHasMethod(x@jobj, name, TRUE)) function(...) .jrcall(x@name, name, ...) else stop("no static field or method called `", name, "' in `", x@name, "'")
+	if (classHasField(x@jobj, name, TRUE)){
+		.jfield(x@name, , name) 
+	} else if (classHasMethod(x@jobj, name, TRUE)){
+		function(...) .jrcall(x@name, name, ...) 
+	} else if( classHasClass(x@jobj, name, FALSE) ){
+		inner.cl <- .jcall( "RJavaTools", "Ljava/lang/Class;", "getClass", x@jobj, name, FALSE ) 
+		new("jclassName", name=.jcall(inner.cl, "S", "getName"), jobj=inner.cl)
+	} else {
+		stop("no static field or method called `", name, "' in `", x@name, "'")
+	}
 })
 setMethod("$<-", c(x="jclassName"), function(x, name, value) .jfield(x@name, name) <- value)
 setMethod("names", c(x="jclassName"), function(x) classNamesMethod(x@jobj, static.only = TRUE ) )

@@ -183,6 +183,11 @@ hasMethod <- function( x, name ){
 	.jcall("RJavaTools", "Z", "hasMethod", .jcast( x, "java/lang/Object" ), name)
 }
 
+hasClass <- function( x, name){
+	._must_be_character_of_length_one(name)
+	.jcall("RJavaTools", "Z", "hasClass", .jcast( x, "java/lang/Object" ), name)
+}
+
 ### the following ones are needed for the static version of $
 classHasField <- function(x, name, static=FALSE) {
 	if (is(x, "jclassName")) x <- x@jobj else if (!is(x, "jobjRef")) x <- .jfindClass(as.character(x))
@@ -196,6 +201,11 @@ classHasMethod <- function(x, name, static=FALSE) {
 	.jcall("RJavaTools", "Z", "classHasMethod", x, name, static)
 }
 
+classHasClass <- function(x, name, static=FALSE) {
+	if (is(x, "jclassName")) x <- x@jobj else if (!is(x, "jobjRef")) x <- .jfindClass(as.character(x))
+	._must_be_character_of_length_one(name)
+	.jcall("RJavaTools", "Z", "classHasClass", x, name, static)
+}
 
 ### syntactic sugar to allow object$field and object$methods(...)
 ### first attempts to find a field of that name and then a method
@@ -204,6 +214,10 @@ setMethod("$", c(x="jobjRef"), function(x, name) {
 		.jfield(x, , name)
 	} else if( hasMethod( x, name ) ) {
 		function(...) .jrcall(x, name, ...)
+	} else if( hasClass(x, name) ) {
+		cl <- .jcall( x, "Ljava/lang/Class;", "getClass" )
+		inner.cl <- .jcall( "RJavaTools", "Ljava/lang/Class;", "getClass", cl, name, FALSE ) 
+		new("jclassName", name=.jcall(inner.cl, "S", "getName"), jobj=inner.cl)
 	} else {
 		stop( sprintf( "no field or method called '%s' ", name ) ) 
 	}

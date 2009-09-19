@@ -79,6 +79,11 @@ Double <- J("java.lang.Double")
 with( Double, MIN_VALUE )
 with( Double, parseDouble( "10.2" ) )
 
+# inner class example
+% TODO: find a better example
+HashMap <- J("java.util.HashMap")
+with( HashMap, new( SimpleEntry, "key", "value" ) )
+with( HashMap, SimpleEntry )
 }
 
 }

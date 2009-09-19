@@ -16,6 +16,24 @@ import java.util.Vector ;
 public class RJavaTools {
 	
 	/**
+	 * Returns an inner class of the class with the given simple name
+	 * 
+	 * @param cl class
+	 * @param name simple name of the inner class
+	 * @param staticRequired boolean, if <code>true</code> the inner class is required to be static
+	 */
+	public static Class getClass(Class cl, String name, boolean staticRequired){
+		Class[] clazzes = cl.getClasses(); 
+		for( int i=0; i<clazzes.length; i++){
+			if( clazzes[i].getSimpleName().equals( name ) && ( !staticRequired || isStatic(clazzes[i]) ) ){
+				return clazzes[i] ;
+			}
+		}
+		return null; 
+	}
+	
+	
+	/**
 	 * Returns the static inner classes of the class
 	 * 
 	 * @param cl class
