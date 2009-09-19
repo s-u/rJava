@@ -16,7 +16,7 @@ o \%instanceof\% cl
   \item{o}{java object reference}
   \item{cl}{java class. This can be a character vector of length one
   giving the name of the class, or another java object, or an instance
-  of the Class class.}
+  of the Class class, or a object of class \code{jclassName}.}
 }
 \value{
 TRUE if o is an instance of cl
@@ -25,21 +25,37 @@ TRUE if o is an instance of cl
 Romain Francois <francoisromain@free.fr>
 }
 \examples{
-	\dontrun{
-		label <- .jnew( "javax/swing/JLabel" )
-		
-		# character
-		label \%instanceof\% "javax.swing.JLabel"
-		label \%instanceof\% "javax/swing/JComponent"
-		
-		# instance of Class
-		jlabel.class <- .jfindClass( "javax/swing/JLabel" )
-		label \%instanceof\% jlabel.class
-		
-		# other object
-		other.label <- .jnew( "javax/swing/JLabel" )
-		label \%instanceof\% other.label
-	}
+\dontshow{
+.jinit()
 }
-\keyword{ manip }
+Double <- J("java.lang.Double")
+d <- new( Double, "10.2" )
+
+# character
+d \%instanceof\% "java.lang.Double"
+d \%instanceof\% "java.lang.Number"
+
+# jclassName
+d \%instanceof\% Double
+
+# instance of Class
+Double.class <- Double@jobj
+d \%instanceof\% Double.class
+
+# other object
+other.double <- new( Double, 10.2 )
+d \%instanceof\% other.double
+
+\dontshow{
+% simple unit tests
+stopifnot( d \%instanceof\% "java.lang.Double" )
+stopifnot( d \%instanceof\% "java.lang.Number" )
+stopifnot( d \%instanceof\% "java.lang.Object" )
+stopifnot( d \%instanceof\% Double.class )
+stopifnot( d \%instanceof\% other.double )
+stopifnot( d \%instanceof\% Double )
+}
+
+}
+\keyword{ interface }
 

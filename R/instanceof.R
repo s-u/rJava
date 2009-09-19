@@ -6,11 +6,13 @@
 	
 	# first get the class object that represents cl
 	if( inherits( cl, "jobjRef" ) ){
-		if( .jclass( cl ) == "Class" ){
+		if( .jclass( cl ) == "java.lang.Class" ){
 			clazz <- cl
 		} else {
 			clazz <- .jcall( cl, "Ljava/lang/Class;", "getClass" ) 
 		}
+	} else if( inherits( cl, "jclassName" ) ) {
+		clazz <- cl@jobj
 	} else if( inherits( cl, "character" ) ){
 		clazz <- .jfindClass(cl)
 	} else {
