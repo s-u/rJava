@@ -24,6 +24,9 @@ length( array )
 # also works as a pseudo field as in java
 array$length
 \dontshow{stopifnot(array$length == 2L)}
+# also with with
+with( array, length )
+\dontshow{stopifnot( with(array, length) == 2L )}
 }
 
 \keyword{interface}
