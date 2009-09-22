@@ -218,8 +218,10 @@ setMethod("$", c(x="jobjRef"), function(x, name) {
 		cl <- .jcall( x, "Ljava/lang/Class;", "getClass" )
 		inner.cl <- .jcall( "RJavaTools", "Ljava/lang/Class;", "getClass", cl, name, FALSE ) 
 		new("jclassName", name=.jcall(inner.cl, "S", "getName"), jobj=inner.cl)
+	} else if( is.character(name) && length(name) == 1L && name == "length" && isJavaArray(x) ){
+		length( x )
 	} else {
-		stop( sprintf( "no field or method called '%s' ", name ) ) 
+		stop( sprintf( "no field, method or inner class called '%s' ", name ) ) 
 	}
 })
 

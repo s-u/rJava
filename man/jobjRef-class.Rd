@@ -17,16 +17,8 @@ Objects of this class should *not* be created directly. Instead, the function \c
 \section{Methods}{
 This object's Java methods are not accessed directly. Instead, \code{\link{.jcall}} JNI-API should be used for invoking Java methods. For convenience the \code{$} operator can be used to call methods via reflection API.
 }
-%\references{ ~put references to the literature/web site here ~ }
 \author{ Simon Urbanek }
-%\note{ ~~further notes~~ }
-
-% ~Make other sections like Warning with \section{Warning }{....} ~
-
 \seealso{
   \code{\link{.jnew}}, \code{\link{.jcall}}  or \code{\link{jarrayRef-class}}
 }
-%\examples{
-%##---- Should be DIRECTLY executable !! ----
-%}
 \keyword{classes}

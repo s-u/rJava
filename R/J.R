@@ -13,7 +13,7 @@ setMethod("$", c(x="jclassName"), function(x, name) {
 		inner.cl <- .jcall( "RJavaTools", "Ljava/lang/Class;", "getClass", x@jobj, name, FALSE ) 
 		new("jclassName", name=.jcall(inner.cl, "S", "getName"), jobj=inner.cl)
 	} else {
-		stop("no static field or method called `", name, "' in `", x@name, "'")
+		stop("no static field, method or inner class called `", name, "' in `", x@name, "'")
 	}
 })
 setMethod("$<-", c(x="jclassName"), function(x, name, value) .jfield(x@name, name) <- value)

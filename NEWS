@@ -32,6 +32,16 @@
     o   [RF] added with.jclassName and within.jclassName to support
         "with" semantics on static fields and methods of java classes
 
+    o   [RF] added (unexported) isJavaArray function to check if 
+        a "jobjRef" or a "jarrayRef" refers to a java array
+
+    o   [RF] added length.jobjRef and length.jarrayRef to query the number
+        of objects in a java array. An error message is generated if the 
+        object is not an array
+
+    o   [RF] added "length" pseudo field for java arrays in syntactic sugar 
+        and with semantics
+
 0.7-1	(under development)
     o	[RF] added .J high-level java constructor (based on reflection 
 	as opposed to complete match as .jnew does)

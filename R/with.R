@@ -30,7 +30,7 @@
   		  }, env )
   		} )
   	}
-
+  	
   	# methods
   	if( !is.jnull(methods) ){
   		lapply( methods, function(m){
@@ -67,6 +67,17 @@ with.jobjRef <- function( data, expr, ...){
   ._populate_with_fields_and_methods( env, fields, methods, classes, data, only.static = FALSE )
 
   assign( "this", data, env = env )
+
+  # if data is an array, then add length pseudo field
+  if( isJavaArray(data) ){
+  	makeActiveBinding( "length", function(v){
+  		if( missing( v ) ){
+  			._length_java_array( data )
+  		} else{
+  			stop( "cannot modify length of java array" ) 
+  		}
+  	}, env = env )
+  }
 
   eval( substitute( expr ), env = env )
 }
