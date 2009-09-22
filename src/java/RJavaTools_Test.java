@@ -26,140 +26,84 @@ public class RJavaTools_Test {
 	// {{{ main 
 	public static void main( String[] args){
 		
-		System.out.println( "Testing RJavaTools.getConstructor" ) ;
 		try{
+			System.out.println( "Testing RJavaTools.getConstructor" ) ;
 			constructors() ;
-		} catch( TestException e ){
-			fails(e);  
-		}
-		success() ;
-		
-		System.out.println( "Testing RJavaTools.classHasField" ) ;
-		try{
+			success() ; 
+			
+			System.out.println( "Testing RJavaTools.classHasField" ) ;
 			classhasfield() ;
-		} catch( TestException e ){
-			fails(e);  
-		}
-		success() ;
-	
-		System.out.println( "Testing RJavaTools.classHasMethod" ) ;
-		try{
+			success(); 
+			
+			System.out.println( "Testing RJavaTools.classHasMethod" ) ;
 			classhasmethod() ;
-		} catch( TestException e ){
-			fails(e);  
-		}
-		success() ;
-		
-		System.out.println( "Testing RJavaTools.classHasClass" ) ;
-		try{
+			success() ;
+			
+			System.out.println( "Testing RJavaTools.classHasClass" ) ;
 			classhasclass() ;
-		} catch( TestException e ){
-			fails(e);  
-		}
-		success() ;
-	
-		System.out.println( "Testing RJavaTools.hasField" ) ;
-		try{
+			success(); 
+		
+			System.out.println( "Testing RJavaTools.hasField" ) ;
 			hasfield() ;
-		} catch( TestException e ){
-			fails(e);  
-		}
-		success() ;
-		
-		System.out.println( "Testing RJavaTools.hasClass" ) ;
-		try{
+			success(); 
+			
+			System.out.println( "Testing RJavaTools.hasClass" ) ;
 			hasclass() ;
-		} catch( TestException e ){
-			fails(e);  
-		}
-		success() ;
-		
-		System.out.println( "Testing RJavaTools.getClass" ) ;
-		try{
+			success(); 
+			
+			System.out.println( "Testing RJavaTools.getClass" ) ;
 			getclass() ;
-		} catch( TestException e ){
-			fails(e);  
-		}
-		success() ;
-		
-		System.out.println( "Testing RJavaTools.hasMethod" ) ;
-		try{
+			success() ;
+			
+			System.out.println( "Testing RJavaTools.hasMethod" ) ;
 			hasmethod() ;
-		} catch( TestException e ){
-			fails(e);  
-		}
-		success() ;
+			success() ;
 		
-		System.out.println( "Testing RJavaTools.isStatic" ) ;
-		try{
+			System.out.println( "Testing RJavaTools.isStatic" ) ;
 			isstatic() ;
-		} catch( TestException e ){
-			fails(e) ; 
-		}
-		success() ;  
-		
-		System.out.println( "Testing RJavaTools.getCompletionName" ) ;
-		try{
+			success() ; 
+			
+			System.out.println( "Testing RJavaTools.getCompletionName" ) ;
 			getcompletionname() ;
-		} catch( TestException e ){
-			fails(e);  
-		}
-		success() ;
-		
-		System.out.println( "Testing RJavaTools.getFieldNames" ) ;
-		try{
+			success(); 
+			
+			System.out.println( "Testing RJavaTools.getFieldNames" ) ;
 			getfieldnames() ;
-		} catch( TestException e ){
-			fails(e);  
-		}
-		success() ;
-		
-		System.out.println( "Testing RJavaTools.getMethodNames" ) ;
-		try{
+			success() ;
+			
+			System.out.println( "Testing RJavaTools.getMethodNames" ) ;
 			getmethodnames() ;
-		} catch( TestException e ){
-			fails(e);  
-		}
-		success() ;
-		
-		System.out.println( "Testing RJavaTools.getStaticFields" ) ;
-		try{
+			success() ;
+			
+			System.out.println( "Testing RJavaTools.getStaticFields" ) ;
 			getstaticfields() ;
-		} catch( TestException e ){
-			fails(e);  
-		}
-		success() ;
+			success() ;
 		
-		System.out.println( "Testing RJavaTools.getStaticMethods" ) ;
-		try{
+			System.out.println( "Testing RJavaTools.getStaticMethods" ) ;
 			getstaticmethods() ;
-		} catch( TestException e ){
-			fails(e);  
-		}
-		success() ;
+			success() ;
 
-		System.out.println( "Testing RJavaTools.getStaticClasses" ) ;
-		try{
+			System.out.println( "Testing RJavaTools.getStaticClasses" ) ;
 			getstaticclasses() ;
-		} catch( TestException e ){
-			fails(e);  
-		}
-		success() ;
+			success() ;
 	
-		System.out.println( "Testing RJavaTools.invokeMethod" ) ;
-		try{
+			System.out.println( "Testing RJavaTools.invokeMethod" ) ;
 			invokemethod() ;
-		} catch( TestException e ){
-			fails(e);  
+			success() ;
+		
+			System.out.println( "Testing RJavaTools.isArray" ) ;
+			isarray() ;
+			success() ;
+			
+			System.out.println( "Testing RJavaTools.getMethod" ) ;
+			System.out.println( "NOT YET AVAILABLE" ) ;
+			
+			System.out.println( "Testing RJavaTools.newInstance" ) ;
+			System.out.println( "NOT YET AVAILABLE" ) ;
+		} catch( TestException e){
+			fails( e ) ; 
+			System.exit(1); 
 		}
-		success() ;
-		
-		System.out.println( "Testing RJavaTools.getMethod" ) ;
-		System.out.println( "NOT YET AVAILABLE" ) ;
-		
-		System.out.println( "Testing RJavaTools.newInstance" ) ;
-		System.out.println( "NOT YET AVAILABLE" ) ;
-		
 	}
 	// }}}
 
@@ -174,6 +118,36 @@ public class RJavaTools_Test {
 	// {{{ success
 	private static void success(){
 		System.out.println( "PASSED" ) ;    
+	}
+	// }}}
+	
+	// {{{ isArray
+	private static void isarray() throws TestException{
+		
+		// {{{ isArray( null )
+		System.out.print( "    * isArray( null) " ) ;
+		if( RJavaTools.isArray( null ) ){
+			throw new TestException( "isArray( null) == true") ; 
+		}
+		System.out.println( " false : ok " ) ;
+		// }}}
+		
+		// {{{ isArray( String )
+		System.out.print( "    * isArray( String ) " ) ;
+		if( RJavaTools.isArray( new String( "hello" ) ) ){
+			throw new TestException( "isArray( String ) == true") ; 
+		}
+		System.out.println( " false : ok " ) ;
+		// }}}
+		
+		// {{{ isArray( String[] )
+		System.out.print( "    * isArray( String[] ) " ) ;
+		if( !RJavaTools.isArray( new String[]{ "hello" } ) ){
+			throw new TestException( "isArray( String[] ) == false") ; 
+		}
+		System.out.println( " true : ok " ) ;
+		// }}}
+		
 	}
 	// }}}
 	
@@ -236,6 +210,8 @@ public class RJavaTools_Test {
 	// {{{ @Test getMethodNames
 	private static void getmethodnames() throws TestException{
 		String[] names ; 
+		String[] expected ;
+		int cpt = 0;
 		
 		// {{{ getMethodNames(RJavaTools_Test, true) -> c('getStaticX()', 'main(' )
 		System.out.print( "    * getMethodNames(RJavaTools_Test, true)" ) ;
@@ -243,10 +219,18 @@ public class RJavaTools_Test {
 		if( names.length != 2 ){
 			throw new TestException( "getMethodNames(RJavaTools_Test, true).length != 2 (" + names.length + ")" ) ;
 		}
-		for( int i=0; i<2; i++){
-			if( !( "getStaticX()".equals(names[i]) || "main(".equals(names[i] ) ) ){
-				throw new TestException( "getMethodNames(RJavaTools_Test, true) != c('getStaticX()','main(') " ) ;
+		expected= new String[]{ "getStaticX()", "main(" };
+		cpt = 0; 
+		for( int i=0; i<names.length; i++){
+			for( int j=0; j<expected.length; j++ ){
+				if( names[i].equals( expected[j] ) ){
+					cpt++ ;
+					break; // j loop
+				}
 			}
+		}
+		if( cpt != expected.length ){
+			throw new TestException( "getMethodNames(RJavaTools_Test, true) != {'getStaticX()','main('}" ) ;
 		}
 		System.out.println( " : ok " ) ;
 		// }}}
@@ -263,8 +247,8 @@ public class RJavaTools_Test {
 		// {{{ getMethodNames(RJavaTools_Test, false) %contains% { "getX()", "getStaticX()", "setX(", "main(" }
 		System.out.print( "    * getMethodNames(RJavaTools_Test, false)" ) ;
 		names = RJavaTools.getMethodNames( RJavaTools_Test.class, false ) ;
-		int cpt = 0;
-		String[] expected = new String[]{ "getX()", "getStaticX()", "setX(", "main(" }; 
+		cpt = 0;
+		expected = new String[]{ "getX()", "getStaticX()", "setX(", "main(" }; 
 		for( int i=0; i<names.length; i++){
 			for( int j=0; j<expected.length; j++ ){
 				if( names[i].equals( expected[j] ) ){
@@ -604,7 +588,6 @@ public class RJavaTools_Test {
 	}
 	// }}}
 	
-	
 	// {{{ @Test classhasfield
 	private static void classhasfield() throws TestException{
 
@@ -738,7 +721,7 @@ public class RJavaTools_Test {
 	}
 	// }}}
 	
-	// {{{ @Test getstaticmethods
+	// {{{ @Test getstaticclasses
 	private static void getstaticclasses() throws TestException{
 		Class[] clazzes ;
 		
