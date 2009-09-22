@@ -26,7 +26,15 @@ array$length
 \dontshow{stopifnot(array$length == 2L)}
 # also with with
 with( array, length )
-\dontshow{stopifnot( with(array, length) == 2L )}
+\dontshow{
+	stopifnot( with(array, length) == 2L )
+}
+# java objects that are not arrays generate errors
+d <- new( J("java.lang.Double"), "10.3" )
+try( length( d ) )
+\dontshow{
+	stopifnot( inherits( try( length( d ), silent = TRUE ) , "try-error" ) )
+}
 }
 
 \keyword{interface}
