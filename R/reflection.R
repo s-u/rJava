@@ -37,24 +37,28 @@
 .primitive.classes = c("java/lang/Byte", "java/lang/Integer", "java/lang/Double", "java/lang/Boolean",
                        "java/lang/Long", "java/lang/Character", "java/lang/Short", "java/lang/Float")
 
+### creates a valid java object
+### if a is already a java object reference, all is good
+### otherwise some primitive conversion occurs
+._java_valid_object <- function(a) {
+  if (inherits(a, "jobjRef") || inherits(a, "jarrayRef")) a 
+  else if (is.null(a)) .jnull() else {
+    cm <- match(class(a)[1], names(.class.to.jclass))
+    if (!any(is.na(cm))) { 
+    	if (length(a) == 1) { 
+    		y <- .jnew(.class.to.jclass[cm], a)
+    		if (.class.to.jclass[cm] %in% .primitive.classes) attr(y, "primitive") <- TRUE
+    		y 
+    	} else .jarray(a)
+    } else {
+      stop("Sorry, parameter type `", cm ,"' is ambiguous or not supported.")
+    }
+  }
+}
+                       
 ### creates a list of valid java parameters, used in both .J and .jrcall
 ._java_valid_objects_list <- function( ... ){
-  p <- lapply(list(...), function(a) {
-    if (inherits(a, "jobjRef") || inherits(a, "jarrayRef")) a 
-    else if (is.null(a)) .jnull() else {
-      cm <- match(class(a)[1], names(.class.to.jclass))
-      if (!any(is.na(cm))) { 
-      	if (length(a) == 1) { 
-      		y <- .jnew(.class.to.jclass[cm], a)
-      		if (.class.to.jclass[cm] %in% .primitive.classes) attr(y, "primitive") <- TRUE
-      		y 
-      	} else .jarray(a)
-      } else {
-        stop("Sorry, parameter type `", cm ,"' is ambiguous or not supported.")
-      }
-    }
-  })
-  p
+  lapply(list(...), ._java_valid_object )
 }
 
 ### returns a list of Class objects
