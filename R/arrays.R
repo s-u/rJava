@@ -1,3 +1,6 @@
+# :tabSize=4:indentSize=4:noTabs=false:folding=explicit:collapseFolds=1:
+ 
+# {{{ utilities to deal with arrays
 #' Indicates if a object refers to a java array
 #' 
 #' @param o object 
@@ -8,7 +11,41 @@ isJavaArray <- function( o ){
 		.jcall( "RJavaTools", "Z", "isArray", .jcast(o) )
 	} else FALSE
 }
+._must_be_java_array <- function( o, message = "object is not a java array" ){
+	if( !isJavaArray(o ) ){
+		stop( message )
+	}
+}
+#' get the component type of a java array
+getComponentType <- function( o, check = TRUE ){
+	if( check ) ._must_be_java_array( o )
+	.jcall( .jcall( o, "Ljava/lang/Class;", "getClass" ), "Ljava/lang/Class;", "getComponentType" )
+}
 
+._jarray_simplify <- function( x ){
+	._must_be_java_array( x )
+	clname <- .jclass(x, true = TRUE )
+	
+	Array <- "java/lang/reflect/Array"
+	obj <- switch( clname, 
+		# deal with array of primitive first
+		"[I"                  = .Call("RgetIntArrayCont"   , x@jobj, PACKAGE="rJava"), 
+		"[J"                  = .Call("RgetLongArrayCont"  , x@jobj, PACKAGE="rJava"), 
+		"[Z"                  = .Call("RgetBoolArrayCont"  , x@jobj, PACKAGE="rJava") , 
+		"[B"                  = .Call("RgetByteArrayCont"  , x@jobj, PACKAGE="rJava") ,
+		"[D"                  = .Call("RgetDoubleArrayCont", x@jobj, PACKAGE="rJava") ,
+		"[S"                  = .Call("RgetShortArrayCont" , x@jobj, PACKAGE="rJava") , 
+		"[C"                  = .Call("RgetCharArrayCont"  , x@jobj, PACKAGE="rJava") ,
+		"[F"                  = .Call("RgetFloatArrayCont" , x@jobj, PACKAGE="rJava") , 
+		"[Ljava.lang.String;" = .Call("RgetStringArrayCont", x@jobj, PACKAGE="rJava"),
+		
+		# otherwise, just get the object
+		x )
+	obj
+}
+# }}}
+
+# {{{ length
 #' reflectively get the length of the array
 ._length_java_array <- function(x){
 	if( isJavaArray( x ) ){
@@ -20,6 +57,9 @@ isJavaArray <- function( o ){
 
 setMethod( "length", "jobjRef", ._length_java_array )
 setMethod( "length", "jarrayRef", ._length_java_array )
+# }}}
+
+# {{{ single bracket indexing : [
 
 # indexing of .jarrayRef
 # is is not quite clear what the proper result should be, because technically
@@ -45,27 +85,42 @@ setMethod( "length", "jarrayRef", ._length_java_array )
 		stop( "`x` is not a reference to a java array" ) 
 	}
 	
+	# the component type of the array
+	component.type <- getComponentType( x, check = FALSE )
+	
 	# 'eval' the array
 	ja <- .jevalArray( x )
 	
 	# native type - use R subsetting and maybe remap to java 
 	if (!is.list(ja)) { 
+		# perform the subset
 		o <- ja[i]
+		
+		# return native type if simplify
 		if( simplify ){
-			return(o) # return native type
+			return(o) 
 		}
 		
 		if( length(o) == 0L) {
-			# hmmm ... not sure about this
-			# maybe this should be an array of length 0
-			return( .jnull() )
+			if( drop ){
+				# that sounds alright ?
+				return( .jnull( ) )
+			} else{
+				# return an array of the same component type as the original array
+				# but of length 0
+				return( .jcall( "java/lang/reflect/Array", "Ljava/lang/Object;", "newInstance", component.type, 0L  ) )
+			}
 		} else if( length(o) == 1L ){
 			# wrap it as a java object or java array if ! drop
 			valid_obj <- ._java_valid_object(o)
-			return( if(drop) valid_obj else .jarray(valid_obj) ) 
+			if( drop ){
+				return(valid_obj)
+			} else {
+				return( .jarray(valid_obj) )
+			}
 		} else {
-			# then we ignore drop
-			return( ._java_valid_object( o ) )
+			# drop makes no sense here
+			return( .jarray( o ) )
 		}
 	}
 	
@@ -73,43 +128,107 @@ setMethod( "length", "jarrayRef", ._length_java_array )
 	sl <- ja[i]
 	
 	if( length( sl ) == 0L ){
-		return( .jnull() ) # hmmm not sure 
-	} else if(length(sl) == 1L){
-		if( drop ){ # return the object
-			java_obj <- sl[[1]]
-			if( simplify ){
-				return( .jsimplify(java_obj) ) 
-			} else{
-				return( java_obj )
-			}
-			
+		if( simplify ){
+			return( NULL )
+		}
+		if( drop ){
+			return( .jnull( ) )
+		} else{
+			return( .jcall( "java/lang/reflect/Array", "Ljava/lang/Object;", "newInstance", component.type, 0L  ) )
 		} 
+	} else if(length(sl) == 1L && drop ){
+		java_obj <- sl[[1]]
+		if( simplify ){
+			return( .jsimplify(java_obj) ) 
+		} else{
+			return( java_obj )
+		}
+	} else{
+		# just return the array
+		# maybe we should use the Class#getComponentType() method  to check if 
+		# we can simplify further
+		# for example: 
+		# Object[] objs = new Object[3]
+		# objs[0] = "string"
+		# objs[1] = "string"
+		# objs[2] = new java.awt.Point( )
+		# what should this return :
+		# objs[1:2, simplify = TRUE ]
+		return( .jarray( sl ) )
 	}
-	
-	# just return the array
-	# maybe we should use the Class#getComponentType() method  to check if 
-	# we need to simplify
-	return( .jarray( sl ) )
-	
 }
 
-# not yet
-
 # ## this is all weird - we need to distinguish between x[i] and x[i,] yet S4 fails to do so ...
-# setMethod( "[", signature( x = "jobjRef", i = "ANY", j = "missing" ), 
-# 	function(x, i, j, ..., drop = TRUE){
-# 		# try to extract simplify argument from ...
-# 		dots <- list(...)
-# 		pm <- pmatch( "simplify", names( dots ), duplicates.ok = FALSE )
-# 		if( any(!is.na(pm) ) ){
-# 			simplify <- dots[ !is.na(pm) ][[1]]
-# 			if( isTRUE(simplify ) ){
-# 				return( ._java_array_single_indexer( x, i, drop, simplify = TRUE ) )
-# 			}
-# 		}
-# 		._java_array_single_indexer( x, i, drop, simplify = FALSE )
-# 	} )
-# # 
-# # setMethod( "[[", signature( x = "jarrayRef", i = "ANY", j = "missing"), function(x, i, j, ...) .jevalArray(x)[[i]])
+setMethod( "[", signature( x = "jobjRef", i = "ANY", j = "missing" ), 
+	function(x, i, j, ..., drop = FALSE){
+		._java_array_single_indexer( x, i, drop = drop, ... )
+	} )
+# }}}
 
+# {{{ double bracket indexing : [[
+._java_array_double_indexer <- function( x, i ){
+	# initial checks
+	._must_be_java_array( x )
+	i <- as.integer(i)[1L] - 1L # only one integer (shift one for java style indexing)
+	
+	cl <- .jcall( x, "Ljava/lang/Class;", "getClass" )
+	clname <- .jcall( cl, "Ljava/lang/String;", "getName") 
+	
+	Array <- "java/lang/reflect/Array"
+	o <- .jcast( x, "java/lang/Object" )
+	obj <- switch( clname, 
+		# deal with array of primitive first
+		"[I"                  = .jcall( Array, "I",                  "getInt"         , o, i )  ,
+		"[J"                  = .jcall( Array, "J",                  "getLong"        , o, i )  , # should I jlong this
+		"[Z"                  = .jcall( Array, "Z",                  "getBoolean"     , o, i )  , 
+		"[B"                  = .jcall( Array, "B",                  "getByte"        , o, i )  ,
+		"[D"                  = .jcall( Array, "D",                  "getDouble"      , o, i )  ,
+		"[S"                  = .jcall( Array, "T",                  "getShort"       , o, i )  , # should I jshort this
+		"[C"                  = .jcall( Array, "C",                  "getChar"        , o, i )  , # int or character ?
+		"[F"                  = .jcall( Array, "F",                  "getFloat"       , o, i )  , 
+		"[Ljava.lang.String;" = .jsimplify( .jcall( Array, "Ljava/lang/Object;", "get", o, i ) ),
+		
+		# otherwise, just get the object
+			                    .jcall( Array, "Ljava/lang/Object;", "get"            , o, i ) )
+	obj
+}
 
+# this is the only case that makes sense: i is an integer or a numeric of length one
+# we cannot use logical indexing or indexing by name because there is no such thing in java
+setMethod( "[[", signature( x = "jobjRef", i = "integer", j = "missing"), 
+	function(x, i, j, ...){
+		._java_array_double_indexer( x, i, ... )
+	} )
+setMethod( "[[", signature( x = "jobjRef", i = "numeric", j = "missing"), 
+	function(x, i, j, ...){
+		._java_array_double_indexer( x, as.integer(i), ... )
+	} )
+# }}}
+
+# {{{ head and tail
+setGeneric( "head" )
+setMethod("head", signature( x = "jobjRef" ), function(x, n = 6L, ... ){
+	if( !isJavaArray( x ) ){
+		stop( "not a java array" )
+	}
+	n_objs <- length(x)
+	if( abs( n ) >= n_objs ){
+		return( x )
+	}
+	len <- if( n > 0L ) n else n_objs + n
+	x[seq_len(n), ... ]
+} )
+
+setGeneric( "tail" )
+setMethod("tail", signature( x = "jobjRef" ), function(x, n = 6L, ... ){
+	if( !isJavaArray( x ) ){
+		stop( "not a java array" )
+	}
+	n_objs <- length(x)
+	if( abs( n ) >= n_objs ) return(x)
+	if( n < 0L){ 
+		n <- n_objs + n
+	}
+	return( x[ seq.int( n_objs-n+1, n_objs ) , ... ] )
+} )
+# }}}

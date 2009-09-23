@@ -3,7 +3,7 @@ jclassName <- function(class) new("jclassName", name=gsub("/",".",as.character(c
 
 setGeneric("new")
 setMethod("new", signature(Class="jclassName"), function(Class, ...) .J(Class@name, ...))
-## this may need some more sophisticated implementation - we just ignore fields for now ...
+
 setMethod("$", c(x="jclassName"), function(x, name) {
 	if (classHasField(x@jobj, name, TRUE)){
 		.jfield(x@name, , name) 

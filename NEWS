@@ -41,6 +41,8 @@
 
     o   [RF] added "length" pseudo field for java arrays in syntactic sugar 
         and with semantics
+        
+    o   [RF] R-style indexing of java arrays using [, [[, head and tail
 
 0.7-1	(under development)
     o	[RF] added .J high-level java constructor (based on reflection 

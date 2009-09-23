@@ -95,9 +95,15 @@
   	.jarray(pc, "java/lang/Class") )
   
   # simplify if needed and return the object
-  if (simplify && !is.jnull(r)) .jsimplify(r) else
-  if (is.jnull(r)) invisible(NULL)
-  else r
+  if( isJavaArray(r) && !is.jnull(r) && simplify ){
+  	._jarray_simplify( r )
+  } else if (simplify && !is.jnull(r)){
+  	  .jsimplify(r) 
+  } else if (is.jnull(r)) {
+  	  invisible(NULL)
+  } else {
+  	  r
+  }
 }
 
 ### reflected construction of java objects
