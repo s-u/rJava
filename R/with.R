@@ -33,18 +33,19 @@
   	
   	# methods
   	if( !is.jnull(methods) ){
+  		done.this <- NULL
   		lapply( methods, function(m){
-  		  n <- .jcall( m, "S", "getName" )
-  		  if(! exists( n, envir = env, mode = "function" ) ){
-  		    fallback <- tryCatch( match.fun( n ), error = function(e) NULL )
-  		    assign( n, function(...) {
-  		      tryCatch( .jrcall( if(only.static) data@name else data , n, ...), error = function(e){
-  		        if( !is.null(fallback) && inherits(fallback, "function") ){
-  		          fallback( ... )
-  		        }
-  		      } )
-  		    }, env = env )
-  		  }
+  			n <- .jcall( m, "S", "getName" )
+  			if( n %in% done.this ) return()
+  		  fallback <- tryCatch( match.fun( n ), error = function(e) NULL )
+  		  assign( n, function(...) {
+  		    tryCatch( .jrcall( if(only.static) data@name else data , n, ...), error = function(e){
+  		      if( !is.null(fallback) && inherits(fallback, "function") ){
+  		        fallback( ... )
+  		      }
+  		    } )
+  		  }, env = env )
+  		  done.this <<- c( done.this, n )
   		} )
   	}
   	
@@ -55,6 +56,18 @@
   			assign( name, new("jclassName", name=.jcall(cl, "S", "getName"), jobj=cl), env = env )
   		} )
   	}
+}
+grabDots <- function( env, ...){
+  dots <- list(...)
+  if( length( dots ) ){
+  	dots.names <- names(dots)
+  	sapply( dots.names, function( name ){
+  		if( name != "" ){
+  			assign( name, dots[[ name ]], env = env )
+  		}
+  	} )
+  	
+  }
 }
 
 with.jobjRef <- function( data, expr, ...){
@@ -79,6 +92,8 @@ with.jobjRef <- function( data, expr, ...){
   	}, env = env )
   }
 
+  grabDots( ..., env )
+  
   eval( substitute( expr ), env = env )
 }
 
@@ -99,7 +114,8 @@ with.jclassName <- function( data, expr, ... ){
 	
 	._populate_with_fields_and_methods( env, static_fields, 
 		static_methods, static_classes, data, only.static = TRUE )
-
+	
+	grabDots( ..., env )
 	eval( substitute( expr ), env = env )
 }
 

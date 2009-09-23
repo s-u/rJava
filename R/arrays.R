@@ -58,6 +58,10 @@ getComponentType <- function( o, check = TRUE ){
 
 setMethod( "length", "jobjRef", ._length_java_array )
 setMethod( "length", "jarrayRef", ._length_java_array )
+setGeneric( "str" )
+setMethod("str", "jobjRef", function(object, ...){
+	show( object )
+} )
 # }}}
 
 # {{{ single bracket indexing : [
@@ -244,13 +248,17 @@ japply <- function( X, FUN = if( simplify) force else "toString", simplify = FAL
 		}
 		
 		# but if it is one, then FUN might represent one of its methods
-		if( is.character(FUN) ){
-			if( hasJavaMethod( o, FUN ) ){
-				return( .jrcall( o , FUN, ...) )
-			}
+		if( is.character( FUN ) && hasJavaMethod( o, FUN) ){
+			return( .jrcall( o, FUN, ... ) )
 		}
-		FUN <- match.fun( FUN )
-		FUN( o, ... )
+		
+		# or try to match.fun
+		f <- try( match.fun( FUN ), silent = TRUE )
+		if( inherits( f, "try-error" ) ){
+			NULL
+		} else{
+			f( o, ... )
+		}
 	}
 	
 	simplifier <- function( o ){

@@ -47,6 +47,8 @@
     o   [RF] added japply to apply over a java array of an implementation 
              of the Iterable interface
 
+    o   [RF] added str.jobjRef as an alias to show.jobjRef
+
 0.7-1	(under development)
     o	[RF] added .J high-level java constructor (based on reflection 
 	as opposed to complete match as .jnew does)
