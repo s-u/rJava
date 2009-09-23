@@ -188,7 +188,7 @@ hasField <- function( x, name ){
 	.jcall("RJavaTools", "Z", "hasField", .jcast( x, "java/lang/Object" ), name)
 }
 
-hasMethod <- function( x, name ){
+hasJavaMethod <- function( x, name ){
 	._must_be_character_of_length_one(name)
 	.jcall("RJavaTools", "Z", "hasMethod", .jcast( x, "java/lang/Object" ), name)
 }
@@ -222,7 +222,7 @@ classHasClass <- function(x, name, static=FALSE) {
 setMethod("$", c(x="jobjRef"), function(x, name) {
 	if (hasField(x, name) ){
 		.jfield(x, , name)
-	} else if( hasMethod( x, name ) ) {
+	} else if( hasJavaMethod( x, name ) ) {
 		function(...) .jrcall(x, name, ...)
 	} else if( hasClass(x, name) ) {
 		cl <- .jcall( x, "Ljava/lang/Class;", "getClass" )

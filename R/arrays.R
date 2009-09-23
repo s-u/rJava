@@ -16,6 +16,7 @@ isJavaArray <- function( o ){
 		stop( message )
 	}
 }
+
 #' get the component type of a java array
 getComponentType <- function( o, check = TRUE ){
 	if( check ) ._must_be_java_array( o )
@@ -81,11 +82,10 @@ setMethod( "length", "jarrayRef", ._length_java_array )
 	# are not recognized specifically as jarrayRef so we just ignore the
 	# jarrayRef class for now
 	# we use reflection instead to identify if x is a java array
-	if( !isJavaArray( x ) ){
-		stop( "`x` is not a reference to a java array" ) 
-	}
+	._must_be_java_array( x )
 	
-	# the component type of the array
+	# the component type of the array - maybe used to make 
+	# arrays with the same component type, but of length 0
 	component.type <- getComponentType( x, check = FALSE )
 	
 	# 'eval' the array
@@ -232,3 +232,58 @@ setMethod("tail", signature( x = "jobjRef" ), function(x, n = 6L, ... ){
 	return( x[ seq.int( n_objs-n+1, n_objs ) , ... ] )
 } )
 # }}}
+
+# {{{ japply - apply a function to each element of a java array
+japply <- function( X, FUN = if( simplify) force else "toString", simplify = FALSE, ...){
+	
+	callfun <- function( o, ... ){
+		# o might not be a java object
+		if( !is( o, "jobjRef" ) ){
+			FUN <- match.fun(FUN)
+			return( FUN( o, ... ) )
+		}
+		
+		# but if it is one, then FUN might represent one of its methods
+		if( is.character(FUN) ){
+			if( hasJavaMethod( o, FUN ) ){
+				return( .jrcall( o , FUN, ...) )
+			}
+		}
+		FUN <- match.fun( FUN )
+		FUN( o, ... )
+	}
+	
+	simplifier <- function( o ){
+		if( ! simplify ) return(o)
+		
+		o <- .jsimplify( o )
+		if( isJavaArray( o ) ){
+			o <- ._jarray_simplify( o )
+		}
+		o
+	}
+	
+	if( !is(X, "jobjRef" ) ){
+		lapply( X, FUN, ... )
+	} else if( isJavaArray( X ) ){
+		lapply( seq( along = X ), function(i){
+			o <- simplifier( .jcall( "java.lang.reflect.Array", "Ljava/lang/Object;", "get", X, (i-1L) ) )
+			callfun( o )
+		} )
+	} else if( X %instanceof% "java.lang.Iterable" ){
+		iterator <- X$iterator()
+		res <- NULL
+		hasNext <- function(){
+			.jcall( iterator, "Z", "hasNext" ) 
+		}
+		while( hasNext() ){
+			o <- simplifier( .jcall( iterator, "Ljava/lang/Object;", "next" ) )
+			res <- append( res, list( callfun(o, ...) ) ) 
+		}
+		res	
+	} else{
+		stop( "don't know how to japply" ) 
+	}
+}
+# }}}
+

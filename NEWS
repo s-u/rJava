@@ -43,6 +43,9 @@
         and with semantics
         
     o   [RF] R-style indexing of java arrays using [, [[, head and tail
+    
+    o   [RF] added japply to apply over a java array of an implementation 
+             of the Iterable interface
 
 0.7-1	(under development)
     o	[RF] added .J high-level java constructor (based on reflection 

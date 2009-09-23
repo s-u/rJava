@@ -11,4 +11,5 @@ S3method(with, jobjRef)
 S3method(within, jobjRef)
 S3method(with, jclassName)
 S3method(within, jclassName)
+export( japply )
 
