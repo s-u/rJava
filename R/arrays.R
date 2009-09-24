@@ -47,19 +47,21 @@ getComponentType <- function( o, check = TRUE ){
 # }}}
 
 # {{{ length
-#' reflectively get the length of the array
+#' reflectively get the true length of the array, this
+#' is the product of the dimensions of the array (not just the length 
+#' of the first dimension)
 ._length_java_array <- function(x){
 	if( isJavaArray( x ) ){
-		.jcall( "java.lang.reflect.Array", "I", "getLength", .jcast( x ) )
+		.jcall( "RJavaArrayTools", "I", "getTrueLength", .jcast(x) )
 	} else{
 		stop( "the supplied object is not a java array" ) 
 	}
 }
 
-setMethod( "length", "jobjRef", ._length_java_array )
 setMethod( "length", "jarrayRef", ._length_java_array )
 setGeneric( "str" )
-setMethod("str", "jobjRef", function(object, ...){
+setMethod("str", "jarrayRef", function(object, ...){
+	# FIXME: need something better
 	show( object )
 } )
 # }}}
@@ -163,7 +165,7 @@ setMethod("str", "jobjRef", function(object, ...){
 }
 
 # ## this is all weird - we need to distinguish between x[i] and x[i,] yet S4 fails to do so ...
-setMethod( "[", signature( x = "jobjRef", i = "ANY", j = "missing" ), 
+setMethod( "[", signature( x = "jarrayRef", i = "ANY", j = "missing" ), 
 	function(x, i, j, ..., drop = FALSE){
 		._java_array_single_indexer( x, i, drop = drop, ... )
 	} )
@@ -199,11 +201,11 @@ setMethod( "[", signature( x = "jobjRef", i = "ANY", j = "missing" ),
 
 # this is the only case that makes sense: i is an integer or a numeric of length one
 # we cannot use logical indexing or indexing by name because there is no such thing in java
-setMethod( "[[", signature( x = "jobjRef", i = "integer", j = "missing"), 
+setMethod( "[[", signature( x = "jarrayRef", i = "integer", j = "missing"), 
 	function(x, i, j, ...){
 		._java_array_double_indexer( x, i, ... )
 	} )
-setMethod( "[[", signature( x = "jobjRef", i = "numeric", j = "missing"), 
+setMethod( "[[", signature( x = "jarrayRef", i = "numeric", j = "missing"), 
 	function(x, i, j, ...){
 		._java_array_double_indexer( x, as.integer(i), ... )
 	} )
@@ -211,10 +213,11 @@ setMethod( "[[", signature( x = "jobjRef", i = "numeric", j = "missing"),
 
 # {{{ head and tail
 setGeneric( "head" )
-setMethod("head", signature( x = "jobjRef" ), function(x, n = 6L, ... ){
+setMethod("head", signature( x = "jarrayRef" ), function(x, n = 6L, ... ){
 	if( !isJavaArray( x ) ){
 		stop( "not a java array" )
 	}
+	# FIXME : this only makes sense for 1d arays
 	n_objs <- length(x)
 	if( abs( n ) >= n_objs ){
 		return( x )
@@ -224,10 +227,11 @@ setMethod("head", signature( x = "jobjRef" ), function(x, n = 6L, ... ){
 } )
 
 setGeneric( "tail" )
-setMethod("tail", signature( x = "jobjRef" ), function(x, n = 6L, ... ){
+setMethod("tail", signature( x = "jarrayRef" ), function(x, n = 6L, ... ){
 	if( !isJavaArray( x ) ){
 		stop( "not a java array" )
 	}
+	# FIXME : this only makes sense for 1d arays
 	n_objs <- length(x)
 	if( abs( n ) >= n_objs ) return(x)
 	if( n < 0L){ 

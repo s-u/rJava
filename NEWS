@@ -33,10 +33,10 @@
         "with" semantics on static fields and methods of java classes
 
     o   [RF] added (unexported) isJavaArray function to check if 
-        a "jobjRef" or a "jarrayRef" refers to a java array
+        a "jobjRef" or a "jarrayRef" really refers to a java array
 
-    o   [RF] added length.jobjRef and length.jarrayRef to query the number
-        of objects in a java array. An error message is generated if the 
+    o   [RF] added length.jarrayRef to query the number
+        of objects in a java array. An exception is generated if the 
         object is not an array
 
     o   [RF] added "length" pseudo field for java arrays in syntactic sugar 
@@ -47,7 +47,7 @@
     o   [RF] added japply to apply over a java array of an implementation 
              of the Iterable interface
 
-    o   [RF] added str.jobjRef as an alias to show.jobjRef
+    o   [RF] added str.jarrayRef as an alias to show.jarrayRef
 
     o   [RF] .jcast gains arguments "check" and "convert.array". Their 
              default value is FALSE for backwards compatibility with 
