@@ -14,18 +14,7 @@ import java.util.Vector ;
  * by Romain Francois <francoisromain@free.fr> licensed under GPL v2 or higher.
  */
 public class RJavaTools {
-	
-	/**
-	 * Indicates if a java object is an array
-	 * 
-	 * @param o object
-	 * @return true if the object is an array
-	 * @Deprecated use RJavaArrayTools#isArray
-	 */
-	public static boolean isArray(Object o){
-		return RJavaArrayTools.isArray(o); 
-	}
-	
+		
 	/**
 	 * Returns an inner class of the class with the given simple name
 	 * 

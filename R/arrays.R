@@ -7,8 +7,8 @@
 #' @return TRUE if the object is a java array, FALSE if not
 #'         (including when the object is not even a java reference)
 isJavaArray <- function( o ){
-	if( is( o, "jobjRef" ) || is( o, "jarrayRef" ) ){
-		.jcall( "RJavaTools", "Z", "isArray", .jcast(o) )
+	if( ( is( o, "jobjRef" ) || is( o, "jarrayRef" ) ) && !is.jnull(o) ){
+		.jcall( "RJavaArrayTools", "Z", "isArray", .jcast(o) )
 	} else FALSE
 }
 ._must_be_java_array <- function( o, message = "object is not a java array" ){

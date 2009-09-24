@@ -91,10 +91,6 @@ public class RJavaTools_Test {
 			invokemethod() ;
 			success() ;
 		
-			System.out.println( "Testing RJavaTools.isArray" ) ;
-			isarray() ;
-			success() ;
-			
 			System.out.println( "Testing RJavaTools.getMethod" ) ;
 			System.out.println( "NOT YET AVAILABLE" ) ;
 			
@@ -118,36 +114,6 @@ public class RJavaTools_Test {
 	// {{{ success
 	private static void success(){
 		System.out.println( "PASSED" ) ;    
-	}
-	// }}}
-	
-	// {{{ isArray
-	private static void isarray() throws TestException{
-		
-		// {{{ isArray( null )
-		System.out.print( "    * isArray( null) " ) ;
-		if( RJavaTools.isArray( null ) ){
-			throw new TestException( "isArray( null) == true") ; 
-		}
-		System.out.println( " false : ok " ) ;
-		// }}}
-		
-		// {{{ isArray( String )
-		System.out.print( "    * isArray( String ) " ) ;
-		if( RJavaTools.isArray( new String( "hello" ) ) ){
-			throw new TestException( "isArray( String ) == true") ; 
-		}
-		System.out.println( " false : ok " ) ;
-		// }}}
-		
-		// {{{ isArray( String[] )
-		System.out.print( "    * isArray( String[] ) " ) ;
-		if( !RJavaTools.isArray( new String[]{ "hello" } ) ){
-			throw new TestException( "isArray( String[] ) == false") ; 
-		}
-		System.out.println( " true : ok " ) ;
-		// }}}
-		
 	}
 	// }}}
 	
