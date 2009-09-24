@@ -50,5 +50,13 @@ stopifnot( v$indexOf("World") == 6L )
 
 J("java.lang.String")$valueOf(10)
 
+Double <- J("java.lang.Double")
+# the class pseudo field - instance of Class for the associated class
+# similar to java Double.class
+Double$class 
+\dontshow{
+	stopifnot( Double$class$getName() == "java.lang.Double" )
+}
+
 }
 \keyword{interface}

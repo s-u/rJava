@@ -266,5 +266,9 @@ classNamesMethod <- function (cl, static.only = TRUE ) {
 
 ### support for names (useful for completion, thanks to Romain Francois)
 setMethod("names", c(x="jobjRef"), function(x) {
-	classNamesMethod(.jcall(x, "Ljava/lang/Class;", "getClass"), static.only = FALSE )
+	c( 
+		if( isJavaArray(x) ) "length", 
+		classNamesMethod(.jcall(x, "Ljava/lang/Class;", "getClass"), static.only = FALSE )
+	)
 })
+
