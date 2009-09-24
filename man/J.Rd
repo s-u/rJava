@@ -53,13 +53,12 @@ most suitable method.
 \code{\link{.jcall}}, \code{\link{.jnew}}
 }
 \examples{
+\dontshow{.jinit()}
 
 \dontrun{
 f <- new(J("java.awt.Frame"), "Hello")
 f$setVisible(TRUE)
 }
-
-\dontshow{.jinit()}
 
 J("java.lang.Double")$parseDouble("10.2")
 J("java.lang.Double", "parseDouble", "10.2" )

@@ -49,6 +49,10 @@
 
     o   [RF] added str.jobjRef as an alias to show.jobjRef
 
+    o   [RF] .jcast gains arguments "check" and "convert.array". Their 
+             default value is FALSE for backwards compatibility with 
+             previous releases of rJava
+
 0.7-1	(under development)
     o	[RF] added .J high-level java constructor (based on reflection 
 	as opposed to complete match as .jnew does)

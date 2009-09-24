@@ -104,6 +104,9 @@ within.jobjRef <- function(data, expr, ... ){
   data
 }
 
+with.jarrayRef <- with.jobjRef
+within.jarrayRef <- within.jobjRef
+
 with.jclassName <- function( data, expr, ... ){
 	env <- new.env( parent = environment() )
 	clazz <- data@jobj

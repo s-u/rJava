@@ -123,13 +123,26 @@
   r
 }
 
-# casts java object into new.class - without(!) type checking
-.jcast <- function(obj, new.class="java/lang/Object") {
+#' casts java object into new.class
+#' 
+#' @param obj a java object reference
+#' @param new.class the new class (in JNI or Java)
+#' @param check logical. If TRUE the cast if checked
+#' @param convert.array logical. If TRUE and the new class represents an array, then a jarrayRef object is made
+.jcast <- function(obj, new.class="java/lang/Object", check = FALSE, convert.array = FALSE) {
   if (!is(obj,"jobjRef"))
-    stop("connot cast anything but Java objects")
-  r<-obj
+    stop("cannot cast anything but Java objects")
+  if( check && !.jinstanceof( obj, new.class) ){
+  	  stop( sprintf( "cannot cast object to '%s'", new.class ) ) 
+  }
+  
   new.class <- gsub("\\.","/", as.character(new.class)) # allow non-JNI specifiation
-  r@jclass<-new.class
+  if( convert.array && isJavaArray( obj ) ){
+  	 r <- .jcastToArray( obj, signature = new.class)
+  } else {
+  	 r <- obj
+  	 r@jclass <- new.class
+  }
   r
 }
 
@@ -147,6 +160,14 @@
         stop("cannot cast to array, object signature is unknown and class name is not an array")
     }
     signature <- cn
+  } else{
+  	  if( substr( signature, 1, 1 ) != "[" ){
+  	  	  if( quiet ) {
+  	  	  	  return( obj )
+  	  	  } else{
+  	  	  	  stop( "cannot cast to array, signature is not an array signature" )
+  	  	  }
+  	  }
   }
   signature <- gsub('\\.', '/', signature)
   if (inherits(obj, "jarrayRef")) {

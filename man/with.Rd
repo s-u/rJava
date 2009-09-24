@@ -1,6 +1,8 @@
 \name{with.jobjRef}
 \alias{with.jobjRef}
 \alias{within.jobjRef}
+\alias{with.jarrayRef}
+\alias{within.jarrayRef}
 \alias{with.jclassName}
 \alias{within.jclassName}
 \title{
@@ -13,6 +15,9 @@ Java object and classes from within the object (or class).
 \usage{
 \S3method{with}{jobjRef}(data, expr, ...)
 \S3method{within}{jobjRef}(data, expr, ...)
+
+\S3method{with}{jarrayRef}(data, expr, ...)
+\S3method{within}{jarrayRef}(data, expr, ...)
 
 \S3method{with}{jclassName}(data, expr, ...)
 \S3method{within}{jclassName}(data, expr, ...)

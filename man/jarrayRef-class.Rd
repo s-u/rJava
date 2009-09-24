@@ -11,7 +11,7 @@ Objects cannot be created directly, but only as the retun value of \code{\link{.
   \describe{
     \item{\code{jsig}:}{JNI signature of the array type}
     \item{\code{jobj}:}{Internal identifier of the object}
-    \item{\code{jclass}:}{Inherited from \code{jobjRef}, but unspeficied}
+    \item{\code{jclass}:}{Inherited from \code{jobjRef}, but unspecified}
   }
 }
 \section{Extends}{

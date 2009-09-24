@@ -94,14 +94,22 @@
   	.jarray(p, "java/lang/Object"), 
   	.jarray(pc, "java/lang/Class") )
   
+  # null is returned when the return type of the method is void
+  # TODO[romain]: not sure how to distinguish when the result is null but the 
+  #       return type is not null
+  if( is.jnull( r ) ){ 
+  	return( invisible( NULL ) )
+  }
+  
+  # this comes back as an Object, so we need to cast it to its real type
+  r <- .jcast( r, .jclass( r, true = TRUE ), check = FALSE, convert.array = TRUE )
+  
   # simplify if needed and return the object
-  if( isJavaArray(r) && !is.jnull(r) && simplify ){
+  if( isJavaArray(r) && simplify ){
   	._jarray_simplify( r )
-  } else if (simplify && !is.jnull(r)){
+  } else if (simplify){
   	  .jsimplify(r) 
-  } else if (is.jnull(r)) {
-  	  invisible(NULL)
-  } else {
+  } else  {
   	  r
   }
 }
@@ -122,10 +130,13 @@
   pc <- ._java_class_list( p )
 
   # use RJavaTools to find create the object
-  .jcall("RJavaTools", "Ljava/lang/Object;", 
+  o <- .jcall("RJavaTools", "Ljava/lang/Object;", 
   	"newInstance", .jfindClass(class), 
   	.jarray(p,"java/lang/Object"), 
   	.jarray(pc,"java/lang/Class") )
+  
+  # cast to the actual class
+  .jcast( o, .jclass( o, true = TRUE ) )
 
 }
 
@@ -142,31 +153,31 @@
   o
 }
 
-### get the value of a field (static class fields are not supported yet)
-.jrfield <- function(o, name, simplify=TRUE, true.class=TRUE) {
-  if (!inherits(o, "jobjRef") && !inherits(o, "jarrayRef") && !is.character(o))
-    stop("Object must be a Java reference or class name.")
-  if (is.character(o)) {
-    cl <- .jfindClass(o)
-    .jcheck(silent=TRUE)
-    if (is.null(cl))
-      stop("class not found")
-    o <- .jnull()
-  } else {
-    cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
-    o <- .jcast(o, "java/lang/Object")
-  }
-  f <- .jcall(cl, "Ljava/lang/reflect/Field;", "getField", name)
-  r <- .jcall(f,"Ljava/lang/Object;","get",o)
-  if (simplify) r <- .jsimplify(r)
-  if (true.class && (inherits(r, "jobjRef") || inherits(r, "jarrayRef"))) {
-    cl <- .jcall(r, "Ljava/lang/Class;", "getClass")
-    cn <- .jcall(cl, "Ljava/lang/String;", "getName")
-    if (substr(cn,1,1) != '[')
-      r@jclass <- gsub("\\.","/",cn)
-  }
-  r
-}
+#! ### get the value of a field (static class fields are not supported yet)
+#! .jrfield <- function(o, name, simplify=TRUE, true.class=TRUE) {
+#!   if (!inherits(o, "jobjRef") && !inherits(o, "jarrayRef") && !is.character(o))
+#!     stop("Object must be a Java reference or class name.")
+#!   if (is.character(o)) {
+#!     cl <- .jfindClass(o)
+#!     .jcheck(silent=TRUE)
+#!     if (is.null(cl))
+#!       stop("class not found")
+#!     o <- .jnull()
+#!   } else {
+#!     cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
+#!     o <- .jcast(o, "java/lang/Object")
+#!   }
+#!   f <- .jcall(cl, "Ljava/lang/reflect/Field;", "getField", name)
+#!   r <- .jcall(f,"Ljava/lang/Object;","get",o)
+#!   if (simplify) r <- .jsimplify(r)
+#!   if (true.class && (inherits(r, "jobjRef") || inherits(r, "jarrayRef"))) {
+#!     cl <- .jcall(r, "Ljava/lang/Class;", "getClass")
+#!     cn <- .jcall(cl, "Ljava/lang/String;", "getName")
+#!     if (substr(cn,1,1) != '[')
+#!       r@jclass <- gsub("\\.","/",cn)
+#!   }
+#!   r
+#! }
 
 ### list the fields of a class or object
 .jfields <- function(o, name=NULL, as.obj=FALSE) {
