@@ -25,12 +25,11 @@ value of \code{\link{.jcall}} function.
 }
 \section{Methods}{
   \describe{
-    \item{[}{\code{signature(x = "jobjRef", i = "ANY", j = "missing")}: R indexing of java arrays }
-    \item{[[}{\code{signature(x = "jobjRef", i = "numeric", j = "missing")}: R indexing of java arrays }
-    \item{[[}{\code{signature(x = "jobjRef", i = "integer", j = "missing")}: R indexing of java arrays }
-    \item{\code{head}}{\code{signature(x = "jobjRef")}: head of the java array }
-    \item{\code{tail}}{\code{signature(x = "jobjRef")}: tail of the java array }
-    \item{length}{\code{signature(object = "jobjRef")}: Number of java objects in the java array }
+    \item{[}{\code{signature(x = "jarrayRef", i = "ANY", j = "missing")}: R indexing of java arrays }
+    \item{[[}{\code{signature(x = "jarrayRef", i = "numeric", j = "missing")}: R indexing of java arrays }
+    \item{[[}{\code{signature(x = "jarrayRef", i = "integer", j = "missing")}: R indexing of java arrays }
+    \item{\code{head}}{\code{signature(x = "jarrayRef")}: head of the java array }
+    \item{\code{tail}}{\code{signature(x = "jarrayRef")}: tail of the java array }
     \item{length}{\code{signature(object = "jarrayRef")}: Number of java objects in the java array }
     \item{str}{\code{signature(object = "jarrayRef")}: ... }
   }
