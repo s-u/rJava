@@ -9,7 +9,11 @@ public class RJavaArrayTools_Test {
 			System.out.println( "Testing RJavaTools.isArray" ) ;
 			isarray(); 
 			success() ; 
-			
+		
+			System.out.println( "Testing RJavaTools.isRectangularArray" ) ;
+			isrect();                                
+			success() ; 
+		
 			System.out.println( "Testing RJavaTools.getDimensionLength" ) ;
 			getdimlength();                                
 			success() ; 
@@ -490,7 +494,6 @@ public class RJavaArrayTools_Test {
 		System.out.println( " -> NotAnArrayException : ok " ); 
 		// }}}
 		
-		
 		// {{{ primitives
 		System.out.println( "  >> Testing primitive types" ) ;
 		// {{{ int
@@ -841,8 +844,145 @@ public class RJavaArrayTools_Test {
 		
 	}
 	// }}}
-
 	
+	// {{{ isRectangular
+	private static void isrect() throws TestException {
+						
+		// {{{ int
+		System.out.print( " isRectangularArray( int )" ) ;
+		if( RJavaArrayTools.isRectangularArray( 0 ) ){
+			throw new TestException( " isRectangularArray( int ) " );
+		}
+		System.out.println( " false : ok" ) ;
+		// }}}
+		
+		// {{{ boolean
+		System.out.print( " isRectangularArray( boolean )" ) ;
+		if( RJavaArrayTools.isRectangularArray( true ) ){
+			throw new TestException( " isRectangularArray( boolean ) " );
+		}
+		System.out.println( " false : ok" ) ;
+		// }}}
+		
+		// {{{ byte
+		System.out.print( " isRectangularArray( byte )" ) ;
+		if( RJavaArrayTools.isRectangularArray( (byte)0 ) ){
+			throw new TestException( " isRectangularArray( byte ) " );
+		}
+		System.out.println( " false : ok" ) ;
+		// }}}
+
+		// {{{ long
+		System.out.print( " isRectangularArray( long )" ) ;
+		if( RJavaArrayTools.isRectangularArray( (long)0 ) ){
+			throw new TestException( " isRectangularArray( long ) " );
+		}
+		System.out.println( " false : ok" ) ;
+		// }}}
+		
+		// {{{ short
+		System.out.print( " isRectangularArray( short )" ) ;
+		if( RJavaArrayTools.isRectangularArray( (short)0 ) ){
+			throw new TestException( " isRectangularArray( short ) " );
+		}
+		System.out.println( " false : ok" ) ;
+		// }}}
+
+		// {{{ double
+		System.out.print( " isRectangularArray( double )" ) ;
+		if( RJavaArrayTools.isRectangularArray( 0.0 ) ){
+			throw new TestException( " isRectangularArray( double ) " );
+		}
+		System.out.println( " false : ok" ) ;
+		// }}}
+		
+		// {{{ char
+		System.out.print( " isRectangularArray( char )" ) ;
+		if( RJavaArrayTools.isRectangularArray( 'a' ) ){
+			throw new TestException( " isRectangularArray( char ) " );
+		}
+		System.out.println( " false : ok" ) ;
+		// }}}
+		
+		// {{{ float
+		System.out.print( " isRectangularArray( float )" ) ;
+		if( RJavaArrayTools.isRectangularArray( 0.0f ) ){
+			throw new TestException( " isRectangularArray( float ) " ) ;
+		}
+		System.out.println( " false : ok" ) ;
+		// }}}
+
+		// {{{ String
+		System.out.print( " isRectangularArray( String )" ) ;
+		if( RJavaArrayTools.isRectangularArray( "dd" ) ){
+			throw new TestException( " isRectangularArray( String ) " ) ;
+		}
+		System.out.println( " false : ok" ) ;
+		// }}}
+		
+		// {{{ int[]
+		int[] x = new int[2] ;
+		System.out.print( " isRectangularArray( int[] )" ) ;
+		if( ! RJavaArrayTools.isRectangularArray( x ) ){
+			throw new TestException( " !isRectangularArray( int[] ) " ) ;
+		}
+		System.out.println( " true : ok" ) ;
+		// }}}
+		
+		// {{{ Object o = new double[2]
+		Object o = new double[2]; 
+		System.out.print( " isRectangularArray( double[]   (but declared as 0bject) )" ) ;
+		if( ! RJavaArrayTools.isRectangularArray( o ) ){
+			throw new TestException( " !isRectangularArray( Object o = new double[2]; ) " ) ;
+		}
+		System.out.println( " true : ok" ) ;
+		// }}}
+		
+		// {{{ null
+		System.out.print( " isRectangularArray( null )" ) ;
+		if( RJavaArrayTools.isRectangularArray( null ) ){
+			throw new TestException( " isRectangularArray( null) " ) ;
+		}
+		System.out.println( " false : ok" ) ;
+		// }}}
+		
+		// {{{ 2d rectangular
+		int[][] x2d = new int[3][4]; 
+		System.out.print( " isRectangularArray( new int[3][4] )" ) ;
+		if( ! RJavaArrayTools.isRectangularArray( x2d ) ){
+			throw new TestException( " !isRectangularArray( new int[3][4] ) " ) ;
+		}
+		System.out.println( " true : ok" ) ;
+		// }}}
+		
+		// {{{ 2d not rectangular
+		int[][] x2d_not = new int[2][] ;
+		x2d_not[0] = new int[2] ;
+		x2d_not[1] = new int[3] ;
+		
+		System.out.print( " isRectangularArray( new int[2][2,4] )" ) ;
+		if( RJavaArrayTools.isRectangularArray( x2d_not ) ){
+			throw new TestException( " !isRectangularArray( new int[2][2,4] ) " ) ;
+		}
+		System.out.println( " false : ok" ) ;
+		// }}}
+		
+		// {{{ 3d not rectangular
+		int[][][] x3d_not = new int[1][][] ;
+		x3d_not[0] = new int[2][];
+		x3d_not[0][0] = new int[1] ;
+		x3d_not[0][1] = new int[2] ;
+		
+		System.out.print( " isRectangularArray( new int[2][2][10,25] )" ) ;
+		if( RJavaArrayTools.isRectangularArray( x3d_not ) ){
+			throw new TestException( " !isRectangularArray( new int[2][2][10,25] ) " ) ;
+		}
+		System.out.println( " false : ok" ) ;
+		// }}}
+		
+		
+	}
+	// }}}
 	
 	// {{{ TestException 
 	private static class TestException extends Exception{
