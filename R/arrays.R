@@ -47,12 +47,10 @@ getComponentType <- function( o, check = TRUE ){
 # }}}
 
 # {{{ length
-#' reflectively get the true length of the array, this
-#' is the product of the dimensions of the array (not just the length 
-#' of the first dimension)
+#' get the length of the array
 ._length_java_array <- function(x){
 	if( isJavaArray( x ) ){
-		.jcall( "RJavaArrayTools", "I", "getTrueLength", .jcast(x) )
+		.jcall( "java/lang/reflect/Array", "I", "getLength", .jcast( x, check = FALSE, convert.array = FALSE) ) 
 	} else{
 		stop( "the supplied object is not a java array" ) 
 	}
