@@ -81,14 +81,21 @@ setMethod("str", "jarrayRef", function(object, ...){
 #' @param i indexer (only 1D indexing supported so far)
 #' @param drop if the result if of length 1, just return the java object instead of an array of length one
 #' @param simplify further simplify the result
-._java_array_single_indexer <- function( x, i, drop, simplify = FALSE ){
+._java_array_single_indexer <- function( x, i, j, drop, simplify = FALSE, silent = FALSE, ... ){
 	# arrays only
 	
-	# we cannot use the dispatch on jarrayRef because sometimes java arrays 
-	# are not recognized specifically as jarrayRef so we just ignore the
-	# jarrayRef class for now
-	# we use reflection instead to identify if x is a java array
-	._must_be_java_array( x )
+	if( !silent ){
+		if( ! missing( j ) ){
+			warning( "only one dimensional indexing is currently supported in i, ignoring j argument" )
+		}
+		dots <- list( ... )
+		if( length(dots) ){
+			unnamed.dots <- dots[ names(dots) == "" ]
+			if( length( unnamed.dots ) ){
+				warning( "only one dimensional indexing is currently supported in [, ignoring ... arguments" ) 
+			}
+		}
+	}
 	
 	# the component type of the array - maybe used to make 
 	# arrays with the same component type, but of length 0
@@ -108,22 +115,9 @@ setMethod("str", "jarrayRef", function(object, ...){
 		}
 		
 		if( length(o) == 0L) {
-			if( drop ){
-				# that sounds alright ?
-				return( .jnull( ) )
-			} else{
 				# return an array of the same component type as the original array
 				# but of length 0
 				return( .jcall( "java/lang/reflect/Array", "Ljava/lang/Object;", "newInstance", component.type, 0L  ) )
-			}
-		} else if( length(o) == 1L ){
-			# wrap it as a java object or java array if ! drop
-			valid_obj <- ._java_valid_object(o)
-			if( drop ){
-				return(valid_obj)
-			} else {
-				return( .jarray(valid_obj) )
-			}
 		} else {
 			# drop makes no sense here
 			return( .jarray( o ) )
@@ -134,40 +128,19 @@ setMethod("str", "jarrayRef", function(object, ...){
 	sl <- ja[i]
 	
 	if( length( sl ) == 0L ){
-		if( simplify ){
-			return( NULL )
-		}
-		if( drop ){
-			return( .jnull( ) )
-		} else{
-			return( .jcall( "java/lang/reflect/Array", "Ljava/lang/Object;", "newInstance", component.type, 0L  ) )
-		} 
-	} else if(length(sl) == 1L && drop ){
-		java_obj <- sl[[1]]
-		if( simplify ){
-			return( .jsimplify(java_obj) ) 
-		} else{
-			return( java_obj )
-		}
+		# TODO: make simplify influencial here
+		#       for example if x is int[] then we want to get integer(0)
+		return( .jcall( "java/lang/reflect/Array", "Ljava/lang/Object;", "newInstance", component.type, 0L  ) )
 	} else{
 		# just return the array
-		# maybe we should use the Class#getComponentType() method  to check if 
-		# we can simplify further
-		# for example: 
-		# Object[] objs = new Object[3]
-		# objs[0] = "string"
-		# objs[1] = "string"
-		# objs[2] = new java.awt.Point( )
-		# what should this return :
-		# objs[1:2, simplify = TRUE ]
 		return( .jarray( sl ) )
 	}
 }
 
 # ## this is all weird - we need to distinguish between x[i] and x[i,] yet S4 fails to do so ...
-setMethod( "[", signature( x = "jarrayRef", i = "ANY", j = "missing" ), 
+setMethod( "[", signature( x = "jarrayRef", i = "ANY" ), 
 	function(x, i, j, ..., drop = FALSE){
-		._java_array_single_indexer( x, i, drop = drop, ... )
+		._java_array_single_indexer( x, i, j, drop = drop, ... )
 	} )
 # }}}
 
@@ -199,26 +172,7 @@ setMethod( "[", signature( x = "jarrayRef", i = "ANY", j = "missing" ),
 		RJavaArrayTools <- J("RJavaArrayTools")
 		RJavaArrayTools$get( x, index )
 	}
-	# cl <- .jcall( x, "Ljava/lang/Class;", "getClass" )
-	# clname <- .jcall( cl, "Ljava/lang/String;", "getName") 
-	# 
-	# Array <- "java/lang/reflect/Array"
-	# o <- .jcast( x, "java/lang/Object" )
-	# obj <- switch( clname, 
-	# 	# deal with array of primitive first
-	# 	"[I"                  = .jcall( Array, "I",                  "getInt"         , o, i )  ,
-	# 	"[J"                  = .jcall( Array, "J",                  "getLong"        , o, i )  , # should I jlong this
-	# 	"[Z"                  = .jcall( Array, "Z",                  "getBoolean"     , o, i )  , 
-	# 	"[B"                  = .jcall( Array, "B",                  "getByte"        , o, i )  ,
-	# 	"[D"                  = .jcall( Array, "D",                  "getDouble"      , o, i )  ,
-	# 	"[S"                  = .jcall( Array, "T",                  "getShort"       , o, i )  , # should I jshort this
-	# 	"[C"                  = .jcall( Array, "C",                  "getChar"        , o, i )  , # int or character ?
-	# 	"[F"                  = .jcall( Array, "F",                  "getFloat"       , o, i )  , 
-	# 	"[Ljava.lang.String;" = .jsimplify( .jcall( Array, "Ljava/lang/Object;", "get", o, i ) ),
-	# 	
-	# 	# otherwise, just get the object
-	# 		                    .jcall( Array, "Ljava/lang/Object;", "get"            , o, i ) )
-	# obj
+
 }
 
 # this is the only case that makes sense: i is an integer or a numeric of length one
@@ -227,10 +181,6 @@ setMethod( "[[", signature( x = "jarrayRef" ),
 	function(x, i, j, ...){
 		._java_array_double_indexer( x, i, j, ... )
 	} )
-# setMethod( "[[", signature( x = "jarrayRef", i = "numeric", j = "missing"), 
-# 	function(x, i, j, ...){
-# 		._java_array_double_indexer( x, as.integer(i), ... )
-# 	} )
 # }}}
 
 # {{{ head and tail

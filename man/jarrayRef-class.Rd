@@ -1,7 +1,7 @@
 \name{jarrayRef-class}
 \docType{class}
 \alias{jarrayRef-class}
-\alias{[,jarrayRef,ANY,missing-method}
+\alias{[,jarrayRef-method}
 \alias{[[,jarrayRef-method}
 \alias{head,jarrayRef-method}
 \alias{tail,jarrayRef-method}
@@ -23,7 +23,7 @@ value of \code{\link{.jcall}} function.
 }
 \section{Methods}{
   \describe{
-    \item{[}{\code{signature(x = "jarrayRef", i = "ANY", j = "missing")}: R indexing of java arrays }
+    \item{[}{\code{signature(x = "jarrayRef")}: R indexing of java arrays }
     \item{[[}{\code{signature(x = "jarrayRef")}: R indexing of java arrays }
     \item{\code{head}}{\code{signature(x = "jarrayRef")}: head of the java array }
     \item{\code{tail}}{\code{signature(x = "jarrayRef")}: tail of the java array }
@@ -38,6 +38,9 @@ Class \code{"jobjRef"}, directly.
 \seealso{
   \code{\link{.jcall}} or \code{\link{jobjRef-class}}
 }
+\section{Warning}{
+At the moment, only one dimensionnal indexing is implemented. 
+}
 \examples{
 \dontshow{.jinit()}
 v <- new( J("java.util.Vector") )
@@ -49,10 +52,6 @@ array <- v$toArray()
 array[ c(TRUE,FALSE,TRUE) ]
 array[ 1:2 ]
 array[ -3 ]
-
-array[ 1, drop = FALSE ] # an array of length 1
-array[ 1 ] # a java String
-array[ 1, simplify = TRUE ] # an R character vector
 
 # length 
 length( array )
