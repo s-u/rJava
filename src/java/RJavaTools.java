@@ -20,10 +20,10 @@ public class RJavaTools {
 	 * 
 	 * @param o object
 	 * @return true if the object is an array
+	 * @Deprecated use RJavaArrayTools#isArray
 	 */
 	public static boolean isArray(Object o){
-		if( o == null) return false ; 
-		return o.getClass().isArray(); 
+		return RJavaArrayTools.isArray(o); 
 	}
 	
 	/**
