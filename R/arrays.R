@@ -172,43 +172,65 @@ setMethod( "[", signature( x = "jarrayRef", i = "ANY", j = "missing" ),
 # }}}
 
 # {{{ double bracket indexing : [[
-._java_array_double_indexer <- function( x, i ){
+._java_array_double_indexer <- function( x, i, j, ..., simplify = TRUE ){
 	# initial checks
 	._must_be_java_array( x )
-	i <- as.integer(i)[1L] - 1L # only one integer (shift one for java style indexing)
 	
-	cl <- .jcall( x, "Ljava/lang/Class;", "getClass" )
-	clname <- .jcall( cl, "Ljava/lang/String;", "getName") 
+	dots <- list( ... )
+	unnamed.dots <- if( length( dots ) ){
+		dots[ names(dots) == "" ]
+	}
 	
-	Array <- "java/lang/reflect/Array"
-	o <- .jcast( x, "java/lang/Object" )
-	obj <- switch( clname, 
-		# deal with array of primitive first
-		"[I"                  = .jcall( Array, "I",                  "getInt"         , o, i )  ,
-		"[J"                  = .jcall( Array, "J",                  "getLong"        , o, i )  , # should I jlong this
-		"[Z"                  = .jcall( Array, "Z",                  "getBoolean"     , o, i )  , 
-		"[B"                  = .jcall( Array, "B",                  "getByte"        , o, i )  ,
-		"[D"                  = .jcall( Array, "D",                  "getDouble"      , o, i )  ,
-		"[S"                  = .jcall( Array, "T",                  "getShort"       , o, i )  , # should I jshort this
-		"[C"                  = .jcall( Array, "C",                  "getChar"        , o, i )  , # int or character ?
-		"[F"                  = .jcall( Array, "F",                  "getFloat"       , o, i )  , 
-		"[Ljava.lang.String;" = .jsimplify( .jcall( Array, "Ljava/lang/Object;", "get", o, i ) ),
-		
-		# otherwise, just get the object
-			                    .jcall( Array, "Ljava/lang/Object;", "get"            , o, i ) )
-	obj
+	firstInteger <- function(.) as.integer(.)[1]
+	firstIntegerOfEach <- function(.) sapply( ., firstInteger )
+	
+	index <- c( 
+		if( !missing(i) ) firstInteger(i), 
+		if( !missing(j) ) firstInteger(j), 
+		if( !is.null(unnamed.dots) && length(unnamed.dots) ) firstIntegerOfEach( unnamed.dots )
+		)
+	
+	if( !length(index) || is.null(index) ){
+		# return the full object
+		x
+	} else{
+		# subset
+		index <- index - 1L # shift one left (java style indexing starts from 0
+		RJavaArrayTools <- J("RJavaArrayTools")
+		RJavaArrayTools$get( x, index )
+	}
+	# cl <- .jcall( x, "Ljava/lang/Class;", "getClass" )
+	# clname <- .jcall( cl, "Ljava/lang/String;", "getName") 
+	# 
+	# Array <- "java/lang/reflect/Array"
+	# o <- .jcast( x, "java/lang/Object" )
+	# obj <- switch( clname, 
+	# 	# deal with array of primitive first
+	# 	"[I"                  = .jcall( Array, "I",                  "getInt"         , o, i )  ,
+	# 	"[J"                  = .jcall( Array, "J",                  "getLong"        , o, i )  , # should I jlong this
+	# 	"[Z"                  = .jcall( Array, "Z",                  "getBoolean"     , o, i )  , 
+	# 	"[B"                  = .jcall( Array, "B",                  "getByte"        , o, i )  ,
+	# 	"[D"                  = .jcall( Array, "D",                  "getDouble"      , o, i )  ,
+	# 	"[S"                  = .jcall( Array, "T",                  "getShort"       , o, i )  , # should I jshort this
+	# 	"[C"                  = .jcall( Array, "C",                  "getChar"        , o, i )  , # int or character ?
+	# 	"[F"                  = .jcall( Array, "F",                  "getFloat"       , o, i )  , 
+	# 	"[Ljava.lang.String;" = .jsimplify( .jcall( Array, "Ljava/lang/Object;", "get", o, i ) ),
+	# 	
+	# 	# otherwise, just get the object
+	# 		                    .jcall( Array, "Ljava/lang/Object;", "get"            , o, i ) )
+	# obj
 }
 
 # this is the only case that makes sense: i is an integer or a numeric of length one
 # we cannot use logical indexing or indexing by name because there is no such thing in java
-setMethod( "[[", signature( x = "jarrayRef", i = "integer", j = "missing"), 
+setMethod( "[[", signature( x = "jarrayRef" ), 
 	function(x, i, j, ...){
-		._java_array_double_indexer( x, i, ... )
+		._java_array_double_indexer( x, i, j, ... )
 	} )
-setMethod( "[[", signature( x = "jarrayRef", i = "numeric", j = "missing"), 
-	function(x, i, j, ...){
-		._java_array_double_indexer( x, as.integer(i), ... )
-	} )
+# setMethod( "[[", signature( x = "jarrayRef", i = "numeric", j = "missing"), 
+# 	function(x, i, j, ...){
+# 		._java_array_double_indexer( x, as.integer(i), ... )
+# 	} )
 # }}}
 
 # {{{ head and tail

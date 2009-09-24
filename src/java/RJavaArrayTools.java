@@ -155,4 +155,38 @@ public class RJavaArrayTools {
 	}
 	// }}}
 	
+	// {{{ ArrayDimensionMismatchException
+	public static class ArrayDimensionMismatchException extends Exception {
+		public ArrayDimensionMismatchException( int index_dim, int actual_dim ){
+			super( "dimension of indexer (" + index_dim + ") too large for array (depth ="+ actual_dim+ ")") ;
+		}
+	}
+	// }}}
+	
+	// {{{ get
+	/**
+	 * Gets a single object from a multi dimensional array
+	 *
+	 * @param array java array
+	 * @param position
+	 */
+	public static Object get( Object array, int[] position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		int poslength = position.length ;
+		int actuallength = getDimensionLength(array); 
+		if( poslength > actuallength ){
+			throw new ArrayDimensionMismatchException( poslength, actuallength ) ; 
+		}
+		Object o = array ;
+		int i=0 ;
+		while( i<poslength){
+			o = Array.get( o, position[i] ) ;
+			i++ ;
+		}
+		return(o); 
+	}
+	
+	public static Object get( Object array, int position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return get( array, new int[]{position} ) ;
+	}
+	// }}}
 }

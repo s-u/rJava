@@ -2,11 +2,9 @@
 \docType{class}
 \alias{jarrayRef-class}
 \alias{[,jarrayRef,ANY,missing-method}
-\alias{[[,jarrayRef,numeric,missing-method}
-\alias{[[,jarrayRef,integer,missing-method}
+\alias{[[,jarrayRef-method}
 \alias{head,jarrayRef-method}
 \alias{tail,jarrayRef-method}
-\alias{length,jobjRef-method}
 \alias{length,jarrayRef-method}
 \alias{str,jarrayRef-method}
 \title{Class "jarrayRef" Reference to an array Java object }
@@ -26,8 +24,7 @@ value of \code{\link{.jcall}} function.
 \section{Methods}{
   \describe{
     \item{[}{\code{signature(x = "jarrayRef", i = "ANY", j = "missing")}: R indexing of java arrays }
-    \item{[[}{\code{signature(x = "jarrayRef", i = "numeric", j = "missing")}: R indexing of java arrays }
-    \item{[[}{\code{signature(x = "jarrayRef", i = "integer", j = "missing")}: R indexing of java arrays }
+    \item{[[}{\code{signature(x = "jarrayRef")}: R indexing of java arrays }
     \item{\code{head}}{\code{signature(x = "jarrayRef")}: head of the java array }
     \item{\code{tail}}{\code{signature(x = "jarrayRef")}: tail of the java array }
     \item{length}{\code{signature(object = "jarrayRef")}: Number of java objects in the java array }
