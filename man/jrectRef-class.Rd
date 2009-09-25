@@ -14,7 +14,7 @@ Instead, they usually come as a result of a java method call.
     \item{\code{jsig}:}{JNI signature of the array type}
     \item{\code{jobj}:}{Internal identifier of the object}
     \item{\code{jclass}:}{Inherited from \code{jobjRef}, but unspecified}
-    \item{\code{dimension}:}{Object of class \code{"integer"} dimension of the }
+    \item{\code{dimension}:}{dimension vector of the array}
   }
 }
 \section{Extends}{

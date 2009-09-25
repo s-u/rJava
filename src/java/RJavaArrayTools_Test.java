@@ -6,26 +6,7 @@ public class RJavaArrayTools_Test {
 		System.out.println( "Test suite for RJavaArrayTools" ) ;
 		
 		try{
-			System.out.println( "Testing RJavaTools.isArray" ) ;
-			isarray(); 
-			success() ; 
-		
-			System.out.println( "Testing RJavaTools.isRectangularArray" ) ;
-			isrect();                                
-			success() ; 
-		
-			System.out.println( "Testing RJavaTools.getDimensionLength" ) ;
-			getdimlength();                                
-			success() ; 
-			
-			System.out.println( "Testing RJavaTools.getDimensions" ) ;
-			getdims();                                
-			success() ; 
-			
-			System.out.println( "Testing RJavaTools.getTrueLength" ) ;
-			gettruelength();                                
-			success() ; 
-			
+			runtests() ; 
 		} catch( TestException e){
 			fails( e ) ; 
 			System.exit(1); 
@@ -33,6 +14,31 @@ public class RJavaArrayTools_Test {
 		System.exit(0);
 	}
 	// }}}
+	
+	public static void runtests() throws TestException {
+		System.out.println( "Test suite for RJavaArrayTools" ) ;
+		
+		System.out.println( "Testing RJavaTools.isArray" ) ;
+		isarray(); 
+		success() ; 
+		
+		System.out.println( "Testing RJavaTools.isRectangularArray" ) ;
+		isrect();                                
+		success() ; 
+		
+		System.out.println( "Testing RJavaTools.getDimensionLength" ) ;
+		getdimlength();                                
+		success() ; 
+		
+		System.out.println( "Testing RJavaTools.getDimensions" ) ;
+		getdims();                                
+		success() ; 
+		
+		System.out.println( "Testing RJavaTools.getTrueLength" ) ;
+		gettruelength();                                
+		success() ; 
+	}
+	
 	
 	// {{{ fails 
 	private static void fails( TestException e ){

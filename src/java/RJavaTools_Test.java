@@ -27,7 +27,15 @@ public class RJavaTools_Test {
 	public static void main( String[] args){
 		
 		try{
-			System.out.println( "Testing RJavaTools.getConstructor" ) ;
+			runtests() ; 
+		} catch( TestException e){
+			fails( e ) ; 
+			System.exit(1); 
+		}
+	}
+	
+	public static void runtests() throws TestException {
+		System.out.println( "Testing RJavaTools.getConstructor" ) ;
 			constructors() ;
 			success() ; 
 			
@@ -96,11 +104,9 @@ public class RJavaTools_Test {
 			
 			System.out.println( "Testing RJavaTools.newInstance" ) ;
 			System.out.println( "NOT YET AVAILABLE" ) ;
-		} catch( TestException e){
-			fails( e ) ; 
-			System.exit(1); 
-		}
+			
 	}
+	
 	// }}}
 
 	// {{{ fails 
@@ -179,13 +185,13 @@ public class RJavaTools_Test {
 		String[] expected ;
 		int cpt = 0;
 		
-		// {{{ getMethodNames(RJavaTools_Test, true) -> c('getStaticX()', 'main(' )
+		// {{{ getMethodNames(RJavaTools_Test, true) -> c('getStaticX()', 'main(', 'runtests' )
 		System.out.print( "    * getMethodNames(RJavaTools_Test, true)" ) ;
 		names = RJavaTools.getMethodNames( RJavaTools_Test.class, true ) ;
-		if( names.length != 2 ){
-			throw new TestException( "getMethodNames(RJavaTools_Test, true).length != 2 (" + names.length + ")" ) ;
+		if( names.length != 3 ){
+			throw new TestException( "getMethodNames(RJavaTools_Test, true).length != 3 (" + names.length + ")" ) ;
 		}
-		expected= new String[]{ "getStaticX()", "main(" };
+		expected= new String[]{ "getStaticX()", "main(", "runtests()" };
 		cpt = 0; 
 		for( int i=0; i<names.length; i++){
 			for( int j=0; j<expected.length; j++ ){
@@ -196,7 +202,7 @@ public class RJavaTools_Test {
 			}
 		}
 		if( cpt != expected.length ){
-			throw new TestException( "getMethodNames(RJavaTools_Test, true) != {'getStaticX()','main('}" ) ;
+			throw new TestException( "getMethodNames(RJavaTools_Test, true) != {'getStaticX()','main(', 'runtests()' }" + cpt ) ;
 		}
 		System.out.println( " : ok " ) ;
 		// }}}
@@ -656,7 +662,7 @@ public class RJavaTools_Test {
 		// {{{ getStaticMethods( RJavaTools_Test )
 		System.out.print( "    * getStaticMethods( RJavaTools_Test ) " ) ;
 		m = RJavaTools.getStaticMethods( RJavaTools_Test.class ) ;
-		String[] expected = new String[]{ "getStaticX" , "main" };
+		String[] expected = new String[]{ "getStaticX" , "main", "runtests" };
 		int count = 0; 
 		if( m.length != expected.length ){
 			throw new TestException( " getStaticMethods( RJavaTools_Test ).length != 2" ) ;
@@ -670,7 +676,7 @@ public class RJavaTools_Test {
 			}
 		}
 		if( count != expected.length ){
-			throw new TestException( " getStaticMethods( RJavaTools_Test ) != c('main', 'getStaticX') " ) ;
+			throw new TestException( " getStaticMethods( RJavaTools_Test ) != c('main', 'getStaticX', 'runtests' ) " ) ;
 		}
 		System.out.println( "  : ok" ) ;
 		// }}}
