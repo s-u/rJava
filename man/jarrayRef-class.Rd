@@ -32,7 +32,7 @@ value of \code{\link{.jcall}} function.
   }
 }
 \section{Extends}{
-Class \code{"jobjRef"}, directly.
+Class \code{"\linkS4class{jobjRef}"}, directly.
 }
 \author{ Simon Urbanek }
 \seealso{
