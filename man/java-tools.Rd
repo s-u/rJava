@@ -1,4 +1,5 @@
 \name{java-tools}
+\alias{java-tools}
 \title{java tools used internally in rJava}
 \description{java tools used internally in rJava}
 \examples{
