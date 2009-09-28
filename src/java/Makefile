@@ -11,6 +11,7 @@ compile: $(JAVA_SRC)
 test: compile
 	$(JAVA) RJavaTools_Test
 	$(JAVA) RJavaArrayTools_Test
+	$(JAVA) ArrayWrapper_Test
 
 clean:
 	rm -rfv *.class *~

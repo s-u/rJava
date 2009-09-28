@@ -15,6 +15,7 @@ public class RJavaArrayTools_Test {
 	}
 	// }}}
 	
+	// {{{ runtests
 	public static void runtests() throws TestException {
 		System.out.println( "Test suite for RJavaArrayTools" ) ;
 		
@@ -45,10 +46,9 @@ public class RJavaArrayTools_Test {
 		System.out.println( "Testing RJavaTools.isPrimitiveTypeName" ) ;
 		isprim();                                
 		success() ;
-		
-		
-	}
 	
+	}
+	// }}}
 	
 	// {{{ fails 
 	private static void fails( TestException e ){
@@ -101,7 +101,7 @@ public class RJavaArrayTools_Test {
 		
 		// {{{ short
 		System.out.print( " isArray( short )" ) ;
-		if( RJavaArrayTools.isArray( (short)0 ) ){
+		if( RJavaArrayTools.isArray( (double)0 ) ){
 			throw new TestException( " isArray( short ) " );
 		}
 		System.out.println( " false : ok" ) ;
@@ -297,7 +297,7 @@ public class RJavaArrayTools_Test {
 		System.out.print( "  getDimensionLength( short )" ) ;
 		ok = false; 
 		try{
-			RJavaArrayTools.getDimensionLength( (short)0 ) ;
+			RJavaArrayTools.getDimensionLength( (double)0 ) ;
 		} catch( NotAnArrayException e ){
 			ok = true; 
 		}
@@ -565,7 +565,7 @@ public class RJavaArrayTools_Test {
 		System.out.print( "  getDimensions( short )" ) ;
 		ok = false; 
 		try{
-			RJavaArrayTools.getDimensions( (short)0 ) ;
+			RJavaArrayTools.getDimensions( (double)0 ) ;
 		} catch( NotAnArrayException e ){
 			ok = true; 
 		}
@@ -797,7 +797,7 @@ public class RJavaArrayTools_Test {
 		System.out.print( "  getTrueLength( short )" ) ;
 		ok = false; 
 		try{
-			RJavaArrayTools.getTrueLength( (short)0 ) ;
+			RJavaArrayTools.getTrueLength( (double)0 ) ;
 		} catch( NotAnArrayException e ){
 			ok = true; 
 		}
@@ -898,7 +898,7 @@ public class RJavaArrayTools_Test {
 		
 		// {{{ short
 		System.out.print( " isRectangularArray( short )" ) ;
-		if( RJavaArrayTools.isRectangularArray( (short)0 ) ){
+		if( RJavaArrayTools.isRectangularArray( (double)0 ) ){
 			throw new TestException( " isRectangularArray( short ) " );
 		}
 		System.out.println( " false : ok" ) ;
@@ -1308,7 +1308,6 @@ public class RJavaArrayTools_Test {
 		System.out.println( " -> NotAnArrayException : ok " ); 
 		// }}}
 		
-		
 		// {{{ primitives
 		System.out.println( "  >> Testing primitive types" ) ;
 		// {{{ int
@@ -1364,7 +1363,7 @@ public class RJavaArrayTools_Test {
 		System.out.print( "  getObjectTypeName( short )" ) ;
 		ok = false; 
 		try{
-			RJavaArrayTools.getObjectTypeName( (short)0 ) ;
+			RJavaArrayTools.getObjectTypeName( (double)0 ) ;
 		} catch( NotAnArrayException e ){
 			ok = true; 
 		}
@@ -1443,12 +1442,6 @@ public class RJavaArrayTools_Test {
 		System.out.print( " isPrimitiveTypeName( 'java.lang.Object' ) " ) ;
 		if( RJavaArrayTools.isPrimitiveTypeName("java.lang.Object") ) throw new TestException("Object  primitive") ;
 		System.out.println( " false : ok " );
-	}
-	// }}}
-	
-	// {{{ TestException 
-	private static class TestException extends Exception{
-		public TestException(String message){super(message);}
 	}
 	// }}}
 	
