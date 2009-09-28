@@ -36,7 +36,17 @@ public class RJavaArrayTools_Test {
 		
 		System.out.println( "Testing RJavaTools.getTrueLength" ) ;
 		gettruelength();                                
-		success() ; 
+		success() ;
+		
+		System.out.println( "Testing RJavaTools.getObjectTypeName" ) ;
+		gettypename();                                
+		success() ;
+		
+		System.out.println( "Testing RJavaTools.isPrimitiveTypeName" ) ;
+		isprim();                                
+		success() ;
+		
+		
 	}
 	
 	
@@ -985,6 +995,454 @@ public class RJavaArrayTools_Test {
 		}
 		System.out.println( " false : ok" ) ;
 		// }}}
+	}
+	// }}}
+	
+	// {{{ getObjectTypeName
+	private static void gettypename() throws TestException {
+		String res ;
+		
+		// {{{ actual arrays
+		// {{{ int[] o = new int[10] ;
+		System.out.print( "  int[] o = new int[10] ;" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new int[1] ); 
+			if( !res.equals("I") ){
+				throw new TestException( "getObjectTypeName(int[]) != 'I' " );  
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array int[10]" ) ;
+		}
+		System.out.println( " I : ok " ); 
+		// }}}           
+
+		// {{{ boolean[] ;
+		System.out.print( "  boolean[]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new boolean[1] ); 
+			if( !res.equals("Z") ){
+				throw new TestException( "getObjectTypeName(boolean[]) != 'Z' " );  
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array boolean[10]" ) ;
+		}
+		System.out.println( " Z : ok " ); 
+		// }}}           
+		
+		// {{{ byte[] ;
+		System.out.print( "  byte[]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new byte[1] ); 
+			if( !res.equals("B") ){
+				throw new TestException( "getObjectTypeName(byte[]) != 'B' " );  
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array byte[10]" ) ;
+		}
+		System.out.println( " B : ok " ); 
+		// }}}           
+		
+				// {{{ long[] ;
+		System.out.print( "  long[]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new long[1] ); 
+			if( !res.equals("J") ){
+				throw new TestException( "getObjectTypeName(long[]) != 'J' " );  
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array long[10]" ) ;
+		}
+		System.out.println( " J : ok " ); 
+		// }}}           
+
+		// {{{ short[] ;
+		System.out.print( "  short[]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new short[1] ); 
+			if( !res.equals("S") ){
+				throw new TestException( "getObjectTypeName(short[]) != 'S' " );  
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array short[10]" ) ;
+		}
+		System.out.println( " S : ok " ); 
+		// }}}           
+		
+				// {{{ double[] ;
+		System.out.print( "  double[]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new double[1] ); 
+			if( !res.equals("D") ){
+				throw new TestException( "getObjectTypeName(double[]) != 'D' " );  
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array double[10]" ) ;
+		}
+		System.out.println( " D : ok " ); 
+		// }}}           
+
+				// {{{ char[] ;
+		System.out.print( "  char[]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new char[1] ); 
+			if( !res.equals("C") ){
+				throw new TestException( "getObjectTypeName(char[]) != 'C' " );  
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array char[10]" ) ;
+		}
+		System.out.println( " C : ok " ); 
+		// }}}
+		
+				// {{{ float[] ;
+		System.out.print( "  float[]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new float[1] ); 
+			if( !res.equals("F") ){
+				throw new TestException( "getObjectTypeName(float[]) != 'F' " );  
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array float[10]" ) ;
+		}
+		System.out.println( " F : ok " ); 
+		// }}}           
+
+		System.out.println("  >> multi dim primitive arrays" ) ;
+		
+		// {{{ int[] o = new int[10] ;
+		System.out.print( "  int[][] ;" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new int[1][1] ); 
+			if( !res.equals("I") ){
+				throw new TestException( "getObjectTypeName(int[]) != 'I' " );  
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array int[10]" ) ;
+		}
+		System.out.println( " I : ok " ); 
+		// }}}           
+
+		// {{{ boolean[] ;
+		System.out.print( "  boolean[][]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new boolean[1][1] ); 
+			if( !res.equals("Z") ){
+				throw new TestException( "getObjectTypeName(boolean[]) != 'Z' " );  
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array boolean[10]" ) ;
+		}
+		System.out.println( " Z : ok " ); 
+		// }}}           
+		
+		// {{{ byte[] ;
+		System.out.print( "  byte[][]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new byte[1][1] ); 
+			if( !res.equals("B") ){
+				throw new TestException( "getObjectTypeName(byte[]) != 'B' " );  
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array byte[10]" ) ;
+		}
+		System.out.println( " B : ok " ); 
+		// }}}           
+		
+				// {{{ long[] ;
+		System.out.print( "  long[][]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new long[1][1] ); 
+			if( !res.equals("J") ){
+				throw new TestException( "getObjectTypeName(long[]) != 'J' " );  
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array long[10]" ) ;
+		}
+		System.out.println( " J : ok " ); 
+		// }}}           
+
+		// {{{ short[] ;
+		System.out.print( "  short[][]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new short[1][1] ); 
+			if( !res.equals("S") ){
+				throw new TestException( "getObjectTypeName(short[]) != 'S' " );  
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array short[10]" ) ;
+		}
+		System.out.println( " S : ok " ); 
+		// }}}           
+		
+				// {{{ double[] ;
+		System.out.print( "  double[][]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new double[1][1] ); 
+			if( !res.equals("D") ){
+				throw new TestException( "getObjectTypeName(double[]) != 'D' " );  
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array double[10]" ) ;
+		}
+		System.out.println( " D : ok " ); 
+		// }}}           
+
+				// {{{ char[] ;
+		System.out.print( "  char[][]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new char[1][1] ); 
+			if( !res.equals("C") ){
+				throw new TestException( "getObjectTypeName(char[]) != 'C' " );  
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array char[10]" ) ;
+		}
+		System.out.println( " C : ok " ); 
+		// }}}
+		
+				// {{{ float[] ;
+		System.out.print( "  float[][]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new float[1][1] ); 
+			if( !res.equals("F") ){
+				throw new TestException( "getObjectTypeName(float[]) != 'F' " );  
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array float[10]" ) ;
+		}
+		System.out.println( " F : ok " ); 
+		// }}}           
+
+		
+		
+		// {{{ Object[][] = new Object[10][10] ;
+		Object[][] ob = new Object[10][10] ;
+		System.out.print( "  new Object[10][10]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( ob ) ;
+			if( !res.equals("java.lang.Object") ){
+				throw new TestException( "getObjectTypeName(Object[][]) != 'java.lang.Object' " ); 
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array Object[10][10]" ) ;
+		}
+		System.out.println( " : ok " ); 
+		// }}}
+
+		// {{{ Object[][] = new Object[10][10][10] ;
+		Object[][][] obj = new Object[10][10][10] ;
+		System.out.print( "  new Object[10][10][10]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( obj ) ;
+			if( !res.equals("java.lang.Object") ){
+				throw new TestException( "getObjectTypeName( Object[10][10][10] ) != 'java.lang.Object' " ); 
+			}
+			
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array Object[10][10][10]" ) ;
+		}
+		System.out.println( " 1000 : ok " ); 
+		// }}}
+		// }}}
+
+		// {{{ zeroes
+		System.out.println( "  >> zeroes " ) ;
+		
+		// {{{ int[] o = new int[0] ;
+		int[] o = new int[0] ;
+		System.out.print( "  int[] o = new int[0] ;" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( o ) ; 
+			if( !res.equals("I") ){
+				throw new TestException( "getObjectTypeName(int[0]) != 'I' " ); 
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array int[0]" ) ;
+		}
+		System.out.println( " : ok " ); 
+		// }}}
+		
+		// {{{ Object[][] = new Object[10][10][0] ;
+		obj = new Object[10][10][0] ;
+		System.out.print( "  new Object[10][10][0]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( obj ) ;
+			if( !res.equals("java.lang.Object") ){
+				throw new TestException( "getObjectTypeName( Object[10][10][0] ) != 'java.lang.Object' " ); 
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array Object[10][10][0]" ) ;
+		}
+		System.out.println( " : ok " ); 
+		// }}}
+		
+		// {{{ Object[][] = new Object[10][0][10] ;
+		obj = new Object[10][0][10] ;
+		System.out.print( "  new Object[10][0][10]" ) ;
+		try{
+			res = RJavaArrayTools.getObjectTypeName( obj ) ;
+			if( !res.equals("java.lang.Object") ){
+				throw new TestException( "getObjectTypeName( Object[10][0][0] ) != 'java.lang.Object' " ); 
+			}
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array Object[10][0][10]" ) ;
+		}
+		System.out.println( " 0 : ok " ); 
+		// }}}
+		
+		// }}}
+
+		// {{{ Object 
+		System.out.println( "  >> Object" ) ;
+		
+		System.out.print( "  new Double('10.2') " ) ;
+		boolean ok = false; 
+		try{
+			res = RJavaArrayTools.getObjectTypeName( new Double("10.3") ) ;
+		} catch( NotAnArrayException e){
+			ok = true ; 
+		}
+		if( !ok ){
+			throw new TestException( "getObjectTypeName(Double) did not throw exception" ); 
+		}
+		System.out.println( " -> NotAnArrayException : ok " ); 
+		// }}}
+		
+		
+		// {{{ primitives
+		System.out.println( "  >> Testing primitive types" ) ;
+		// {{{ int
+		
+		System.out.print( "  getObjectTypeName( int )" ) ;
+		ok = false; 
+		try{
+			RJavaArrayTools.getObjectTypeName( 0 ) ; 
+		} catch( NotAnArrayException e){
+			ok = true; 
+		}
+		if( !ok ) throw new TestException( " getObjectTypeName( int ) not throwing exception" );
+		System.out.println( " ok" ) ;
+		// }}}
+		
+		// {{{ boolean
+		System.out.print( "  getObjectTypeName( boolean )" ) ;
+		ok = false; 
+		try{
+			RJavaArrayTools.getObjectTypeName( true ) ; 
+		} catch( NotAnArrayException e){
+			ok = true; 
+		}
+		if( !ok ) throw new TestException( " getObjectTypeName( boolean ) not throwing exception" );
+		System.out.println( " : ok" ) ;
+		// }}}
+		
+		// {{{ byte
+		System.out.print( "  getObjectTypeName( byte )" ) ;
+		ok = false;
+		try{
+			RJavaArrayTools.getObjectTypeName( (byte)0 ) ;
+		} catch( NotAnArrayException e){
+			ok = true; 
+		}
+		if( !ok ) throw new TestException( " getObjectTypeName( byte ) not throwing exception" );
+		System.out.println( " : ok" ) ;
+		// }}}
+
+		// {{{ long
+		System.out.print( "  getObjectTypeName( long )" ) ;
+		ok = false; 
+		try{
+			RJavaArrayTools.getObjectTypeName( (long)0 ); 
+		} catch( NotAnArrayException e){
+			ok = true; 
+		}
+		if( !ok) throw new TestException( " getObjectTypeName( long ) not throwing exception" );
+		System.out.println( " ok" ) ;
+		// }}}
+		
+		// {{{ short
+		System.out.print( "  getObjectTypeName( short )" ) ;
+		ok = false; 
+		try{
+			RJavaArrayTools.getObjectTypeName( (short)0 ) ;
+		} catch( NotAnArrayException e ){
+			ok = true; 
+		}
+		if( !ok ) throw new TestException( " getObjectTypeName( short ) not throwing exception" );
+		System.out.println( "  : ok" ) ;
+		// }}}
+
+		// {{{ double
+		System.out.print( "  getObjectTypeName( double )" ) ;
+		ok = false; 
+		try{
+			RJavaArrayTools.getObjectTypeName( 0.0 ); 
+		} catch( NotAnArrayException e ){
+			ok = true; 
+		}
+		if( !ok ) throw new TestException( " getObjectTypeName( double ) not throwing exception" );
+		System.out.println( " : ok" ) ;
+		// }}}
+		
+		// {{{ char
+		System.out.print( "  getObjectTypeName( char )" ) ;
+		ok = false; 
+		try{
+			RJavaArrayTools.getObjectTypeName( 'a' ) ; 
+		} catch( NotAnArrayException e ){
+			ok = true; 
+		}
+		if( !ok ) throw new TestException( " getObjectTypeName( char ) not throwing exception " );
+		System.out.println( " : ok" ) ;
+		// }}}
+		
+		// {{{ float
+		System.out.print( "  getObjectTypeName( float )" ) ;
+		ok = false; 
+		try{
+			RJavaArrayTools.getObjectTypeName( 0.0f ) ;
+		} catch( NotAnArrayException e ){
+			ok = true; 
+		}
+		if( !ok ) throw new TestException( " getObjectTypeName( float ) not throwing exception " ) ;
+		System.out.println( " : ok" ) ;
+		// }}}
+
+		// }}}
+		
+		// {{{ null 
+		System.out.print( "  getObjectTypeName( null )" ) ;
+		ok = false; 
+		try{
+			RJavaArrayTools.getObjectTypeName( null ) ;
+		} catch( NullPointerException e ){
+			ok = true; 
+		} catch( NotAnArrayException e ){
+			throw new TestException("getObjectTypeName( null ) throwing wrong kind of exception") ; 
+		}
+		if( !ok ) throw new TestException( " getObjectTypeName( null ) not throwing exception " ) ;
+		System.out.println( " : ok" ) ;
+		
+		// }}}
+
+	}
+	// }}}
+	
+	// {{{ isPrimitiveTypeName
+	private static void isprim() throws TestException{
+		
+		System.out.print( " isPrimitiveTypeName( 'I' ) " ) ; if( !RJavaArrayTools.isPrimitiveTypeName("I") ) throw new TestException("I not primitive") ; System.out.println( " true : ok " );
+		System.out.print( " isPrimitiveTypeName( 'Z' ) " ) ; if( !RJavaArrayTools.isPrimitiveTypeName("Z") ) throw new TestException("Z not primitive") ; System.out.println( " true : ok " );
+		System.out.print( " isPrimitiveTypeName( 'B' ) " ) ; if( !RJavaArrayTools.isPrimitiveTypeName("B") ) throw new TestException("B not primitive") ; System.out.println( " true : ok " );
+		System.out.print( " isPrimitiveTypeName( 'J' ) " ) ; if( !RJavaArrayTools.isPrimitiveTypeName("J") ) throw new TestException("J not primitive") ; System.out.println( " true : ok " );
+		System.out.print( " isPrimitiveTypeName( 'S' ) " ) ; if( !RJavaArrayTools.isPrimitiveTypeName("S") ) throw new TestException("S not primitive") ; System.out.println( " true : ok " );
+		System.out.print( " isPrimitiveTypeName( 'D' ) " ) ; if( !RJavaArrayTools.isPrimitiveTypeName("D") ) throw new TestException("D not primitive") ; System.out.println( " true : ok " );
+		System.out.print( " isPrimitiveTypeName( 'C' ) " ) ; if( !RJavaArrayTools.isPrimitiveTypeName("C") ) throw new TestException("C not primitive") ; System.out.println( " true : ok " );
+		System.out.print( " isPrimitiveTypeName( 'F' ) " ) ; if( !RJavaArrayTools.isPrimitiveTypeName("F") ) throw new TestException("F not primitive") ; System.out.println( " true : ok " );
+		  
+		System.out.print( " isPrimitiveTypeName( 'java.lang.Object' ) " ) ;
+		if( RJavaArrayTools.isPrimitiveTypeName("java.lang.Object") ) throw new TestException("Object  primitive") ;
+		System.out.println( " false : ok " );
 	}
 	// }}}
 	

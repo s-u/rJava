@@ -4,6 +4,45 @@ import java.lang.reflect.Array ;
 
 public class RJavaArrayTools {
 
+	// {{{ getObjectTypeName
+	/**
+	 * Get the object type name of an multi dimensional array.
+	 * 
+	 * @param o object
+	 * @throws NotAnArrayException if the object is not an array
+	 */
+	public static String getObjectTypeName(Object o) throws NotAnArrayException {
+		Class o_clazz = o.getClass();
+		if( !o_clazz.isArray() ) throw new NotAnArrayException( o_clazz ); 
+		
+		String cl = o_clazz.getName();
+		return cl.replaceFirst("\\[+L?", "").replace(";", "") ; 
+	}
+	public static int getObjectTypeName(int x)     throws NotAnArrayException { throw new NotAnArrayException("primitive type : int     ") ; }
+	public static int getObjectTypeName(boolean x) throws NotAnArrayException { throw new NotAnArrayException("primitive type : boolean ") ; }
+	public static int getObjectTypeName(byte x)    throws NotAnArrayException { throw new NotAnArrayException("primitive type : byte    ") ; }
+	public static int getObjectTypeName(long x)    throws NotAnArrayException { throw new NotAnArrayException("primitive type : long    ") ; }
+	public static int getObjectTypeName(short x)   throws NotAnArrayException { throw new NotAnArrayException("primitive type : short   ") ; }
+	public static int getObjectTypeName(double x)  throws NotAnArrayException { throw new NotAnArrayException("primitive type : double  ") ; }
+	public static int getObjectTypeName(char x)    throws NotAnArrayException { throw new NotAnArrayException("primitive type : char    ") ; }
+	public static int getObjectTypeName(float x)   throws NotAnArrayException { throw new NotAnArrayException("primitive type : float   ") ; }
+	// }}}
+	
+	// {{{ isPrimitiveTypeName
+	public static boolean isPrimitiveTypeName(String name){
+		if( name.length() > 1 ) return false; 
+		if( name.equals("I") ) return true ;
+		if( name.equals("Z") ) return true ;
+		if( name.equals("B") ) return true ;
+		if( name.equals("J") ) return true ;
+		if( name.equals("S") ) return true ;
+		if( name.equals("D") ) return true ;
+		if( name.equals("C") ) return true ;
+		if( name.equals("F") ) return true ;
+		return false; 
+	}
+	// }}}
+	
 	// {{{ isRectangularArray
 	/**
 	 * Indicates if o is a rectangular array

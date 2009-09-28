@@ -18,7 +18,17 @@ public class ArrayWrapper {
 	/**
 	 * is this array rectangular
 	 */ 
-	private boolean isRect ; 
+	private boolean isRect ;
+	
+	/**
+	 * The type name of the objects stored
+	 */
+	private String typeName ;
+	
+	/**
+	 * true if the array stores primitive types
+	 */
+	private boolean primitive ;
 	
 	/**
 	 * Constructor
@@ -29,13 +39,17 @@ public class ArrayWrapper {
 	public ArrayWrapper(Object array) throws NotAnArrayException {
 		this.array = array ;
 		dimensions = RJavaArrayTools.getDimensions(array);
+		typeName = RJavaArrayTools.getObjectTypeName(array );
+		primitive = RJavaArrayTools.isPrimitiveTypeName( typeName ) ;
 		if( dimensions.length == 1){
 			isRect = true ;
 		} else{
 			isRect = isRectangular_( array, 0 );
 		}
 		// reset the dimensions if the array is not rectangular
-		dimensions = null ;
+		if( !isRect ){
+			dimensions = null ;
+		}
 	}
 	
 	// making java < 1.5 happy
@@ -76,6 +90,20 @@ public class ArrayWrapper {
 			}
 		}
 		return true ;
+	}
+	
+	/**
+	 * @return the type name of the objects stored in the wrapped array
+	 */
+	public String getObjectTypeName(){
+		return typeName; 
+	}
+	
+	/** 
+	 * @return true if the array contains java primitive types
+	 */ 
+	public boolean isPrimitive(){
+		return primitive ; 
 	}
 	
 }
