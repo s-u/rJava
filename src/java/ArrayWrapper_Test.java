@@ -1579,8 +1579,6 @@ public class ArrayWrapper_Test {
 		Point[] flat ;
 		try{
 			flat = (Point[])wrapper.flat_Object() ;
-		} catch( ClassNotFoundException e){
-			throw new TestException( "ClassNotFoundException" ) ;
 		} catch( ObjectArrayException e){
 			throw new TestException( "ObjectArrayException" ) ;
 		} catch( FlatException e){
@@ -1636,8 +1634,6 @@ public class ArrayWrapper_Test {
 			flat = (Point[])wrapper.flat_Object() ; 
 		} catch( ObjectArrayException e){
 			throw new TestException( "ObjectArrayException" ) ;
-		} catch( ClassNotFoundException e){
-			throw new TestException( "ClassNotFoundException" ) ;
 		} catch( FlatException e){
 			throw new TestException("new ArrayWrapper(Point[][]) >> FlatException") ;
 		}
@@ -1692,8 +1688,6 @@ public class ArrayWrapper_Test {
 			flat = (Point[])wrapper.flat_Object() ; 
 		} catch( ObjectArrayException e){
 			throw new TestException( "ObjectArrayException" ) ;
-		} catch( ClassNotFoundException e){
-			throw new TestException( "ClassNotFoundException" ) ;
 		} catch( FlatException e){
 			throw new TestException("new ArrayWrapper(Object[][][]) >> FlatException") ;
 		}

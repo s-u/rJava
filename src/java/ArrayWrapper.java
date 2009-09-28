@@ -490,7 +490,7 @@ public class ArrayWrapper {
 	/**
 	 * Flattens the array into a single dimensionned Object array
 	 */ 
-	public Object flat_Object() throws FlatException, ObjectArrayException, ClassNotFoundException {
+	public Object flat_Object() throws FlatException, ObjectArrayException {
 		if( isPrimitive() ) throw new ObjectArrayException( typeName) ; 
 		if( !isRect ) throw new FlatException(); 
 		if( dimensions.length == 1 ){
