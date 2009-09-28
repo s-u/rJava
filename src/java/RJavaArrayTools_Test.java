@@ -171,7 +171,7 @@ public class RJavaArrayTools_Test {
 			if( RJavaArrayTools.getDimensionLength( o ) != 1 ){
 				throw new TestException( "getDimensionLength( int[10] ) != 1" ); 
 			}
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			throw new TestException( "not an array int[10]" ) ;
 		}
 		System.out.println( " 1 : ok " ); 
@@ -184,7 +184,7 @@ public class RJavaArrayTools_Test {
 			if( RJavaArrayTools.getDimensionLength( o ) != 1 ){
 				throw new TestException( "getDimensionLength( int[0] ) != 1" ); 
 			}
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			throw new TestException( "not an array int[0]" ) ;
 		}
 		System.out.println( " 1 : ok " ); 
@@ -197,7 +197,7 @@ public class RJavaArrayTools_Test {
 			if( RJavaArrayTools.getDimensionLength( ob ) != 2 ){
 				throw new TestException( "getDimensionLength( new Object[10][10] ) != 2" ); 
 			}
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			throw new TestException( "not an array Object[10][10]" ) ;
 		}
 		System.out.println( " 2 : ok " ); 
@@ -210,7 +210,7 @@ public class RJavaArrayTools_Test {
 			if( RJavaArrayTools.getDimensionLength( obj ) != 3 ){
 				throw new TestException( "getDimensionLength( new Object[10][10][3] ) != 3" ); 
 			}
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			throw new TestException( "not an array Object[10][10][3]" ) ;
 		}
 		System.out.println( " 3 : ok " ); 
@@ -223,7 +223,7 @@ public class RJavaArrayTools_Test {
 		boolean ok = false; 
 		try{
 			RJavaArrayTools.getDimensionLength( new Double("10.3") ) ;
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			ok = true ; 
 		}
 		if( !ok ){
@@ -240,7 +240,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getDimensionLength( 0 ) ; 
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getDimensionLength( int ) not throwing exception" );
@@ -252,7 +252,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getDimensionLength( true ) ; 
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getDimensionLength( boolean ) not throwing exception" );
@@ -264,7 +264,7 @@ public class RJavaArrayTools_Test {
 		ok = false;
 		try{
 			RJavaArrayTools.getDimensionLength( (byte)0 ) ;
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getDimensionLength( byte ) not throwing exception" );
@@ -276,7 +276,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getDimensionLength( (long)0 ); 
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			ok = true; 
 		}
 		if( !ok) throw new TestException( " getDimensionLength( long ) not throwing exception" );
@@ -288,7 +288,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getDimensionLength( (short)0 ) ;
-		} catch( RJavaArrayTools.NotAnArrayException e ){
+		} catch( NotAnArrayException e ){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getDimensionLength( short ) not throwing exception" );
@@ -300,7 +300,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getDimensionLength( 0.0 ); 
-		} catch( RJavaArrayTools.NotAnArrayException e ){
+		} catch( NotAnArrayException e ){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getDimensionLength( double ) not throwing exception" );
@@ -312,7 +312,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getDimensionLength( 'a' ) ; 
-		} catch( RJavaArrayTools.NotAnArrayException e ){
+		} catch( NotAnArrayException e ){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getDimensionLength( char ) not throwing exception " );
@@ -324,7 +324,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getDimensionLength( 0.0f ) ;
-		} catch( RJavaArrayTools.NotAnArrayException e ){
+		} catch( NotAnArrayException e ){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getDimensionLength( float ) not throwing exception " ) ;
@@ -340,7 +340,7 @@ public class RJavaArrayTools_Test {
 			RJavaArrayTools.getDimensionLength( null ) ;
 		} catch( NullPointerException e ){
 			ok = true; 
-		} catch( RJavaArrayTools.NotAnArrayException e ){
+		} catch( NotAnArrayException e ){
 			throw new TestException("getDimensionLength( null ) throwing wrong kind of exception") ; 
 		}
 		if( !ok ) throw new TestException( " getDimensionLength( null ) not throwing exception " ) ;
@@ -366,7 +366,7 @@ public class RJavaArrayTools_Test {
 			if( res[0] != 10 ){
 				throw new TestException( "getDimensions( int[10])[0] != 10" );
 			}
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			throw new TestException( "not an array int[10]" ) ;
 		}
 		System.out.println( " c( 10 ) : ok " ); 
@@ -386,7 +386,7 @@ public class RJavaArrayTools_Test {
 			if( res[1] != 10 ){
 				throw new TestException( "getDimensions( Object[10][10] )[1] != 10" );
 			}
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			throw new TestException( "not an array Object[10][10]" ) ;
 		}
 		System.out.println( " c(10,10) : ok " ); 
@@ -409,7 +409,7 @@ public class RJavaArrayTools_Test {
 			if( res[2] != 10 ){
 				throw new TestException( "getDimensions( Object[10][10][10] )[1] != 10" );
 			}
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			throw new TestException( "not an array Object[10][10][10]" ) ;
 		}
 		System.out.println( " c(10,10,10) : ok " ); 
@@ -430,7 +430,7 @@ public class RJavaArrayTools_Test {
 			if( res[0] != 0){
 				throw new TestException( "getDimensions( int[0])[0] != 0" );
 			}
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			throw new TestException( "not an array int[0]" ) ;
 		}
 		System.out.println( " c(0) : ok " ); 
@@ -453,7 +453,7 @@ public class RJavaArrayTools_Test {
 			if( res[2] != 0 ){
 				throw new TestException( "getDimensions( Object[10][10][0] )[1] != 0" );
 			}
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			throw new TestException( "not an array Object[10][10][0]" ) ;
 		}
 		System.out.println( " c(10,10,0) : ok " ); 
@@ -476,7 +476,7 @@ public class RJavaArrayTools_Test {
 			if( res[2] != 0 ){
 				throw new TestException( "getDimensions( Object[10][0][0] )[1] != 0" );
 			}
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			throw new TestException( "not an array Object[10][0][10]" ) ;
 		}
 		System.out.println( " c(10,0,0) : ok " ); 
@@ -491,7 +491,7 @@ public class RJavaArrayTools_Test {
 		boolean ok = false; 
 		try{
 			res = RJavaArrayTools.getDimensions( new Double("10.3") ) ;
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			ok = true ; 
 		}
 		if( !ok ){
@@ -508,7 +508,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getDimensions( 0 ) ; 
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getDimensions( int ) not throwing exception" );
@@ -520,7 +520,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getDimensions( true ) ; 
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getDimensions( boolean ) not throwing exception" );
@@ -532,7 +532,7 @@ public class RJavaArrayTools_Test {
 		ok = false;
 		try{
 			RJavaArrayTools.getDimensions( (byte)0 ) ;
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getDimensions( byte ) not throwing exception" );
@@ -544,7 +544,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getDimensions( (long)0 ); 
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			ok = true; 
 		}
 		if( !ok) throw new TestException( " getDimensions( long ) not throwing exception" );
@@ -556,7 +556,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getDimensions( (short)0 ) ;
-		} catch( RJavaArrayTools.NotAnArrayException e ){
+		} catch( NotAnArrayException e ){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getDimensions( short ) not throwing exception" );
@@ -568,7 +568,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getDimensions( 0.0 ); 
-		} catch( RJavaArrayTools.NotAnArrayException e ){
+		} catch( NotAnArrayException e ){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getDimensions( double ) not throwing exception" );
@@ -580,7 +580,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getDimensions( 'a' ) ; 
-		} catch( RJavaArrayTools.NotAnArrayException e ){
+		} catch( NotAnArrayException e ){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getDimensions( char ) not throwing exception " );
@@ -592,7 +592,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getDimensions( 0.0f ) ;
-		} catch( RJavaArrayTools.NotAnArrayException e ){
+		} catch( NotAnArrayException e ){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getDimensions( float ) not throwing exception " ) ;
@@ -608,7 +608,7 @@ public class RJavaArrayTools_Test {
 			RJavaArrayTools.getDimensions( null ) ;
 		} catch( NullPointerException e ){
 			ok = true; 
-		} catch( RJavaArrayTools.NotAnArrayException e ){
+		} catch( NotAnArrayException e ){
 			throw new TestException("getDimensions( null ) throwing wrong kind of exception") ; 
 		}
 		if( !ok ) throw new TestException( " getDimensions( null ) not throwing exception " ) ;
@@ -632,7 +632,7 @@ public class RJavaArrayTools_Test {
 			if( res != 10 ){
 				throw new TestException( "getTrueLength( int[10]) != 10" );  
 			}
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			throw new TestException( "not an array int[10]" ) ;
 		}
 		System.out.println( " 10 : ok " ); 
@@ -646,7 +646,7 @@ public class RJavaArrayTools_Test {
 			if( res != 100 ){
 				throw new TestException( "getTrueLength( Object[10][10] ) != 100" ); 
 			}
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			throw new TestException( "not an array Object[10][10]" ) ;
 		}
 		System.out.println( " 100 : ok " ); 
@@ -661,7 +661,7 @@ public class RJavaArrayTools_Test {
 				throw new TestException( "getTrueLength( Object[10][10][10] ) != 1000" ); 
 			}
 			
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			throw new TestException( "not an array Object[10][10][10]" ) ;
 		}
 		System.out.println( " 1000 : ok " ); 
@@ -679,7 +679,7 @@ public class RJavaArrayTools_Test {
 			if( res != 0 ){
 				throw new TestException( "getTrueLength( int[0]) != 0" ); 
 			}
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			throw new TestException( "not an array int[0]" ) ;
 		}
 		System.out.println( " c(0) : ok " ); 
@@ -693,7 +693,7 @@ public class RJavaArrayTools_Test {
 			if( res != 0 ){
 				throw new TestException( "getTrueLength( Object[10][10][0] ) != 0" ); 
 			}
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			throw new TestException( "not an array Object[10][10][0]" ) ;
 		}
 		System.out.println( " 0 : ok " ); 
@@ -707,7 +707,7 @@ public class RJavaArrayTools_Test {
 			if( res != 0){
 				throw new TestException( "getTrueLength( Object[10][0][0] ) != 0" ); 
 			}
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			throw new TestException( "not an array Object[10][0][10]" ) ;
 		}
 		System.out.println( " 0 : ok " ); 
@@ -722,7 +722,7 @@ public class RJavaArrayTools_Test {
 		boolean ok = false; 
 		try{
 			res = RJavaArrayTools.getTrueLength( new Double("10.3") ) ;
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			ok = true ; 
 		}
 		if( !ok ){
@@ -740,7 +740,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getTrueLength( 0 ) ; 
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getTrueLength( int ) not throwing exception" );
@@ -752,7 +752,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getTrueLength( true ) ; 
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getTrueLength( boolean ) not throwing exception" );
@@ -764,7 +764,7 @@ public class RJavaArrayTools_Test {
 		ok = false;
 		try{
 			RJavaArrayTools.getTrueLength( (byte)0 ) ;
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getTrueLength( byte ) not throwing exception" );
@@ -776,7 +776,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getTrueLength( (long)0 ); 
-		} catch( RJavaArrayTools.NotAnArrayException e){
+		} catch( NotAnArrayException e){
 			ok = true; 
 		}
 		if( !ok) throw new TestException( " getTrueLength( long ) not throwing exception" );
@@ -788,7 +788,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getTrueLength( (short)0 ) ;
-		} catch( RJavaArrayTools.NotAnArrayException e ){
+		} catch( NotAnArrayException e ){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getTrueLength( short ) not throwing exception" );
@@ -800,7 +800,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getTrueLength( 0.0 ); 
-		} catch( RJavaArrayTools.NotAnArrayException e ){
+		} catch( NotAnArrayException e ){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getTrueLength( double ) not throwing exception" );
@@ -812,7 +812,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getTrueLength( 'a' ) ; 
-		} catch( RJavaArrayTools.NotAnArrayException e ){
+		} catch( NotAnArrayException e ){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getTrueLength( char ) not throwing exception " );
@@ -824,7 +824,7 @@ public class RJavaArrayTools_Test {
 		ok = false; 
 		try{
 			RJavaArrayTools.getTrueLength( 0.0f ) ;
-		} catch( RJavaArrayTools.NotAnArrayException e ){
+		} catch( NotAnArrayException e ){
 			ok = true; 
 		}
 		if( !ok ) throw new TestException( " getTrueLength( float ) not throwing exception " ) ;
@@ -840,7 +840,7 @@ public class RJavaArrayTools_Test {
 			RJavaArrayTools.getTrueLength( null ) ;
 		} catch( NullPointerException e ){
 			ok = true; 
-		} catch( RJavaArrayTools.NotAnArrayException e ){
+		} catch( NotAnArrayException e ){
 			throw new TestException("getTrueLength( null ) throwing wrong kind of exception") ; 
 		}
 		if( !ok ) throw new TestException( " getTrueLength( null ) not throwing exception " ) ;
@@ -985,8 +985,6 @@ public class RJavaArrayTools_Test {
 		}
 		System.out.println( " false : ok" ) ;
 		// }}}
-		
-		
 	}
 	// }}}
 	

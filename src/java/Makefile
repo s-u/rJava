@@ -15,5 +15,5 @@ test: compile
 clean:
 	rm -rfv *.class *~
 
-.PHONY: run clean
+.PHONY: all clean
 

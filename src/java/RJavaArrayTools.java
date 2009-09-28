@@ -10,19 +10,21 @@ public class RJavaArrayTools {
 	 * 
 	 * @param o an array
 	 * @throws NotAnArrayException if o is not an array
+	 * @Deprecated use new ArrayWrapper(o).isRectangular() instead
 	 */
 	public static boolean isRectangularArray(Object o) {
 		if( !isArray(o) ) return false; 
 		boolean res = false; 
 		try{
 			if( getDimensionLength( o ) == 1 ) return true ;
-			res = ( new RectangularArray(o) ).isRectangular() ;
+			res = ( new ArrayWrapper(o) ).isRectangular() ;
 		} catch( NotAnArrayException e){
 			res = false; 
 		}
 		return res ;
 	}
-		
+	
+	
 	// thoose below make java < 1.5 happy and me unhappy ;-)
 	public static boolean isRectangularArray(int x)      { return false ; }
 	public static boolean isRectangularArray(boolean x)  { return false ; }
@@ -33,49 +35,6 @@ public class RJavaArrayTools {
 	public static boolean isRectangularArray(char x)     { return false ; }
 	public static boolean isRectangularArray(float x)    { return false ; }
 	
-	/** 
-	 * Utility class used to check if an array is rectangular
-	 *
-	 */
-	private static class RectangularArray {
-	
-		/**
-		 * The array we are checking
-		 */
-		private Object array ;
-		
-		/**
-		 * The dimensions of the array
-		 */
-		private int[] dimensions ; 
-		
-		/**
-		 * Constructor
-		 *
-		 * @param array the array to check
-		 * @throws NotAnArrayException if array is not an array
-		 */
-		public RectangularArray(Object array) throws NotAnArrayException {
-			this.array = array ;
-			dimensions = getDimensions(array); 
-		}
-		
-		public boolean isRectangular( ){
-			return isRectangular_( array, 0 ) ;
-		}
-		
-		private boolean isRectangular_(Object o, int depth){
-			if( depth == dimensions.length ) return true ; 
-			int n = Array.getLength(o) ;
-			if( n != dimensions[depth] ) return false ;
-			for( int i=0; i<n; i++){
-				if( !isRectangular_(Array.get(o, i),  depth+1) ){
-					return false;
-				}
-			}
-			return true ;
-		}
-	}
 	// }}}
 	
 	// {{{ getDimensionLength
@@ -216,17 +175,6 @@ public class RJavaArrayTools {
 	public static boolean isArray(double x){ return false ; }
 	public static boolean isArray(char x){ return false ; }
 	public static boolean isArray(float x){ return false ; }
-	// }}}
-	
-	// {{{ NotAnArrayException class
-	public static class NotAnArrayException extends Exception{
-		public NotAnArrayException(Class clazz){
-			super( "not an array : " + clazz.getName() ) ;
-		}
-		public NotAnArrayException(String message){
-			super( message ) ;
-		}
-	}
 	// }}}
 	
 	// {{{ ArrayDimensionMismatchException
