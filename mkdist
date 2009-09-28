@@ -128,9 +128,14 @@ fi
 # R CMD Rdindex rJava > rJava/INDEX
 #echo "library(tools)\nsink(\"rJava/INDEX\")\nRdindex(\"rJava/man\")\nsink()" | R --vanilla > /dev/null
 
-echo "Copy Java classes ..."
+echo "Compile Java classes ..."
 cd /tmp/rJava
 mkdir -p inst/java/boot
+# compile all java classes
+cd src/java
+make compile
+cd ../..
+echo "Copy compiled Java classes ..."
 # copy all complied Java classes and sources
 cp src/java/*.class inst/java
 cp src/java/*.java inst/java
