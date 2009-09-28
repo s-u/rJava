@@ -133,6 +133,7 @@ cd /tmp/rJava
 mkdir -p inst/java/boot
 # compile all java classes
 cd src/java
+make clean
 make compile
 cd ../..
 echo "Copy compiled Java classes ..."
