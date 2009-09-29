@@ -251,7 +251,7 @@ public class RJavaArrayTools {
 	}
 	// }}}
 
-// {{{ Example 2d rect arrays 
+	// {{{ Example 2d rect arrays 
 	public static int[][] getIntDoubleRectangularArrayExample(){
 		int[][] x = new int[2][5]; 
 		int k= 0; 
@@ -350,8 +350,128 @@ public class RJavaArrayTools {
 		}
 		return x; 
 	}
-	
-	
 	// }}}
+	
+	// {{{ Example 3d rect arrays 
+	public static int[][][] getIntTripleRectangularArrayExample(){
+		int[][][] x = new int[2][3][5]; 
+		int current = 0 ;
+		for( int i=0; i<2; i++){
+			for( int j=0; j<3; j++){
+				for( int k=0; k<5; k++, current++){
+					x[i][j][k] = current ;
+				}
+			}
+		}
+		return x; 
+	}
+	
+	public static boolean[][][] getBooleanTripleRectangularArrayExample(){
+		boolean[][][] x = new boolean[2][3][5]; 
+		boolean current = false ;
+		for( int i=0; i<2; i++){
+			for( int j=0; j<3; j++){
+				for( int k=0; k<5; k++, current= !current){
+					x[i][j][k] = current ;
+				}
+			}
+		}
+		return x; 
+	}
+	
+	public static byte[][][] getByteTripleRectangularArrayExample(){
+		byte[][][] x = new byte[2][3][5]; 
+		int current = 0 ;
+		for( int i=0; i<2; i++){
+			for( int j=0; j<3; j++){
+				for( int k=0; k<5; k++, current++){
+					x[i][j][k] = (byte)current ;
+				}
+			}
+		}
+		return x; 
+	}
+	
+	public static long[][][] getLongTripleRectangularArrayExample(){
+		long[][][] x = new long[2][3][5]; 
+		int current = 0 ;
+		for( int i=0; i<2; i++){
+			for( int j=0; j<3; j++){
+				for( int k=0; k<5; k++, current++){
+					x[i][j][k] = (long)current ;
+				}
+			}
+		}
+		return x; 
+	}
+	
+	public static short[][][] getShortTripleRectangularArrayExample(){
+		short[][][] x = new short[2][3][5]; 
+		int current = 0 ;
+		for( int i=0; i<2; i++){
+			for( int j=0; j<3; j++){
+				for( int k=0; k<5; k++, current++){
+					x[i][j][k] = (short)current ;
+				}
+			}
+		}
+		return x; 
+	}
+	
+	public static double[][][] getDoubleTripleRectangularArrayExample(){
+		double[][][] x = new double[2][3][5]; 
+		int current = 0 ;
+		for( int i=0; i<2; i++){
+			for( int j=0; j<3; j++){
+				for( int k=0; k<5; k++, current++){
+					x[i][j][k] = 0.0 + current ;
+				}
+			}
+		}
+		return x; 
+	}
+	
+	public static char[][][] getCharTripleRectangularArrayExample(){
+		char[][][] x = new char[2][3][5]; 
+		int current = 0 ;
+		for( int i=0; i<2; i++){
+			for( int j=0; j<3; j++){
+				for( int k=0; k<5; k++, current++){
+					x[i][j][k] = (char)current ;
+				}
+			}
+		}
+		return x; 
+	}
+	
+	public static float[][][] getFloatTripleRectangularArrayExample(){
+		float[][][] x = new float[2][3][5]; 
+		int current = 0 ;
+		for( int i=0; i<2; i++){
+			for( int j=0; j<3; j++){
+				for( int k=0; k<5; k++, current++){
+					x[i][j][k] = 0.0f + current ;
+				}
+			}
+		}
+		return x; 
+	}
+	
+	public static String[][][] getStringTripleRectangularArrayExample(){
+		String[][][] x = new String[2][3][5]; 
+		int current = 0 ;
+		for( int i=0; i<2; i++){
+			for( int j=0; j<3; j++){
+				for( int k=0; k<5; k++, current++){
+					x[i][j][k] = ""+current ;
+				}
+			}
+		}
+		return x; 
+	}
+	// }}}
+	
+	
+	
 	
 }
