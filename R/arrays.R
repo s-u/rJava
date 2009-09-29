@@ -16,6 +16,9 @@ isJavaArray <- function( o ){
 		stop( message )
 	}
 }
+isJavaArraySignature <- function( sig ){
+	substr( sig, 1, 1 ) == '['
+}
 
 #' get the component type of a java array
 getComponentType <- function( o, check = TRUE ){
@@ -268,4 +271,65 @@ japply <- function( X, FUN = if( simplify) force else "toString", simplify = FAL
 	}
 }
 # }}}
+
+# {{{ newArray - dispatch to jarrayRef or jrectRef
+#' creates a new jarrayRef or jrectRef depending on the rectangularity
+#' of the array
+#' 
+#' @param o a jobjRef object
+#' @param simplify if TRUE and the result is a rectangular array 
+#' of primitives, simplify it to an R object
+newArray <- function( o, simplify = TRUE, jobj, signature ){
+	if( !missing(jobj) ){
+		o <- new("jobjRef", jobj = jobj, jclass = signature)
+	}
+	if( !isJavaArray( o ) ){
+		stop( "o does not refer to a java array" )
+	}
+	clazz <- .jclass( o, true = TRUE )
+	wrapper <- .jnew("ArrayWrapper", .jcast(o) )
+	isRect <- .jcall( wrapper, "Z", "isRectangular" )
+	if( isRect ){
+		dims <- .jcall( wrapper, "[I", "getDimensions" )
+		
+		if( !simplify ){
+			# no need to go further down, return a reference 
+			return( new( "jrectRef", jobj = o@jobj, jsig = clazz, jclass = clazz, 
+				dimension = rev(dims) ) )
+		}
+		
+		isprim <- .jcall( wrapper, "Z", "isPrimitive" )
+		typename <- .jcall( wrapper, "Ljava/lang/String;", "getObjectTypeName" )
+		isstrings <- identical( typename, "java.lang.String" )
+		
+		if( !isprim && !isstrings ){
+			# cannot simplify, return a reference
+			return( new( "jrectRef", jobj = o@jobj, jsig = clazz, jclass = clazz, 
+				dimension = rev(dims) ) )
+		}
+		
+		if( isprim || isstrings ){
+			# array of java primitives, we can translate this to R array
+			out <- structure( switch( typename , 
+				"I"                = .jcall( wrapper, "[I"                 , "flat_int" ), 
+				"Z"                = .jcall( wrapper, "[Z"                 , "flat_boolean" ),
+				"B"                = .jcall( wrapper, "[B"                 , "flat_byte" ),
+				"J"                = .jcall( wrapper, "[J"                 , "flat_long" ),
+				"S"                = .jcall( wrapper, "[T"                 , "flat_short" ), # [T is remapped to [S in .jcall 
+				"D"                = .jcall( wrapper, "[D"                 , "flat_double" ),
+				"C"                = .jcall( wrapper, "[C"                 , "flat_char" ),
+				"F"                = .jcall( wrapper, "[F"                 , "flat_float" ), 
+				"java.lang.String" = .jcall( wrapper, "[Ljava/lang/String;", "flat_String" ), 
+				stop( sprintf("cannot simplify type : ", typename) ) # this should not happen
+				), dim = rev(dims) )
+			return( out )
+		}
+		
+	} else {
+		# not a rectangular array -> jarrayRef
+		new( "jarrayRef", jobj = o@jobj, jsig = clazz, jclass = clazz ) 
+	}
+}
+# }}}
+
 

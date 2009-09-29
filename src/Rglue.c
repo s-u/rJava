@@ -329,7 +329,7 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, sig_buffer_t *sig, i
       }
     } else if (TYPEOF(e)==VECSXP || TYPEOF(e)==S4SXP) {
       _dbg(rjprintf(" generic vector of length %d\n", LENGTH(e)));
-      if (inherits(e,"jobjRef")||inherits(e,"jarrayRef")) {
+      if (IS_JOBJREF(e)) {
 	jobject o=(jobject)0;
 	const char *jc=0;
 	SEXP n=getAttrib(e, R_NamesSymbol);
@@ -349,7 +349,7 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, sig_buffer_t *sig, i
 	  sclass=GET_SLOT(e, install("jclass"));
 	  if (sclass && TYPEOF(sclass)==STRSXP && LENGTH(sclass)==1)
 	    jc=CHAR_UTF8(STRING_ELT(sclass,0));
-	  if (inherits(e, "jarrayRef") && jc && !*jc) {
+	  if (IS_JARRAYREF(e) && jc && !*jc) {
 	    /* if it's jarrayRef with jclass "" then it's an uncast array - use sig instead */
 	    sclass=GET_SLOT(e, install("jsig"));
 	    if (sclass && TYPEOF(sclass)==STRSXP && LENGTH(sclass)==1)
@@ -772,7 +772,7 @@ static SEXP new_jarrayRef(JNIEnv *env, jobject a, const char *sig) {
   /* SEXP oo = eval(LCONS(install("new"),LCONS(mkString("jarrayRef"),R_NilValue)), R_GlobalEnv); */
   SEXP oo = NEW_OBJECT(MAKE_CLASS("jarrayRef"));
   /* .. and set the slots in C .. */
-  if (!inherits(oo, "jarrayRef"))
+  if (! IS_JARRAYREF(oo) )
     error("unable to create an array");
   PROTECT(oo);
   SET_SLOT(oo, install("jobj"), j2SEXP(env, a, 1));
@@ -782,24 +782,71 @@ static SEXP new_jarrayRef(JNIEnv *env, jobject a, const char *sig) {
   return oo;
 }
 
+/**
+ * Creates a reference to a rectangular java array.
+ *
+ * @param env 
+ * @param a the java object
+ * @param sig signature (class of the array object)
+ * @param dim dimension vector
+ */
+static SEXP new_jrectRef(JNIEnv *env, jobject a, const char *sig, SEXP dim ) {
+  /* it is too tedious to try to do this in C, so we use 'new' R function instead */
+  /* SEXP oo = eval(LCONS(install("new"),LCONS(mkString("jrectRef"),R_NilValue)), R_GlobalEnv); */
+  SEXP oo = NEW_OBJECT(MAKE_CLASS("jrectRef"));
+  /* .. and set the slots in C .. */
+  if (! IS_JRECTREF(oo) )
+    error("unable to create an array");
+  PROTECT(oo);
+  SET_SLOT(oo, install("jobj"), j2SEXP(env, a, 1));
+  SET_SLOT(oo, install("jclass"), mkString(sig));
+  SET_SLOT(oo, install("jsig"), mkString(sig));
+  SET_SLOT(oo, install("dimension"), dim);
+  
+  UNPROTECT(1); // oo
+  return oo;
+}
+
+/**
+ * Creates a rectangular array reference of dimension 1
+ *
+ * @param length the number of objects in the array
+ */
+static SEXP new_jrectRef1(JNIEnv *env, jobject a, const char *sig, int length ) {
+	SEXP dim = allocVector( INTSXP, 1) ;
+	PROTECT(dim); 
+	INTEGER(dim)[0] = length ;
+	UNPROTECT(1); // dim 
+	return new_jrectRef( env, a, sig, dim ) ;
+}
+
+// this does not take care of multi dimensional arrays properly
+
+/**
+ * Creates a one dimensionnal java array
+ *
+ * @param an R list or vector
+ * @param cl the class name
+ */
 REPC SEXP RcreateArray(SEXP ar, SEXP cl) {
   JNIEnv *env=getJNIEnv();
   
   if (ar==R_NilValue) return R_NilValue;
   switch(TYPEOF(ar)) {
-  case INTSXP:
+  case INTSXP:                                
     {
       if (inherits(ar, "jbyte")) {
 	jbyteArray a = newByteArrayI(env, INTEGER(ar), LENGTH(ar));
 	if (!a) error("unable to create a byte array");
-	return new_jarrayRef(env, a, "[B");
+	return new_jarrayRef(env, a, "[B" ) ;
       } else if (inherits(ar, "jchar")) {
 	jcharArray a = newCharArrayI(env, INTEGER(ar), LENGTH(ar));
 	if (!a) error("unable to create a char array");
-	return new_jarrayRef(env, a, "[C");
-      } else {
+	return new_jarrayRef(env, a, "[C" ); 
+	  } else {
 	jintArray a = newIntArray(env, INTEGER(ar), LENGTH(ar));
 	if (!a) error("unable to create an integer array");
+	// we know the 
 	return new_jarrayRef(env, a, "[I");
       }
     }

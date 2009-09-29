@@ -81,17 +81,6 @@ with.jobjRef <- function( data, expr, ...){
 
   assign( "this", data, env = env )
 
-  # if data is an array, then add length pseudo field
-  if( isJavaArray(data) ){
-  	makeActiveBinding( "length", function(v){
-  		if( missing( v ) ){
-  			._length_java_array( data )
-  		} else{
-  			stop( "cannot modify length of java array" ) 
-  		}
-  	}, env = env )
-  }
-
   grabDots( ..., env )
   
   eval( substitute( expr ), env = env )
@@ -104,8 +93,37 @@ within.jobjRef <- function(data, expr, ... ){
   data
 }
 
-with.jarrayRef <- with.jobjRef
-within.jarrayRef <- within.jobjRef
+with.jarrayRef <- function( data, expr, ...){
+  env <- new.env( parent = environment() )
+  clazz <- .jcall( data, "Ljava/lang/Class;", "getClass")
+  
+  fields  <- .jcall( clazz, "[Ljava/lang/reflect/Field;", "getFields" )
+  methods <- .jcall( clazz, "[Ljava/lang/reflect/Method;", "getMethods" )
+  classes <- .jcall( clazz, "[Ljava/lang/Class;" , "getClasses" )
+  ._populate_with_fields_and_methods( env, fields, methods, classes, data, only.static = FALSE )
+
+  assign( "this", data, env = env )
+
+  # add "length" pseudo field
+  makeActiveBinding( "length", function(v){
+  	if( missing( v ) ){
+  		._length_java_array( data )
+  	} else{
+  		stop( "cannot modify length of java array" ) 
+  	}
+  }, env = env )
+  
+  grabDots( ..., env )
+  
+  eval( substitute( expr ), env = env )
+}
+
+within.jarrayRef <- function(data, expr, ... ){
+  call <- match.call()
+  call[[1]] <- as.name("with.jarrayRef")
+  eval( call, parent.frame() )
+  data
+}
 
 with.jclassName <- function( data, expr, ... ){
 	env <- new.env( parent = environment() )

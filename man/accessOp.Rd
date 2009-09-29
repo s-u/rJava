@@ -5,6 +5,9 @@
 \alias{$<-,jclassName-method}
 \alias{names,jobjRef-method}
 \alias{names,jclassName-method}
+\alias{names,jarrayRef-method}
+\alias{names,jrectRef-method}
+
 \title{
   Field/method operator for Java objects
 }
@@ -18,6 +21,8 @@
     \item{\code{$<-}}{\code{signature(x = "jobjRef")}: ... }
     \item{\code{$<-}}{\code{signature(x = "jclassName")}: ... }
     \item{\code{names}}{\code{signature(x = "jobjRef")}: ... }
+    \item{\code{names}}{\code{signature(x = "jarrayRef")}: ... }
+    \item{\code{names}}{\code{signature(x = "jrectRef")}: ... }
     \item{\code{names}}{\code{signature(x = "jclassName")}: ... }
 	 }
 }

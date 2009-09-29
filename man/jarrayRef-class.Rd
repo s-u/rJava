@@ -61,11 +61,11 @@ length( array )
 array$length
 \dontshow{stopifnot(array$length == 3L)}
 
-# also with with
-with( array, length )
-\dontshow{
-	stopifnot( with(array, length) == 3L )
-}
+% # also with with
+% with( array, length )
+% \dontshow{
+% 	stopifnot( with(array, length) == 3L )
+% }
 
 }
 \keyword{classes}

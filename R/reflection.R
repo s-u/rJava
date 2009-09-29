@@ -105,7 +105,7 @@
   r <- .jcast( r, .jclass( r, true = TRUE ), check = FALSE, convert.array = TRUE )
   
   # simplify if needed and return the object
-  if( isJavaArray(r) && simplify ){
+  if( is(r, "jarrayRef" ) && simplify ){
   	._jarray_simplify( r )
   } else if (simplify){
   	  .jsimplify(r) 
@@ -266,9 +266,12 @@ classNamesMethod <- function (cl, static.only = TRUE ) {
 
 ### support for names (useful for completion, thanks to Romain Francois)
 setMethod("names", c(x="jobjRef"), function(x) {
-	c( 
-		if( isJavaArray(x) ) "length", 
-		classNamesMethod(.jcall(x, "Ljava/lang/Class;", "getClass"), static.only = FALSE )
-	)
-})
+	classNamesMethod(.jcall(x, "Ljava/lang/Class;", "getClass"), static.only = FALSE )
+} )
+setMethod("names", c(x="jarrayRef"), function(x) {
+	c("length", classNamesMethod(.jcall(x, "Ljava/lang/Class;", "getClass"), static.only = FALSE ) )
+} )
+setMethod("names", c(x="jrectRef"), function(x) {
+	c("length", classNamesMethod(.jcall(x, "Ljava/lang/Class;", "getClass"), static.only = FALSE ) )
+} )
 

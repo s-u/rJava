@@ -80,7 +80,7 @@ REPC SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
   JNIEnv *env=getJNIEnv();
 
   if (obj == R_NilValue) return R_NilValue;
-  if (inherits(obj, "jobjRef") || inherits(obj, "jarrayRef"))
+  if ( IS_JOBJREF(obj) )
     obj = GET_SLOT(obj, install("jobj"));
   if (TYPEOF(obj)==EXTPTRSXP) {
     jverify(obj);
@@ -278,7 +278,7 @@ REPC SEXP RsetField(SEXP ref, SEXP name, SEXP value) {
     error("invalid field name");
   fnam = CHAR(STRING_ELT(name, 0));
   if (obj == R_NilValue) error("cannot set a field of a NULL object");
-  if (inherits(obj, "jobjRef") || inherits(obj, "jarrayRef"))
+  if (IS_JOBJREF(obj))
     obj = GET_SLOT(obj, install("jobj"));
   if (TYPEOF(obj)==EXTPTRSXP) {
     jverify(obj);

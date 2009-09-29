@@ -181,5 +181,9 @@ HIDE void deserializeSEXP(SEXP o);
 /* this is a hook for de-serialization */
 #define jverify(X) if (EXTPTR_PROT(X) != R_NilValue) deserializeSEXP(X)
 
+#define IS_JOBJREF(obj) ( inherits(obj, "jobjRef") || inherits(obj, "jarrayRef") || inherits(obj,"jrectRef") )
+#define IS_JARRAYREF(obj) ( inherits(obj, "jobjRef") || inherits(obj, "jarrayRef") || inherits(obj, "jrectRef") )
+#define IS_JRECTREF(obj) ( inherits(obj,"jrectRef") )
+
 #endif
 
