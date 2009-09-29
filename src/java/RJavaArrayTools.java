@@ -250,4 +250,108 @@ public class RJavaArrayTools {
 		return get( array, new int[]{position} ) ;
 	}
 	// }}}
+
+// {{{ Example 2d rect arrays 
+	public static int[][] getIntDoubleRectangularArrayExample(){
+		int[][] x = new int[2][5]; 
+		int k= 0; 
+		for( int i=0; i<2; i++){
+			for( int j=0; j<5; j++, k++){
+				x[i][j] = k ;
+			}
+		}
+		return x; 
+	}
+	
+	public static boolean[][] getBooleanDoubleRectangularArrayExample(){
+		boolean[][] x = new boolean[2][5]; 
+		boolean current = false;  
+		for( int i=0; i<2; i++){
+			for( int j=0; j<5; j++, current = !current){
+				x[i][j] = current ;
+			}
+		}
+		return x ;
+	}
+	
+	public static byte[][] getByteDoubleRectangularArrayExample(){
+		byte[][] x = new byte[2][5]; 
+		int k= 0; 
+		for( int i=0; i<2; i++){
+			for( int j=0; j<5; j++, k++){
+				x[i][j] = (byte)k ;
+			}
+		}
+		return x; 
+	}
+	
+	public static long[][] getLongDoubleRectangularArrayExample(){
+		long[][] x = new long[2][5]; 
+		int k= 0; 
+		for( int i=0; i<2; i++){
+			for( int j=0; j<5; j++, k++){
+				x[i][j] = (long)k ;
+			}
+		}
+		return x; 
+	}
+	
+	public static short[][] getShortDoubleRectangularArrayExample(){
+		short[][] x = new short[2][5]; 
+		int k= 0; 
+		for( int i=0; i<2; i++){
+			for( int j=0; j<5; j++, k++){
+				x[i][j] = (short)k ;
+			}
+		}
+		return x; 
+	}
+	
+	public static double[][] getDoubleDoubleRectangularArrayExample(){
+		double[][] x = new double[2][5]; 
+		int k= 0; 
+		for( int i=0; i<2; i++){
+			for( int j=0; j<5; j++, k++){
+				x[i][j] = k + 0.0 ;
+			}
+		}
+		return x; 
+	}
+	
+	public static char[][] getCharDoubleRectangularArrayExample(){
+		char[][] x = new char[2][5]; 
+		int k= 0; 
+		for( int i=0; i<2; i++){
+			for( int j=0; j<5; j++, k++){
+				x[i][j] = (char)k ;
+			}
+		}
+		return x; 
+	}
+	
+	public static float[][] getFloatDoubleRectangularArrayExample(){
+		float[][] x = new float[2][5]; 
+		int k= 0; 
+		for( int i=0; i<2; i++){
+			for( int j=0; j<5; j++, k++){
+				x[i][j] = k + 0.0f ;
+			}
+		}
+		return x; 
+	}
+	
+	public static String[][] getStringDoubleRectangularArrayExample(){
+		String[][] x = new String[2][5]; 
+		int k= 0; 
+		for( int i=0; i<2; i++){
+			for( int j=0; j<5; j++, k++){
+				x[i][j] = "" + k ;
+			}
+		}
+		return x; 
+	}
+	
+	
+	// }}}
+	
 }

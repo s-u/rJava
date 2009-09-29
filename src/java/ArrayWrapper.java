@@ -176,7 +176,6 @@ public class ArrayWrapper {
 	}
 	// }}}
 	
-	
 	// {{{ flat_boolean
 	/**
 	 * Flattens the array into a single dimensionned boolean array
@@ -219,7 +218,6 @@ public class ArrayWrapper {
 		return (boolean[]) o; 
 	}
 	// }}}
-	
 	
 	// {{{ flat_byte
 	/**
@@ -264,8 +262,7 @@ public class ArrayWrapper {
 	}
 	// }}}
 	
-	
-		// {{{ flat_long
+	// {{{ flat_long
 	/**
 	 * Flattens the array into a single dimensionned long array
 	 * 
@@ -307,9 +304,8 @@ public class ArrayWrapper {
 		return (long[]) o; 
 	}
 	// }}}
-
 	
-			// {{{ flat_short
+	// {{{ flat_short
 	/**
 	 * Flattens the array into a single dimensionned short array
 	 * 
@@ -352,8 +348,6 @@ public class ArrayWrapper {
 	}
 	// }}}
 
-
-	
 	// {{{ flat_double
 	/**
 	 * Flattens the array into a single dimensionned double array
@@ -396,8 +390,6 @@ public class ArrayWrapper {
 		return (double[]) o; 
 	}
 	// }}}
-
-	
 	
 	// {{{ flat_char
 	/**
@@ -485,7 +477,6 @@ public class ArrayWrapper {
 	}
 	// }}}
 	
-	
 	// {{{ flat_Object
 	/**
 	 * Flattens the array into a single dimensionned Object array
@@ -532,7 +523,6 @@ public class ArrayWrapper {
 		return (Object[]) o; 
 	}
 	// }}}
-	
 	
 	// {{{ flat_String
 	/**
