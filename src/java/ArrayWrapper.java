@@ -132,7 +132,7 @@ public class ArrayWrapper {
 		return index; 
 	}
 	
-	public int getStart( int[] index ){
+	private int getStart( int[] index ){
 		int start = 0;
 		int product = 1 ; 
 		for( int i=0; i<index.length; i++){

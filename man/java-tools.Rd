@@ -9,5 +9,6 @@
 J("RJavaTools_Test")$runtests()
 J("RJavaArrayTools_Test")$runtests()
 J("ArrayWrapper_Test")$runtests()
+J("RectangularArrayBuilder_Test")$runtests()
 }
 }

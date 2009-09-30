@@ -1,7 +1,9 @@
+// :tabSize=2:indentSize=2:noTabs=false:folding=explicit:collapseFolds=1:
 import java.awt.Point ;
 
 /**
- * Utility class that makes example rectangular java arrays 
+ * Utility class that makes example rectangular java arrays of 2 and 3 dimensions
+ * for all primitive types, String and Point (as an example of array of non primitive object)
  */
 public class RectangularArrayExamples {
 
@@ -252,4 +254,4 @@ public class RectangularArrayExamples {
 	
 	// }}}
 	
-	}
+}

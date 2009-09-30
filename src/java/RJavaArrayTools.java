@@ -1,9 +1,26 @@
 // :tabSize=2:indentSize=2:noTabs=false:folding=explicit:collapseFolds=1:
 
 import java.lang.reflect.Array ; 
+import java.util.Map; 
+import java.util.HashMap;
 
 public class RJavaArrayTools {
 
+	// TODO: maybe factor this out of this class
+	private static Map primitiveClasses = initPrimitiveClasses() ;
+	private static Map initPrimitiveClasses(){
+		Map primitives = new HashMap(); 
+		primitives.put( "I", Integer.TYPE ); 
+		primitives.put( "Z", Boolean.TYPE );
+		primitives.put( "B", Byte.TYPE );
+		primitives.put( "J", Long.TYPE );
+		primitives.put( "S", Short.TYPE );
+		primitives.put( "D", Double.TYPE );
+		primitives.put( "C", Character.TYPE );
+		primitives.put( "F", Float.TYPE );
+		return primitives; 
+	}
+	
 	// {{{ getObjectTypeName
 	/**
 	 * Get the object type name of an multi dimensional array.
@@ -36,10 +53,19 @@ public class RJavaArrayTools {
 			buffer.append( '[' ) ; 
 		}
 		buffer.append( typeName ); 
-		if( isPrimitiveTypeName( typeName ) ){
+		if( ! isPrimitiveTypeName( typeName ) ){
 			buffer.append( ';') ;
 		}
 		return buffer.toString(); 
+	}
+	// }}}
+	
+	// {{{ getClassForSignature
+	public static Class getClassForSignature(String signature, ClassLoader loader) throws ClassNotFoundException {
+		if( primitiveClasses.containsKey(signature) ){
+			return (Class)primitiveClasses.get( signature ) ;
+		}
+		return Class.forName(signature, true, loader) ;
 	}
 	// }}}
 	
