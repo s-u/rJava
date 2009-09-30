@@ -221,10 +221,7 @@ public class ArrayWrapper_Test {
 	// {{{ flatten_int_2
 	private static void flatten_int_2() throws TestException{
 		
-		int[][] o = new int[2][5] ;
-		int k = 0; 
-		for( int i=0;i<5;i++,k++) o[0][i] = k ;
-		for( int i=0;i<5;i++,k++) o[1][i] = k ;
+		int[][] o = RectangularArrayExamples.getIntDoubleRectangularArrayExample(); 
 		
 		ArrayWrapper wrapper = null ; 
 		System.out.print( "  >> new ArrayWrapper( int[][] ) " ); 
@@ -269,15 +266,7 @@ public class ArrayWrapper_Test {
   // {{{ flatten_int_3
 	private static void flatten_int_3() throws TestException{
 		
-		int[][][] o = new int[2][2][5] ;
-		int k = 0;
-		for( int i=0;i<2;i++){
-			for( int j=0; j<2; j++){
-				for( int jjj=0; jjj<5; jjj++,k++){
-					o[i][j][jjj] = k ; 
-				}
-			}
-		}
+		int[][][] o = RectangularArrayExamples.getIntTripleRectangularArrayExample(); 
 		
 		ArrayWrapper wrapper = null ; 
 		System.out.print( "  >> new ArrayWrapper( int[][][] ) " ); 
@@ -310,8 +299,7 @@ public class ArrayWrapper_Test {
 			throw new TestException("new ArrayWrapper(int[][][]) >> FlatException") ;
 		}
 		
-		
-		for( int i=0; i<20; i++){
+		for( int i=0; i<30; i++){
 			if( flat[i] != i ) throw new TestException( "flat[" + i + "] = " + flat [i] + "!=" + i); 
 		}
 		System.out.println( "  ok" ) ;
@@ -376,14 +364,7 @@ public class ArrayWrapper_Test {
 	// {{{ flatten_boolean_2
 	private static void flatten_boolean_2() throws TestException{
 		
-		boolean[][] o = new boolean[2][5] ;
-		boolean current = false; 
-		for( int i=0; i<2; i++){
-			for( int j=0; j<5; j++){
-				o[i][j] = current ; 
-				current = !current ;
-			}
-		}
+		boolean[][] o = RectangularArrayExamples.getBooleanDoubleRectangularArrayExample();
 			
 		ArrayWrapper wrapper = null ; 
 		System.out.print( "  >> new ArrayWrapper( boolean[][] ) " ); 
@@ -416,8 +397,8 @@ public class ArrayWrapper_Test {
 			throw new TestException("new ArrayWrapper(boolean[][]) >> FlatException") ;
 		}
 		
-		current = false ;
-		for( int i=0; i<5; i++){
+		boolean current = false ;
+		for( int i=0; i<10; i++){
 			if( flat[i] != current ) throw new TestException( "flat[" + i + "] = " + flat [i] );
 			current = !current ;
 		}
@@ -429,16 +410,7 @@ public class ArrayWrapper_Test {
   // {{{ flatten_boolean_3
 	private static void flatten_boolean_3() throws TestException{
 		
-		boolean[][][] o = new boolean[2][3][5] ;
-		boolean current = false ;
-		for( int i=0;i<2;i++){
-			for( int j=0; j<2; j++){
-				for( int k=0; k<5; k++){
-					o[i][j][k] = current ;
-					current = !current ;
-				}
-			}
-		}
+		boolean[][][] o = RectangularArrayExamples.getBooleanTripleRectangularArrayExample();
 		
 		ArrayWrapper wrapper = null ; 
 		System.out.print( "  >> new ArrayWrapper( boolean[][][] ) " ); 
@@ -471,8 +443,8 @@ public class ArrayWrapper_Test {
 			throw new TestException("new ArrayWrapper(boolean[][][]) >> FlatException") ;
 		}
 		
-		current = false ;
-		for( int i=0; i<5; i++){
+		boolean current = false ;
+		for( int i=0; i<30; i++){
 			if( flat[i] != current ) throw new TestException( "flat[" + i + "] = " + flat [i] );
 			current = !current ;
 		}
@@ -532,13 +504,7 @@ public class ArrayWrapper_Test {
 	// {{{ flatten_byte_2
 	private static void flatten_byte_2() throws TestException{
 		
-		byte[][] o = new byte[2][5] ;  
-		int k = 0 ; 
-		for( int i=0;i<2;i++){
-			for( int j=0;j<5;j++,k++) {
-				o[i][j] = (byte)k ;
-			}
-		}
+		byte[][] o = RectangularArrayExamples.getByteDoubleRectangularArrayExample();
 		
 		
 		ArrayWrapper wrapper = null ; 
@@ -584,15 +550,7 @@ public class ArrayWrapper_Test {
   // {{{ flatten_byte_3
 	private static void flatten_byte_3() throws TestException{
 		
-		byte[][][] o = new byte[2][2][5] ;
-		int k = 0;
-		for( int i=0;i<2;i++){
-			for( int j=0; j<2; j++){
-				for( int jjj=0; jjj<5; jjj++,k++){
-					o[i][j][jjj] = (byte)k ; 
-				}
-			}
-		}
+		byte[][][] o = RectangularArrayExamples.getByteTripleRectangularArrayExample();
 		
 		ArrayWrapper wrapper = null ; 
 		System.out.print( "  >> new ArrayWrapper( byte[][][] ) " ); 
@@ -626,7 +584,7 @@ public class ArrayWrapper_Test {
 		}
 		
 		
-		for( int i=0; i<20; i++){
+		for( int i=0; i<30; i++){
 			if( flat[i] != (byte)i ) throw new TestException( "flat[" + i + "] = " + flat [i] + "!=" + i); 
 		}
 		System.out.println( "  ok" ) ;
@@ -683,13 +641,7 @@ public class ArrayWrapper_Test {
 	// {{{ flatten_long_2
 	private static void flatten_long_2() throws TestException{
 		
-		long[][] o = new long[2][5] ;  
-		int k = 0 ; 
-		for( int i=0;i<2;i++){
-			for( int j=0;j<5;j++,k++) {
-				o[i][j] = (long)k ;
-			}
-		}
+		long[][] o = RectangularArrayExamples.getLongDoubleRectangularArrayExample();
 		
 		
 		ArrayWrapper wrapper = null ; 
@@ -735,15 +687,7 @@ public class ArrayWrapper_Test {
   // {{{ flatten_long_3
 	private static void flatten_long_3() throws TestException{
 		
-		long[][][] o = new long[2][2][5] ;
-		int k = 0;
-		for( int i=0;i<2;i++){
-			for( int j=0; j<2; j++){
-				for( int jjj=0; jjj<5; jjj++,k++){
-					o[i][j][jjj] = (long)k ; 
-				}
-			}
-		}
+		long[][][] o = RectangularArrayExamples.getLongTripleRectangularArrayExample();
 		
 		ArrayWrapper wrapper = null ; 
 		System.out.print( "  >> new ArrayWrapper( long[][][] ) " ); 
@@ -777,7 +721,7 @@ public class ArrayWrapper_Test {
 		}
 		
 		
-		for( int i=0; i<20; i++){
+		for( int i=0; i<30; i++){
 			if( flat[i] != (long)i ) throw new TestException( "flat[" + i + "] = " + flat [i] + "!=" + i); 
 		}
 		System.out.println( "  ok" ) ;
@@ -835,13 +779,7 @@ public class ArrayWrapper_Test {
 	// {{{ flatten_short_2
 	private static void flatten_short_2() throws TestException{
 		
-		short[][] o = new short[2][5] ;  
-		int k = 0 ; 
-		for( int i=0;i<2;i++){
-			for( int j=0;j<5;j++,k++) {
-				o[i][j] = (short)k ;
-			}
-		}
+		short[][] o = RectangularArrayExamples.getShortDoubleRectangularArrayExample();
 		
 		
 		ArrayWrapper wrapper = null ; 
@@ -887,15 +825,7 @@ public class ArrayWrapper_Test {
   // {{{ flatten_short_3
 	private static void flatten_short_3() throws TestException{
 		
-		short[][][] o = new short[2][2][5] ;
-		int k = 0;
-		for( int i=0;i<2;i++){
-			for( int j=0; j<2; j++){
-				for( int jjj=0; jjj<5; jjj++,k++){
-					o[i][j][jjj] = (short)k ; 
-				}
-			}
-		}
+		short[][][] o = RectangularArrayExamples.getShortTripleRectangularArrayExample();
 		
 		ArrayWrapper wrapper = null ; 
 		System.out.print( "  >> new ArrayWrapper( short[][][] ) " ); 
@@ -929,7 +859,7 @@ public class ArrayWrapper_Test {
 		}
 		
 		
-		for( int i=0; i<20; i++){
+		for( int i=0; i<30; i++){
 			if( flat[i] != (double)i ) throw new TestException( "flat[" + i + "] = " + flat [i] + "!=" + i); 
 		}
 		System.out.println( "  ok" ) ;
@@ -987,14 +917,7 @@ public class ArrayWrapper_Test {
 	// {{{ flatten_double_2
 	private static void flatten_double_2() throws TestException{
 		
-		double[][] o = new double[2][5] ;  
-		int k = 0 ; 
-		for( int i=0;i<2;i++){
-			for( int j=0;j<5;j++,k++) {
-				o[i][j] = k + 0.0 ;
-			}
-		}
-		
+		double[][] o = RectangularArrayExamples.getDoubleDoubleRectangularArrayExample();
 		
 		ArrayWrapper wrapper = null ; 
 		System.out.print( "  >> new ArrayWrapper( double[][] ) " ); 
@@ -1039,15 +962,7 @@ public class ArrayWrapper_Test {
   // {{{ flatten_double_3
 	private static void flatten_double_3() throws TestException{
 		
-		double[][][] o = new double[2][2][5] ;
-		int k = 0;
-		for( int i=0;i<2;i++){
-			for( int j=0; j<2; j++){
-				for( int jjj=0; jjj<5; jjj++,k++){
-					o[i][j][jjj] = (double)k ; 
-				}
-			}
-		}
+		double[][][] o = RectangularArrayExamples.getDoubleTripleRectangularArrayExample();
 		
 		ArrayWrapper wrapper = null ; 
 		System.out.print( "  >> new ArrayWrapper( double[][][] ) " ); 
@@ -1081,7 +996,7 @@ public class ArrayWrapper_Test {
 		}
 		
 		
-		for( int i=0; i<20; i++){
+		for( int i=0; i<30; i++){
 			if( flat[i] != (i+0.0) ) throw new TestException( "flat[" + i + "] = " + flat [i] + "!=" + i); 
 		}
 		System.out.println( "  ok" ) ;
@@ -1138,13 +1053,7 @@ public class ArrayWrapper_Test {
 	// {{{ flatten_char_2
 	private static void flatten_char_2() throws TestException{
 		
-		char[][] o = new char[2][5] ;  
-		int k = 0 ; 
-		for( int i=0;i<2;i++){
-			for( int j=0;j<5;j++,k++) {
-				o[i][j] = (char)k ;
-			}
-		}
+		char[][] o = RectangularArrayExamples.getCharDoubleRectangularArrayExample();
 		
 		
 		ArrayWrapper wrapper = null ; 
@@ -1190,15 +1099,7 @@ public class ArrayWrapper_Test {
   // {{{ flatten_char_3
 	private static void flatten_char_3() throws TestException{
 		
-		char[][][] o = new char[2][2][5] ;
-		int k = 0;
-		for( int i=0;i<2;i++){
-			for( int j=0; j<2; j++){
-				for( int jjj=0; jjj<5; jjj++,k++){
-					o[i][j][jjj] = (char)k ; 
-				}
-			}
-		}
+		char[][][] o = RectangularArrayExamples.getCharTripleRectangularArrayExample();
 		
 		ArrayWrapper wrapper = null ; 
 		System.out.print( "  >> new ArrayWrapper( char[][][] ) " ); 
@@ -1232,7 +1133,7 @@ public class ArrayWrapper_Test {
 		}
 		
 		
-		for( int i=0; i<20; i++){
+		for( int i=0; i<30; i++){
 			if( flat[i] != (char)i ) throw new TestException( "flat[" + i + "] = " + flat [i] + "!=" + i); 
 		}
 		System.out.println( "  ok" ) ;
@@ -1290,14 +1191,7 @@ public class ArrayWrapper_Test {
 	// {{{ flatten_float_2
 	private static void flatten_float_2() throws TestException{
 		
-		float[][] o = new float[2][5] ;  
-		int k = 0 ; 
-		for( int i=0;i<2;i++){
-			for( int j=0;j<5;j++,k++) {
-				o[i][j] = (float)(k + 0.0) ;
-			}
-		}
-		
+		float[][] o = RectangularArrayExamples.getFloatDoubleRectangularArrayExample();
 		
 		ArrayWrapper wrapper = null ; 
 		System.out.print( "  >> new ArrayWrapper( float[][] ) " ); 
@@ -1342,15 +1236,7 @@ public class ArrayWrapper_Test {
   // {{{ flatten_float_3
 	private static void flatten_float_3() throws TestException{
 		
-		float[][][] o = new float[2][2][5] ;
-		int k = 0;
-		for( int i=0;i<2;i++){
-			for( int j=0; j<2; j++){
-				for( int jjj=0; jjj<5; jjj++,k++){
-					o[i][j][jjj] = (float)k ; 
-				}
-			}
-		}
+		float[][][] o = RectangularArrayExamples.getFloatTripleRectangularArrayExample();
 		
 		ArrayWrapper wrapper = null ; 
 		System.out.print( "  >> new ArrayWrapper( float[][][] ) " ); 
@@ -1384,7 +1270,7 @@ public class ArrayWrapper_Test {
 		}
 		
 		
-		for( int i=0; i<20; i++){
+		for( int i=0; i<30; i++){
 			if( flat[i] != (float)(i+0.0) ) throw new TestException( "flat[" + i + "] = " + flat [i] + "!=" + i); 
 		}
 		System.out.println( "  ok" ) ;
@@ -1444,14 +1330,7 @@ public class ArrayWrapper_Test {
 	// {{{ flatten_String_2
 	private static void flatten_String_2() throws TestException{
 		
-		String[][] o = new String[2][5] ;  
-		int k = 0 ; 
-		for( int i=0;i<2;i++){
-			for( int j=0;j<5;j++,k++) {
-				o[i][j] = ""+k  ;
-			}
-		}
-		
+		String[][] o = RectangularArrayExamples.getStringDoubleRectangularArrayExample();
 		
 		ArrayWrapper wrapper = null ; 
 		System.out.print( "  >> new ArrayWrapper( String[][] ) " ); 
@@ -1496,15 +1375,7 @@ public class ArrayWrapper_Test {
   // {{{ flatten_String_3
 	private static void flatten_String_3() throws TestException{
 		
-		String[][][] o = new String[2][2][5] ;
-		int k = 0;
-		for( int i=0;i<2;i++){
-			for( int j=0; j<2; j++){
-				for( int jjj=0; jjj<5; jjj++,k++){
-					o[i][j][jjj] = ""+k ; 
-				}
-			}
-		}
+		String[][][] o = RectangularArrayExamples.getStringTripleRectangularArrayExample();
 		
 		ArrayWrapper wrapper = null ; 
 		System.out.print( "  >> new ArrayWrapper( String[][][] ) " ); 
@@ -1538,7 +1409,7 @@ public class ArrayWrapper_Test {
 		}
 		
 		
-		for( int i=0; i<20; i++){
+		for( int i=0; i<30; i++){
 			if( !flat[i].equals( ""+i) ) throw new TestException( "flat[" + i + "] = " + flat [i] + "!=" + i); 
 		}
 		System.out.println( "  ok" ) ;
@@ -1598,14 +1469,7 @@ public class ArrayWrapper_Test {
 	// {{{ flatten_Point_2
 	private static void flatten_Point_2() throws TestException{
 		
-		Point[][] o = new Point[2][5] ;  
-		int k = 0 ; 
-		for( int i=0;i<2;i++){
-			for( int j=0;j<5;j++,k++) {
-				o[i][j] = new Point( k, k )  ;
-			}
-		}
-		
+		Point[][] o = RectangularArrayExamples.getPointDoubleRectangularArrayExample(); 
 		
 		ArrayWrapper wrapper = null ; 
 		System.out.print( "  >> new ArrayWrapper( Point[][] ) " ); 
@@ -1651,15 +1515,7 @@ public class ArrayWrapper_Test {
   // {{{ flatten_Point_3
 	private static void flatten_Point_3() throws TestException{
 		
-		Point[][][] o = new Point[2][2][5] ;
-		int k = 0;
-		for( int i=0;i<2;i++){
-			for( int j=0; j<2; j++){
-				for( int jjj=0; jjj<5; jjj++,k++){
-					o[i][j][jjj] = new Point(k,k) ; 
-				}
-			}
-		}
+		Point[][][] o = RectangularArrayExamples.getPointTripleRectangularArrayExample();
 		
 		ArrayWrapper wrapper = null ; 
 		System.out.print( "  >> new ArrayWrapper( Point[][][] ) " ); 
@@ -1693,7 +1549,7 @@ public class ArrayWrapper_Test {
 		}
 		
 		Point p; 
-		for( int i=0; i<20; i++){
+		for( int i=0; i<30; i++){
 			p = flat[i]; 
 			if( p.x != i || p.y != i ) throw new TestException( "flat[" + i + "].x = " + p.x + "!=" + i); 
 		}

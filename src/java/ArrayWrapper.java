@@ -132,6 +132,15 @@ public class ArrayWrapper {
 		return index; 
 	}
 	
+	public int getStart( int[] index ){
+		int start = 0;
+		int product = 1 ; 
+		for( int i=0; i<index.length; i++){
+			start += index[i]*product;
+			product = dimensions[i]*product ;
+		}
+		return start ;
+	}
 	
 	// {{{ flat_int
 	/**
@@ -146,21 +155,28 @@ public class ArrayWrapper {
 			return (int[])array ;
 		} else{
 			int[] payload_int = new int[length] ;
-			int i = 0 ;
-			int j; 
+			int i = 0, k ;
 			int depth = dimensions.length - 1 ;
+			int increment = 1 ;
+			for( i=0; i<depth; i++){
+				increment *= dimensions[i] ;
+			}
+			
 			int[] index = new int[ depth ]; 
 			// init
 			for( i=0; i< depth; i++){
 				index[i] = 0 ; 
 			}
+			
 			i=0;
-			while( i<length ){
-				int[] current = getIntArray( index ) ; 
-				for( j=0; j<current.length; j++, i++){
-					payload_int[i] = current[j]; 
+			while( i<increment ){
+				int[] current = getIntArray( index ) ;
+				k = getStart(index) ;
+				for( int j=0; j<current.length; j++, k+=increment){
+					payload_int[k] = current[j];
 				}
 				index = increment( index ) ;
+				i++; 
 			}
 			return payload_int; 
 		}
@@ -181,7 +197,7 @@ public class ArrayWrapper {
 	 * Flattens the array into a single dimensionned boolean array
 	 * 
 	 */ 
-	public boolean[] flat_boolean() throws PrimitiveArrayException, FlatException {
+	public boolean[] flat_boolean() throws PrimitiveArrayException,FlatException {
 		
 		if( ! "Z".equals(typeName) ) throw new PrimitiveArrayException("boolean"); 
 		if( !isRect ) throw new FlatException(); 
@@ -189,23 +205,30 @@ public class ArrayWrapper {
 			return (boolean[])array ;
 		} else{
 			boolean[] payload_boolean = new boolean[length] ;
-			int i = 0 ;
-			int j; 
+			int i = 0, k ;
 			int depth = dimensions.length - 1 ;
+			int increment = 1 ;
+			for( i=0; i<depth; i++){
+				increment *= dimensions[i] ;
+			}
+			
 			int[] index = new int[ depth ]; 
 			// init
 			for( i=0; i< depth; i++){
 				index[i] = 0 ; 
 			}
+			
 			i=0;
-			while( i<length ){
-				boolean[] current = getBooleanArray( index ) ; 
-				for( j=0; j<current.length; j++, i++){
-					payload_boolean[i] = current[j]; 
+			while( i<increment ){
+				boolean[] current = getBooleanArray( index ) ;
+				k = getStart(index) ;
+				for( int j=0; j<current.length; j++, k+=increment){
+					payload_boolean[k] = current[j];
 				}
 				index = increment( index ) ;
+				i++; 
 			}
-			return payload_boolean; 
+			return payload_boolean ; 
 		}
 	}
 	
@@ -232,26 +255,33 @@ public class ArrayWrapper {
 			return (byte[])array ;
 		} else{
 			byte[] payload_byte = new byte[length] ;
-			int i = 0 ;
-			int j; 
+			int i = 0, k ;
 			int depth = dimensions.length - 1 ;
+			int increment = 1 ;
+			for( i=0; i<depth; i++){
+				increment *= dimensions[i] ;
+			}
+			
 			int[] index = new int[ depth ]; 
 			// init
 			for( i=0; i< depth; i++){
 				index[i] = 0 ; 
 			}
+			
 			i=0;
-			while( i<length ){
-				byte[] current = getByteArray( index ) ; 
-				for( j=0; j<current.length; j++, i++){
-					payload_byte[i] = current[j]; 
+			while( i<increment ){
+				byte[] current = getByteArray( index ) ;
+				k = getStart(index) ;
+				for( int j=0; j<current.length; j++, k+=increment){
+					payload_byte[k] = current[j];
 				}
 				index = increment( index ) ;
+				i++; 
 			}
 			return payload_byte; 
 		}
 	}
-	
+
 	private byte[] getByteArray( int[] index ){
 		int[] res ;
 		Object o = array ;
@@ -275,21 +305,28 @@ public class ArrayWrapper {
 			return (long[])array ;
 		} else{
 			long[] payload_long = new long[length] ;
-			int i = 0 ;
-			int j; 
+			int i = 0, k ;
 			int depth = dimensions.length - 1 ;
+			int increment = 1 ;
+			for( i=0; i<depth; i++){
+				increment *= dimensions[i] ;
+			}
+			
 			int[] index = new int[ depth ]; 
 			// init
 			for( i=0; i< depth; i++){
 				index[i] = 0 ; 
 			}
+			
 			i=0;
-			while( i<length ){
-				long[] current = getLongArray( index ) ; 
-				for( j=0; j<current.length; j++, i++){
-					payload_long[i] = current[j]; 
+			while( i<increment ){
+				long[] current = getLongArray( index ) ;
+				k = getStart(index) ;
+				for( int j=0; j<current.length; j++, k+=increment){
+					payload_long[k] = current[j];
 				}
 				index = increment( index ) ;
+				i++; 
 			}
 			return payload_long ; 
 		}
@@ -310,7 +347,7 @@ public class ArrayWrapper {
 	 * Flattens the array into a single dimensionned short array
 	 * 
 	 */ 
-	public short[] flat_short() throws PrimitiveArrayException,FlatException {
+		public short[] flat_short() throws PrimitiveArrayException,FlatException {
 		
 		if( ! "S".equals(typeName) ) throw new PrimitiveArrayException("short"); 
 		if( !isRect ) throw new FlatException(); 
@@ -318,26 +355,33 @@ public class ArrayWrapper {
 			return (short[])array ;
 		} else{
 			short[] payload_short = new short[length] ;
-			int i = 0 ;
-			int j; 
+			int i = 0, k ;
 			int depth = dimensions.length - 1 ;
+			int increment = 1 ;
+			for( i=0; i<depth; i++){
+				increment *= dimensions[i] ;
+			}
+			
 			int[] index = new int[ depth ]; 
 			// init
 			for( i=0; i< depth; i++){
 				index[i] = 0 ; 
 			}
+			
 			i=0;
-			while( i<length ){
-				short[] current = getShortArray( index ) ; 
-				for( j=0; j<current.length; j++, i++){
-					payload_short[i] = current[j]; 
+			while( i<increment ){
+				short[] current = getShortArray( index ) ;
+				k = getStart(index) ;
+				for( int j=0; j<current.length; j++, k+=increment){
+					payload_short[k] = current[j];
 				}
 				index = increment( index ) ;
+				i++; 
 			}
-			return payload_short ; 
+			return payload_short; 
 		}
 	}
-	
+
 	private short[] getShortArray( int[] index ){
 		int[] res ;
 		Object o = array ;
@@ -361,26 +405,33 @@ public class ArrayWrapper {
 			return (double[])array ;
 		} else{
 			double[] payload_double = new double[length] ;
-			int i = 0 ;
-			int j; 
+			int i = 0, k ;
 			int depth = dimensions.length - 1 ;
+			int increment = 1 ;
+			for( i=0; i<depth; i++){
+				increment *= dimensions[i] ;
+			}
+			
 			int[] index = new int[ depth ]; 
 			// init
 			for( i=0; i< depth; i++){
 				index[i] = 0 ; 
 			}
+			
 			i=0;
-			while( i<length ){
-				double[] current = getDoubleArray( index ) ; 
-				for( j=0; j<current.length; j++, i++){
-					payload_double[i] = current[j]; 
+			while( i<increment ){
+				double[] current = getDoubleArray( index ) ;
+				k = getStart(index) ;
+				for( int j=0; j<current.length; j++, k+=increment){
+					payload_double[k] = current[j];
 				}
 				index = increment( index ) ;
+				i++; 
 			}
-			return payload_double ; 
+			return payload_double; 
 		}
 	}
-	
+
 	private double[] getDoubleArray( int[] index ){
 		int[] res ;
 		Object o = array ;
@@ -404,21 +455,28 @@ public class ArrayWrapper {
 			return (char[])array ;
 		} else{
 			char[] payload_char = new char[length] ;
-			int i = 0 ;
-			int j; 
+			int i = 0, k ;
 			int depth = dimensions.length - 1 ;
+			int increment = 1 ;
+			for( i=0; i<depth; i++){
+				increment *= dimensions[i] ;
+			}
+			
 			int[] index = new int[ depth ]; 
 			// init
 			for( i=0; i< depth; i++){
 				index[i] = 0 ; 
 			}
+			
 			i=0;
-			while( i<length ){
-				char[] current = getCharArray( index ) ; 
-				for( j=0; j<current.length; j++, i++){
-					payload_char[i] = current[j]; 
+			while( i<increment ){
+				char[] current = getCharArray( index ) ;
+				k = getStart(index) ;
+				for( int j=0; j<current.length; j++, k+=increment){
+					payload_char[k] = current[j];
 				}
 				index = increment( index ) ;
+				i++; 
 			}
 			return payload_char ; 
 		}
@@ -441,29 +499,36 @@ public class ArrayWrapper {
 	 */ 
 	public float[] flat_float() throws PrimitiveArrayException,FlatException {
 		
-		if( ! "F".equals(typeName) ) throw new PrimitiveArrayException("char"); 
+		if( ! "F".equals(typeName) ) throw new PrimitiveArrayException("float"); 
 		if( !isRect ) throw new FlatException(); 
 		if( dimensions.length == 1 ){
 			return (float[])array ;
 		} else{
 			float[] payload_float = new float[length] ;
-			int i = 0 ;
-			int j; 
+			int i = 0, k ;
 			int depth = dimensions.length - 1 ;
+			int increment = 1 ;
+			for( i=0; i<depth; i++){
+				increment *= dimensions[i] ;
+			}
+			
 			int[] index = new int[ depth ]; 
 			// init
 			for( i=0; i< depth; i++){
 				index[i] = 0 ; 
 			}
+			
 			i=0;
-			while( i<length ){
-				float[] current = getFloatArray( index ) ; 
-				for( j=0; j<current.length; j++, i++){
-					payload_float[i] = current[j]; 
+			while( i<increment ){
+				float[] current = getFloatArray( index ) ;
+				k = getStart(index) ;
+				for( int j=0; j<current.length; j++, k+=increment){
+					payload_float[k] = current[j];
 				}
 				index = increment( index ) ;
+				i++; 
 			}
-			return payload_float ; 
+			return payload_float; 
 		}
 	}
 	
@@ -478,9 +543,6 @@ public class ArrayWrapper {
 	// }}}
 	
 	// {{{ flat_Object
-	/**
-	 * Flattens the array into a single dimensionned Object array
-	 */ 
 	public Object flat_Object() throws FlatException, ObjectArrayException {
 		if( isPrimitive() ) throw new ObjectArrayException( typeName) ; 
 		if( !isRect ) throw new FlatException(); 
@@ -494,21 +556,28 @@ public class ArrayWrapper {
 			} catch( ClassNotFoundException e){}
 			
 			Object res = Array.newInstance( type,  length ) ; 
-			int i = 0 ;
-			int j; 
+			int i = 0, k ;
 			int depth = dimensions.length - 1 ;
+			int increment = 1 ;
+			for( i=0; i<depth; i++){
+				increment *= dimensions[i] ;
+			}
+			
 			int[] index = new int[ depth ]; 
 			// init
 			for( i=0; i< depth; i++){
 				index[i] = 0 ; 
 			}
+			
 			i=0;
-			while( i<length ){
-				Object[] current = getObjectArray( index ) ; 
-				for( j=0; j<current.length; j++, i++){
-					Array.set( res, i, type.cast( current[j] ) ); 
+			while( i<increment ){
+				Object[] current = getObjectArray( index ) ;
+				k = getStart(index) ;
+				for( int j=0; j<current.length; j++, k+=increment){
+					Array.set( res, k, type.cast( current[j] ) );
 				}
 				index = increment( index ) ;
+				i++; 
 			}
 			return res ; 
 		}
@@ -539,23 +608,30 @@ public class ArrayWrapper {
 			return (String[])array ;
 		} else{
 			String[] payload_String = new String[length] ;
-			int i = 0 ;
-			int j; 
+			int i = 0, k ;
 			int depth = dimensions.length - 1 ;
+			int increment = 1 ;
+			for( i=0; i<depth; i++){
+				increment *= dimensions[i] ;
+			}
+			
 			int[] index = new int[ depth ]; 
 			// init
 			for( i=0; i< depth; i++){
 				index[i] = 0 ; 
 			}
+			
 			i=0;
-			while( i<length ){
-				String[] current = getStringArray( index ) ; 
-				for( j=0; j<current.length; j++, i++){
-					payload_String[i] = current[j]; 
+			while( i<increment ){
+				String[] current = getStringArray( index ) ;
+				k = getStart(index) ;
+				for( int j=0; j<current.length; j++, k+=increment){
+					payload_String[k] = current[j];
 				}
 				index = increment( index ) ;
+				i++; 
 			}
-			return payload_String ; 
+			return payload_String; 
 		}
 	}
 	

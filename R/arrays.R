@@ -295,7 +295,7 @@ newArray <- function( o, simplify = TRUE, jobj, signature ){
 		if( !simplify ){
 			# no need to go further down, return a reference 
 			return( new( "jrectRef", jobj = o@jobj, jsig = clazz, jclass = clazz, 
-				dimension = rev(dims) ) )
+				dimension = dims ) )
 		}
 		
 		isprim <- .jcall( wrapper, "Z", "isPrimitive" )
@@ -305,7 +305,7 @@ newArray <- function( o, simplify = TRUE, jobj, signature ){
 		if( !isprim && !isstrings ){
 			# cannot simplify, return a reference
 			return( new( "jrectRef", jobj = o@jobj, jsig = clazz, jclass = clazz, 
-				dimension = rev(dims) ) )
+				dimension = dims ) )
 		}
 		
 		if( isprim || isstrings ){
@@ -321,7 +321,7 @@ newArray <- function( o, simplify = TRUE, jobj, signature ){
 				"F"                = .jcall( wrapper, "[F"                 , "flat_float" ), 
 				"java.lang.String" = .jcall( wrapper, "[Ljava/lang/String;", "flat_String" ), 
 				stop( sprintf("cannot simplify type : ", typename) ) # this should not happen
-				), dim = rev(dims) )
+				), dim = dims )
 			return( out )
 		}
 		
