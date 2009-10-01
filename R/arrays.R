@@ -333,48 +333,51 @@ newArray <- function( o, simplify = TRUE, jobj, signature ){
 # }}}
 
 # {{{ [ indexing of rectangular arrays
-._jrectRef_single_indexer <- function(x, i, j, ..., drop = FALSE, simplify = FALSE){
-	dots <- list( ... )
-	
-	# flat the array
-	dim <- x@dimension
-	wrapper <- .jnew( "ArrayWrapper", .jcast(x) )
-	
-	typename <- .jcall( wrapper, "Ljava/lang/String;", "getObjectTypeName" )
-	isprim   <- .jcall( wrapper, "Z", "isPrimitive" )
-	
-	flat <- switch( typename, 
-		"I"                = .jcall( wrapper, "[I"                  , "flat_int"     , evalArray = TRUE ), 
-		"Z"                = .jcall( wrapper, "[Z"                  , "flat_boolean" , evalArray = TRUE ),
-		"B"                = .jcall( wrapper, "[B"                  , "flat_byte"    , evalArray = TRUE ),
-		"J"                = .jcall( wrapper, "[J"                  , "flat_long"    , evalArray = TRUE ),
-		"S"                = .jcall( wrapper, "[T"                  , "flat_short"   , evalArray = TRUE ), # [T is remapped to [S in .jcall 
-		"D"                = .jcall( wrapper, "[D"                  , "flat_double"  , evalArray = TRUE ),
-		"C"                = .jcall( wrapper, "[C"                  , "flat_char"    , evalArray = TRUE ) ,
-		"F"                = .jcall( wrapper, "[F"                  , "flat_float"   , evalArray = TRUE ), 
-		"java.lang.String" = .jcall( wrapper, "[Ljava/lang/String;" , "flat_String"  , evalArray = TRUE ), 
-		                     .jcall( wrapper, "[Ljava/lang/Object;" , "flat_Object"  , evalArray = TRUE ) )
-	if( length(dim) != 1L ){
-		 dim( flat ) <- dim
-	}
-	argslist <- list( flat, drop = drop ) 
-	if( !missing(i) ) argslist <- append( argslist, list(i=i) )
-	if( !missing(j) ) argslist <- append( argslist, list(j=j) )
-	
-	# grab the unnamed part of the ...
-	if( length(dots) ){
-		udots <- dots[ names(dots) == "" ]
-		if( length( udots ) ){
-			argslist <- append( argslist, udots )
-		}
-	}
-	subs <- do.call( `[` , argslist ) 
-	if( simplify && (typename == "java.lang.String" || isprim ) ) subs else .jarray( subs )
-}
-
 setMethod( "[", signature( x = "jrectRef" ), 
 	function(x, i, j, ..., drop = FALSE ){
-		._jrectRef_single_indexer( x, i, j, ..., drop = drop )
-	} )
-	
+		
+		# obvious case
+		has.j <- !missing(j)
+		has.i <- !missing(i)
+		
+		dots  <- list( ... )
+		udots <- if( length(dots) ) dots[ names(dots) == "" ]
+		simplify <- !is.null(dots) && length(dots) && "simplify" %in% dots && isTRUE( dots[["simplify"]] )
+		
+		# flat the array
+		dim <- x@dimension
+		wrapper <- .jnew( "ArrayWrapper", .jcast(x) )
+		
+		typename <- .jcall( wrapper, "Ljava/lang/String;", "getObjectTypeName" )
+		isprim   <- .jcall( wrapper, "Z", "isPrimitive" )
+		
+		flat <- switch( typename, 
+			"I"                = .jcall( wrapper, "[I"                  , "flat_int"     , evalArray = TRUE ), 
+			"Z"                = .jcall( wrapper, "[Z"                  , "flat_boolean" , evalArray = TRUE ),
+			"B"                = .jcall( wrapper, "[B"                  , "flat_byte"    , evalArray = TRUE ),
+			"J"                = .jcall( wrapper, "[J"                  , "flat_long"    , evalArray = TRUE ),
+			"S"                = .jcall( wrapper, "[T"                  , "flat_short"   , evalArray = TRUE ), # [T is remapped to [S in .jcall 
+			"D"                = .jcall( wrapper, "[D"                  , "flat_double"  , evalArray = TRUE ),
+			"C"                = .jcall( wrapper, "[C"                  , "flat_char"    , evalArray = TRUE ) ,
+			"F"                = .jcall( wrapper, "[F"                  , "flat_float"   , evalArray = TRUE ), 
+			"java.lang.String" = .jcall( wrapper, "[Ljava/lang/String;" , "flat_String"  , evalArray = TRUE ), 
+			                     .jcall( wrapper, "[Ljava/lang/Object;" , "flat_Object"  , evalArray = TRUE ) )
+		if( length(dim) != 1L ){
+			 dim( flat ) <- dim
+		}
+		
+		argslist <- list( flat, drop = drop ) 
+		if( !missing(i) ) argslist <- append( argslist, list(i=i) )
+		if( !missing(j) ) argslist <- append( argslist, list(j=j) )
+		
+		# grab the unnamed part of the ...
+		if( length(dots) ){
+			udots <- dots[ names(dots) == "" ]
+			if( length( udots ) ){
+				argslist <- append( argslist, udots )
+			}
+		}
+		subs <- do.call( `[` , argslist ) 
+		if( simplify && (typename == "java.lang.String" || isprim ) ) subs else .jarray( subs )
+	} ) 
 # }}}
