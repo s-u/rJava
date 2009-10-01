@@ -316,11 +316,11 @@ public class ArrayWrapper extends RJavaArrayIterator {
 	// }}}
 	
 	// {{{ flat_Object
-	public Object flat_Object() throws FlatException, ObjectArrayException {
+	public Object[] flat_Object() throws FlatException, ObjectArrayException {
 		if( isPrimitive() ) throw new ObjectArrayException( typeName) ; 
 		if( !isRect ) throw new FlatException(); 
 		if( dimensions.length == 1 ){
-			return array ;
+			return (Object[])array ;
 		} else{
 			ClassLoader loader = array.getClass().getClassLoader() ;
 			Class type = Object.class; 

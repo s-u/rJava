@@ -49,9 +49,9 @@ v$add( "world" )
 v$add( new( J("java.lang.Double"), "10.2" ) )
 array <- v$toArray()
 
-% array[ c(TRUE,FALSE,TRUE) ]
-% array[ 1:2 ]
-% array[ -3 ]
+array[ c(TRUE,FALSE,TRUE) ]
+array[ 1:2 ]
+array[ -3 ]
 
 # length 
 length( array )
