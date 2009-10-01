@@ -22,7 +22,9 @@ Class \code{"\linkS4class{jarrayRef}"}, directly.
 Class \code{"\linkS4class{jobjRef}"}, by class "jarrayRef", distance 2.
 }
 \section{Methods}{
-No methods defined with class "jrectRef" in the signature.
+  \describe{
+    \item{[}{\code{signature(x = "jarrayRef")}: R indexing of java arrays }
+  }
 }
 \examples{
 \dontshow{

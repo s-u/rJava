@@ -332,4 +332,31 @@ newArray <- function( o, simplify = TRUE, jobj, signature ){
 }
 # }}}
 
-
+# {{{ [ indexing of rectangular arrays
+setMethod( "[", signature( x = "jrectRef", i = "ANY", j = "ANY" ), 
+	function(x, i, j, ..., drop = FALSE, simplify = FALSE ){
+		
+		# flat the array
+		dim <- x@dimension
+		wrapper <- .jnew( "ArrayWrapper", x )
+		
+		typename <- .jcall( wrapper, "Ljava/lang/String;", "getObjectTypeName" )
+		isprim   <- .jcall( wrapper, "Z", "isPrimitive" )
+		
+		flat <- switch( typename, 
+			"I"                = .jcall( wrapper, "[I"                 , "flat_int"     , evalArray = TRUE ), 
+			"Z"                = .jcall( wrapper, "[Z"                 , "flat_boolean" , evalArray = TRUE ),
+			"B"                = .jcall( wrapper, "[B"                 , "flat_byte"    , evalArray = TRUE ),
+			"J"                = .jcall( wrapper, "[J"                 , "flat_long"    , evalArray = TRUE ),
+			"S"                = .jcall( wrapper, "[T"                 , "flat_short"   , evalArray = TRUE ), # [T is remapped to [S in .jcall 
+			"D"                = .jcall( wrapper, "[D"                 , "flat_double"  , evalArray = TRUE ),
+			"C"                = .jcall( wrapper, "[C"                 , "flat_char"    , evalArray = TRUE ) ,
+			"F"                = .jcall( wrapper, "[F"                 , "flat_float"   , evalArray = TRUE ), 
+			"java.lang.String" = .jcall( wrapper, "[Ljava/lang/String;", "flat_String"  , evalArray = TRUE ), 
+			                     .jcall( wrapper, "Ljava/lang/Object;" , "flat_Object"  , evalArray = TRUE ) )
+		dim( flat ) <- dim
+		subs <- flat[i,j,...,drop=drop]
+		if( simplify && (typename == "java.lang.String" || isprim ) ) subs else .jarray( subs )
+		
+	} )
+# }}}
