@@ -24,7 +24,7 @@ Class \code{"\linkS4class{jobjRef}"}, by class "jarrayRef", distance 2.
 }
 \section{Methods}{
   \describe{
-    \item{[}{\code{signature(x = "jarrayRef")}: R indexing of java arrays }
+    \item{[}{\code{signature(x = "jrectRef")}: R indexing of rectangular java arrays }
   }
 }
 \examples{

@@ -372,7 +372,7 @@ newArray <- function( o, simplify = TRUE, jobj, signature ){
 	if( simplify && (typename == "java.lang.String" || isprim ) ) subs else .jarray( subs )
 }
 
-setMethod( "[", signature( x = "jrectRef", i = "ANY" ), 
+setMethod( "[", signature( x = "jrectRef" ), 
 	function(x, i, j, ..., drop = FALSE ){
 		._jrectRef_single_indexer( x, i, j, ..., drop = drop )
 	} )
