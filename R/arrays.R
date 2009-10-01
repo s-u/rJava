@@ -313,7 +313,7 @@ newArray <- function( o, simplify = TRUE, jobj, signature ){
 			out <- structure( switch( typename , 
 				"I"                = .jcall( wrapper, "[I"                 , "flat_int" ), 
 				"Z"                = .jcall( wrapper, "[Z"                 , "flat_boolean" ),
-				"B"                = .jbyte( .jcall( wrapper, "[B"                 , "flat_byte" ) ),
+				"B"                = .jcall( wrapper, "[B"                 , "flat_byte" ),
 				"J"                = .jlong( .jcall( wrapper, "[J"                 , "flat_long" ) ),
 				"S"                = .jshort( .jcall( wrapper, "[T"                 , "flat_short" ) ), # [T is remapped to [S in .jcall 
 				"D"                = .jcall( wrapper, "[D"                 , "flat_double" ),
