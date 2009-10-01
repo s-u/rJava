@@ -16,7 +16,7 @@ test: compile
 	$(JAVA) ArrayWrapper_Test
 	$(JAVA) RectangularArrayBuilder_Test
 
-javadoc: compile
+javadoc:
 	$(JAVADOC) $(JAVADOCFLAGS) -d javadoc $(JAVA_SRC)
 
 clean:

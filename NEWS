@@ -44,7 +44,7 @@
         
     o   [RF] R-style indexing of java arrays using [, [[, head and tail
     
-    o   [RF] added japply to apply over a java array of an implementation 
+    o   [RF] added japply to apply over a java array or an implementation 
              of the Iterable interface
 
     o   [RF] added str.jarrayRef as an alias to show.jarrayRef

@@ -7,7 +7,7 @@
 #' @return TRUE if the object is a java array, FALSE if not
 #'         (including when the object is not even a java reference)
 isJavaArray <- function( o ){
-	if( ( is( o, "jobjRef" ) || is( o, "jarrayRef" ) ) && !is.jnull(o) ){
+	if( ( is( o, "jobjRef" ) || is( o, "jarrayRef") || is( o, "jrectRef") ) && !is.jnull(o) ){
 		.jcall( "RJavaArrayTools", "Z", "isArray", .jcast(o) )
 	} else FALSE
 }
@@ -313,12 +313,12 @@ newArray <- function( o, simplify = TRUE, jobj, signature ){
 			out <- structure( switch( typename , 
 				"I"                = .jcall( wrapper, "[I"                 , "flat_int" ), 
 				"Z"                = .jcall( wrapper, "[Z"                 , "flat_boolean" ),
-				"B"                = .jcall( wrapper, "[B"                 , "flat_byte" ),
-				"J"                = .jcall( wrapper, "[J"                 , "flat_long" ),
-				"S"                = .jcall( wrapper, "[T"                 , "flat_short" ), # [T is remapped to [S in .jcall 
+				"B"                = .jbyte( .jcall( wrapper, "[B"                 , "flat_byte" ) ),
+				"J"                = .jlong( .jcall( wrapper, "[J"                 , "flat_long" ) ),
+				"S"                = .jshort( .jcall( wrapper, "[T"                 , "flat_short" ) ), # [T is remapped to [S in .jcall 
 				"D"                = .jcall( wrapper, "[D"                 , "flat_double" ),
-				"C"                = .jcall( wrapper, "[C"                 , "flat_char" ),
-				"F"                = .jcall( wrapper, "[F"                 , "flat_float" ), 
+				"C"                = .jchar( .jcall( wrapper, "[C"                 , "flat_char" ) ),
+				"F"                = .jfloat( .jcall( wrapper, "[F"                 , "flat_float" ) ), 
 				"java.lang.String" = .jcall( wrapper, "[Ljava/lang/String;", "flat_String" ), 
 				stop( sprintf("cannot simplify type : ", typename) ) # this should not happen
 				), dim = dims )

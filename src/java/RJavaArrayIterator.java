@@ -15,6 +15,13 @@ public abstract class RJavaArrayIterator {
 		return array ; 
 	}
 	
+	/**
+	 * @return the class name of the array
+	 */
+	public String getArrayClassName(){
+		return array.getClass().getName();
+	}
+	
 	public int[] getDimensions(){
 		return dimensions; 
 	}

@@ -72,7 +72,7 @@
   newArray( jobj = jobj, signature = sig )
 }
 
-.jcall <- function(obj, returnSig="V", method, ..., evalArray=TRUE, evalString=TRUE, check=TRUE, interface="RcallMethod") {
+.jcall <- function(obj, returnSig="V", method, ..., evalArray=TRUE, evalString=TRUE, check=TRUE, interface="RcallMethod" ) {
   if (check) .jcheck()
   r<-NULL
   # S is a shortcut for Ljava/lang/String;
@@ -203,12 +203,46 @@
     .jcall("java/lang/System", "S", "getProperty", as.character(key)[1])
 }
 
+#' gets the dim of an array, or its length if it is just a vector
+getDim <- function(x){
+	dim <- dim(x)
+	if( is.null( dim ) ) dim <- length(x)
+	dim
+}
+
 .jarray <- function(x, contents.class=NULL) {
+	# this already is an array, so don't bother
+	if( isJavaArray( x ) ) return(x) 
+	
+	# this is a two stage process, first we need to convert into 
+	# a flat array using the jni code
+	
 	# common mistake is to not specify a list but just a single Java object
 	# but, well, people just keep doing it so we may as well support it 
-	if (inherits(x,"jobjRef")||inherits(x,"jarrayRef"))
+	if( inherits(x,"jobjRef") ){
 		x <- list(x)
-	.Call("RcreateArray", x, contents.class, PACKAGE="rJava")
+		dim <- 1L
+	} else{
+		dim <- getDim( x )
+	}
+	array <- .Call("RcreateArray", x, contents.class, PACKAGE="rJava")
+	
+	# then we transform this to a rectangular array of the proper dimensions
+	if( length( dim ) == 1L ) {
+		# TODO: this need to be a jrectRef since 1 dimension -> rect
+		array 
+	} else {
+		builder <- .jnew( "RectangularArrayBuilder", .jcast(array), dim )
+		clazz <- .jcall( builder, "Ljava/lang/String;", "getArrayClassName" )
+		
+		# we cannot use .jcall here since it will try to simplify the array
+		# or go back to java to calculate its dimensions, ...
+		r <- .External( "RcallMethod", builder@jobj, 
+			"Ljava/lang/Object;", "getArray", PACKAGE="rJava")
+		
+		new( "jrectRef", jobj = r, dimension = dim, 
+			jclass = clazz, jsig = clazz ) 
+	}                                                                                                              
 }
 
 # works on EXTPTR or jobjRef or NULL. NULL is always silently converted to .jzeroRef
@@ -320,12 +354,28 @@ is.jnull <- function(x) {
   .Call("RsetField", o, name, value, PACKAGE="rJava")
 
 # there is no way to distinguish between double and float in R, so we need to mark floats specifically
-.jfloat <- function(x) new("jfloat", as.numeric(x))
+.jfloat <- function(x) {
+	storage.mode( x ) <- "double"
+	new("jfloat", x )
+}
 # the same applies to long
-.jlong <- function(x) new("jlong", as.numeric(x))
+.jlong <- function(x) {
+	storage.mode( x ) <- "double"
+	new("jlong", x)
+}
 # and byte
-.jbyte <- function(x) new("jbyte", as.integer(x))
+.jbyte <- function(x) {
+	storage.mode( x ) <- "integer"
+	new("jbyte", x)
+}
 # and short
-.jshort <- function(x) new("jshort", as.integer(x))
+.jshort <- function(x){
+	storage.mode( x ) <- "integer"
+	new("jshort", x)
+}
 # and char (experimental)
-.jchar <- function(x) new("jchar", as.integer(x))
+.jchar <- function(x){
+	storage.mode( x ) <- "integer"
+	new("jchar", as.integer(x))
+}
+

@@ -13,7 +13,7 @@
   Wrap numeric vector as flat Java parameter
 }
 \description{
-  \code{.jfloat} marks a numberic vector as an object that can be used
+  \code{.jfloat} marks a numeric vector as an object that can be used
   as parameter to Java calls that require \code{float} parameters.
   Similarly, \code{.jlong} marks a numeric vector as \code{long} parameter.
 }

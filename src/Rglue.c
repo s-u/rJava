@@ -846,7 +846,6 @@ REPC SEXP RcreateArray(SEXP ar, SEXP cl) {
 	  } else {
 	jintArray a = newIntArray(env, INTEGER(ar), LENGTH(ar));
 	if (!a) error("unable to create an integer array");
-	// we know the 
 	return new_jarrayRef(env, a, "[I");
       }
     }
@@ -897,7 +896,8 @@ REPC SEXP RcreateArray(SEXP ar, SEXP cl) {
 	SEXP e = VECTOR_ELT(ar, i);
 	if (e != R_NilValue &&
 	    !inherits(e, "jobjRef") &&
-	    !inherits(e, "jarrayRef"))
+	    !inherits(e, "jarrayRef") && 
+	    !inherits(e, "jrectRef") )
 	  error("Cannot create a Java array from a list that contains anything other than Java object references.");
 	i++;
       }
