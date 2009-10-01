@@ -334,11 +334,14 @@ newArray <- function( o, simplify = TRUE, jobj, signature ){
 
 # {{{ [ indexing of rectangular arrays
 setMethod( "[", signature( x = "jrectRef", i = "ANY", j = "ANY" ), 
-	function(x, i, j, ..., drop = FALSE, simplify = FALSE ){
+	function(x, i, j, ..., drop = FALSE ){
+		
+		dots <- list( ... )
+		simplify <- "simplify" %in% names(dots) && dots[["simplify"]]
 		
 		# flat the array
 		dim <- x@dimension
-		wrapper <- .jnew( "ArrayWrapper", x )
+		wrapper <- .jnew( "ArrayWrapper", .jcast(x) )
 		
 		typename <- .jcall( wrapper, "Ljava/lang/String;", "getObjectTypeName" )
 		isprim   <- .jcall( wrapper, "Z", "isPrimitive" )

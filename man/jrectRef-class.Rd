@@ -2,6 +2,7 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{jrectRef-class}
+\alias{[,jrectRef-method}
 \title{Rectangular java arrays}
 \description{References to java arrays that are guaranteed to be rectangular, i.e similar 
 to R arrays}
