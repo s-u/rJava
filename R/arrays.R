@@ -354,7 +354,6 @@ newArray <- function( o, simplify = TRUE, jobj, signature ){
 		"F"                = .jcall( wrapper, "[F"                  , "flat_float"   , evalArray = TRUE ), 
 		"java.lang.String" = .jcall( wrapper, "[Ljava/lang/String;" , "flat_String"  , evalArray = TRUE ), 
 		                     .jcall( wrapper, "[Ljava/lang/Object;" , "flat_Object"  , evalArray = TRUE ) )
-	browser()	                     
 	if( length(dim) != 1L ){
 		 dim( flat ) <- dim
 	}
