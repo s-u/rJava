@@ -135,6 +135,8 @@ mkdir -p inst/java/boot
 cd src/java
 make clean
 make compile
+echo "Generate javadoc documentation"
+make javadoc
 cd ../..
 echo "Copy compiled Java classes ..."
 # copy all complied Java classes and sources
@@ -142,6 +144,8 @@ cp src/java/*.class inst/java
 cp src/java/*.java inst/java
 # move RJavaClassLoader into boot area since it will be loaded by the system class loader
 mv inst/java/RJavaClassLoader* inst/java/boot
+# move javadoc directory
+mv src/java/javadoc inst/javadoc
 
 echo "Updating version ..."
 cd /tmp/rJava

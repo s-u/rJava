@@ -100,7 +100,7 @@ public class RJavaArrayTools {
 	 * 
 	 * @param o an array
 	 * @throws NotAnArrayException if o is not an array
-	 * @Deprecated use new ArrayWrapper(o).isRectangular() instead
+	 * @deprecated use new ArrayWrapper(o).isRectangular() instead
 	 */
 	public static boolean isRectangularArray(Object o) {
 		if( !isArray(o) ) return false; 
@@ -250,7 +250,7 @@ public class RJavaArrayTools {
 	 * 
 	 * @param o object
 	 * @return true if the object is an array
-	 * @Deprecated use RJavaArrayTools#isArray
+	 * @deprecated use RJavaArrayTools#isArray
 	 */
 	public static boolean isArray(Object o){
 		if( o == null) return false ; 

@@ -430,8 +430,6 @@ public class RJavaTools {
 	 * @param arg_clazz an array of classes defining the types of arguments
 	 *
 	 * @return <code>null</code> if no matching method could be found or the best matching method.
-	 *
-	 * @author Romain Francois <francoisromain@free.fr>
 	 */
 	public static Method getMethod(Class o_clazz, String name, Class[] arg_clazz) throws SecurityException, NoSuchMethodException {
 		if (o_clazz == null)
