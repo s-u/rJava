@@ -7,10 +7,11 @@ import java.awt.Point;
  */
 public class RectangularArrayBuilder_Test {
 
+	private static int[] dim1d = {10} ;
 	private static int[] dim2d = {5,2} ;
 	private static int[] dim3d = {5,3,2} ;
 	
-		// {{{ main
+	// {{{ main
 	public static void main(String[] args ){
 		try{
 			runtests() ;
@@ -26,7 +27,22 @@ public class RectangularArrayBuilder_Test {
 	// {{{ runtests
 	public static void runtests() throws TestException {
 		
+		// {{{ 1d 
+		System.out.println( " >> 1 d" );
+		System.out.print( "fill int[]" );     fill_int_1();     System.out.println( " :  ok" ); 
+		System.out.print( "fill boolean[]" ); fill_boolean_1(); System.out.println( " :  ok" );
+		System.out.print( "fill byte[]" ); fill_byte_1(); System.out.println( " :  ok" );
+		System.out.print( "fill long[]" ); fill_long_1(); System.out.println( " :  ok" );
+		System.out.print( "fill short[]" ); fill_short_1(); System.out.println( " :  ok" );
+		System.out.print( "fill double[]" ); fill_double_1(); System.out.println( " :  ok" );
+		System.out.print( "fill char[]" ); fill_char_1(); System.out.println( " :  ok" );
+		System.out.print( "fill float[]" ); fill_float_1(); System.out.println( " :  ok" );
+		System.out.print( "fill String[]" ); fill_String_1(); System.out.println( " :  ok" );
+		System.out.print( "fill Point[]" ); fill_Point_1(); System.out.println( " :  ok" );
+		// }}}
+		
 		// {{{ 2d 
+		System.out.println( " >> 2 d" );
 		System.out.print( "fill int[][]" );     fill_int_2();     System.out.println( " :  ok" ); 
 		System.out.print( "fill boolean[][]" ); fill_boolean_2(); System.out.println( " :  ok" );
 		System.out.print( "fill byte[][]" ); fill_byte_2(); System.out.println( " :  ok" );
@@ -37,13 +53,231 @@ public class RectangularArrayBuilder_Test {
 		System.out.print( "fill float[][]" ); fill_float_2(); System.out.println( " :  ok" );
 		System.out.print( "fill String[][]" ); fill_String_2(); System.out.println( " :  ok" );
 		System.out.print( "fill Point[][]" ); fill_Point_2(); System.out.println( " :  ok" );
-		
 		// }}}
+		
+		// {{{ 3d 
+		System.out.println( " >> 3 d" );
+		System.out.print( "fill int[][][]" );     fill_int_3();     System.out.println( " :  ok" ); 
+		System.out.print( "fill boolean[][][]" ); fill_boolean_3(); System.out.println( " :  ok" );
+		System.out.print( "fill byte[][][]" ); fill_byte_3(); System.out.println( " :  ok" );
+		System.out.print( "fill long[][][]" ); fill_long_3(); System.out.println( " :  ok" );
+		System.out.print( "fill short[][][]" ); fill_short_3(); System.out.println( " :  ok" );
+		System.out.print( "fill double[][][]" ); fill_double_3(); System.out.println( " :  ok" );
+		System.out.print( "fill char[][][]" ); fill_char_3(); System.out.println( " :  ok" );
+		System.out.print( "fill float[][][]" ); fill_float_3(); System.out.println( " :  ok" );
+		System.out.print( "fill String[][][]" ); fill_String_3(); System.out.println( " :  ok" );
+		System.out.print( "fill Point[][][]" ); fill_Point_3(); System.out.println( " :  ok" );
+		// }}}
+		
 	}
 	//}}}
 
-	// {{{ 2d 
+	// {{{ 1d
+	private static void fill_int_1() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( ints(10), dim1d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array int[10]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
 		
+		int[] data = (int[])builder.getArray();
+		int current = 0; 
+		for( int i=0; i<dim1d[0]; i++, current++){
+			if( data[i] != current ){
+				throw new TestException( "data["+i+"] != " + current ) ;
+			}
+		}
+		
+	}
+
+	private static void fill_boolean_1() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( booleans(10), dim1d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array boolean[10]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		boolean[] data = (boolean[])builder.getArray();
+		boolean current = false; 
+	
+		for( int i=0; i<dim1d[0]; i++, current=!current){
+				if( data[i] != current ){
+					throw new TestException( "data["+i+"] != " + current ) ;
+				}
+		}
+		
+	}
+	
+	private static void fill_byte_1() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( bytes(10), dim1d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array byte[10]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		byte[] data = (byte[])builder.getArray();
+		int current = 0; 
+		for( int i=0; i<dim1d[0]; i++, current++){
+			if( data[i] != current ){
+				throw new TestException( "data["+i+"] != " + current ) ;
+			}
+		}
+		
+	}
+
+	private static void fill_long_1() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( longs(10), dim1d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array long[10]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		long[] data = (long[])builder.getArray();
+		int current = 0; 
+		for( int i=0; i<dim1d[0]; i++, current++){
+			if( data[i] != current ){
+				throw new TestException( "data["+i+"] != " + current ) ;
+			}
+		}
+		
+	}
+
+	private static void fill_short_1() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( shorts(10), dim1d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array short[10]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		short[] data = (short[])builder.getArray();
+		int current = 0; 
+		for( int i=0; i<dim1d[0]; i++, current++){
+			if( data[i] != current ){
+				throw new TestException( "data["+i+"] != " + current ) ;
+			}
+		}
+		
+	}
+
+	private static void fill_double_1() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( doubles(10), dim1d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array double[10]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		double[] data = (double[])builder.getArray();
+		int current = 0; 
+		for( int i=0; i<dim1d[0]; i++, current++){
+			if( data[i] != current ){
+				throw new TestException( "data["+i+"] != " + current ) ;
+			}
+		}
+		
+	}
+
+	private static void fill_char_1() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( chars(10), dim1d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array char[10]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		char[] data = (char[])builder.getArray();
+		int current = 0; 
+		for( int i=0; i<dim1d[0]; i++, current++){
+			if( data[i] != current ){
+				throw new TestException( "data["+i+"] != " + current ) ;
+			}
+		}
+		
+	}
+
+	private static void fill_float_1() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( floats(10), dim1d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array float[10]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		float[] data = (float[])builder.getArray();
+		int current = 0; 
+		for( int i=0; i<dim1d[0]; i++, current++){
+			if( data[i] != current ){
+				throw new TestException( "data["+i+"] != " + current ) ;
+			}
+		}
+		
+	}
+	
+	private static void fill_String_1() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( strings(10), dim1d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array String[10]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		String[] data = (String[])builder.getArray();
+		int current = 0; 
+		for( int i=0; i<dim1d[0]; i++, current++){
+			if( !data[i].equals(current+"") ){
+				throw new TestException( "data["+i+"] != " + current ) ;
+			}
+		}
+		
+	}
+
+	private static void fill_Point_1() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( points(10), dim1d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array Point[10]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		Point[] data = (Point[])builder.getArray();
+		int current = 0; 
+		for( int i=0; i<dim1d[0]; i++, current++){
+			Point p = data[i] ;
+			if( p.x != current || p.y != current ){
+				throw new TestException( "data["+i+"].x != " + current ) ;
+			}
+		}
+		
+	}
+	
+	// }}}
+	
+	// {{{ 2d 
 	private static void fill_int_2() throws TestException{
 		RectangularArrayBuilder builder = null; 
 		try{
@@ -265,6 +499,240 @@ public class RectangularArrayBuilder_Test {
 		
 	}
 
+	// }}}
+
+	// {{{ 3d
+	private static void fill_int_3() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( ints(30), dim3d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array int[30]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		int[][][] data = (int[][][])builder.getArray();
+		int current = 0;
+		for( int k=0; k<dim3d[2] ; k++ ){
+			for( int j=0; j<dim3d[1]; j++){
+				for( int i=0; i<dim3d[0]; i++, current++){
+					if( data[i][j][k] != current ){
+						throw new TestException( "data["+i+"]["+j+"]["+k+"]  != " + current ) ;
+					}
+				}
+			}
+		}
+		
+	}
+
+	private static void fill_boolean_3() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( booleans(30), dim3d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array boolean[30]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		boolean[][][] data = (boolean[][][])builder.getArray();
+		boolean current = false; 
+		for( int k=0; k<dim3d[2] ; k++ ){
+			for( int j=0; j<dim3d[1]; j++){
+				for( int i=0; i<dim3d[0]; i++, current=!current){
+					if( data[i][j][k] != current ){
+						throw new TestException( "data["+i+"]["+j+"]["+k+"]  != " + current ) ;
+					}
+				}
+			}
+		}
+	}
+	
+	private static void fill_byte_3() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( bytes(30), dim3d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array byte[30]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		byte[][][] data = (byte[][][])builder.getArray();
+		int current = 0; 
+		for( int k=0; k<dim3d[2] ; k++ ){
+			for( int j=0; j<dim3d[1]; j++){
+				for( int i=0; i<dim3d[0]; i++, current++){
+					if( data[i][j][k] != current ){
+						throw new TestException( "data["+i+"]["+j+"]["+k+"]  != " + current ) ;
+					}
+				}
+			}
+		}
+	}
+
+	private static void fill_long_3() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( longs(30), dim3d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array long[30]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		long[][][] data = (long[][][])builder.getArray();
+		int current = 0; 
+		for( int k=0; k<dim3d[2] ; k++ ){
+			for( int j=0; j<dim3d[1]; j++){
+				for( int i=0; i<dim3d[0]; i++, current++){
+					if( data[i][j][k] != current ){
+						throw new TestException( "data["+i+"]["+j+"]["+k+"]  != " + current ) ;
+					}
+				}
+			}
+		}
+	}
+
+	private static void fill_short_3() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( shorts(30), dim3d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array short[30]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		short[][][] data = (short[][][])builder.getArray();
+		int current = 0; 
+		for( int k=0; k<dim3d[2] ; k++ ){
+			for( int j=0; j<dim3d[1]; j++){
+				for( int i=0; i<dim3d[0]; i++, current++){
+					if( data[i][j][k] != current ){
+						throw new TestException( "data["+i+"]["+j+"]["+k+"]  != " + current ) ;
+					}
+				}
+			}
+		}
+	}
+
+	private static void fill_double_3() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( doubles(30), dim3d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array double[30]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		double[][][] data = (double[][][])builder.getArray();
+		int current = 0; 
+		for( int k=0; k<dim3d[2] ; k++ ){
+			for( int j=0; j<dim3d[1]; j++){
+				for( int i=0; i<dim3d[0]; i++, current++){
+					if( data[i][j][k] != current ){
+						throw new TestException( "data["+i+"]["+j+"]["+k+"]  != " + current ) ;
+					}
+				}
+			}
+		}
+	}
+
+	private static void fill_char_3() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( chars(30), dim3d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array char[30]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		char[][][] data = (char[][][])builder.getArray();
+		int current = 0; 
+		for( int k=0; k<dim3d[2] ; k++ ){
+			for( int j=0; j<dim3d[1]; j++){
+				for( int i=0; i<dim3d[0]; i++, current++){
+					if( data[i][j][k] != current ){
+						throw new TestException( "data["+i+"]["+j+"]["+k+"]  != " + current ) ;
+					}
+				}
+			}
+		}
+	}
+
+	private static void fill_float_3() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( floats(30), dim3d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array float[30]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		float[][][] data = (float[][][])builder.getArray();
+		int current = 0; 
+		for( int k=0; k<dim3d[2] ; k++ ){
+			for( int j=0; j<dim3d[1]; j++){
+				for( int i=0; i<dim3d[0]; i++, current++){
+					if( data[i][j][k] != current ){
+						throw new TestException( "data["+i+"]["+j+"]["+k+"]  != " + current ) ;
+					}
+				}
+			}
+		}
+	}
+	
+	private static void fill_String_3() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( strings(30), dim3d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array String[30]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		String[][][] data = (String[][][])builder.getArray();
+		int current = 0; 
+		for( int k=0; k<dim3d[2] ; k++ ){
+			for( int j=0; j<dim3d[1]; j++){
+				for( int i=0; i<dim3d[0]; i++, current++){
+					if( !data[i][j][k].equals(current+"") ){
+						throw new TestException( "data["+i+"]["+j+"]["+k+"]  != " + current ) ;
+					}
+				}
+			}
+		}
+	}
+
+	private static void fill_Point_3() throws TestException{
+		RectangularArrayBuilder builder = null; 
+		try{
+			builder = new RectangularArrayBuilder( points(30), dim3d );
+		} catch( NotAnArrayException e){
+			throw new TestException( "not an array Point[30]" ) ;
+		} catch( ArrayDimensionException e){
+			throw new TestException( "array dimensionexception" ) ;
+		}
+		
+		Point[][][] data = (Point[][][])builder.getArray();
+		int current = 0; 
+		for( int k=0; k<dim3d[2] ; k++ ){
+			for( int j=0; j<dim3d[1]; j++){
+				for( int i=0; i<dim3d[0]; i++, current++){
+					Point p = data[i][j][k] ;
+					if( p.x != current || p.y != current ){
+						throw new TestException( "data["+i+"]["+j+"]["+k+"].x != " + current ) ;
+					}
+				}
+			}
+		}
+	}
 	// }}}
 	
 	// {{{ 1d array generators 

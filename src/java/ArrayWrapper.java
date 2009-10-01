@@ -5,23 +5,8 @@ import java.lang.reflect.Array ;
 /** 
  * Utility class to deal with arrays
  */
-public class ArrayWrapper {
+public class ArrayWrapper extends RJavaArrayIterator {
 
-	/**
-	 * The array we are checking
-	 */
-	private Object array ;
-	
-	/**
-	 * The dimensions of the array - if it is rectangular
-	 */
-	private int[] dimensions ;
-	
-	/**
-	 * total length - number of elements
-	 */
-	private int length ;
-	
 	/**
 	 * is this array rectangular
 	 */ 
@@ -37,6 +22,8 @@ public class ArrayWrapper {
 	 */
 	private boolean primitive ;
 	
+	private int length ; 
+	
 	/**
 	 * Constructor
 	 *
@@ -44,8 +31,8 @@ public class ArrayWrapper {
 	 * @throws NotAnArrayException if array is not an array
 	 */
 	public ArrayWrapper(Object array) throws NotAnArrayException {
+		super( RJavaArrayTools.getDimensions(array) );
 		this.array = array ;
-		dimensions = RJavaArrayTools.getDimensions(array);
 		typeName = RJavaArrayTools.getObjectTypeName(array );
 		primitive = RJavaArrayTools.isPrimitiveTypeName( typeName ) ;
 		if( dimensions.length == 1){
@@ -84,13 +71,6 @@ public class ArrayWrapper {
 	}
 	
 	/**
-	 * @return the dimensions of the array if it is rectangular, and null otherwise
-	 */
-	public int[] getDimensions(){
-		return dimensions ; 
-	}
-	
-	/**
 	 * Recursively check all dimensions to see if an array is rectangular
 	 */
 	private boolean isRectangular_(Object o, int depth){
@@ -119,33 +99,11 @@ public class ArrayWrapper {
 		return primitive ; 
 	}
 	
-	// used by all the flat_* methods below
-	private int[] increment(int[] index){
-		for( int i=index.length-1; i>=0; i--){
-			if( (index[i] + 1) == dimensions[i] ){
-				index[i] = 0 ; 
-			} else{
-				index[i] = index[i] + 1 ;
-				return index; 
-			}
-		}
-		return index; 
-	}
-	
-	private int getStart( int[] index ){
-		int start = 0;
-		int product = 1 ; 
-		for( int i=0; i<index.length; i++){
-			start += index[i]*product;
-			product = dimensions[i]*product ;
-		}
-		return start ;
-	}
+	// {{{ flat_* methods
 	
 	// {{{ flat_int
 	/**
 	 * Flattens the array into a single dimensionned int array
-	 * 
 	 */ 
 	public int[] flat_int() throws PrimitiveArrayException,FlatException {
 		
@@ -154,41 +112,18 @@ public class ArrayWrapper {
 		if( dimensions.length == 1 ){
 			return (int[])array ;
 		} else{
-			int[] payload_int = new int[length] ;
-			int i = 0, k ;
-			int depth = dimensions.length - 1 ;
-			int increment = 1 ;
-			for( i=0; i<depth; i++){
-				increment *= dimensions[i] ;
-			}
+			int[] payload = new int[length] ;
 			
-			int[] index = new int[ depth ]; 
-			// init
-			for( i=0; i< depth; i++){
-				index[i] = 0 ; 
-			}
-			
-			i=0;
-			while( i<increment ){
-				int[] current = getIntArray( index ) ;
-				k = getStart(index) ;
+			int k; 
+			while( hasNext() ){
+				int[] current = (int[])next() ;
+				k = start ; 
 				for( int j=0; j<current.length; j++, k+=increment){
-					payload_int[k] = current[j];
+					payload[k] = current[j] ;
 				}
-				index = increment( index ) ;
-				i++; 
 			}
-			return payload_int; 
+			return payload ; 
 		}
-	}
-	
-	private int[] getIntArray( int[] index ){
-		int[] res ;
-		Object o = array ;
-		for( int i=0; i<index.length; i++){
-			o = Array.get( o, index[i] ) ;
-		}
-		return (int[]) o; 
 	}
 	// }}}
 	
@@ -204,41 +139,18 @@ public class ArrayWrapper {
 		if( dimensions.length == 1 ){
 			return (boolean[])array ;
 		} else{
-			boolean[] payload_boolean = new boolean[length] ;
-			int i = 0, k ;
-			int depth = dimensions.length - 1 ;
-			int increment = 1 ;
-			for( i=0; i<depth; i++){
-				increment *= dimensions[i] ;
-			}
+			boolean[] payload = new boolean[length] ;
 			
-			int[] index = new int[ depth ]; 
-			// init
-			for( i=0; i< depth; i++){
-				index[i] = 0 ; 
-			}
-			
-			i=0;
-			while( i<increment ){
-				boolean[] current = getBooleanArray( index ) ;
-				k = getStart(index) ;
+			int k; 
+			while( hasNext() ){
+				boolean[] current = (boolean[])next() ;
+				k = start ; 
 				for( int j=0; j<current.length; j++, k+=increment){
-					payload_boolean[k] = current[j];
+					payload[k] = current[j] ;
 				}
-				index = increment( index ) ;
-				i++; 
 			}
-			return payload_boolean ; 
+			return payload ;
 		}
-	}
-	
-	private boolean[] getBooleanArray( int[] index ){
-		int[] res ;
-		Object o = array ;
-		for( int i=0; i<index.length; i++){
-			o = Array.get( o, index[i] ) ;
-		}
-		return (boolean[]) o; 
 	}
 	// }}}
 	
@@ -254,42 +166,19 @@ public class ArrayWrapper {
 		if( dimensions.length == 1 ){
 			return (byte[])array ;
 		} else{
-			byte[] payload_byte = new byte[length] ;
-			int i = 0, k ;
-			int depth = dimensions.length - 1 ;
-			int increment = 1 ;
-			for( i=0; i<depth; i++){
-				increment *= dimensions[i] ;
-			}
-			
-			int[] index = new int[ depth ]; 
-			// init
-			for( i=0; i< depth; i++){
-				index[i] = 0 ; 
-			}
-			
-			i=0;
-			while( i<increment ){
-				byte[] current = getByteArray( index ) ;
-				k = getStart(index) ;
+			byte[] payload = new byte[length] ;
+			int k; 
+			while( hasNext() ){
+				byte[] current = (byte[])next() ;
+				k = start ; 
 				for( int j=0; j<current.length; j++, k+=increment){
-					payload_byte[k] = current[j];
+					payload[k] = current[j] ;
 				}
-				index = increment( index ) ;
-				i++; 
 			}
-			return payload_byte; 
+			return payload ;  
 		}
 	}
 
-	private byte[] getByteArray( int[] index ){
-		int[] res ;
-		Object o = array ;
-		for( int i=0; i<index.length; i++){
-			o = Array.get( o, index[i] ) ;
-		}
-		return (byte[]) o; 
-	}
 	// }}}
 	
 	// {{{ flat_long
@@ -304,42 +193,19 @@ public class ArrayWrapper {
 		if( dimensions.length == 1 ){
 			return (long[])array ;
 		} else{
-			long[] payload_long = new long[length] ;
-			int i = 0, k ;
-			int depth = dimensions.length - 1 ;
-			int increment = 1 ;
-			for( i=0; i<depth; i++){
-				increment *= dimensions[i] ;
-			}
-			
-			int[] index = new int[ depth ]; 
-			// init
-			for( i=0; i< depth; i++){
-				index[i] = 0 ; 
-			}
-			
-			i=0;
-			while( i<increment ){
-				long[] current = getLongArray( index ) ;
-				k = getStart(index) ;
+			long[] payload = new long[length] ;
+			int k; 
+			while( hasNext() ){
+				long[] current = (long[])next() ;
+				k = start ; 
 				for( int j=0; j<current.length; j++, k+=increment){
-					payload_long[k] = current[j];
+					payload[k] = current[j] ;
 				}
-				index = increment( index ) ;
-				i++; 
 			}
-			return payload_long ; 
+			return payload ; 
 		}
 	}
 	
-	private long[] getLongArray( int[] index ){
-		int[] res ;
-		Object o = array ;
-		for( int i=0; i<index.length; i++){
-			o = Array.get( o, index[i] ) ;
-		}
-		return (long[]) o; 
-	}
 	// }}}
 	
 	// {{{ flat_short
@@ -354,43 +220,19 @@ public class ArrayWrapper {
 		if( dimensions.length == 1 ){
 			return (short[])array ;
 		} else{
-			short[] payload_short = new short[length] ;
-			int i = 0, k ;
-			int depth = dimensions.length - 1 ;
-			int increment = 1 ;
-			for( i=0; i<depth; i++){
-				increment *= dimensions[i] ;
-			}
-			
-			int[] index = new int[ depth ]; 
-			// init
-			for( i=0; i< depth; i++){
-				index[i] = 0 ; 
-			}
-			
-			i=0;
-			while( i<increment ){
-				short[] current = getShortArray( index ) ;
-				k = getStart(index) ;
+			short[] payload = new short[length] ;
+			int k; 
+			while( hasNext() ){
+				short[] current = (short[])next() ;
+				k = start ; 
 				for( int j=0; j<current.length; j++, k+=increment){
-					payload_short[k] = current[j];
+					payload[k] = current[j] ;
 				}
-				index = increment( index ) ;
-				i++; 
 			}
-			return payload_short; 
-		}
+			return payload ;
+ 		}
 	}
-
-	private short[] getShortArray( int[] index ){
-		int[] res ;
-		Object o = array ;
-		for( int i=0; i<index.length; i++){
-			o = Array.get( o, index[i] ) ;
-		}
-		return (short[]) o; 
-	}
-	// }}}
+// }}}
 
 	// {{{ flat_double
 	/**
@@ -404,42 +246,19 @@ public class ArrayWrapper {
 		if( dimensions.length == 1 ){
 			return (double[])array ;
 		} else{
-			double[] payload_double = new double[length] ;
-			int i = 0, k ;
-			int depth = dimensions.length - 1 ;
-			int increment = 1 ;
-			for( i=0; i<depth; i++){
-				increment *= dimensions[i] ;
-			}
-			
-			int[] index = new int[ depth ]; 
-			// init
-			for( i=0; i< depth; i++){
-				index[i] = 0 ; 
-			}
-			
-			i=0;
-			while( i<increment ){
-				double[] current = getDoubleArray( index ) ;
-				k = getStart(index) ;
+			double[] payload= new double[length] ;
+			int k; 
+			while( hasNext() ){
+				double[] current = (double[])next() ;
+				k = start ; 
 				for( int j=0; j<current.length; j++, k+=increment){
-					payload_double[k] = current[j];
+					payload[k] = current[j] ;
 				}
-				index = increment( index ) ;
-				i++; 
 			}
-			return payload_double; 
-		}
+			return payload ;
+ 		}
 	}
 
-	private double[] getDoubleArray( int[] index ){
-		int[] res ;
-		Object o = array ;
-		for( int i=0; i<index.length; i++){
-			o = Array.get( o, index[i] ) ;
-		}
-		return (double[]) o; 
-	}
 	// }}}
 	
 	// {{{ flat_char
@@ -454,42 +273,19 @@ public class ArrayWrapper {
 		if( dimensions.length == 1 ){
 			return (char[])array ;
 		} else{
-			char[] payload_char = new char[length] ;
-			int i = 0, k ;
-			int depth = dimensions.length - 1 ;
-			int increment = 1 ;
-			for( i=0; i<depth; i++){
-				increment *= dimensions[i] ;
-			}
-			
-			int[] index = new int[ depth ]; 
-			// init
-			for( i=0; i< depth; i++){
-				index[i] = 0 ; 
-			}
-			
-			i=0;
-			while( i<increment ){
-				char[] current = getCharArray( index ) ;
-				k = getStart(index) ;
+			char[] payload = new char[length] ;
+			int k; 
+			while( hasNext() ){
+				char[] current = (char[])next() ;
+				k = start ; 
 				for( int j=0; j<current.length; j++, k+=increment){
-					payload_char[k] = current[j];
+					payload[k] = current[j] ;
 				}
-				index = increment( index ) ;
-				i++; 
 			}
-			return payload_char ; 
+			return payload ; 
 		}
 	}
 	
-	private char[] getCharArray( int[] index ){
-		int[] res ;
-		Object o = array ;
-		for( int i=0; i<index.length; i++){
-			o = Array.get( o, index[i] ) ;
-		}
-		return (char[]) o; 
-	}
 	// }}}
 
 	// {{{ flat_float
@@ -504,42 +300,19 @@ public class ArrayWrapper {
 		if( dimensions.length == 1 ){
 			return (float[])array ;
 		} else{
-			float[] payload_float = new float[length] ;
-			int i = 0, k ;
-			int depth = dimensions.length - 1 ;
-			int increment = 1 ;
-			for( i=0; i<depth; i++){
-				increment *= dimensions[i] ;
-			}
-			
-			int[] index = new int[ depth ]; 
-			// init
-			for( i=0; i< depth; i++){
-				index[i] = 0 ; 
-			}
-			
-			i=0;
-			while( i<increment ){
-				float[] current = getFloatArray( index ) ;
-				k = getStart(index) ;
+			float[] payload = new float[length] ;
+			int k; 
+			while( hasNext() ){
+				float[] current = (float[])next() ;
+				k = start ; 
 				for( int j=0; j<current.length; j++, k+=increment){
-					payload_float[k] = current[j];
+					payload[k] = current[j] ;
 				}
-				index = increment( index ) ;
-				i++; 
 			}
-			return payload_float; 
+			return payload ; 
 		}
 	}
 	
-	private float[] getFloatArray( int[] index ){
-		int[] res ;
-		Object o = array ;
-		for( int i=0; i<index.length; i++){
-			o = Array.get( o, index[i] ) ;
-		}
-		return (float[]) o; 
-	}
 	// }}}
 	
 	// {{{ flat_Object
@@ -555,41 +328,17 @@ public class ArrayWrapper {
 				type = Class.forName( typeName, true, array.getClass().getClassLoader() );
 			} catch( ClassNotFoundException e){}
 			
-			Object res = Array.newInstance( type,  length ) ; 
-			int i = 0, k ;
-			int depth = dimensions.length - 1 ;
-			int increment = 1 ;
-			for( i=0; i<depth; i++){
-				increment *= dimensions[i] ;
-			}
-			
-			int[] index = new int[ depth ]; 
-			// init
-			for( i=0; i< depth; i++){
-				index[i] = 0 ; 
-			}
-			
-			i=0;
-			while( i<increment ){
-				Object[] current = getObjectArray( index ) ;
-				k = getStart(index) ;
+			Object[] payload = (Object[])Array.newInstance( type,  length ) ; 
+			int k; 
+			while( hasNext() ){
+				Object[] current = (Object[])next() ;
+				k = start ; 
 				for( int j=0; j<current.length; j++, k+=increment){
-					Array.set( res, k, type.cast( current[j] ) );
+					payload[k] = type.cast( current[j] );
 				}
-				index = increment( index ) ;
-				i++; 
 			}
-			return res ; 
+			return payload ; 
 		}
-	}
-	
-	private Object[] getObjectArray( int[] index ){
-		int[] res ;
-		Object o = array ;
-		for( int i=0; i<index.length; i++){
-			o = Array.get( o, index[i] ) ;
-		}
-		return (Object[]) o; 
 	}
 	// }}}
 	
@@ -607,42 +356,20 @@ public class ArrayWrapper {
 		if( dimensions.length == 1 ){
 			return (String[])array ;
 		} else{
-			String[] payload_String = new String[length] ;
-			int i = 0, k ;
-			int depth = dimensions.length - 1 ;
-			int increment = 1 ;
-			for( i=0; i<depth; i++){
-				increment *= dimensions[i] ;
-			}
-			
-			int[] index = new int[ depth ]; 
-			// init
-			for( i=0; i< depth; i++){
-				index[i] = 0 ; 
-			}
-			
-			i=0;
-			while( i<increment ){
-				String[] current = getStringArray( index ) ;
-				k = getStart(index) ;
+			String[] payload = new String[length] ;
+			int k; 
+			while( hasNext() ){
+				String[] current = (String[])next() ;
+				k = start ; 
 				for( int j=0; j<current.length; j++, k+=increment){
-					payload_String[k] = current[j];
+					payload[k] = current[j] ;
 				}
-				index = increment( index ) ;
-				i++; 
 			}
-			return payload_String; 
+			return payload ; 
 		}
 	}
+	// }}}
 	
-	private String[] getStringArray( int[] index ){
-		int[] res ;
-		Object o = array ;
-		for( int i=0; i<index.length; i++){
-			o = Array.get( o, index[i] ) ;
-		}
-		return (String[]) o; 
-	}
 	// }}}
 	
 }
