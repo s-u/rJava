@@ -4,6 +4,8 @@
 \alias{jrectRef-class}
 \alias{[,jrectRef-method}
 \alias{str,jrectRef-method}
+\alias{dim,jrectRef-method}
+
 \title{Rectangular java arrays}
 \description{References to java arrays that are guaranteed to be rectangular, i.e similar 
 to R arrays}
@@ -27,6 +29,7 @@ Class \code{"\linkS4class{jobjRef}"}, by class "jarrayRef", distance 2.
   \describe{
     \item{[}{\code{signature(x = "jrectRef")}: R indexing of rectangular java arrays }
     \item{str}{\code{signature(object = "jrectRef")}: ... }
+    \item{dim}{\code{signature(object = "jrectRef")}: ... }
   }
 }
 \examples{

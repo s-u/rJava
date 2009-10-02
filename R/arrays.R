@@ -396,3 +396,8 @@ setMethod( "[", signature( x = "jrectRef" ),
 		._jrect_indexer( x, i, j, ..., drop = drop )
 	} ) 
 # }}}
+
+# {{{ dim.jrectRef 
+setMethod( "dim", signature( x = "jrectRef" ), function(x) x@dimension )
+# }}}
+

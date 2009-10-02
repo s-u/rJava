@@ -10,6 +10,8 @@ setClass("jarrayRef", representation("jobjRef", jsig="character"))
 setClass("jrectRef", 
 	representation("jarrayRef", dimension="integer" ) ) 
 
+
+
 # we extend array here so that we can keep dimensions
 # in the helper functions below, the storage mode is 
 # set when the objects are built
