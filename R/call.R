@@ -353,29 +353,3 @@ is.jnull <- function(x) {
 ".jfield<-" <- function(o, name, value)
   .Call("RsetField", o, name, value, PACKAGE="rJava")
 
-# there is no way to distinguish between double and float in R, so we need to mark floats specifically
-.jfloat <- function(x) {
-	storage.mode( x ) <- "double"
-	new("jfloat", x )
-}
-# the same applies to long
-.jlong <- function(x) {
-	storage.mode( x ) <- "double"
-	new("jlong", x)
-}
-# and byte
-.jbyte <- function(x) {
-	storage.mode( x ) <- "integer"
-	new("jbyte", x)
-}
-# and short
-.jshort <- function(x){
-	storage.mode( x ) <- "integer"
-	new("jshort", x)
-}
-# and char (experimental)
-.jchar <- function(x){
-	storage.mode( x ) <- "integer"
-	new("jchar", as.integer(x))
-}
-

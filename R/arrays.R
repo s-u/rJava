@@ -62,8 +62,21 @@ getComponentType <- function( o, check = TRUE ){
 setMethod( "length", "jarrayRef", ._length_java_array )
 setGeneric( "str" )
 setMethod("str", "jarrayRef", function(object, ...){
-	# FIXME: need something better
-	show( object )
+	txt <- sprintf( "Formal class 'jarrayRef' [package \"rJava\"] with 2 slots
+  ..@ jobj  :<externalptr>
+  ..@ jclass: chr \"%s\"
+  ..@ jsig  : chr \"%s\"
+", object@jclass, object@jsig )
+    cat( txt )
+} )
+setMethod("str", "jrectRef", function(object, ...){
+	txt <- sprintf( "Formal class 'jrectRef' [package \"rJava\"] with 2 slots
+  ..@ jobj     :<externalptr>
+  ..@ jclass   : chr \"%s\"
+  ..@ jsig     : chr \"%s\"
+  ..@ dimension: int [1:%d] %s
+", object@jclass, object@jsig, length(object@dimension) , paste( object@dimension, collapse = " " ) )
+    cat( txt )
 } )
 # }}}
 
@@ -333,16 +346,16 @@ newArray <- function( o, simplify = TRUE, jobj, signature ){
 # }}}
 
 # {{{ [ indexing of rectangular arrays
-setMethod( "[", signature( x = "jrectRef" ), 
-	function(x, i, j, ..., drop = FALSE ){
+._jrect_indexer <- function(x, i, j, ..., simplify = FALSE, drop = FALSE ){
 		
 		# obvious case
 		has.j <- !missing(j)
 		has.i <- !missing(i)
 		
 		dots  <- list( ... )
-		udots <- if( length(dots) ) dots[ names(dots) == "" ]
-		simplify <- !is.null(dots) && length(dots) && "simplify" %in% dots && isTRUE( dots[["simplify"]] )
+		udots <- if( !is.null(dots) ){
+			if( is.null( names(dots) ) ) dots else dots[ names(dots) == "" ]
+		}
 		
 		# flat the array
 		dim <- x@dimension
@@ -367,17 +380,19 @@ setMethod( "[", signature( x = "jrectRef" ),
 		}
 		
 		argslist <- list( flat, drop = drop ) 
-		if( !missing(i) ) argslist <- append( argslist, list(i=i) )
-		if( !missing(j) ) argslist <- append( argslist, list(j=j) )
+		if( has.i ) argslist <- append( argslist, list(i=i) )
+		if( has.j ) argslist <- append( argslist, list(j=j) )
 		
 		# grab the unnamed part of the ...
-		if( length(dots) ){
-			udots <- dots[ names(dots) == "" ]
-			if( length( udots ) ){
-				argslist <- append( argslist, udots )
-			}
+		if( length( udots ) ){
+			argslist <- append( argslist, udots )
 		}
-		subs <- do.call( `[` , argslist ) 
+		
+		subs <- do.call( ".subset" , argslist ) 
 		if( simplify && (typename == "java.lang.String" || isprim ) ) subs else .jarray( subs )
+}
+setMethod( "[", signature( x = "jrectRef" ), 
+	function(x, i, j, ..., drop = FALSE ){
+		._jrect_indexer( x, i, j, ..., drop = drop )
 	} ) 
 # }}}
