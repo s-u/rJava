@@ -210,9 +210,9 @@ getDim <- function(x){
 	dim
 }
 
-.jarray <- function(x, contents.class=NULL) {
+.jarray <- function(x, contents.class=NULL, only.reference = FALSE ) {
 	# this already is an array, so don't bother
-	if( isJavaArray( x ) ) return(x) 
+	if( isJavaArray( x ) ) return( newArray( x, simplify = FALSE) ) 
 	
 	# this is a two stage process, first we need to convert into 
 	# a flat array using the jni code
@@ -225,24 +225,39 @@ getDim <- function(x){
 	} else{
 		dim <- getDim( x )
 	}
+	
+	# the jni call
 	array <- .Call("RcreateArray", x, contents.class, PACKAGE="rJava")
 	
-	# then we transform this to a rectangular array of the proper dimensions
-	if( length( dim ) == 1L ) {
-		# TODO: this need to be a jrectRef since 1 dimension -> rect
-		array 
+	if( only.reference ){
+		return( array )
+	}
+	
+	if( is.list( x ) ){
+		# if the input of RcreateArray was a list, we need some more care
+		# because we cannot be sure the array is rectangular so we have to 
+		# check it 
+		newArray( array, simplify = FALSE )
 	} else {
-		builder <- .jnew( "RectangularArrayBuilder", .jcast(array), dim )
-		clazz <- .jcall( builder, "Ljava/lang/String;", "getArrayClassName" )
-		
-		# we cannot use .jcall here since it will try to simplify the array
-		# or go back to java to calculate its dimensions, ...
-		r <- .External( "RcallMethod", builder@jobj, 
-			"Ljava/lang/Object;", "getArray", PACKAGE="rJava")
-		
-		new( "jrectRef", jobj = r, dimension = dim, 
-			jclass = clazz, jsig = clazz ) 
-	}                                                                                                              
+	
+		# then we transform this to a rectangular array of the proper dimensions
+		if( length( dim ) == 1L ) {
+			# single dimension array
+			new( "jrectRef", jobj = array@jobj, jsig = array@jsig, 
+					jclass = array@jclass, dimension = dim )
+		} else {
+			builder <- .jnew( "RectangularArrayBuilder", .jcast(array), dim )
+			clazz <- .jcall( builder, "Ljava/lang/String;", "getArrayClassName" )
+			
+			# we cannot use .jcall here since it will try to simplify the array
+			# or go back to java to calculate its dimensions, ...
+			r <- .External( "RcallMethod", builder@jobj, 
+				"Ljava/lang/Object;", "getArray", PACKAGE="rJava")
+			
+			new( "jrectRef", jobj = r, dimension = dim, 
+				jclass = clazz, jsig = clazz ) 
+		}  
+	}
 }
 
 # works on EXTPTR or jobjRef or NULL. NULL is always silently converted to .jzeroRef

@@ -41,7 +41,7 @@
 ### if a is already a java object reference, all is good
 ### otherwise some primitive conversion occurs
 ._java_valid_object <- function(a) {
-  if (inherits(a, "jobjRef") || inherits(a, "jarrayRef")) a 
+  if (inherits(a, "jobjRef") || inherits(a, "jarrayRef") || inherits(a, "jrectRef") ) a 
   else if (is.null(a)) .jnull() else {
     cm <- match(class(a)[1], names(.class.to.jclass))
     if (!any(is.na(cm))) { 
@@ -88,11 +88,12 @@
   
   # invoke the method directly from the RJavaTools class
   # ( this throws the actual exception instead of an InvocationTargetException ) 
+  j_p <- .jarray(p, "java/lang/Object"  , only.reference = TRUE )
+  j_pc <- .jarray(pc, "java/lang/Class" , only.reference = TRUE )
   r <- .jcall( "RJavaTools", "Ljava/lang/Object;", "invokeMethod",
   	cl, .jcast(if(inherits(o,"jobjRef") || inherits(o, "jarrayRef")) o else cl, "java/lang/Object"), 
   	.jnew( "java/lang/String", method), 
-  	.jarray(p, "java/lang/Object"), 
-  	.jarray(pc, "java/lang/Class") )
+  	j_p, j_pc )
   
   # null is returned when the return type of the method is void
   # TODO[romain]: not sure how to distinguish when the result is null but the 
@@ -132,8 +133,8 @@
   # use RJavaTools to find create the object
   o <- .jcall("RJavaTools", "Ljava/lang/Object;", 
   	"newInstance", .jfindClass(class), 
-  	.jarray(p,"java/lang/Object"), 
-  	.jarray(pc,"java/lang/Class") )
+  	.jarray(p,"java/lang/Object", only.reference = TRUE), 
+  	.jarray(pc,"java/lang/Class", only.reference = TRUE) )
   
   # cast to the actual class
   .jcast( o, .jclass( o, true = TRUE ) )

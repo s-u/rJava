@@ -67,7 +67,7 @@ Double <- J("java.lang.Double")
 Double$parseDouble( "10.2")
 
 # String[] strings = new String[]{ "string", "array" } ;
-strings <- .jarray("string", "array" )
+strings <- .jarray( c("string", "array") )
 # this uses the JList( Object[] ) constructor 
 # even though the "strings" parameter is a String[] 
 l <- new( J("javax.swing.JList"), strings)

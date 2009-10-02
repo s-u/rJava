@@ -70,12 +70,18 @@ setMethod("str", "jarrayRef", function(object, ...){
     cat( txt )
 } )
 setMethod("str", "jrectRef", function(object, ...){
+	dim <- object@dimension
+	dim.txt <- if( length( dim ) == 1L ){
+		sprintf( "int %d", dim )
+	} else {
+		sprintf( "int[1:%d] %s", length(dim), paste( if( length(dim) > 6 ) c( dim[1:6], "...") else dim, collapse = " ") )
+	}
 	txt <- sprintf( "Formal class 'jrectRef' [package \"rJava\"] with 2 slots
   ..@ jobj     :<externalptr>
   ..@ jclass   : chr \"%s\"
   ..@ jsig     : chr \"%s\"
-  ..@ dimension: int [1:%d] %s
-", object@jclass, object@jsig, length(object@dimension) , paste( object@dimension, collapse = " " ) )
+  ..@ dimension: %s
+", object@jclass, object@jsig, dim.txt )
     cat( txt )
 } )
 # }}}
@@ -299,6 +305,11 @@ newArray <- function( o, simplify = TRUE, jobj, signature ){
 	if( !isJavaArray( o ) ){
 		stop( "o does not refer to a java array" )
 	}
+	if( inherits( o, "jrectRef" ) ){
+		# no need to go further
+		return(o)
+	}
+	
 	clazz <- .jclass( o, true = TRUE )
 	wrapper <- .jnew("ArrayWrapper", .jcast(o) )
 	isRect <- .jcall( wrapper, "Z", "isRectangular" )
