@@ -357,18 +357,12 @@ newArray <- function( o, simplify = TRUE, jobj, signature ){
 # }}}
 
 # {{{ [ indexing of rectangular arrays
-._jrect_indexer <- function(x, i, j, ..., simplify = FALSE, drop = FALSE ){
+setMethod( "[", signature( x = "jrectRef" ), 
+	function(x, i, j, ..., simplify = FALSE, drop = TRUE ){
 		
-		# obvious case
-		has.j <- !missing(j)
-		has.i <- !missing(i)
+		# first we extract th data as a flat (one dimensional) R array
+		# called 'flat'
 		
-		dots  <- list( ... )
-		udots <- if( !is.null(dots) ){
-			if( is.null( names(dots) ) ) dots else dots[ names(dots) == "" ]
-		}
-		
-		# flat the array
 		dim <- x@dimension
 		wrapper <- .jnew( "ArrayWrapper", .jcast(x) )
 		
@@ -386,26 +380,67 @@ newArray <- function( o, simplify = TRUE, jobj, signature ){
 			"F"                = .jcall( wrapper, "[F"                  , "flat_float"   , evalArray = TRUE ), 
 			"java.lang.String" = .jcall( wrapper, "[Ljava/lang/String;" , "flat_String"  , evalArray = TRUE ), 
 			                     .jcall( wrapper, "[Ljava/lang/Object;" , "flat_Object"  , evalArray = TRUE ) )
+			                     
+        # then we give to flat the correct dimensions
 		if( length(dim) != 1L ){
 			 dim( flat ) <- dim
 		}
 		
-		argslist <- list( flat, drop = drop ) 
-		if( has.i ) argslist <- append( argslist, list(i=i) )
-		if( has.j ) argslist <- append( argslist, list(j=j) )
+		# now we construct the call to '[' on flat.
+		# this call uses all the regular R indexing 
+		call <- match.call(  call = sys.call(sys.parent()) )
+		n.args <- nargs( )
 		
-		# grab the unnamed part of the ...
-		if( length( udots ) ){
-			argslist <- append( argslist, udots )
+		e <- as.list( call )[ -(1:2) ]
+		names.e <- names(e)
+		if( any( have.name <- (names.e != "") ) ){
+			# we need to extract drop and simplify
+			nam <- names.e[ have.name ]
+			if( !all( nam %in% c("simplify", "drop", "i", "j" ) ) ){
+				stop( "only 'drop' and 'simplify' are allowed as named arguments, they need to be written exactly" ) 
+			}
 		}
 		
-		subs <- do.call( ".subset" , argslist ) 
+		if( missing(i) && missing(j) && all( names.e != "" ) ){
+			# special case with no indexing at all
+			actual.call <- sprintf( "flat[  , drop = %s ]", as.character(drop) )
+		} else if( !missing(i) && missing(j) && all( names.e != "" ) ){
+			# special case where there is only one index
+			actual.call <- sprintf( "flat[ %s , drop = %s ]", deparse(i), as.character(drop) ) 
+		} else{
+			# we need to be careful about the missing's
+			# we cannot just do things like list(...) because with missings
+			# it just does not work
+			actual.call <- "flat["
+			
+			itoken <- if( missing(i ) ) " " else deparse(i)
+			jtoken <- if( missing(j ) ) " " else deparse(j)
+			
+			actual.call <- sprintf( "flat[ %s , %s", itoken, jtoken )
+			
+			iii <- 1L
+			for( a in e ){
+				if( missing(a) ){
+					actual.call <- sprintf( "%s , ", actual.call )
+				} else if( have.name[iii] ) {
+					# we put both at the end
+				} else {
+					# not missing, not named
+					actual.call <- sprintf( "%s, %s", actual.call, deparse(a) )
+				}
+				iii <- iii + 1L 
+			}
+			actual.call <- sprintf( "%s, drop = %s ]", actual.call, as.character(drop) )
+		}
+		
+		# now we eval the call 
+		subs <- eval( parse( text = actual.call ) )
+		
+		# now if we need and can simplify it, we return the subsetted array as is
+		# otherwise, we rewrap it to java
 		if( simplify && (typename == "java.lang.String" || isprim ) ) subs else .jarray( subs )
-}
-setMethod( "[", signature( x = "jrectRef" ), 
-	function(x, i, j, ..., drop = FALSE ){
-		._jrect_indexer( x, i, j, ..., drop = drop )
-	} ) 
+
+	} )
 # }}}
 
 # {{{ dim.jrectRef 
