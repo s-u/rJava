@@ -163,7 +163,7 @@ stopifnot( identical( xj[1:10,simplify=TRUE], x[1:10]) )
 
 # test dim<-
 dim( xj ) <- c( 15L, 2L )
-stopifnot( xj@jsig == "[[Ljava.lang.String;" )
+stopifnot( xj@jsig == "[[Ljava/lang/String;" )
 stopifnot( dim( xj ) == c(15L, 2L ) )
 
 }

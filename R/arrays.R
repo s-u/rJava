@@ -310,7 +310,7 @@ newArray <- function( o, simplify = TRUE, jobj, signature ){
 		return(o)
 	}
 	
-	clazz <- .jclass( o, true = TRUE )
+	clazz <- tojni( .jclass( o, true = TRUE ) )
 	wrapper <- .jnew("ArrayWrapper", .jcast(o) )
 	isRect <- .jcall( wrapper, "Z", "isRectangular" )
 	if( isRect ){

@@ -255,7 +255,7 @@ getDim <- function(x){
 				"Ljava/lang/Object;", "getArray", PACKAGE="rJava")
 			
 			new( "jrectRef", jobj = r, dimension = dim, 
-				jclass = clazz, jsig = clazz ) 
+				jclass = clazz, jsig = tojni( clazz ) ) 
 		}  
 	}
 }
