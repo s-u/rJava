@@ -445,5 +445,36 @@ setMethod( "[", signature( x = "jrectRef" ),
 
 # {{{ dim.jrectRef 
 setMethod( "dim", signature( x = "jrectRef" ), function(x) x@dimension )
+setReplaceMethod( "dim", signature( x = "jrectRef" ), function(x, value){
+	value <- as.integer( value )
+	
+	if( prod(value) != prod( x@dimension ) ){
+		stop( sprintf("dims [product %d] do not match the length of object [%d]", prod( value), prod( x@dimension) ) ) 
+	}
+	
+	dim <- x@dimension
+	wrapper <- .jnew( "ArrayWrapper", .jcast(x) )
+	
+	typename <- .jcall( wrapper, "Ljava/lang/String;", "getObjectTypeName" )
+	isprim   <- .jcall( wrapper, "Z", "isPrimitive" )
+	
+	flat <- structure( 
+			switch( typename, 
+			"I"                = .jcall( wrapper, "[I"                  , "flat_int"     , evalArray = TRUE ), 
+			"Z"                = .jcall( wrapper, "[Z"                  , "flat_boolean" , evalArray = TRUE ),
+			"B"                = .jcall( wrapper, "[B"                  , "flat_byte"    , evalArray = TRUE ),
+			"J"                = .jcall( wrapper, "[J"                  , "flat_long"    , evalArray = TRUE ),
+			"S"                = .jcall( wrapper, "[T"                  , "flat_short"   , evalArray = TRUE ), # [T is remapped to [S in .jcall 
+			"D"                = .jcall( wrapper, "[D"                  , "flat_double"  , evalArray = TRUE ),
+			"C"                = .jcall( wrapper, "[C"                  , "flat_char"    , evalArray = TRUE ) ,
+			"F"                = .jcall( wrapper, "[F"                  , "flat_float"   , evalArray = TRUE ), 
+			"java.lang.String" = .jcall( wrapper, "[Ljava/lang/String;" , "flat_String"  , evalArray = TRUE ), 
+			                     .jcall( wrapper, "[Ljava/lang/Object;" , "flat_Object"  , evalArray = TRUE ) ) , 
+		dim = value )
+		                     
+    # then we give to flat the correct dimensions
+	.jarray(flat)
+	
+} )
 # }}}
 

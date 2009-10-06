@@ -5,6 +5,7 @@
 \alias{[,jrectRef-method}
 \alias{str,jrectRef-method}
 \alias{dim,jrectRef-method}
+\alias{dim<-,jrectRef-method}
 
 \title{Rectangular java arrays}
 \description{References to java arrays that are guaranteed to be rectangular, i.e similar 
@@ -29,7 +30,8 @@ Class \code{"\linkS4class{jobjRef}"}, by class "jarrayRef", distance 2.
   \describe{
     \item{[}{\code{signature(x = "jrectRef")}: R indexing of rectangular java arrays }
     \item{str}{\code{signature(object = "jrectRef")}: ... }
-    \item{dim}{\code{signature(object = "jrectRef")}: ... }
+    \item{dim}{\code{signature(object = "jrectRef")}: extracts the dimensions of the array }
+    \item{dim<-}{\code{signature(object = "jrectRef")}: sets the dimensions of the array }
   }
 }
 \examples{
@@ -158,6 +160,11 @@ stopifnot( identical( xj[,1,,simplify=TRUE], x[,1,]) )
 stopifnot( identical( xj[,1,-1,simplify=TRUE], x[,1,-1]) )
 stopifnot( identical( xj[4,1,c(TRUE,FALSE),simplify=TRUE], x[4,1,c(TRUE,FALSE)]) )
 stopifnot( identical( xj[1:10,simplify=TRUE], x[1:10]) )
+
+# test dim<-
+dim( xj ) <- c( 15, 2 )
+stopifnot( xj@jsig == "[[Ljava/lang/String;" )
+stopifnot( dim( xj ) == c(15L, 2L ) )
 
 }
 }
