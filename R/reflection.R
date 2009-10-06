@@ -40,6 +40,8 @@
 ### creates a valid java object
 ### if a is already a java object reference, all is good
 ### otherwise some primitive conversion occurs
+# this is used for internal purposes only, in particular 
+# it does not dispatch arrays to jrectRef
 ._java_valid_object <- function(a) {
   if (inherits(a, "jobjRef") || inherits(a, "jarrayRef") || inherits(a, "jrectRef") ) a 
   else if (is.null(a)) .jnull() else {
@@ -49,7 +51,7 @@
     		y <- .jnew(.class.to.jclass[cm], a)
     		if (.class.to.jclass[cm] %in% .primitive.classes) attr(y, "primitive") <- TRUE
     		y 
-    	} else .jarray(a)
+    	} else .jarray(a, dispatch = FALSE)
     } else {
       stop("Sorry, parameter type `", cm ,"' is ambiguous or not supported.")
     }
@@ -88,8 +90,8 @@
   
   # invoke the method directly from the RJavaTools class
   # ( this throws the actual exception instead of an InvocationTargetException ) 
-  j_p <- .jarray(p, "java/lang/Object"  , only.reference = TRUE )
-  j_pc <- .jarray(pc, "java/lang/Class" , only.reference = TRUE )
+  j_p  <- .jarray(p, "java/lang/Object" , dispatch = FALSE )
+  j_pc <- .jarray(pc, "java/lang/Class" , dispatch = FALSE )
   r <- .jcall( "RJavaTools", "Ljava/lang/Object;", "invokeMethod",
   	cl, .jcast(if(inherits(o,"jobjRef") || inherits(o, "jarrayRef")) o else cl, "java/lang/Object"), 
   	.jnew( "java/lang/String", method), 
@@ -133,8 +135,8 @@
   # use RJavaTools to find create the object
   o <- .jcall("RJavaTools", "Ljava/lang/Object;", 
   	"newInstance", .jfindClass(class), 
-  	.jarray(p,"java/lang/Object", only.reference = TRUE), 
-  	.jarray(pc,"java/lang/Class", only.reference = TRUE) )
+  	.jarray(p,"java/lang/Object", dispatch = FALSE ), 
+  	.jarray(pc,"java/lang/Class", dispatch = FALSE ) )
   
   # cast to the actual class
   .jcast( o, .jclass( o, true = TRUE ) )

@@ -13,7 +13,7 @@
   contents (if possible).
 }
 \usage{
-.jarray(x, contents.class = NULL, only.reference = FALSE)
+.jarray(x, contents.class = NULL, dispatch = TRUE )
 .jevalArray(obj, rawJNIRefSignature = NULL, silent = FALSE)
 }
 \arguments{
@@ -25,8 +25,9 @@
     conversion. If set to \code{NULL}, the signature is detected
     automatically.}
   \item{silent}{if set to true, warnings are suppressed}
-  \item{only.reference}{logical. If TRUE the code does not attempt to 
-  dispatch the array between rectangular and rugged arrays. }
+  \item{dispatch}{logical. If TRUE the code attemps to dispatch to either
+  a \code{jarrayRef} object for rugged arrays and \code{jrectRef} objects
+  for rectangular arrays. }
 }
 \value{
   \code{.jarray} returns a Java array reference (\code{jarrayRef} or \code{jrectRef}) to an

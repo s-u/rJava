@@ -210,7 +210,7 @@ getDim <- function(x){
 	dim
 }
 
-.jarray <- function(x, contents.class=NULL, only.reference = FALSE ) {
+.jarray <- function(x, contents.class=NULL, dispatch = TRUE ) {
 	# this already is an array, so don't bother
 	if( isJavaArray( x ) ) return( newArray( x, simplify = FALSE) ) 
 	
@@ -229,7 +229,7 @@ getDim <- function(x){
 	# the jni call
 	array <- .Call("RcreateArray", x, contents.class, PACKAGE="rJava")
 	
-	if( only.reference ){
+	if( !dispatch ){
 		return( array )
 	}
 	

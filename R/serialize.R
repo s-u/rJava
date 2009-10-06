@@ -9,7 +9,7 @@
 .junserialize <- function(data) {
   if (!is.raw(data))
     stop("can de-serialize raw vectors only")
-  o <- .jcall("RJavaClassLoader","Ljava/lang/Object;","toObjectPL",.jarray(data))
+  o <- .jcall("RJavaClassLoader","Ljava/lang/Object;","toObjectPL",.jarray(data, dispatch = FALSE))
   if (!is.jnull(o)) {
     cl<-try(.jclass(o), silent=TRUE)
     if (all(class(cl) == "character"))
