@@ -446,12 +446,17 @@ setMethod( "[", signature( x = "jrectRef" ),
 # {{{ dim.jrectRef 
 setMethod( "dim", signature( x = "jrectRef" ), function(x) x@dimension )
 setReplaceMethod( "dim", signature( x = "jrectRef" ), function(x, value){
-	value <- as.integer( value )
 	
-	if( prod(value) != prod( x@dimension ) ){
-		stop( sprintf("dims [product %d] do not match the length of object [%d]", prod( value), prod( x@dimension) ) ) 
+	expected_prod <- prod( x@dimension )
+	
+	if( is.null( value ) ){
+		value <- expected_prod
+	} else{
+		received_prod <- prod(value)
+		if( received_prod != expected_prod ){
+			stop( sprintf("dims [product %d] do not match the length of object [%d]", received_prod, expected_prod ) ) 
+		}
 	}
-	
 	dim <- x@dimension
 	wrapper <- .jnew( "ArrayWrapper", .jcast(x) )
 	

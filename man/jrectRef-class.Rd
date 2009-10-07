@@ -166,6 +166,10 @@ dim( xj ) <- c( 15L, 2L )
 stopifnot( xj@jsig == "[[Ljava/lang/String;" )
 stopifnot( dim( xj ) == c(15L, 2L ) )
 
+dim( xj ) <- NULL
+stopifnot( xj@jsig == "[Ljava/lang/String;" )
+stopifnot( dim( xj ) == 30L )
+
 }
 }
 \keyword{classes}
