@@ -90,7 +90,8 @@ mustbe.importer <- function(x){
 }
 
 #' collect importers
-getAvailableImporters <- function( frames = TRUE, namespace = TRUE, global = TRUE ){
+getAvailableImporters <- function( frames = TRUE, namespace = TRUE, 
+	global = TRUE, caller = sys.function(-1L) ){
 	
 	importers <- .jnew( "java/util/HashSet" )
 	
@@ -115,8 +116,8 @@ getAvailableImporters <- function( frames = TRUE, namespace = TRUE, global = TRU
 	}
 	
 	if( isTRUE( namespace ) ){
-		fun <- sys.function(-1L)
-		env <- environment( fun ) 
+		force(caller)
+		env <- environment( caller ) 
 		if( isNamespace( env ) ){
 			addImporter( getImporterFromNamespace( env ) )
 		}
@@ -126,8 +127,9 @@ getAvailableImporters <- function( frames = TRUE, namespace = TRUE, global = TRU
 }
 
 #' lookup for a class name in the available importers
-lookup <- function( name = "Object", ... ){
-	importers <- getAvailableImporters(...)
+lookup <- function( name = "Object", ..., caller = sys.function(-1L) ){
+	force(caller)
+	importers <- getAvailableImporters(..., caller = caller)
 	.jcall( "RJavaImport", "Ljava/lang/Class;", "lookup", 
 		name, .jcast( importers, "java/util/Set" )  )
 }
