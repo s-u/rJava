@@ -3,9 +3,13 @@ import java.util.regex.Pattern ;
 import java.util.regex.Matcher ;
 
 import java.util.Vector; 
-import java.util.HashMap; 
+import java.util.HashMap;
+import java.util.Set ;
+import java.util.Iterator ;
 
-public class RJavaImport {
+import java.io.Serializable; 
+
+public class RJavaImport implements Serializable {
 
 	/* TODO: vector is not good enough, we need to control the order
 	         in which the packages appear */
@@ -46,5 +50,23 @@ public class RJavaImport {
   	}
   }
 	
+  public void importPackage( String[] packages ){
+  	for( int i=0; i<packages.length; i++){
+  		importPackage( packages[i] ) ;
+  	}
+  }
+  
+  public static Class lookup( String clazz , Set importers ){
+  	Class res  ;
+  	Iterator iterator = importers.iterator() ;
+  	while( iterator.hasNext()){
+  		RJavaImport importer = (RJavaImport)iterator.next() ;
+  		res = importer.lookup( clazz ) ;
+  		if( res != null ) return res ;
+  	}
+  	return null ;
+  }
+  
+  
 }
 

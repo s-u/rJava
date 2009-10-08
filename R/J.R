@@ -1,5 +1,14 @@
 setClass("jclassName", representation(name="character", jobj="jobjRef"))
-jclassName <- function(class) new("jclassName", name=gsub("/",".",as.character(class)), jobj=.jfindClass(as.character(class)))
+jclassName <- function(class){
+	if( is( class, "jobjRef" ) && .jinherits(class, "java/lang/Class" ) ){
+		jobj <- class
+		name <- .jcall( class, "Ljava/lang/String;", "getName", evalString = TRUE )
+	} else{
+		name <- gsub("/",".",as.character(class))
+		jobj <- .jfindClass(as.character(class))
+	}
+	new("jclassName", name=name, jobj=jobj)
+}
 
 setGeneric("new")
 setMethod("new", signature(Class="jclassName"), function(Class, ...) .J(Class@name, ...))

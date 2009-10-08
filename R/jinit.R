@@ -149,6 +149,8 @@
     }
   }   
   
+  import( c( "java.lang", "java.util") )
+  
   invisible(xr)
 }
 
