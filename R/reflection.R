@@ -258,23 +258,3 @@ setMethod("$<-", c(x="jobjRef"), function(x, name, value) .jfield(x, name) <- va
   else o@jclass
 }
 
-### get completion names from RJavaTools
-classNamesMethod <- function (cl, static.only = TRUE ) {
-  fieldnames <- .jcall( "RJavaTools", "[Ljava/lang/String;", 
-  	"getFieldNames", cl, static.only ) 
-  methodnames <- .jcall( "RJavaTools", "[Ljava/lang/String;", 
-  	"getMethodNames", cl, static.only )
-  c(fieldnames, methodnames)
-}
-
-### support for names (useful for completion, thanks to Romain Francois)
-setMethod("names", c(x="jobjRef"), function(x) {
-	classNamesMethod(.jcall(x, "Ljava/lang/Class;", "getClass"), static.only = FALSE )
-} )
-setMethod("names", c(x="jarrayRef"), function(x) {
-	c("length", classNamesMethod(.jcall(x, "Ljava/lang/Class;", "getClass"), static.only = FALSE ) )
-} )
-setMethod("names", c(x="jrectRef"), function(x) {
-	c("length", classNamesMethod(.jcall(x, "Ljava/lang/Class;", "getClass"), static.only = FALSE ) )
-} )
-

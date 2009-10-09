@@ -7,6 +7,10 @@
 \alias{names,jclassName-method}
 \alias{names,jarrayRef-method}
 \alias{names,jrectRef-method}
+\alias{.DollarNames,jobjRef-method}
+\alias{.DollarNames,jclassName-method}
+\alias{.DollarNames,jarrayRef-method}
+\alias{.DollarNames,jrectRef-method}
 
 \title{
   Field/method operator for Java objects
@@ -24,6 +28,10 @@
     \item{\code{names}}{\code{signature(x = "jarrayRef")}: ... }
     \item{\code{names}}{\code{signature(x = "jrectRef")}: ... }
     \item{\code{names}}{\code{signature(x = "jclassName")}: ... }
+    \item{\code{.DollarNames}}{\code{signature(x = "jobjRef")}: ... }
+    \item{\code{.DollarNames}}{\code{signature(x = "jarrayRef")}: ... }
+    \item{\code{.DollarNames}}{\code{signature(x = "jrectRef")}: ... }
+    \item{\code{.DollarNames}}{\code{signature(x = "jclassName")}: ... }
 	 }
 }
 \details{
@@ -33,7 +41,9 @@
 
  \code{$<-} assigns a value to the corresponding Java attribute.
 
- \code{names} returns all fields and methods associated with the object. Method names are followed by \code{(} or \code{()} depending on arity. This use of names is mainly useful for code completion, it is not intended to be used programmatically.
+ \code{names} and \code{.DollarNames} returns all fields and methods associated with the object. 
+ Method names are followed by \code{(} or \code{()} depending on arity. 
+ This use of names is mainly useful for code completion, it is not intended to be used programmatically.
 
  This is just a convenience API. Internally all calls are mapped into \code{\link{.jcall}} calls, therefore the calling conventions and returning objects use the same rules. For time-critical Java calls \code{\link{.jcall}} should be used directly.
 }

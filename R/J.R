@@ -28,7 +28,6 @@ setMethod("$", c(x="jclassName"), function(x, name) {
 	}
 })
 setMethod("$<-", c(x="jclassName"), function(x, name, value) .jfield(x@name, name) <- value)
-setMethod("names", c(x="jclassName"), function(x) c( "class", classNamesMethod(x@jobj, static.only = TRUE ) ) )
 setMethod("show", c(object="jclassName"), function(object) invisible(show(paste("Java-Class-Name:",object@name))))
 setMethod("as.character", c(x="jclassName"), function(x, ...) x@name)
 

@@ -15,4 +15,4 @@ S3method(within, jarrayRef)
 S3method(with, jclassName)
 S3method(within, jclassName)
 export( japply )
-
+if( exists( ".DollarNames", asNamespace("utils") ) ) importFrom( utils, .DollarNames )
