@@ -7,16 +7,26 @@
 \alias{names,jclassName-method}
 \alias{names,jarrayRef-method}
 \alias{names,jrectRef-method}
-\alias{.DollarNames,jobjRef-method}
-\alias{.DollarNames,jclassName-method}
-\alias{.DollarNames,jarrayRef-method}
-\alias{.DollarNames,jrectRef-method}
+\alias{.DollarNames.jobjRef}
+\alias{.DollarNames.jclassName}
+\alias{.DollarNames.jarrayRef}
+\alias{.DollarNames.jrectRef}
 
 \title{
   Field/method operator for Java objects
 }
 \description{
   The \code{$} operator for \code{jobjRef} Java object references provides convenience access to object attributes and calling Java methods.
+}
+\usage{
+	\S3method{.DollarNames}{jobjRef}   (x, pattern = "" )
+	\S3method{.DollarNames}{jarrayRef} (x, pattern = "" )
+	\S3method{.DollarNames}{jrectRef}  (x, pattern = "" )
+	\S3method{.DollarNames}{jclassName}(x, pattern = "" )
+}
+\arguments{
+	\item{x}{object to complete}
+	\item{pattern}{pattern}
 }
 \section{Methods}{
   \describe{
@@ -28,10 +38,6 @@
     \item{\code{names}}{\code{signature(x = "jarrayRef")}: ... }
     \item{\code{names}}{\code{signature(x = "jrectRef")}: ... }
     \item{\code{names}}{\code{signature(x = "jclassName")}: ... }
-    \item{\code{.DollarNames}}{\code{signature(x = "jobjRef")}: ... }
-    \item{\code{.DollarNames}}{\code{signature(x = "jarrayRef")}: ... }
-    \item{\code{.DollarNames}}{\code{signature(x = "jrectRef")}: ... }
-    \item{\code{.DollarNames}}{\code{signature(x = "jclassName")}: ... }
 	 }
 }
 \details{
