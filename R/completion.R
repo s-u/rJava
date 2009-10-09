@@ -35,11 +35,11 @@ setMethod(".DollarNames", c(x="jclassName"), ._names_jclassName )
 ._names_jobjRef <- function(x){
 	classNamesMethod(.jcall(x, "Ljava/lang/Class;", "getClass"), static.only = FALSE )
 }
-._dollarnames_jclassName <- function(x, pattern = "" ){
+._dollarnames_jobjRef <- function(x, pattern = "" ){
 	grep( pattern, ._names_jobjRef(x), value = TRUE )
 }
 setMethod("names", c(x="jobjRef"), ._names_jobjRef )
-setMethod(".DollarNames", c(x="jobjRef"), ._dollarnames_jclassName )
+setMethod(".DollarNames", c(x="jobjRef"), ._dollarnames_jobjRef )
 # }}}
 
 # {{{ jarrayRef and jrectRef
