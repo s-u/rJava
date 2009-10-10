@@ -361,9 +361,26 @@ public class RJavaArrayTools {
 		}
 		
 		return duplicated ;
-	}
-	
+	}	
 	// }}}
 	
+	// {{{ anyDuplicated
+	public static int anyDuplicated( Object[] array ){
+		int n = array.length ;
+		
+		for( int i=0; i<n; i++){
+			Object current = array[i];
+			
+			for( int j=i+1; j<n; j++){
+				Object o_j = array[j] ;
+				if( current.equals( o_j ) ){
+					return j ;
+				}
+			}
+		}
+		
+		return -1 ;
+	}	
+	// }}}
 	
 }

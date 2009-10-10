@@ -534,5 +534,30 @@ setGeneric( "duplicated" )
 	}
 }
 setMethod( "duplicated", "jrectRef", ._duplicated_jrectRef )
-
 # }}}
+
+# {{{ anyDuplicated
+if( !exists( "anyDuplicated", asNamespace("base") ) ){
+	anyDuplicated <- function(x, incomparables = FALSE, ...) UseMethod("anyDuplicated")
+}
+setGeneric( "anyDuplicated" )
+._anyduplicated_jrectRef <- function( x, incomparables = FALSE, ...){
+	
+	dim <- x@dimension
+	
+	if( length( dim ) > 1L ){
+		stop( "'duplicated' only implemented for 1d array so far" )
+	}
+	
+	typename <- .jcall( "RJavaArrayTools", "Ljava/lang/String;", 
+		"getObjectTypeName", .jcast(x) )
+	
+	if( isPrimitiveTypeName( typename, include.strings = TRUE ) ){
+		anyDuplicated( .jevalArray( x ) )
+	} else{
+		.jcall( "RJavaArrayTools", "I", "anyDuplicated",
+			.jcast( x, "[Ljava/lang/Object;" ), evalArray = TRUE ) + 1L
+	}
+}
+setMethod( "anyDuplicated", "jrectRef", ._anyduplicated_jrectRef )
+
