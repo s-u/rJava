@@ -483,42 +483,56 @@ setReplaceMethod( "dim", signature( x = "jrectRef" ), function(x, value){
 } )
 # }}}
 
+PRIMITIVE_TYPES <- c( "I",  "Z",  "B",  "J",  "S",  "D",  "C",  "F" )
+isPrimitiveTypeName <- function( type, include.strings = TRUE ){
+	type %in% PRIMITIVE_TYPES || ( include.strings && identical( type, "java.lang.String" ) )
+}
+
 # {{{ unique.jarrayRef
 setGeneric( "unique" )
 ._unique_jrectRef <- function( x, incomparables = FALSE, ...){
 	
 	dim <- x@dimension
 	
-	if( length( x@dimension ) > 1 ){
+	if( length( dim ) > 1L ){
 		stop( "'unique' only implemented for 1d array so far" )
 	}
 	
-	wrapper <- .jnew( "ArrayWrapper", .jcast(x) )
+	typename <- .jcall( "RJavaArrayTools", "Ljava/lang/String;", 
+		"getObjectTypeName", .jcast(x) )
 	
-	typename <- .jcall( wrapper, "Ljava/lang/String;", "getObjectTypeName" )
-	isprim   <- .jcall( wrapper, "Z", "isPrimitive" )
-	
-	flat <- switch( typename, 
-		"I"                = .jcall( wrapper, "[I"                  , "flat_int"     , evalArray = TRUE ), 
-		"Z"                = .jcall( wrapper, "[Z"                  , "flat_boolean" , evalArray = TRUE ),
-		"B"                = .jcall( wrapper, "[B"                  , "flat_byte"    , evalArray = TRUE ),
-		"J"                = .jcall( wrapper, "[J"                  , "flat_long"    , evalArray = TRUE ),
-		"S"                = .jcall( wrapper, "[T"                  , "flat_short"   , evalArray = TRUE ), # [T is remapped to [S in .jcall 
-		"D"                = .jcall( wrapper, "[D"                  , "flat_double"  , evalArray = TRUE ),
-		"C"                = .jcall( wrapper, "[C"                  , "flat_char"    , evalArray = TRUE ) ,
-		"F"                = .jcall( wrapper, "[F"                  , "flat_float"   , evalArray = TRUE ), 
-		"java.lang.String" = .jcall( wrapper, "[Ljava/lang/String;" , "flat_String"  , evalArray = TRUE ), 
-		                     .jcall( wrapper, "[Ljava/lang/Object;" , "flat_Object"  , evalArray = FALSE ) )
-	
-	if( isprim || identical( typename, "java.lang.String" ) ){
-		.jarray( unique( flat ) )
+	if( isPrimitiveTypeName( typename, include.strings = TRUE ) ){
+		.jarray( unique( .jevalArray( x ) ) )
 	} else{
 		.jcall( "RJavaArrayTools", "[Ljava/lang/Object;", "unique",
-			.jcast( flat, "[Ljava/lang/Object;" ), evalArray = FALSE )
+			.jcast( x, "[Ljava/lang/Object;" ), evalArray = FALSE )
 	}
+	
 	
 }
 setMethod( "unique", "jrectRef", ._unique_jrectRef )
 # }}}
 
+# {{{ duplicated
+setGeneric( "duplicated" )
+._duplicated_jrectRef <- function( x, incomparables = FALSE, ...){
+	
+	dim <- x@dimension
+	
+	if( length( dim ) > 1L ){
+		stop( "'duplicated' only implemented for 1d array so far" )
+	}
+	
+	typename <- .jcall( "RJavaArrayTools", "Ljava/lang/String;", 
+		"getObjectTypeName", .jcast(x) )
+	
+	if( isPrimitiveTypeName( typename, include.strings = TRUE ) ){
+		duplicated( .jevalArray( x ) )
+	} else{
+		.jcall( "RJavaArrayTools", "[Z", "duplicated",
+			.jcast( x, "[Ljava/lang/Object;" ), evalArray = TRUE )
+	}
+}
+setMethod( "duplicated", "jrectRef", ._duplicated_jrectRef )
 
+# }}}

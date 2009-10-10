@@ -340,4 +340,30 @@ public class RJavaArrayTools {
 	}
 	// }}}
 	
+	// {{{ duplicated
+	public static boolean[] duplicated( Object[] array ){
+		int n = array.length ;
+		boolean[] duplicated = new boolean[ array.length ];
+		for( int i=0; i<array.length; i++){
+			duplicated[i] = false ; 
+		}
+		
+		for( int i=0; i<n; i++){
+			if( duplicated[i] ) continue ;
+			Object current = array[i];
+			
+			for( int j=i+1; j<n; j++){
+				Object o_j = array[j] ;
+				if( !duplicated[j] && current.equals( o_j ) ){
+					duplicated[j] = true;
+				}
+			}
+		}
+		
+		return duplicated ;
+	}
+	
+	// }}}
+	
+	
 }
