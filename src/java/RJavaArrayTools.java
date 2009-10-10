@@ -304,6 +304,8 @@ public class RJavaArrayTools {
 	// }}}
 
 	// {{{ unique
+	// TODO: cannot use LinkedHashSet because it first was introduced in 1.4 
+	//       and code in this area needs to work on 1.2 jvm
 	public static Object[] unique( Object[] array ){
 		int n = array.length ;
 		boolean[] unique = new boolean[ array.length ];
@@ -330,9 +332,11 @@ public class RJavaArrayTools {
 				}
 			}
 		}
-		
-		return res.toArray(); 
-		
+		// build the array using newInstance so that it has the same
+		// component type as the original array and not just Object
+		Object[] res_array = (Object[])Array.newInstance( array.getClass().getComponentType(), res.size() ) ;
+		res.toArray( res_array ); 
+		return res_array ;
 	}
 	// }}}
 	

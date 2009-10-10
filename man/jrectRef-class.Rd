@@ -172,6 +172,19 @@ dim( xj ) <- NULL
 stopifnot( xj@jsig == "[Ljava/lang/String;" )
 stopifnot( dim( xj ) == 30L )
 
+# test unique
+x <- .jarray( rep( 1:2, each = 5 ) )
+xu <- unique( x )
+stopifnot( dim(xu) == 2L )
+
+p1 <- .jnew( "java/awt/Point" )
+p2 <- .jnew( "java/awt/Point" )
+x <- .jarray( list( p1, p2 ) )
+xu <- unique( x )
+stopifnot( dim( xu ) == 1L )
+
+
+
 }
 }
 \keyword{classes}
