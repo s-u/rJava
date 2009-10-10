@@ -3,6 +3,7 @@
 import java.lang.reflect.Array ; 
 import java.util.Map; 
 import java.util.HashMap;
+import java.util.Vector ;
 
 public class RJavaArrayTools {
 
@@ -302,4 +303,37 @@ public class RJavaArrayTools {
 	}
 	// }}}
 
+	// {{{ unique
+	public static Object[] unique( Object[] array ){
+		int n = array.length ;
+		boolean[] unique = new boolean[ array.length ];
+		for( int i=0; i<array.length; i++){
+			unique[i] = true ; 
+		}
+		
+		Vector res = new Vector();
+		boolean added ;
+		for( int i=0; i<n; i++){
+			if( !unique[i] ) continue ;
+			Object current = array[i];
+			added = false; 
+			
+			for( int j=i+1; j<n; j++){
+				Object o_j = array[j] ;
+				if( unique[j] && current.equals( o_j ) ){
+					if( !added ){
+						unique[i] = false; 
+						res.add( current ); 
+						added = true ;
+					}
+					unique[j] = false;
+				}
+			}
+		}
+		
+		return res.toArray(); 
+		
+	}
+	// }}}
+	
 }

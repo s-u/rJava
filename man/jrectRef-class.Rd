@@ -5,6 +5,7 @@
 \alias{[,jrectRef-method}
 \alias{str,jrectRef-method}
 \alias{dim,jrectRef-method}
+\alias{unique,jrectRef-method}
 \alias{dim<-,jrectRef-method}
 
 \title{Rectangular java arrays}
@@ -32,6 +33,7 @@ Class \code{"\linkS4class{jobjRef}"}, by class "jarrayRef", distance 2.
     \item{str}{\code{signature(object = "jrectRef")}: ... }
     \item{dim}{\code{signature(object = "jrectRef")}: extracts the dimensions of the array }
     \item{dim<-}{\code{signature(object = "jrectRef")}: sets the dimensions of the array }
+    \item{unique}{\code{signature(object = "jrectRef")}: unique objects in the array}
   }
 }
 \examples{
