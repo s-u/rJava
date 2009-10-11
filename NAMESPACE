@@ -3,8 +3,10 @@ export( "J" )
 export( "%instanceof%" )
 export(is.jnull, .r2j, .rJava.base.path)
 exportClasses(jobjRef, jarrayRef, jrectRef, jfloat, jlong, jbyte, jchar, jclassName)
-exportMethods(show, "$", "$<-", "==", "!=", names, new, 
-	as.character, length, head, tail, "[", "[[", str, "dim<-", unique, 
+exportMethods(show, "$", "$<-", 
+	"==", "!=", "<", ">", "<=", ">=", 
+	names, new, as.character, length, head, tail, 
+	"[", "[[", str, "dim<-", unique, 
 	duplicated, anyDuplicated )
 importFrom(methods, new)
 importFrom(utils,head)

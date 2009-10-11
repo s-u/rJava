@@ -22,4 +22,5 @@ setMethod("!=", c(e1="jobjRef",e2="jobjRef"), function(e1,e2) !.jequals(e1,e2))
 setMethod("!=", c(e1="jobjRef"), function(e1,e2) !.jequals(e1,e2))
 setMethod("!=", c(e2="jobjRef"), function(e1,e2) !.jequals(e1,e2))
 
-# other operators such as <,> could be defined as well, but it will require 'O inherits Comparable' check thus it should be defined in reflection.R
+# other operators such as <,> are defined in comparison.R
+

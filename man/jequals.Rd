@@ -1,11 +1,25 @@
 \name{jequals}
 \alias{.jequals}
+\alias{.jcompare}
 \alias{!=,ANY,jobjRef-method}
 \alias{!=,jobjRef,jobjRef-method}
 \alias{!=,jobjRef,ANY-method}
 \alias{==,ANY,jobjRef-method}
 \alias{==,jobjRef,jobjRef-method}
 \alias{==,jobjRef,ANY-method}
+\alias{<,ANY,jobjRef-method}
+\alias{<,jobjRef,jobjRef-method}
+\alias{<,jobjRef,ANY-method}
+\alias{>,ANY,jobjRef-method}
+\alias{>,jobjRef,jobjRef-method}
+\alias{>,jobjRef,ANY-method}
+\alias{<=,ANY,jobjRef-method}
+\alias{<=,jobjRef,jobjRef-method}
+\alias{<=,jobjRef,ANY-method}
+\alias{>=,ANY,jobjRef-method}
+\alias{>=,jobjRef,jobjRef-method}
+\alias{>=,jobjRef,ANY-method}
+
 \title{
   Comparing Java References
 }
@@ -16,9 +30,16 @@
 
   The binary operators \code{==} and \code{!=} are mapped to
   (non-strict) call to \code{.jequals} for convenience.
+  
+  \code{.jcompare} compares two objects in the sense of the 
+  \code{java.lang.Comparable} interface. 
+  
+  The binary operators \code{<}, \code{>}, \code{<=}, \code{>=} are mapped 
+  to calls to \code{.jcompare} for convenience
 }
 \usage{
 .jequals(a, b, strict = FALSE)
+.jcompare( a, b )
 }
 \arguments{
   \item{a}{first object}
@@ -27,7 +48,11 @@
     \code{NULL} are always treated as different, see details.}
 }
 \value{
-  \code{TRUE} if both object are considered equal, \code{FALSE} otherwise.
+ \code{.jequals} returns \code{TRUE} if both object 
+ 	are considered equal, \code{FALSE} otherwise.
+ 	
+ \code{.jcompare} returns the result of the \code{compareTo} java method
+ of the object a applied to b
 }
 \section{Methods}{
   \describe{
@@ -37,10 +62,23 @@
     \item{==}{\code{signature(e1 = "ANY", e2 = "jobjRef")}: ... }
     \item{==}{\code{signature(e1 = "jobjRef", e2 = "jobjRef")}: ... }
     \item{==}{\code{signature(e1 = "jobjRef", e2 = "ANY")}: ... }
+    \item{<}{\code{signature(e1 = "ANY", e2 = "jobjRef")}: ... }
+    \item{<}{\code{signature(e1 = "jobjRef", e2 = "jobjRef")}: ... }
+    \item{<}{\code{signature(e1 = "jobjRef", e2 = "ANY")}: ... }
+    \item{>}{\code{signature(e1 = "ANY", e2 = "jobjRef")}: ... }
+    \item{>}{\code{signature(e1 = "jobjRef", e2 = "jobjRef")}: ... }
+    \item{>}{\code{signature(e1 = "jobjRef", e2 = "ANY")}: ... }
+    \item{>=}{\code{signature(e1 = "ANY", e2 = "jobjRef")}: ... }
+    \item{>=}{\code{signature(e1 = "jobjRef", e2 = "jobjRef")}: ... }
+    \item{>=}{\code{signature(e1 = "jobjRef", e2 = "ANY")}: ... }
+    \item{<=}{\code{signature(e1 = "ANY", e2 = "jobjRef")}: ... }
+    \item{<=}{\code{signature(e1 = "jobjRef", e2 = "jobjRef")}: ... }
+    \item{<=}{\code{signature(e1 = "jobjRef", e2 = "ANY")}: ... }
+
 	 }
 }
 \details{
-  Comparing two Java objects is performed by calling \code{equals}
+	\code{.jequals} compares two Java objects by calling \code{equals}
   method of one of the objects and passing the other object as its
   argument. This allows Java objects to define the `equality' in
   object-dependent way.
@@ -75,7 +113,7 @@
   \code{\link{is.jnull}}
 }
 \examples{
-\dontrun{
+\dontshow{.jinit()}
 s <- .jnew("java/lang/String", "foo")
 .jequals(s, "foo") # TRUE
 .jequals(s, "foo", strict=TRUE) # FALSE - "foo" is not a Java object
@@ -83,6 +121,42 @@ t <- s
 .jequals(s, t, strict=TRUE) # TRUE
 
 s=="foo" # TRUE
+
+\dontshow{ 
+	stopifnot( 
+		.jequals(s, "foo"), 
+		!.jequals(s, "foo", strict=TRUE), 
+		.jequals(s, t, strict=TRUE), 
+		s == "foo"
+	)
 }
+
+Double <- J("java.lang.Double")
+d1 <- new( Double, 0.0 ) 
+d2 <- new( Double, 1.0 )
+d3 <- new( Double, 0.0 )
+
+d1 < d2
+d1 <= d3
+d1 >= d3
+d1 > d2
+
+\dontshow{
+	stopifnot( 
+		d1 < d2       ,
+		d1 <= d3      ,
+		d1 >= d3      ,
+		! (d1 > d2 )
+	)
+
+try( d1 < "foo" )
+
+\dontshow{ 
+	stopifnot( inherits( try( d1 < "foo", silent = TRUE ), "try-error" ) )
+}
+
+}
+
+
 }
 \keyword{interface}

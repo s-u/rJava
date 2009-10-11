@@ -534,5 +534,4 @@ public class RJavaTools {
 		return res > 0;
 	}
 	
-	
 }

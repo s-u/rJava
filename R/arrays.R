@@ -546,7 +546,7 @@ setGeneric( "anyDuplicated" )
 	dim <- x@dimension
 	
 	if( length( dim ) > 1L ){
-		stop( "'duplicated' only implemented for 1d array so far" )
+		stop( "'anyDuplicated' only implemented for 1d array so far" )
 	}
 	
 	typename <- .jcall( "RJavaArrayTools", "Ljava/lang/String;", 
