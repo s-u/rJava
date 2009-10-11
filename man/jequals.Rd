@@ -141,20 +141,20 @@ d1 <= d3
 d1 >= d3
 d1 > d2
 
+# cannot compare a Double and a String
+try( d1 < "foo" )
+
+# but can compare a Double and an Integer
+d1 < 10L
+
 \dontshow{
 	stopifnot( 
 		d1 < d2       ,
 		d1 <= d3      ,
 		d1 >= d3      ,
-		! (d1 > d2 )
-	)
-
-try( d1 < "foo" )
-
-\dontshow{ 
-	stopifnot( inherits( try( d1 < "foo", silent = TRUE ), "try-error" ) )
-}
-
+		! (d1 > d2 )  , 
+		inherits( try( d1 < "foo", silent = TRUE ), "try-error" ), 
+		d1 < 10L )
 }
 
 

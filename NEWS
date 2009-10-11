@@ -52,6 +52,12 @@
     o   [RF] .jcast gains arguments "check" and "convert.array". Their 
              default value is FALSE for backwards compatibility with 
              previous releases of rJava
+             
+    o   [RF] Binary operators <, >, <=, >= to compare two objects where 
+             at least one is a java object reference. 
+             d <- new( J("java.lang.Double"), 0.0 )
+             d < 1.0
+             d < 1L
 
 0.7-1	(under development)
     o	[RF] added .J high-level java constructor (based on reflection 
