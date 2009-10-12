@@ -29,3 +29,7 @@ S3method(.DollarNames, jclassName)
 
 export( japply )
 
+S3method( as.list, jobjRef )
+S3method( as.list, jarrayRef )
+S3method( as.list, jrectRef )
+

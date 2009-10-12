@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Vector ;
 import java.util.Arrays ;
+import java.util.Iterator; 
 
 public class RJavaArrayTools {
 
@@ -443,6 +444,17 @@ public class RJavaArrayTools {
 			copy[i] = original[i] ;
 		}
 		return copy ;
+	}
+	// }}}
+	
+	// {{{ getIterableContent
+	public static Object[] getIterableContent( Iterable o){
+		Vector v = new Vector(); 
+		Iterator iterator = o.iterator(); 
+		while( iterator.hasNext() ){
+			v.add( iterator.next() ); 
+		}
+		return v.toArray(); 
 	}
 	// }}}
 	

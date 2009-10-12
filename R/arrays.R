@@ -614,3 +614,22 @@ setMethod( "rev", "jrectRef", function(x){
 } )
 # }}}
 
+# {{{ as.list
+# S4 dispatch does not work
+as.list.jarrayRef <- function(x, ... ){
+	.jevalArray( x )
+}
+as.list.jrectRef <- function( x, ...){
+	.jevalArray( x )
+}
+as.list.jobjRef <- function( x, ... ){
+	if( ! .jinstanceof( x, "java.lang.Iterable" ) ){
+ 		stop( "only objects that implements java.lang.Iterable can be converted to lists" )
+ 	}
+ 	.jcall( "RJavaArrayTools", "[Ljava/lang/Object;", 
+ 		"getIterableContent", .jcast(x, "java/lang/Iterable") , evalArray = TRUE, ... )
+}
+# }}}
+
+
+
