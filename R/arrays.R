@@ -232,64 +232,6 @@ setMethod("tail", signature( x = "jarrayRef" ), function(x, n = 6L, ... ){
 } )
 # }}}
 
-# {{{ japply - apply a function to each element of a java array
-japply <- function( X, FUN = if( simplify) force else "toString", simplify = FALSE, ...){
-	
-	callfun <- function( o, ... ){
-		# o might not be a java object
-		if( !is( o, "jobjRef" ) ){
-			FUN <- match.fun(FUN)
-			return( FUN( o, ... ) )
-		}
-		
-		# but if it is one, then FUN might represent one of its methods
-		if( is.character( FUN ) && hasJavaMethod( o, FUN) ){
-			return( .jrcall( o, FUN, ... ) )
-		}
-		
-		# or try to match.fun
-		f <- try( match.fun( FUN ), silent = TRUE )
-		if( inherits( f, "try-error" ) ){
-			NULL
-		} else{
-			f( o, ... )
-		}
-	}
-	
-	simplifier <- function( o ){
-		if( ! simplify ) return(o)
-		
-		o <- .jsimplify( o )
-		if( isJavaArray( o ) ){
-			o <- ._jarray_simplify( o )
-		}
-		o
-	}
-	
-	if( !is(X, "jobjRef" ) ){
-		lapply( X, FUN, ... )
-	} else if( isJavaArray( X ) ){
-		lapply( seq( along = X ), function(i){
-			o <- simplifier( .jcall( "java.lang.reflect.Array", "Ljava/lang/Object;", "get", X, (i-1L) ) )
-			callfun( o )
-		} )
-	} else if( X %instanceof% "java.lang.Iterable" ){
-		iterator <- X$iterator()
-		res <- NULL
-		hasNext <- function(){
-			.jcall( iterator, "Z", "hasNext" ) 
-		}
-		while( hasNext() ){
-			o <- simplifier( .jcall( iterator, "Ljava/lang/Object;", "next" ) )
-			res <- append( res, list( callfun(o, ...) ) ) 
-		}
-		res	
-	} else{
-		stop( "don't know how to japply" ) 
-	}
-}
-# }}}
-
 # {{{ newArray - dispatch to jarrayRef or jrectRef
 #' creates a new jarrayRef or jrectRef depending on the rectangularity
 #' of the array

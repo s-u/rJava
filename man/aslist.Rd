@@ -54,7 +54,7 @@ lapply( a, function(point){
 v <- .jnew("java/util/Vector")
 v$add( "foo" )
 v$add( .jnew("java/lang/Double", 10.2 ) )
-# sapply( v, function(item) item$getClass()$getName() )
+sapply( v, function(item) item$getClass()$getName() )
 
 }
 \keyword{ programming }

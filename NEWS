@@ -44,9 +44,6 @@
         
     o   [RF] R-style indexing of java arrays using [, [[, head and tail
     
-    o   [RF] added japply to apply over a java array or an implementation 
-             of the Iterable interface
-
     o   [RF] added str.jarrayRef as an alias to show.jarrayRef
 
     o   [RF] .jcast gains arguments "check" and "convert.array". Their 
@@ -58,6 +55,9 @@
              d <- new( J("java.lang.Double"), 0.0 )
              d < 1.0
              d < 1L
+             
+    o   [RF] lapply and sapply may now be used on Iterable java objects
+             and java arrays. see ?as.list.jobjRef
 
 0.7-1	(under development)
     o	[RF] added .J high-level java constructor (based on reflection 
