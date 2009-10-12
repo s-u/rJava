@@ -596,3 +596,21 @@ setGeneric( "sort" )
 setMethod( "sort", "jrectRef", ._sort_jrectRef )
 # }}}
 
+# {{{ rev
+setGeneric( "rev" )
+setMethod( "rev", "jrectRef", function(x){
+	x <- flat( x ) 
+	dim <- x@dimension
+	typename <- .jcall( "RJavaArrayTools", "Ljava/lang/String;", 
+		"getObjectTypeName", .jcast(x) )
+	
+	if( isPrimitiveTypeName( typename, include.strings = TRUE ) ){
+		.jarray( rev( .jevalArray( x ) ) )
+	} else{
+		.jcall( "RJavaArrayTools", "[Ljava/lang/Object;", "rev",
+			.jcast( x, "[Ljava/lang/Object;" ), evalArray = FALSE )
+	}
+
+} )
+# }}}
+

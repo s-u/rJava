@@ -407,7 +407,8 @@ public class RJavaArrayTools {
 			return res ;
 		} else{
 			Object current ;
-			for( int i=0; i< (res.length) / 2; i++ ){
+			int top = (res.length) / 2 ; 
+			for( int i=0; i<top ; i++ ){
 				current = res[i] ;
 				res[ i ] = res[ n-i-1 ] ;
 				res[ n-i-1 ] = current ; 
@@ -416,5 +417,27 @@ public class RJavaArrayTools {
 		return res ;
 	}
 	// }}}
+	
+	// {{{ rev
+	/**
+	 * Returns a copy of the input array with elements in
+	 * reverse order
+	 * 
+	 * @param array input array
+	 */
+	public static Object[] rev( Object[] array ){
+		int n = array.length ;
+		Object current ;
+		Object[] res = (Object[])Arrays.copyOf( array, n ) ;
+		int top = (res.length) / 2 ; 
+		for( int i=0; i<top ; i++ ){
+			current = res[i] ;
+			res[ i ] = res[ n-i-1 ] ;
+			res[ n-i-1 ] = current ; 
+		}
+		return res ;
+	}
+	// }}}
+	
 	
 }

@@ -10,6 +10,7 @@
 \alias{duplicated,jrectRef-method}
 \alias{anyDuplicated,jrectRef-method}
 \alias{sort,jrectRef-method}
+\alias{rev,jrectRef-method}
 
 \title{Rectangular java arrays}
 \description{References to java arrays that are guaranteed to be rectangular, i.e similar 
@@ -34,12 +35,13 @@ Class \code{"\linkS4class{jobjRef}"}, by class "jarrayRef", distance 2.
   \describe{
     \item{[}{\code{signature(x = "jrectRef")}: R indexing of rectangular java arrays }
     \item{str}{\code{signature(object = "jrectRef")}: ... }
-    \item{dim}{\code{signature(object = "jrectRef")}: extracts the dimensions of the array }
-    \item{dim<-}{\code{signature(object = "jrectRef")}: sets the dimensions of the array }
-    \item{unique}{\code{signature(object = "jrectRef")}: unique objects in the array}
-    \item{duplicated}{\code{signature(object = "jrectRef")}: ... }
-    \item{anyDuplicated}{\code{signature(object = "jrectRef")}: ... }
-    \item{sort}{\code{signature(object = "jrectRef")}: ... }
+    \item{dim}{\code{signature(x = "jrectRef")}: extracts the dimensions of the array }
+    \item{dim<-}{\code{signature(x = "jrectRef")}: sets the dimensions of the array }
+    \item{unique}{\code{signature(x = "jrectRef")}: unique objects in the array}
+    \item{duplicated}{\code{signature(x = "jrectRef")}: see \code{\link{duplicated}} }
+    \item{anyDuplicated}{\code{signature(x = "jrectRef")}: see \code{\link{anyDuplicated}} }
+    \item{sort}{\code{signature(x = "jrectRef")}: returns a \emph{new} array with elements from x in order }
+    \item{rev}{\code{signature(x = "jrectRef")}: returns a \emph{new} array with elements from x reversed }
   }
 }
 \examples{
@@ -202,11 +204,12 @@ xd <- duplicated( x )
 stopifnot( xd == c( FALSE, TRUE) )
 stopifnot( anyDuplicated( x ) == 2L )
 
-# test sort 
+# test sort, rev
 d1 <- .jnew("java/lang/Double", 0)
 d2 <- .jnew("java/lang/Double", -1)
 a <- .jarray( list( d1, d2) )
 stopifnot( sort( a )[[1]]$doubleValue() == -1.0 )
+stopifnot( rev( a )[[1]]$doubleValue() == -1.0 )
 
 
 }
