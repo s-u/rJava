@@ -400,7 +400,7 @@ public class RJavaArrayTools {
 			throw new NotComparableException( ct ) ; 
 		}
 		int n = array.length ;
-		Object[] res = (Object[])Arrays.copyOf( array, n ); 
+		Object[] res = copy( array ) ; 
 		Arrays.sort( res ) ;
 		
 		if( !decreasing ){
@@ -423,21 +423,27 @@ public class RJavaArrayTools {
 	 * Returns a copy of the input array with elements in
 	 * reverse order
 	 * 
-	 * @param array input array
+	 * @param original input array
 	 */
-	public static Object[] rev( Object[] array ){
-		int n = array.length ;
-		Object current ;
-		Object[] res = (Object[])Arrays.copyOf( array, n ) ;
-		int top = (res.length) / 2 ; 
-		for( int i=0; i<top ; i++ ){
-			current = res[i] ;
-			res[ i ] = res[ n-i-1 ] ;
-			res[ n-i-1 ] = current ; 
+	public static Object[] rev( Object[] original ){
+		int n = original.length ;
+		Object[] copy = (Object[])Array.newInstance( original.getClass().getComponentType() , n ); 
+		for( int i=0; i<n ; i++ ){
+			copy[n-i-1] = original[i] ;
 		}
-		return res ;
+		return copy ;
+	}    
+	// }}}
+	    
+	// {{{ copy
+	public static Object[] copy( Object[] original ){
+		int n = original.length ;
+		Object[] copy = (Object[])Array.newInstance( original.getClass().getComponentType() , n ); 
+		for( int i=0; i<n ; i++ ){
+			copy[i] = original[i] ;
+		}
+		return copy ;
 	}
 	// }}}
-	
 	
 }
