@@ -10,10 +10,15 @@ public class NotComparableException extends Exception{
 			" and " + b.getClass().getName() + " are not comparable"  ) ;
 	}
 	public NotComparableException( Object o){
-		this( o.getClass() ) ;
+		this( o.getClass().getName() ) ;
 	}
 	
 	public NotComparableException( Class cl){
-		super( "class " + cl.getName() + " does not implement java.util.Comparable" ) ; 
+		this( cl.getName() ) ;
 	}
+	
+	public NotComparableException( String type ){
+		super( "class " + type + " does not implement java.util.Comparable" ) ; 
+	}
+	
 }

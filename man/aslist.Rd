@@ -9,7 +9,7 @@ Converts java objects or arrays to R lists
 	\code{as.list} is implemented for java objects and java arrays
 	to facilitate using \code{lapply} calls over elements of a java array
 	or items of an Iterator associated with an Iterable object
-
+	
 	For java array references, \code{as.list} is mapped to
 	\code{\link{.jevalArray}}
 	
@@ -17,8 +17,8 @@ Converts java objects or arrays to R lists
 	the list is created by iterating over the associated iterator
 }
 \usage{
-	\S3method{as.list}{jobjRef}(x, ...)
-	\S3method{as.list}{jarrayRef}(x, ...)
+\S3method{as.list}{jobjRef}(x, ...)
+\S3method{as.list}{jarrayRef}(x, ...)
 }
 \arguments{
   \item{x}{java array or Iterable java object}
@@ -37,8 +37,6 @@ argument of \code{\link{lapply}}
 }
 \examples{
 \dontshow{.jinit()}
-
-
 # lapplying over a java array
 a <- .jarray( list( 
 	.jnew( "java/awt/Point", 10L, 10L ), 

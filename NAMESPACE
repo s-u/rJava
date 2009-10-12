@@ -8,7 +8,8 @@ exportMethods(show, "$", "$<-",
 	names, new, as.character, length, head, tail, 
 	"[", "[[", str, "dim<-", 
 	unique, duplicated, anyDuplicated, 
-	sort, rev )
+	sort, rev, 
+	min )
 importFrom(methods, new)
 importFrom(utils,head)
 importFrom(utils,tail)

@@ -485,14 +485,11 @@ setGeneric( "anyDuplicated" )
 ._anyduplicated_jrectRef <- function( x, incomparables = FALSE, ...){
 	
 	dim <- x@dimension
-	
 	if( length( dim ) > 1L ){
 		stop( "'anyDuplicated' only implemented for 1d array so far" )
 	}
-	
 	typename <- .jcall( "RJavaArrayTools", "Ljava/lang/String;", 
 		"getObjectTypeName", .jcast(x) )
-	
 	if( isPrimitiveTypeName( typename, include.strings = TRUE ) ){
 		anyDuplicated( .jevalArray( x ) )
 	} else{
@@ -503,6 +500,7 @@ setGeneric( "anyDuplicated" )
 setMethod( "anyDuplicated", "jrectRef", ._anyduplicated_jrectRef )
 # }}}
 
+# {{{ flat
 #' utility to flatten an array
 flat <- function(x, simplify = FALSE){
 	stop( "undefined" ) 
@@ -517,6 +515,7 @@ setGeneric( "flat")
 	}
 }
 setMethod( "flat", "jrectRef", ._flat_jrectRef )
+# }}}
 
 # {{{ sort
 setGeneric( "sort" )
@@ -573,5 +572,18 @@ as.list.jobjRef <- function( x, ... ){
 }
 # }}}
 
-
-
+# {{{ min
+setMethod("min", "jrectRef", function(x, ...,na.rm=TRUE){ 
+	
+	dim <- x@dimension
+	typename <- .jcall( "RJavaArrayTools", "Ljava/lang/String;", 
+		"getObjectTypeName", .jcast(x) )
+	if( isPrimitiveTypeName( typename, include.strings = TRUE ) ){
+		min( .jevalArray( x ), na.rm = na.rm )
+	} else{
+		summarizer <- .jnew( "RectangularArraySummary", .jcast(x), dim )
+		.jcall( summarizer, "Ljava/lang/Object;", "min", na.rm )
+	}
+	
+} )
+# }}}

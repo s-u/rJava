@@ -11,6 +11,7 @@
 \alias{anyDuplicated,jrectRef-method}
 \alias{sort,jrectRef-method}
 \alias{rev,jrectRef-method}
+\alias{min,jrectRef-method}
 
 \title{Rectangular java arrays}
 \description{References to java arrays that are guaranteed to be rectangular, i.e similar 
@@ -42,6 +43,7 @@ Class \code{"\linkS4class{jobjRef}"}, by class "jarrayRef", distance 2.
     \item{anyDuplicated}{\code{signature(x = "jrectRef")}: see \code{\link{anyDuplicated}} }
     \item{sort}{\code{signature(x = "jrectRef")}: returns a \emph{new} array with elements from x in order }
     \item{rev}{\code{signature(x = "jrectRef")}: returns a \emph{new} array with elements from x reversed }
+    \item{min}{\code{signature(x = "jrectRef")}: the smallest object in the array (in the sense of the Comparable interface) }
   }
 }
 \examples{
