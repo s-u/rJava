@@ -48,20 +48,5 @@ public class RJavaComparator {
 		return res ;
 	}
 	
-	/**
-	 * Exception generated when two objects cannot be compared
-	 * 
-	 * Such cases happen when an object does not implement the Comparable 
-	 * interface or when the comparison produces a ClassCastException
-	 */
-	public static class NotComparableException extends Exception{
-		public NotComparableException(Object a, Object b){
-			super( "objects of class " + a.getClass().getName() + 
-				" and " + b.getClass().getName() + " are not comparable"  ) ;
-		}
-		public NotComparableException( Object o){
-			super( "class " + o.getClass().getName() + " does not implement java.util.Comparable" ) ; 
-		}
-	}
 }
 

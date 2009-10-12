@@ -4,6 +4,7 @@ import java.lang.reflect.Array ;
 import java.util.Map; 
 import java.util.HashMap;
 import java.util.Vector ;
+import java.util.Arrays ;
 
 public class RJavaArrayTools {
 
@@ -381,6 +382,39 @@ public class RJavaArrayTools {
 		
 		return -1 ;
 	}	
+	// }}}
+	
+	// {{{ sort
+	/**
+	 * Returns a copy of the array where elements are sorted
+	 *
+	 * @param array array of Objects.  
+	 * @param decreasing if true the sort is in decreasing order
+	 * 
+	 * @throws NotComparableException if the component type of the array does not
+	 * implement the Comparable interface
+	 */
+	public static Object[] sort( Object[] array, boolean decreasing ) throws NotComparableException {
+		Class ct = array.getClass().getComponentType() ;
+		if( Comparable.class.isAssignableFrom( ct ) ){
+			throw new NotComparableException( ct ) ; 
+		}
+		int n = array.length ;
+		Object[] res = (Object[])Arrays.copyOf( array, n ); 
+		Arrays.sort( res ) ;
+		
+		if( !decreasing ){
+			return res ;
+		} else{
+			Object current ;
+			for( int i=0; i< (res.length) / 2; i++ ){
+				current = res[i] ;
+				res[ i ] = res[ n-i-1 ] ;
+				res[ n-i-1 ] = current ; 
+			}
+		}
+		return res ;
+	}
 	// }}}
 	
 }

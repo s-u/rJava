@@ -187,10 +187,9 @@ setMethod( "[", signature( x = "jarrayRef", i = "ANY" ),
 		# return the full object
 		x
 	} else{
-		# subset
-		index <- index - 1L # shift one left (java style indexing starts from 0
-		RJavaArrayTools <- J("RJavaArrayTools")
-		RJavaArrayTools$get( x, index )
+		# subset, 
+		.jcall( "RJavaArrayTools", "Ljava/lang/Object;", "get",  .jcast(x),
+			index - 1L ) # shift one left (java style indexing starts from 0 )
 	}
 
 }
@@ -560,4 +559,40 @@ setGeneric( "anyDuplicated" )
 	}
 }
 setMethod( "anyDuplicated", "jrectRef", ._anyduplicated_jrectRef )
+# }}}
+
+#' utility to flatten an array
+flat <- function(x, simplify = FALSE){
+	stop( "undefined" ) 
+}
+setGeneric( "flat")
+._flat_jrectRef <- function( x, simplify = FALSE ){
+	dim <- dim(x)
+	if( length(dim) == 1L ) {
+		if( !simplify) x else x[ simplify = TRUE ]
+	} else {
+		x[ seq_len(prod(dim)), drop = TRUE, simplify = simplify ]
+	}
+}
+setMethod( "flat", "jrectRef", ._flat_jrectRef )
+
+# {{{ sort
+setGeneric( "sort" )
+._sort_jrectRef <- function( x, decreasing = FALSE, ...){
+	
+	x <- flat( x ) 
+	dim <- x@dimension
+	typename <- .jcall( "RJavaArrayTools", "Ljava/lang/String;", 
+		"getObjectTypeName", .jcast(x) )
+	
+	if( isPrimitiveTypeName( typename, include.strings = TRUE ) ){
+		.jarray( sort( .jevalArray( x ), decreasing = decreasing ) )
+	} else{
+		.jcall( "RJavaArrayTools", "[Ljava/lang/Object;", "sort",
+			.jcast( x, "[Ljava/lang/Object;" ), decreasing, evalArray = FALSE )
+	}
+
+}
+setMethod( "sort", "jrectRef", ._sort_jrectRef )
+# }}}
 

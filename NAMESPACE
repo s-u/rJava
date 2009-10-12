@@ -6,8 +6,9 @@ exportClasses(jobjRef, jarrayRef, jrectRef, jfloat, jlong, jbyte, jchar, jclassN
 exportMethods(show, "$", "$<-", 
 	"==", "!=", "<", ">", "<=", ">=", 
 	names, new, as.character, length, head, tail, 
-	"[", "[[", str, "dim<-", unique, 
-	duplicated, anyDuplicated )
+	"[", "[[", str, "dim<-", 
+	unique, duplicated, anyDuplicated, 
+	sort )
 importFrom(methods, new)
 importFrom(utils,head)
 importFrom(utils,tail)

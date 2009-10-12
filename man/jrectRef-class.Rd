@@ -9,6 +9,7 @@
 \alias{unique,jrectRef-method}
 \alias{duplicated,jrectRef-method}
 \alias{anyDuplicated,jrectRef-method}
+\alias{sort,jrectRef-method}
 
 \title{Rectangular java arrays}
 \description{References to java arrays that are guaranteed to be rectangular, i.e similar 
@@ -37,6 +38,8 @@ Class \code{"\linkS4class{jobjRef}"}, by class "jarrayRef", distance 2.
     \item{dim<-}{\code{signature(object = "jrectRef")}: sets the dimensions of the array }
     \item{unique}{\code{signature(object = "jrectRef")}: unique objects in the array}
     \item{duplicated}{\code{signature(object = "jrectRef")}: ... }
+    \item{anyDuplicated}{\code{signature(object = "jrectRef")}: ... }
+    \item{sort}{\code{signature(object = "jrectRef")}: ... }
   }
 }
 \examples{
@@ -198,6 +201,13 @@ x <- .jarray( list( p1, p2 ) )
 xd <- duplicated( x )
 stopifnot( xd == c( FALSE, TRUE) )
 stopifnot( anyDuplicated( x ) == 2L )
+
+# test sort 
+d1 <- .jnew("java/lang/Double", 0)
+d2 <- .jnew("java/lang/Double", -1)
+a <- .jarray( list( d1, d2) )
+stopifnot( sort( a )[[1]]$doubleValue() == -1.0 )
+
 
 }
 }
