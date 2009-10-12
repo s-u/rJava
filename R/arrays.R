@@ -572,7 +572,7 @@ as.list.jobjRef <- function( x, ... ){
 }
 # }}}
 
-# {{{ min
+# {{{ min, max, range
 setMethod("min", "jrectRef", function(x, ...,na.rm=TRUE){ 
 	
 	dim <- x@dimension
@@ -586,4 +586,18 @@ setMethod("min", "jrectRef", function(x, ...,na.rm=TRUE){
 	}
 	
 } )
+setMethod("max", "jrectRef", function(x, ...,na.rm=TRUE){ 
+	
+	dim <- x@dimension
+	typename <- .jcall( "RJavaArrayTools", "Ljava/lang/String;", 
+		"getObjectTypeName", .jcast(x) )
+	if( isPrimitiveTypeName( typename, include.strings = TRUE ) ){
+		max( .jevalArray( x ), na.rm = na.rm )
+	} else{
+		summarizer <- .jnew( "RectangularArraySummary", .jcast(x), dim )
+		.jcall( summarizer, "Ljava/lang/Object;", "max", na.rm )
+	}
+	
+} )
+
 # }}}

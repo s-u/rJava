@@ -9,7 +9,7 @@ exportMethods(show, "$", "$<-",
 	"[", "[[", str, "dim<-", 
 	unique, duplicated, anyDuplicated, 
 	sort, rev, 
-	min )
+	min, max)
 importFrom(methods, new)
 importFrom(utils,head)
 importFrom(utils,tail)

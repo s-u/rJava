@@ -67,6 +67,44 @@ public class RectangularArraySummary extends RJavaArrayIterator {
 		
 	}
 	
+	/** 
+	 * Iterates over the array to find the minimum value
+	 * (in the sense of the Comparable interface)
+	 */
+	public Object max( boolean narm ) throws NotComparableException {
+		if( isprimitive ){
+			return null ; // TODO :implement
+		}
+		checkComparableObjects() ;
+		
+		Object biggest = null ;
+		Object current ;
+		boolean found_max = false ;
+		
+		if( dimensions.length == 1 ){
+			return( max( (Object[])array, narm ) ) ;
+		} else{
+			
+			/* need to iterate */
+			while( hasNext() ){
+				current = max( (Object[])next(), narm ) ;
+				if( current == null ){
+					if( !narm ) return null ;
+				} else{
+					if( !found_max ){
+						biggest = current ;
+						found_max = true ;
+					} else if( ((Comparable)biggest).compareTo(current) < 0 ) {
+						biggest = current ;
+					}					
+				}
+			}
+			return biggest ;
+		}
+		
+	}
+
+	
 	/**
 	 * returns the minimum (in the sense of Comparable) of the 
 	 * objects in the one dimensioned array
@@ -95,6 +133,36 @@ public class RectangularArraySummary extends RJavaArrayIterator {
 		return smallest ; 
 		
 	}
+	
+	/**
+	 * returns the minimum (in the sense of Comparable) of the 
+	 * objects in the one dimensioned array
+	 */ 
+	private static Object max( Object[] x, boolean narm ){
+		
+		int n = x.length ;
+		Object biggest = null ; 
+		Object current ;
+		boolean found_min = false; 
+		
+		// find somewhere to start from ()
+		for( int i=0; i<n; i++){
+			current = x[i] ;
+			if( current == null ){
+				if( !narm ) return null ;
+			} else{
+				if( !found_min ){
+					biggest = current ;
+					found_min = true ;
+				} else if( ((Comparable)biggest).compareTo(current) < 0 ) {
+					biggest = current ;
+				}
+			}
+		}
+		return biggest ; 
+		
+	}
+
 	
 	public void checkComparableObjects() throws NotComparableException {
 		if( ! containsComparableObjects() ) throw new NotComparableException( typeName ) ;
