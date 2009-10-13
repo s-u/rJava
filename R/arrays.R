@@ -579,23 +579,36 @@ setMethod("min", "jrectRef", function(x, ...,na.rm=TRUE){
 	typename <- .jcall( "RJavaArrayTools", "Ljava/lang/String;", 
 		"getObjectTypeName", .jcast(x) )
 	if( isPrimitiveTypeName( typename, include.strings = TRUE ) ){
-		min( .jevalArray( x ), na.rm = na.rm )
+		min( x[simplify=TRUE], na.rm = na.rm )
 	} else{
 		summarizer <- .jnew( "RectangularArraySummary", .jcast(x), dim )
 		.jcall( summarizer, "Ljava/lang/Object;", "min", na.rm )
 	}
 	
 } )
-setMethod("max", "jrectRef", function(x, ...,na.rm=TRUE){ 
+setMethod("max", "jrectRef", function(x, ..., na.rm=TRUE){ 
 	
 	dim <- x@dimension
 	typename <- .jcall( "RJavaArrayTools", "Ljava/lang/String;", 
 		"getObjectTypeName", .jcast(x) )
 	if( isPrimitiveTypeName( typename, include.strings = TRUE ) ){
-		max( .jevalArray( x ), na.rm = na.rm )
+		max( x[simplify=TRUE], na.rm = na.rm )
 	} else{
 		summarizer <- .jnew( "RectangularArraySummary", .jcast(x), dim )
 		.jcall( summarizer, "Ljava/lang/Object;", "max", na.rm )
+	}
+	
+} )
+setMethod("range", "jrectRef", function(x, ..., na.rm=TRUE){ 
+	
+	dim <- x@dimension
+	typename <- .jcall( "RJavaArrayTools", "Ljava/lang/String;", 
+		"getObjectTypeName", .jcast(x) )
+	if( isPrimitiveTypeName( typename, include.strings = TRUE ) ){
+		range( x[simplify=TRUE], na.rm = na.rm )
+	} else{
+		summarizer <- .jnew( "RectangularArraySummary", .jcast(x), dim )
+		.jcall( summarizer, "[Ljava/lang/Object;", "range", na.rm, evalArray = FALSE )
 	}
 	
 } )

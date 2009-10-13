@@ -13,6 +13,7 @@
 \alias{rev,jrectRef-method}
 \alias{min,jrectRef-method}
 \alias{max,jrectRef-method}
+\alias{range,jrectRef-method}
 
 \title{Rectangular java arrays}
 \description{References to java arrays that are guaranteed to be rectangular, i.e similar 
@@ -46,6 +47,7 @@ Class \code{"\linkS4class{jobjRef}"}, by class "jarrayRef", distance 2.
     \item{rev}{\code{signature(x = "jrectRef")}: returns a \emph{new} array with elements from x reversed }
     \item{min}{\code{signature(x = "jrectRef")}: the smallest object in the array (in the sense of the Comparable interface) }
     \item{max}{\code{signature(x = "jrectRef")}: the biggest object in the array (in the sense of the Comparable interface) }
+    \item{range}{\code{signature(x = "jrectRef")}: the range of the array (in the sense of the Comparable interface) }
   }
 }
 \examples{
@@ -215,6 +217,13 @@ a <- .jarray( list( d1, d2) )
 stopifnot( sort( a )[[1]]$doubleValue() == -1.0 )
 stopifnot( rev( a )[[1]]$doubleValue() == -1.0 )
 
+# test min, max, range
+Double <- J("java.lang.Double")
+a <- .jarray( list( new( Double, 10 ), new( Double, 4), new( Double, 5) ), "java/lang/Double" )
+stopifnot( min( a )$doubleValue() == 4  )
+stopifnot( max( a )$doubleValue() == 10 )
+stopifnot( range(a)[[1]]$doubleValue() == 4 )
+stopifnot( range(a)[[2]]$doubleValue() == 10)
 
 }
 }
