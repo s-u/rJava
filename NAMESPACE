@@ -9,7 +9,8 @@ exportMethods(show, "$", "$<-",
 	"[", "[[", str, "dim<-", 
 	unique, duplicated, anyDuplicated, 
 	sort, rev, 
-	min, max, range )
+	min, max, range, 
+	rep )
 importFrom(methods, new)
 importFrom(utils,head)
 importFrom(utils,tail)

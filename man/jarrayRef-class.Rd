@@ -7,6 +7,7 @@
 \alias{tail,jarrayRef-method}
 \alias{length,jarrayRef-method}
 \alias{str,jarrayRef-method}
+
 \title{Class "jarrayRef" Reference to an array Java object }
 \description{ This class is a subclass of \link{jobjRef-class} 
 and represents a reference to an array Java object. }

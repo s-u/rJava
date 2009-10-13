@@ -5,7 +5,10 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Vector ;
 import java.util.Arrays ;
-import java.util.Iterator; 
+import java.util.Iterator;
+
+import java.lang.reflect.Method ;
+import java.lang.reflect.InvocationTargetException ;
 
 public class RJavaArrayTools {
 
@@ -455,6 +458,53 @@ public class RJavaArrayTools {
 			v.add( iterator.next() ); 
 		}
 		return v.toArray(); 
+	}
+	// }}}
+	
+	// {{{ rep
+	/**
+	 * Creates a java array by cloning o several times
+	 * 
+	 * @param o object to clone
+	 * @param size number of times to replicate the object
+	 */
+	public static Object[] rep( Object o, int size ) throws Throwable {
+		Object[] res = (Object[])Array.newInstance( o.getClass(), size ) ;
+		if( ! ( o instanceof Cloneable )){
+			return res ;
+		}
+		
+		Method m = getCloneMethod( o.getClass() ) ;
+		try{
+			for( int i=0; i<size; i++){
+				Object cloned = o.getClass().cast( m.invoke( o, (Object[])null ) );
+				res[i] = cloned ;
+			}
+		} catch( IllegalAccessException e) {
+			// m.setAccessible( false );
+			/* should not happen */
+		} catch( InvocationTargetException e){
+			// m.setAccessible( false );
+			throw e.getCause() ; 
+		} 
+		return res ;
+	}
+	
+	private static Method getCloneMethod(Class cl){
+		Method[] methodz ;
+		Method m = null ;
+		while( cl != null ){
+			methodz = cl.getDeclaredMethods( ) ;
+			for( int i=0; i<methodz.length; i++){
+				m = methodz[i];
+				if( "clone".equals( m.getName() ) && m.getParameterTypes().length == 0 ){
+					m.setAccessible( true );
+					return m ;
+				}
+			}
+			cl = cl.getSuperclass();        
+		}
+		return null ; /* never happens */
 	}
 	// }}}
 	

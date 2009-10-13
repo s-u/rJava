@@ -612,5 +612,4 @@ setMethod("range", "jrectRef", function(x, ..., na.rm=TRUE){
 	}
 	
 } )
-
 # }}}

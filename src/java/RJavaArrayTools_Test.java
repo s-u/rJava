@@ -1,4 +1,6 @@
 // :tabSize=2:indentSize=2:noTabs=false:folding=explicit:collapseFolds=1:
+import java.awt.Point ;
+
 public class RJavaArrayTools_Test {
 	
 	// {{{ main 
@@ -19,32 +21,36 @@ public class RJavaArrayTools_Test {
 	public static void runtests() throws TestException {
 		System.out.println( "Test suite for RJavaArrayTools" ) ;
 		
-		System.out.println( "Testing RJavaTools.isArray" ) ;
+		System.out.println( "Testing RJavaArrayTools.isArray" ) ;
 		isarray(); 
 		success() ; 
 		
-		System.out.println( "Testing RJavaTools.isRectangularArray" ) ;
+		System.out.println( "Testing RJavaArrayTools.isRectangularArray" ) ;
 		isrect();                                
 		success() ; 
 		
-		System.out.println( "Testing RJavaTools.getDimensionLength" ) ;
+		System.out.println( "Testing RJavaArrayTools.getDimensionLength" ) ;
 		getdimlength();                                
 		success() ; 
 		
-		System.out.println( "Testing RJavaTools.getDimensions" ) ;
+		System.out.println( "Testing RJavaArrayTools.getDimensions" ) ;
 		getdims();                                
 		success() ; 
 		
-		System.out.println( "Testing RJavaTools.getTrueLength" ) ;
+		System.out.println( "Testing RJavaArrayTools.getTrueLength" ) ;
 		gettruelength();                                
 		success() ;
 		
-		System.out.println( "Testing RJavaTools.getObjectTypeName" ) ;
+		System.out.println( "Testing RJavaArrayTools.getObjectTypeName" ) ;
 		gettypename();                                
 		success() ;
 		
-		System.out.println( "Testing RJavaTools.isPrimitiveTypeName" ) ;
+		System.out.println( "Testing RJavaArrayTools.isPrimitiveTypeName" ) ;
 		isprim();                                
+		success() ;
+	
+		System.out.println( "Testing RJavaTools.rep" ) ;
+		rep();                                
 		success() ;
 	
 	}
@@ -1444,6 +1450,28 @@ public class RJavaArrayTools_Test {
 		System.out.println( " false : ok " );
 	}
 	// }}}
+	
+	// {{{ rep
+	private static void rep() throws TestException{
+		Point p = new Point(10, 10) ;
+		
+		Point[] res = null;
+		System.out.print( "  rep( Point, 10)" ); 
+		try{
+			res = (Point[])RJavaArrayTools.rep( p, 10 );
+		} catch( Throwable e){
+			throw new TestException( "rep(Point, 10) failed" ) ;
+		}
+		if( res.length != 10 ){
+			throw new TestException( "rep(Point, 10).length != 10" ) ;
+		}
+		if( res[5].getX() != 10.0 ){
+			throw new TestException( "rep(Point, 10)[5].getX() != 10" ) ;
+		}
+		System.out.println( ": ok " );
+		
+	}
+	/// }}}
 	
 }
 
