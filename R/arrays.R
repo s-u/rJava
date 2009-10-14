@@ -248,6 +248,7 @@ setMethod( "[[", signature( x = "jarrayRef" ),
 	index <- ._collectIndex( i, j, ... )
 	
 	if( !length(index) || is.null(index) ){
+		# allow for x[[]] <- value
 		newArray( value , simplify = FALSE )
 	} else{
 		jvalue <- ._java_valid_object( value )
@@ -258,9 +259,13 @@ setMethod( "[[", signature( x = "jarrayRef" ),
 		} else{
 			# use the Object version
 			.jcall( "RJavaArrayTools", "V", "set",  .jcast(x),
-				index - 1L, .jcast( jvalue ) ) 
+				index - 1L, .jcast( jvalue ) )
+			if( isJavaArray( jvalue ) ){
+				# rectangularity might have changed
+				# we have no choice but to reset the array
+				x <- newArray( jobj = x@jobj, signature = x@jsig )
+			}
 		}
-		# TODO: check rectangularity of x (i.e if value was an array, it might have changed)
 		x
 	}
 	
