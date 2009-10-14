@@ -58,6 +58,13 @@
              
     o   [RF] lapply and sapply may now be used on Iterable java objects
              and java arrays. see ?as.list.jobjRef
+             
+    o   [RF] added generic clone function and implementation for 
+             java objects. an Object must implement the Cloneable 
+             interface, otherwise an exception will be raised. 
+             Furthermore, careful reading of the java documentation 
+             of Object#clone is recommended since this is not standard
+             java behaviour.
 
 0.7-1	(under development)
     o	[RF] added .J high-level java constructor (based on reflection 

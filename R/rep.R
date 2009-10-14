@@ -14,3 +14,18 @@ setMethod( "rep", "jrectRef", function(x, times = 1L, ...){
 } )
 
 # }}}
+
+# {{{ clone 
+clone <- function( x, ... ){
+	UseMethod( "clone" )
+}
+clone.default <- function( x, ... ){
+	.NotYetImplemented()
+}
+setGeneric( "clone" )
+setMethod( "clone", "jobjRef", function(x, ...){
+	.jcall( "RJavaArrayTools", "Ljava/lang/Object;", "cloneObject", .jcast( x ) ) 
+} )
+setMethod( "clone", "jarrayRef", function(x, ...){ .NotYetImplemented( ) } )
+setMethod( "clone", "jrectRef", function(x, ...){ .NotYetImplemented( ) } )
+# }}}

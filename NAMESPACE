@@ -1,6 +1,9 @@
 exportPattern("^\\.j")
 export( "J" )
 export( "%instanceof%" )
+
+export( clone )
+S3method( clone, default ) 
 export(is.jnull, .r2j, .rJava.base.path)
 exportClasses(jobjRef, jarrayRef, jrectRef, jfloat, jlong, jbyte, jchar, jclassName)
 exportMethods(show, "$", "$<-", 
@@ -10,7 +13,8 @@ exportMethods(show, "$", "$<-",
 	unique, duplicated, anyDuplicated, 
 	sort, rev, 
 	min, max, range, 
-	rep )
+	rep, 
+	clone )
 importFrom(methods, new)
 importFrom(utils,head)
 importFrom(utils,tail)
