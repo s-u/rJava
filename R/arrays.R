@@ -165,10 +165,7 @@ setMethod( "[", signature( x = "jarrayRef", i = "ANY" ),
 # }}}
 
 # {{{ double bracket indexing : [[
-._java_array_double_indexer <- function( x, i, j, ..., simplify = TRUE ){
-	# initial checks
-	._must_be_java_array( x )
-	
+._collectIndex <- function( i, j, ...){
 	dots <- list( ... )
 	unnamed.dots <- if( length( dots ) ){
 		dots[ names(dots) == "" ]
@@ -182,14 +179,57 @@ setMethod( "[", signature( x = "jarrayRef", i = "ANY" ),
 		if( !missing(j) ) firstInteger(j), 
 		if( !is.null(unnamed.dots) && length(unnamed.dots) ) firstIntegerOfEach( unnamed.dots )
 		)
+}
+
+# R version of RJavaArrayTools#getDimensionLength
+# it only works on the signature so should be used with caution
+getDimensionLength <- function( x, true.class = TRUE ){
+	nchar( sub( "[^[]+", "", .jclass(x, true = true.class) ) )
+}
+
+# R version of RJavaArrayTools#getObjectTypeName
+getObjectTypeName <- function( x, true.class=TRUE){
+	sub( "^[[]*(.*);?$", "\\1", .jclass(x, true = true.class) )
+}
+
+._java_array_double_indexer <- function( x, i, j, ..., evalArray = FALSE, evalString = FALSE ){
+	# initial checks
+	._must_be_java_array( x )
+	index <- ._collectIndex( i, j, ... )
 	
 	if( !length(index) || is.null(index) ){
 		# return the full object
 		x
 	} else{
-		# subset, 
-		.jcall( "RJavaArrayTools", "Ljava/lang/Object;", "get",  .jcast(x),
-			index - 1L ) # shift one left (java style indexing starts from 0 )
+		
+		# shift one left (java style indexing starts from 0 )
+		index <- index - 1L
+		depth <- getDimensionLength( x )
+		typename <- getObjectTypeName( x )
+		
+		if( length( index) == depth ){
+			# we need to dispatch primitive 
+			if( isPrimitiveTypeName( typename ) ){ 
+				res <- switch( typename, 
+					# deal with array of primitive first
+					"I"                  =  .jcall( "RJavaArrayTools", "I", "getInt"    , .jcast(x), index ) , 
+					"J"                  =  .jcall( "RJavaArrayTools", "J", "getLong"   , .jcast(x), index ) , 
+					"Z"                  =  .jcall( "RJavaArrayTools", "Z", "getBoolean", .jcast(x), index ) , 
+					"B"                  =  .jcall( "RJavaArrayTools", "B", "getByte"   , .jcast(x), index ) ,
+					"D"                  =  .jcall( "RJavaArrayTools", "D", "getDouble" , .jcast(x), index ) ,
+					"S"                  =  .jcall( "RJavaArrayTools", "S", "getShort"  , .jcast(x), index ) , 
+					"C"                  =  .jcall( "RJavaArrayTools", "C", "getChar"   , .jcast(x), index ) ,
+					"F"                  =  .jcall( "RJavaArrayTools", "F", "getFloat"  , .jcast(x), index ), 
+					stop( "wrong primitive" ) # should never happen 
+				)
+				return( res )
+			} 
+			
+		}
+		
+		# otherwise use the Object version
+		.jcall( "RJavaArrayTools", "Ljava/lang/Object;", "get",  .jcast(x), index, 
+			evalArray = evalArray, evalString = evalString ) 
 	}
 
 }
@@ -200,6 +240,36 @@ setMethod( "[[", signature( x = "jarrayRef" ),
 	function(x, i, j, ...){
 		._java_array_double_indexer( x, i, j, ... )
 	} )
+
+._java_array_double_replacer <- function( x, i, j, ..., value ){
+	# initial checks
+	._must_be_java_array( x )
+	
+	index <- ._collectIndex( i, j, ... )
+	
+	if( !length(index) || is.null(index) ){
+		newArray( value , simplify = FALSE )
+	} else{
+		jvalue <- ._java_valid_object( value )
+		if( ._isPrimitiveReference( value ) ){
+			# then use a primitive version
+			.jcall( "RJavaArrayTools", "V", "set",  .jcast(x),
+				index - 1L, value )  
+		} else{
+			# use the Object version
+			.jcall( "RJavaArrayTools", "V", "set",  .jcast(x),
+				index - 1L, .jcast( jvalue ) ) 
+		}
+		# TODO: check rectangularity of x (i.e if value was an array, it might have changed)
+		x
+	}
+	
+}
+
+setReplaceMethod( "[[", signature( x = "jarrayRef" ), 
+function(x, i, j, ..., value ){
+	._java_array_double_replacer( x, i, j, ..., value = value)
+} )
 # }}}
 
 # {{{ head and tail

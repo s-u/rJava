@@ -3,6 +3,7 @@
 \alias{jarrayRef-class}
 \alias{[,jarrayRef-method}
 \alias{[[,jarrayRef-method}
+\alias{[[<-,jarrayRef-method}
 \alias{head,jarrayRef-method}
 \alias{tail,jarrayRef-method}
 \alias{length,jarrayRef-method}
@@ -26,6 +27,7 @@ value of \code{\link{.jcall}} function.
   \describe{
     \item{[}{\code{signature(x = "jarrayRef")}: R indexing of java arrays }
     \item{[[}{\code{signature(x = "jarrayRef")}: R indexing of java arrays }
+    \item{[[<-}{\code{signature(x = "jarrayRef")}: replacement method }
     \item{\code{head}}{\code{signature(x = "jarrayRef")}: head of the java array }
     \item{\code{tail}}{\code{signature(x = "jarrayRef")}: tail of the java array }
     \item{length}{\code{signature(object = "jarrayRef")}: Number of java objects in the java array }

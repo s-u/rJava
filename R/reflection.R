@@ -65,8 +65,14 @@
 
 ### returns a list of Class objects
 ### this is used in both .J and .jrcall
+._isPrimitiveReference <- function( x) {
+	isTRUE( attr( x, "primitive") )
+}
+._java_class <- function( x ){
+	if (._isPrimitiveReference(x)) .jfield(x, "Ljava/lang/Class;", "TYPE") else .jcall(x, "Ljava/lang/Class;", "getClass")
+}
 ._java_class_list <- function( objects_list ){
-	lapply(objects_list, function(x) if (isTRUE(attr(x, "primitive"))) .jfield(x, "Ljava/lang/Class;", "TYPE") else .jcall(x, "Ljava/lang/Class;", "getClass"))
+	lapply(objects_list, ._java_class )
 }
                        
 ### reflected call - this high-level call uses reflection to call a method
@@ -255,6 +261,6 @@ setMethod("$<-", c(x="jobjRef"), function(x, name, value) .jfield(x, name) <- va
 # get a class name for an object
 .jclass <- function(o, true=TRUE) {
   if (true) .jcall(.jcall(o, "Ljava/lang/Class;", "getClass"), "S", "getName")
-  else o@jclass
+  else if( inherits( o, "jarrayRef" ) ) o@jsig else o@jclass
 }
 

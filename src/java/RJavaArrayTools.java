@@ -289,24 +289,163 @@ public class RJavaArrayTools {
 	 * @param position
 	 */
 	public static Object get( Object array, int[] position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return Array.get( getArray( array, position ), position[ position.length -1] ); 
+	}
+	
+	public static int getInt( Object array, int[] position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return Array.getInt( getArray( array, position ), position[ position.length -1] ); 
+	}
+	public static boolean getBoolean( Object array, int[] position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return Array.getBoolean( getArray( array, position ), position[ position.length -1] ); 
+	}
+	public static byte getByte( Object array, int[] position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return Array.getByte( getArray( array, position ), position[ position.length -1] ); 
+	}
+	public static long getLong( Object array, int[] position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return Array.getLong( getArray( array, position ), position[ position.length -1] ); 
+	}
+	public static short getShort( Object array, int[] position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return Array.getShort( getArray( array, position ), position[ position.length -1] ); 
+	}
+	public static double getDouble( Object array, int[] position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return Array.getDouble( getArray( array, position ), position[ position.length -1] ); 
+	}
+	public static char getChar( Object array, int[] position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return Array.getChar( getArray( array, position ), position[ position.length -1] ); 
+	}
+	public static float getFloat( Object array, int[] position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return Array.getFloat( getArray( array, position ), position[ position.length -1] ); 
+	}
+
+	
+	public static Object get( Object array, int position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return get( array, new int[]{position} ) ;
+	}
+	public static int getInt( Object array, int position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return getInt( array, new int[]{position} ) ; 
+	}
+	public static boolean getBoolean( Object array, int position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return getBoolean( array, new int[]{position} ) ; 
+	}
+	public static byte getByte( Object array, int position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return getByte( array, new int[]{position} ) ; 
+	}
+	public static long getLong( Object array, int position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return getLong( array, new int[]{position} ) ; 
+	}
+	public static short getShort( Object array, int position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return getShort( array, new int[]{position} ) ; 
+	}
+	public static double getDouble( Object array, int position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return getDouble( array, new int[]{position} ) ; 
+	}
+	public static char getChar( Object array, int position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return getChar( array, new int[]{position} ) ;
+	}
+	public static float getFloat( Object array, int position ) throws NotAnArrayException, ArrayDimensionMismatchException {
+		return getFloat( array, new int[]{position} ) ; 
+	}
+	
+	private static void checkDimensions(Object array, int[] position) throws NotAnArrayException, ArrayDimensionMismatchException {
 		int poslength = position.length ;
 		int actuallength = getDimensionLength(array); 
 		if( poslength > actuallength ){
 			throw new ArrayDimensionMismatchException( poslength, actuallength ) ; 
 		}
-		Object o = array ;
-		int i=0 ;
-		while( i<poslength){
-			o = Array.get( o, position[i] ) ;
-			i++ ;
-		}
-		return(o); 
 	}
 	
-	public static Object get( Object array, int position ) throws NotAnArrayException, ArrayDimensionMismatchException {
-		return get( array, new int[]{position} ) ;
-	}
 	// }}}
+	
+	// {{{ set
+	/**
+	 * Replaces a single value of the array 
+	 *
+	 * @param array array 
+	 * @param position index
+	 * @param value the new value
+	 * 
+	 * @throws NotAnArrayException if array is not an array
+	 * @throws ArrayDimensionMismatchException if the length of position is too big
+	 */
+	public static void set( Object array, int[] position, Object value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		Array.set( getArray( array, position ), position[ position.length - 1], value ) ;
+	}
+	
+	/* primitive versions */
+	public static void set( Object array, int[] position, int value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		Array.setInt( getArray( array, position ), position[ position.length - 1], value ) ;
+	}
+	public static void set( Object array, int[] position, boolean value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		Array.setBoolean( getArray( array, position ), position[ position.length - 1], value ) ;
+	}
+	public static void set( Object array, int[] position, byte value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		Array.setByte( getArray( array, position ), position[ position.length - 1], value ) ;
+	}
+	public static void set( Object array, int[] position, long value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		Array.setLong( getArray( array, position ), position[ position.length - 1], value ) ;
+	}
+	public static void set( Object array, int[] position, short value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		Array.setShort( getArray( array, position ), position[ position.length - 1], value ) ;
+	}
+	public static void set( Object array, int[] position, double value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		Array.setDouble( getArray( array, position ), position[ position.length - 1], value ) ;
+	}
+	public static void set( Object array, int[] position, char value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		Array.setChar( getArray( array, position ), position[ position.length - 1], value ) ;
+	}
+	public static void set( Object array, int[] position, float value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		Array.setFloat( getArray( array, position ), position[ position.length - 1], value ) ;
+	}
+
+	
+	public static void set( Object array, int position, Object value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		set( array, new int[]{ position }, value ); 
+	}
+	public static void set( Object array, int position, int value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		set( array, new int[]{ position }, value );
+	}
+	public static void set( Object array, int position, boolean value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		set( array, new int[]{ position }, value );
+	}
+	public static void set( Object array, int position, byte value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		set( array, new int[]{ position }, value );
+	}
+	public static void set( Object array, int position, long value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		set( array, new int[]{ position }, value );
+	}
+	public static void set( Object array, int position, short value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		set( array, new int[]{ position }, value );
+	}
+	public static void set( Object array, int position, double value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		set( array, new int[]{ position }, value );
+	}
+	public static void set( Object array, int position, char value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		set( array, new int[]{ position }, value );
+	}
+	public static void set( Object array, int position, float value ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		set( array, new int[]{ position }, value );
+	}
+
+
+	
+	private static Object getArray( Object array, int[] position ) throws NotAnArrayException, ArrayDimensionMismatchException{
+		checkDimensions( array, position ) ;
+		int poslength = position.length ;
+		
+		Object o = array ;
+		int i=0 ;
+		if( poslength > 1 ){
+			while( i< (poslength-1) ){
+					o = Array.get( o, position[i] ) ;
+					i++ ;
+			}
+		}
+		return o ;
+	}
+	
+	// TODO: also have primitive types in value
+	// }}}
+	
 
 	// {{{ unique
 	// TODO: cannot use LinkedHashSet because it first was introduced in 1.4 

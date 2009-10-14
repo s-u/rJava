@@ -6,7 +6,7 @@ exportClasses(jobjRef, jarrayRef, jrectRef, jfloat, jlong, jbyte, jchar, jclassN
 exportMethods(show, "$", "$<-", 
 	"==", "!=", "<", ">", "<=", ">=", 
 	names, new, as.character, length, head, tail, 
-	"[", "[[", str, "dim<-", 
+	"[", "[[", "[[<-", str, "dim<-", 
 	unique, duplicated, anyDuplicated, 
 	sort, rev, 
 	min, max, range, 
