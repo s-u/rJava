@@ -534,4 +534,55 @@ public class RJavaTools {
 		return res > 0;
 	}
 	
+	/**
+	 * Returns the list of classes of the object 
+	 *
+	 * @param o an Object
+	 */
+	public static Class[] getClasses(Object o){
+		Vector/*<Class<?>>*/ vec = new Vector(); 
+		Class cl = o.getClass(); 
+		while( cl != null ){
+			vec.add( cl ) ; 
+			cl = cl.getSuperclass() ;
+		}
+		Class[] res = new Class[ vec.size() ] ;
+		vec.toArray( res) ;
+		return res ;
+	}
+	
+	/**
+	 * Returns the list of class names of the object 
+	 *
+	 * @param o an Object
+	 */
+	public static String[] getClassNames(Object o){
+		Vector/*<String>*/ vec = new Vector(); 
+		Class cl = o.getClass(); 
+		while( cl != null ){
+			vec.add( cl.getName() ) ;
+			cl = cl.getSuperclass() ;
+		}
+		String[] res = new String[ vec.size() ] ;
+		vec.toArray( res) ;
+		return res ;
+	}
+	
+		/**
+	 * Returns the list of simple class names of the object
+	 *
+	 * @param o an Object
+	 */
+	public static String[] getSimpleClassNames(Object o){
+		Vector/*<String>*/ vec = new Vector(); 
+		Class cl = o.getClass(); 
+		while( cl != null ){
+			vec.add( cl.getSimpleName() ) ;
+			cl = cl.getSuperclass() ;
+		}
+		String[] res = new String[ vec.size() ] ;
+		vec.toArray( res) ;
+		return res ;
+	}
+
 }
