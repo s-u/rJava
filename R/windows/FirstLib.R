@@ -34,7 +34,7 @@ function(libname, pkgname) {
 	    }
 	}
       }
-    if(!nchar(javahome))
+    if(is.null(javahome) || !length(javahome) || !nchar(javahome))
         stop("JAVA_HOME is not set and could not be determined from the registry")
     #else cat("using JAVA_HOME =", javahome, "\n")
 
