@@ -239,7 +239,7 @@ classHasClass <- function(x, name, static=FALSE) {
 
 ### syntactic sugar to allow object$field and object$methods(...)
 ### first attempts to find a field of that name and then a method
-setMethod("$", c(x="jobjRef"), function(x, name) {
+._jobjRef_dollar <- function(x, name) {
 	if (hasField(x, name) ){
 		.jfield(x, , name)
 	} else if( hasJavaMethod( x, name ) ) {
@@ -253,10 +253,17 @@ setMethod("$", c(x="jobjRef"), function(x, name) {
 	} else {
 		stop( sprintf( "no field, method or inner class called '%s' ", name ) ) 
 	}
-})
+}
+setMethod("$", c(x="jobjRef"), ._jobjRef_dollar )
 
 ### support for object$field<-...
-setMethod("$<-", c(x="jobjRef"), function(x, name, value) .jfield(x, name) <- value)
+._jobjRef_dollargets <- function(x, name, value) {
+	if( hasField( x, name ) ){
+		.jfield(x, name) <- value
+	}
+	x
+}
+setMethod("$<-", c(x="jobjRef"), ._jobjRef_dollargets )
 
 # get a class name for an object
 .jclass <- function(o, true=TRUE) {

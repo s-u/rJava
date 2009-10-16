@@ -37,3 +37,7 @@ S3method( as.list, jobjRef )
 S3method( as.list, jarrayRef )
 S3method( as.list, jrectRef )
 
+S3method( "$", "Throwable" )
+S3method( "$<-", "Throwable" )
+
+

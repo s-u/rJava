@@ -64,9 +64,9 @@ static SEXP getCurrentCall() {
 /** throw an exception using R condition code.
  *  @param msg - message string
  *  @param jobj - jobjRef object of the exception 
- *  @param xclass - NULL or class name for the subclass of Exception */
-HIDE void throwR(SEXP msg, SEXP jobj, SEXP xclass) {
-	unsigned int cnbase = (xclass == R_NilValue) ? 0 : 1;
+ *  @param clazzes - simple name of all the classes in the inheritance tree of the exception plus "error" and "condition"
+ */
+HIDE void throwR(SEXP msg, SEXP jobj, SEXP clazzes) {
 	SEXP cond = PROTECT(allocVector(VECSXP, 3));
 	SEXP names = PROTECT(allocVector(STRSXP, 3));
 	SET_VECTOR_ELT(cond, 0, msg);
@@ -76,22 +76,16 @@ HIDE void throwR(SEXP msg, SEXP jobj, SEXP xclass) {
 	SET_STRING_ELT(names, 1, mkChar("call"));
 	SET_STRING_ELT(names, 2, mkChar("jobj"));
 	
-	SEXP cln = PROTECT(allocVector(STRSXP, cnbase + 3));
-	if (cnbase)
-		SET_STRING_ELT(cln, 0, xclass);
-	SET_STRING_ELT(cln, cnbase, mkChar("Exception"));
-	SET_STRING_ELT(cln, cnbase + 1, mkChar("error"));
-	SET_STRING_ELT(cln, cnbase + 2, mkChar("condition"));
 	setAttrib(cond, R_NamesSymbol, names);
-	setAttrib(cond, R_ClassSymbol, cln);
-	UNPROTECT(2);
+	setAttrib(cond, R_ClassSymbol, clazzes);
+	UNPROTECT(2); /* clazzes, names */
 	eval(LCONS(install("stop"), CONS(cond, R_NilValue)), R_GlobalEnv);
-	UNPROTECT(1);
+	UNPROTECT(1); /* cond */
 }
 
 /* check for exceptions and throw them to R level */
 HIDE void ckx(JNIEnv *env) {
-	SEXP xr, xobj, msg = 0, xsubclass = R_NilValue, xclass = 0; /* note: we don't bother counting protections becasue we never return */
+	SEXP xr, xobj, msg = 0, xclass = 0; /* note: we don't bother counting protections becasue we never return */
 	jthrowable x = 0;
 	if (env && !(x = (*env)->ExceptionOccurred(env))) return;
 	if (!env) {
@@ -106,6 +100,10 @@ HIDE void ckx(JNIEnv *env) {
 	   yet this can be (also in theory) risky as it uses further JNI calls ... */
 	xobj = j2SEXP(env, x, 0);
 	(*env)->ExceptionClear(env);
+	
+	/* grab the list of class names (without package path) */
+	SEXP clazzes = PROTECT( getSimpleClassNames_asSEXP( (jobject)x, (jboolean)1 ) ) ;
+	
 	/* ok, now this is a critical part that we do manually to avoid recursion */
 	{
 		jclass cls = (*env)->GetObjectClass(env, x);
@@ -126,19 +124,12 @@ HIDE void ckx(JNIEnv *env) {
 			cname = (jstring) (*env)->CallObjectMethod(env, cls, mid_getName);
 			if (cname) {
 				const char *c = (*env)->GetStringUTFChars(env, cname, 0);
-				if (c) {
-					/* use only the class name (without package path) as the exception name in R */
-					const char *pt = c, *ls = c;
-					while (*pt) if (*(pt++) == '.') ls = pt;
-					if (*ls == '.') ls++;
-					if (strcmp(ls, "Exception")) /* we already have Exception */
-						xsubclass = PROTECT(mkChar(ls));
-					{ /* convert full class name to JNI notation */
-						char *cn = strdup(c), *d = cn;
-						while (*d) { if (*d == '.') *d = '/'; d++; }
-						xclass = mkString(cn);
-						free(cn);
-					}
+				if (c) {                          
+					/* convert full class name to JNI notation */
+					char *cn = strdup(c), *d = cn;
+					while (*d) { if (*d == '.') *d = '/'; d++; }
+					xclass = mkString(cn);
+					free(cn);
 					(*env)->ReleaseStringUTFChars(env, cname, c);
 				}		
 				(*env)->DeleteLocalRef(env, cname);
@@ -152,14 +143,16 @@ HIDE void ckx(JNIEnv *env) {
 	}
 	/* delete the local reference to the exception (jobjRef has a global copy) */
 	(*env)->DeleteLocalRef(env, x);
+
 	/* construct the jobjRef */
 	xr = PROTECT(NEW_OBJECT(MAKE_CLASS("jobjRef")));
 	if (inherits(xr, "jobjRef")) {
 		SET_SLOT(xr, install("jclass"), xclass ? xclass : mkString("java/lang/Throwable"));
 		SET_SLOT(xr, install("jobj"), xobj);
 	}
-	/* and off to R .. (we're keeping xr protected) */
-	throwR(msg, xr, xsubclass);
+	
+	/* and off to R .. (we're keeping xr and clazzes protected) */
+	throwR(msg, xr, clazzes);
 	/* throwR never returns so don't even bother ... */
 }
 

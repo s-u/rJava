@@ -24,3 +24,23 @@
   else
     stop("Invalid exception.")
 }
+
+
+"$.Throwable" <- function( x, name ){
+	if( name %in% names(x) ){
+		x[[ name ]]
+	} else{
+		._jobjRef_dollar( x[["jobj"]], name )
+	}
+}
+
+"$<-.Throwable" <- function( x, name, value ){
+	if( name %in% names(x) ){
+		x[[ name ]] <- value
+	} else{
+		._jobjRef_dollargets( x[["jobj"]], name, value )
+	}
+	x
+	
+}
+
