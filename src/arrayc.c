@@ -38,51 +38,15 @@ REPC SEXP RgetObjectArrayCont(SEXP e) {
   return ar;
 }
 
-/** get contents of the object array in the form of int* */
+/** get contents of the object array in the form of STRSXP vector */
 REPC SEXP RgetStringArrayCont(SEXP e) {
-  SEXP ar;
-  jarray o;
-  int l,i;
-  const char *c;
-  JNIEnv *env=getJNIEnv();
-
-  profStart();
+  SEXP ar = R_NilValue ;
   if (e==R_NilValue) return R_NilValue;
   if (TYPEOF(e)==EXTPTRSXP) {
     jverify(e);
-    o=(jobject)EXTPTR_PTR(e);
+    ar = getStringArrayCont( (jarray)EXTPTR_PTR(e) ) ;
   } else
     error("invalid object parameter");
-  _dbg(rjprintf("RgetStringArrayCont: jarray %x\n",o));
-  if (!o) return R_NilValue;
-  l=(int)(*env)->GetArrayLength(env, o);
-  _dbg(rjprintf(" convert string array of length %d\n",l));
-  if (l<0) return R_NilValue;
-  PROTECT(ar=allocVector(STRSXP,l));
-  i=0;
-  while (i<l) {
-    jobject sobj=(*env)->GetObjectArrayElement(env, o, i);
-    _mp(MEM_PROF_OUT("  %08x LNEW object array element [%d]\n", (int) sobj, i))
-    c=0;
-    if (sobj) {
-      /* we could (should?) check the type here ...
-      if (!(*env)->IsInstanceOf(env, sobj, javaStringClass)) {
-	printf(" not a String\n");
-      } else
-      */
-      c=(*env)->GetStringUTFChars(env, sobj, 0);
-    }
-    if (!c)
-      SET_STRING_ELT(ar, i, R_NaString);
-    else {
-      SET_STRING_ELT(ar, i, mkCharUTF8(c));
-      (*env)->ReleaseStringUTFChars(env, sobj, c);
-    }
-    if (sobj) releaseObject(env, sobj);
-    i++;
-  }
-  UNPROTECT(1);
-  _prof(profReport("RgetStringArrayCont[%d]:",o))
   return ar;
 }
 
@@ -357,3 +321,114 @@ REPC SEXP RgetLongArrayCont(SEXP e) {
   _prof(profReport("RgetLongArrayCont[%d]:",o));
   return ar;
 }
+
+
+/* these below have been factored out of the ones above so that they 
+   can also be used internally in jni code */
+   
+/** 
+ * get contents of the String array in the form of STRSXP vector
+ * 
+ * @param e a pointer to a String[] object
+ * 
+ * @return a STRSXP vector mirroring the java array
+ */
+HIDE SEXP getStringArrayCont(jarray o) {
+	SEXP ar;
+  int l,i;
+  const char *c;
+  JNIEnv *env=getJNIEnv();
+
+  profStart();
+  
+  _dbg(rjprintf("RgetStringArrayCont: jarray %x\n",o));
+  if (!o) return R_NilValue;
+  l=(int)(*env)->GetArrayLength(env, o);
+  _dbg(rjprintf(" convert string array of length %d\n",l));
+  if (l<0) return R_NilValue;
+  PROTECT(ar=allocVector(STRSXP,l));
+  i=0;
+  while (i<l) {
+    jobject sobj=(*env)->GetObjectArrayElement(env, o, i);
+    _mp(MEM_PROF_OUT("  %08x LNEW object array element [%d]\n", (int) sobj, i))
+    c=0;
+    if (sobj) {
+      /* we could (should?) check the type here ...
+      if (!(*env)->IsInstanceOf(env, sobj, javaStringClass)) {
+	printf(" not a String\n");
+      } else
+      */
+      c=(*env)->GetStringUTFChars(env, sobj, 0);
+    }
+    if (!c)
+      SET_STRING_ELT(ar, i, R_NaString);
+    else {
+      SET_STRING_ELT(ar, i, mkCharUTF8(c));
+      (*env)->ReleaseStringUTFChars(env, sobj, c);
+    }
+    if (sobj) releaseObject(env, sobj);
+    i++;
+  }
+  UNPROTECT(1);
+  _prof(profReport("RgetStringArrayCont[%d]:",o))
+  return ar;
+}
+
+
+/**
+ *  Get the list of class names of a java object
+ * This is a jni wrapper around the RJavaTools.getSimpleClassNames method
+ */
+HIDE jarray getSimpleClassNames( jobject o, jboolean addConditionClasses ){
+
+	JNIEnv *env=getJNIEnv();
+	jarray a ;
+	
+	profStart();
+	a = (jarray) (*env)->CallStaticObjectMethod(env, 
+		rj_RJavaTools_Class, mid_rj_getSimpleClassNames, 
+		o, addConditionClasses ) ;
+    _prof(profReport("getSimpleClassNames[%d]:",o)) ;
+	return a ;
+}
+
+/** 
+ * Get the list of class names of a java object, and
+ * structure it as a STRSXP vector
+ */ 
+HIDE SEXP getSimpleClassNames_asSEXP( jobject o, jboolean addConditionClasses ){
+	return getStringArrayCont( getSimpleClassNames( o, addConditionClasses ) ); 
+}
+
+/**
+ * Returns the STRSXP vector of simple class names of the object o
+ */
+REPC SEXP RgetSimpleClassNames( SEXP e, SEXP addConditionClasses ){
+	
+	SEXP ar = R_NilValue ;
+  	if (e==R_NilValue) return R_NilValue;
+  	jobject jobj ;
+  	if (TYPEOF(e)==EXTPTRSXP) {
+  		jverify(e);
+  		jobj = (jobject)EXTPTR_PTR(e) ;
+  	} else {
+  		error("invalid object parameter");
+  	}
+	
+ 	Rboolean add ;
+	switch(TYPEOF(addConditionClasses)) {
+		case LGLSXP:
+		    add = LOGICAL(addConditionClasses)[0];
+		    break;
+		case INTSXP:
+		    add = INTEGER(addConditionClasses)[0]; 
+		    break;
+		default:
+		    add = asLogical(addConditionClasses);
+	}
+	
+  ar = getSimpleClassNames_asSEXP( jobj , (jboolean)add ) ;
+
+  return ar;
+}
+

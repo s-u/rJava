@@ -120,6 +120,11 @@ HIDE JNIEnv* getJNIEnv();
 HIDE void ckx(JNIEnv *env);
 HIDE void clx(JNIEnv *env);
 
+HIDE SEXP getStringArrayCont(jarray) ;
+HIDE jarray getSimpleClassNames( jobject, jboolean  ) ;
+HIDE SEXP getSimpleClassNames_asSEXP( jobject, jboolean ) ;
+REPC SEXP RgetSimpleClassNames( SEXP, SEXP ); 
+
 /* in init.c */
 extern JavaVM *jvm;
 extern int rJava_initialized;
@@ -128,11 +133,16 @@ extern jclass javaStringClass;
 extern jclass javaObjectClass;
 extern jclass javaClassClass;
 extern jclass javaFieldClass;
+extern jclass rj_RJavaTools_Class ;
 
 extern jmethodID mid_forName;
 extern jmethodID mid_getName;
+extern jmethodID mid_getSimpleName;
+extern jmethodID mid_getSuperclass;
 extern jmethodID mid_getType;
 extern jmethodID mid_getField;
+extern jmethodID mid_rj_getSimpleClassNames;
+
 
 HIDE void init_rJava(void);
 

@@ -147,7 +147,10 @@
       pe[[x]] <- .env[[x]]
       lockBinding(x, pe)
     }
-  }   
+  }
+  
+  # init the cached RJavaTools class in the jni side
+  .Call( "initRJavaTools", PACKAGE = "rJava" ) 
   
   import( c( "java.lang", "java.util") )
   

@@ -69,13 +69,14 @@ HIDE void throwR(SEXP msg, SEXP jobj, SEXP xclass) {
 	unsigned int cnbase = (xclass == R_NilValue) ? 0 : 1;
 	SEXP cond = PROTECT(allocVector(VECSXP, 3));
 	SEXP names = PROTECT(allocVector(STRSXP, 3));
-	SEXP cln = PROTECT(allocVector(STRSXP, cnbase + 3));
 	SET_VECTOR_ELT(cond, 0, msg);
 	SET_VECTOR_ELT(cond, 1, getCurrentCall());
 	SET_VECTOR_ELT(cond, 2, jobj);
 	SET_STRING_ELT(names, 0, mkChar("message"));
 	SET_STRING_ELT(names, 1, mkChar("call"));
 	SET_STRING_ELT(names, 2, mkChar("jobj"));
+	
+	SEXP cln = PROTECT(allocVector(STRSXP, cnbase + 3));
 	if (cnbase)
 		SET_STRING_ELT(cln, 0, xclass);
 	SET_STRING_ELT(cln, cnbase, mkChar("Exception"));
@@ -101,7 +102,8 @@ HIDE void ckx(JNIEnv *env) {
 		return;
 	}
 	/* env is valid and an exception occurred */
-	/* we create the jobj first, because the exception may in theory disappear after being cleared, yet this can be (also in theory) risky as it uses further JNI calls ... */
+	/* we create the jobj first, because the exception may in theory disappear after being cleared, 
+	   yet this can be (also in theory) risky as it uses further JNI calls ... */
 	xobj = j2SEXP(env, x, 0);
 	(*env)->ExceptionClear(env);
 	/* ok, now this is a critical part that we do manually to avoid recursion */

@@ -5,7 +5,8 @@ import java.lang.reflect.InvocationTargetException ;
 import java.lang.reflect.Modifier ;
 import java.lang.reflect.Member ;
 
-import java.util.Vector ; 
+import java.util.Vector ;
+
 
 /** 
  * Tools used internally by rJava.
@@ -25,7 +26,7 @@ public class RJavaTools {
 	public static Class getClass(Class cl, String name, boolean staticRequired){
 		Class[] clazzes = cl.getClasses(); 
 		for( int i=0; i<clazzes.length; i++){
-			if( clazzes[i].getSimpleName().equals( name ) && ( !staticRequired || isStatic(clazzes[i]) ) ){
+			if( getSimpleName( clazzes[i].getName() ).equals( name ) && ( !staticRequired || isStatic(clazzes[i]) ) ){
 				return clazzes[i] ;
 			}
 		}
@@ -289,7 +290,7 @@ public class RJavaTools {
 	public static boolean classHasClass(Class cl, String name, boolean staticRequired) {
 		Class[] clazzes = cl.getClasses();
 		for (int i = 0; i < clazzes.length; i++)
-			if (name.equals(clazzes[i].getSimpleName()) && (!staticRequired || isStatic( clazzes[i] ) ) )
+			if (name.equals( getSimpleName(clazzes[i].getName()) ) && (!staticRequired || isStatic( clazzes[i] ) ) )
 				return true;
 		return false;
 	}
@@ -568,21 +569,82 @@ public class RJavaTools {
 		return res ;
 	}
 	
-		/**
+	/**
 	 * Returns the list of simple class names of the object
 	 *
 	 * @param o an Object
 	 */
-	public static String[] getSimpleClassNames(Object o){
+	public static String[] getSimpleClassNames(Object o, boolean addConditionClasses){
 		Vector/*<String>*/ vec = new Vector(); 
-		Class cl = o.getClass(); 
+		Class cl = o.getClass();
 		while( cl != null ){
-			vec.add( cl.getSimpleName() ) ;
+			vec.add( getSimpleName( cl.getName() ) ) ;
 			cl = cl.getSuperclass() ;
 		}
+		if( addConditionClasses ){
+			vec.add( "error" ) ;
+			vec.add( "condition" ) ;
+		}
+		
 		String[] res = new String[ vec.size() ] ;
 		vec.toArray( res) ;
 		return res ;
 	}
 
+	/* because Class.getSimpleName is java 5 API */ 
+	private static String getSimpleClassName( Object o ){
+		return getSimpleName( o.getClass().getName() ) ; 
+	}
+	
+	private static String getSimpleName( String s ){
+		int lastsquare = s.lastIndexOf( '[' ) ;
+		if( lastsquare >= 0 ){
+			if( s.charAt(  s.lastIndexOf( '[' ) + 1 ) == 'L' ){
+				s = s.substring( s.lastIndexOf( '[' ) + 2, s.lastIndexOf( ';' ) ) ;
+			} else {
+				char first = s.charAt( 0 );
+				if( first == 'I' ) {
+					s = "int" ;
+				} else if( first == 'D' ){
+					s = "double" ;
+				} else if( first == 'Z' ){
+					s = "boolean" ;
+				} else if( first == 'B' ){
+					s = "byte" ;
+				} else if( first == 'J' ){
+					s = "long" ; 
+				} else if( first == 'F' ){
+					s = "float" ; 
+				} else if( first == 'S' ){
+					s = "short" ; 
+				} else if( first == 'C' ){
+					s = "char" ;
+				}
+			}
+		}
+		
+		int lastdollar = s.lastIndexOf( '$' ) ;
+		if( lastdollar >= 0 ){
+			s = s.substring( lastdollar + 1);
+		}
+		
+		int lastdot = s.lastIndexOf( '.' ) ;
+		if( lastdot >= 0 ){
+			s = s.substring( lastdot + 1);
+		}
+		
+		if( lastsquare >= 0 ){
+			StringBuffer buf = new StringBuffer( s );
+			int i ;
+			for( i=0; i<=lastsquare; i++){
+				buf.append( "[]" ); 
+			}
+			return buf.toString(); 
+		} else {
+			return s ;
+		}
+		
+	}
+	
+	
 }

@@ -7,6 +7,7 @@
 JavaVM *jvm;
 
 /* cached, global objects */
+
 jclass javaStringClass;
 jclass javaObjectClass;
 jclass javaClassClass;
@@ -15,8 +16,14 @@ jclass javaFieldClass;
 /* cached, global method IDs */
 jmethodID mid_forName;
 jmethodID mid_getName;
+jmethodID mid_getSimpleName;
+jmethodID mid_getSuperclass;
 jmethodID mid_getType;
 jmethodID mid_getField;
+
+/* internal classes and methods */
+jclass rj_RJavaTools_Class = (jclass)0;
+jmethodID mid_rj_getSimpleClassNames = (jmethodID)0 ;
 
 int rJava_initialized = 0;
 
@@ -207,11 +214,20 @@ HIDE void init_rJava(void) {
 
   mid_forName  = (*env)->GetStaticMethodID(env, javaClassClass, "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
   if (!mid_forName) error("cannot obtain Class.forName method ID");
+  
   mid_getName  = (*env)->GetMethodID(env, javaClassClass, "getName", "()Ljava/lang/String;");
   if (!mid_getName) error("cannot obtain Class.getName method ID");
+  
+  mid_getSimpleName  = (*env)->GetMethodID(env, javaClassClass, "getSimpleName", "()Ljava/lang/String;");
+  if (!mid_getSimpleName) error("cannot obtain Class.getSimpleName method ID");
+  
+  mid_getSuperclass =(*env)->GetMethodID(env, javaClassClass, "getSuperclass", "()Ljava/lang/Class;");
+  if (!mid_getSuperclass) error("cannot obtain Class.getSuperclass method ID");
+  
   mid_getField = (*env)->GetMethodID(env, javaClassClass, "getField",
 				     "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
   if (!mid_getField) error("cannot obtain Class.getField method ID");
+ 
   mid_getType  = (*env)->GetMethodID(env, javaFieldClass, "getType",
 				     "()Ljava/lang/Class;");
   if (!mid_getType) error("cannot obtain Field.getType method ID");
@@ -308,5 +324,31 @@ REP void doneJVM() {
   (*jvm)->DestroyJavaVM(jvm);
   jvm = 0;
   eenv = 0;
+}
+
+/**
+ * Initializes the cached values of classes and methods used internally
+ * These classes and methods are the ones that are in rJava (RJavaTools, ...)
+ * not java standard classes (Object, Class)
+ */ 
+REPC SEXP initRJavaTools(){
+
+	JNIEnv *env=getJNIEnv();
+
+	// RJavaTools class
+	jclass c; 
+	c= findClass( env, "RJavaTools" ) ; 
+	if (!c) error("unable to find the RJavaTools class");
+	rj_RJavaTools_Class=(*env)->NewGlobalRef(env, c);
+	if (!rj_RJavaTools_Class) error("unable to create a global reference to the RJavaTools class");
+	(*env)->DeleteLocalRef(env, c);
+	
+	mid_rj_getSimpleClassNames  = (*env)->GetStaticMethodID(env, rj_RJavaTools_Class, 
+		"getSimpleClassNames", "(Ljava/lang/Object;Z)[Ljava/lang/String;");
+	if (!mid_rj_getSimpleClassNames) error("cannot obtain RJavaTools.getDimpleClassNames method ID");
+	
+	// maybe add RJavaArrayTools, ...
+	
+	return R_NilValue; 
 }
 
