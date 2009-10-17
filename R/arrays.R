@@ -503,6 +503,13 @@ PRIMITIVE_TYPES <- c( "I",  "Z",  "B",  "J",  "S",  "D",  "C",  "F" )
 isPrimitiveTypeName <- function( type, include.strings = TRUE ){
 	type %in% PRIMITIVE_TYPES || ( include.strings && identical( type, "java.lang.String" ) )
 }
+PRIMITIVE_TYPES_RX <- sprintf( "^[[]+[%s]$" , paste( PRIMITIVE_TYPES, collapse = "" ) )
+isPrimitiveArraySignature <- function( x, ... ){
+	regexpr( PRIMITIVE_TYPES_RX, x, ... ) > 0
+}
+isArraySignature <- function( x ){
+	substr( x, 1, 1 ) == "["
+}
 
 # {{{ unique.jarrayRef
 setGeneric( "unique" )

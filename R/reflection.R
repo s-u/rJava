@@ -101,17 +101,14 @@
   r <- .jcall( "RJavaTools", "Ljava/lang/Object;", "invokeMethod",
   	cl, .jcast(if(inherits(o,"jobjRef") || inherits(o, "jarrayRef")) o else cl, "java/lang/Object"), 
   	.jnew( "java/lang/String", method), 
-  	j_p, j_pc )
+  	j_p, j_pc, use.true.class = TRUE, evalString = simplify, evalArray = FALSE )
   
   # null is returned when the return type of the method is void
   # TODO[romain]: not sure how to distinguish when the result is null but the 
   #       return type is not null
-  if( is.jnull( r ) ){ 
+  if( is.jnull( r ) || is.null(r) ){ 
   	return( invisible( NULL ) )
   }
-  
-  # this comes back as an Object, so we need to cast it to its real type
-  r <- .jcast( r, .jclass( r, true = TRUE ), check = FALSE, convert.array = TRUE )
   
   # simplify if needed and return the object
   if( is(r, "jarrayRef" ) && simplify ){
@@ -142,11 +139,10 @@
   o <- .jcall("RJavaTools", "Ljava/lang/Object;", 
   	"newInstance", .jfindClass(class), 
   	.jarray(p,"java/lang/Object", dispatch = FALSE ), 
-  	.jarray(pc,"java/lang/Class", dispatch = FALSE ) )
+  	.jarray(pc,"java/lang/Class", dispatch = FALSE ), 
+  	evalString = FALSE, evalArray = FALSE, use.true.class = TRUE )
   
-  # cast to the actual class
-  .jcast( o, .jclass( o, true = TRUE ) )
-
+  o
 }
 
 

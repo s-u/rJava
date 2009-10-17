@@ -72,7 +72,9 @@
   newArray( jobj = jobj, signature = sig )
 }
 
-.jcall <- function(obj, returnSig="V", method, ..., evalArray=TRUE, evalString=TRUE, check=TRUE, interface="RcallMethod" ) {
+.jcall <- function(obj, returnSig="V", method, ..., evalArray=TRUE, 
+	evalString=TRUE, check=TRUE, interface="RcallMethod", 
+	use.true.class = TRUE) {
   if (check) .jcheck()
   r<-NULL
   # S is a shortcut for Ljava/lang/String;
@@ -83,11 +85,23 @@
   # original S (short) is now mapped to T so we need to re-map it (we don't really support short, though)
   if (returnSig=="T") returnSig <- "S"
   if (returnSig=="[T") returnSig <- "[S"
-  if (inherits(obj,"jobjRef") || inherits(obj,"jarrayRef"))
+  
+  if (inherits(obj,"jobjRef") || inherits(obj,"jarrayRef") || inherits(obj,"jrectRef") )
     r<-.External(interface, obj@jobj, returnSig, method, ..., PACKAGE="rJava")
   else
     r<-.External(interface, as.character(obj), returnSig, method, ..., PACKAGE="rJava")
   if (returnSig=="V") return(invisible(NULL))
+  
+  if( use.true.class && !is.null( r ) ){
+  	  if( ! ( isPrimitiveTypeName(returnSig) || isArraySignature(returnSig) ) ){
+  	  	  # avoid calling .jcall since we work on external pointers directly here
+  	  	  clazz     <- .External(interface, r    , "Ljava/lang/Class;", "getClass", PACKAGE = "rJava" )
+  	  	  clazzname <- .External(interface, clazz, "Ljava/lang/String;", "getName", PACKAGE = "rJava" )
+  	  	  clazzname <- .External("RgetStringValue", clazzname, PACKAGE="rJava")
+  	  	  returnSig <- tojniSignature( clazzname ) 
+  	  }
+  }
+  
   if ( isJavaArraySignature(returnSig) ) {
   	  if (evalArray){
   	  	  r <- .jevalArray(r,rawJNIRefSignature=returnSig)

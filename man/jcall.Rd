@@ -8,7 +8,8 @@
 }
 \usage{
 .jcall(obj, returnSig = "V", method, ..., evalArray = TRUE, 
-    evalString = TRUE, check = TRUE, interface = "RcallMethod")
+    evalString = TRUE, check = TRUE, interface = "RcallMethod", 
+    use.true.class = TRUE)
 }
 \arguments{
   \item{obj}{Java object (\code{jobjRef} as returned by
@@ -43,6 +44,12 @@
 	Java.}
     }
   }
+  \item{use.true.class}{logical. If set to TRUE, the true class
+  of the returned object will be used instead of the declared signature. 
+  \code{TRUE} allows for example to grab the actual class of an object when 
+  the return type is an interface, or allows to grab an array when the 
+  declared type is Object and the returned object is an array. Use \code{FALSE} 
+  for efficiency when you are sure about the return type. }
 }
 \value{
   Returns the result of the method.
