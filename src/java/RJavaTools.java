@@ -575,13 +575,22 @@ public class RJavaTools {
 	 * @param o an Object
 	 */
 	public static String[] getSimpleClassNames(Object o, boolean addConditionClasses){
+		boolean hasException = false ;
 		Vector/*<String>*/ vec = new Vector(); 
 		Class cl = o.getClass();
+		String name ;
 		while( cl != null ){
-			vec.add( getSimpleName( cl.getName() ) ) ;
+			name = getSimpleName( cl.getName() ) ;
+			if( "Exception".equals( name) ){
+				hasException = true ;
+			}
+			vec.add( name ) ;
 			cl = cl.getSuperclass() ;
 		}
 		if( addConditionClasses ){
+			if( !hasException ){
+				vec.add( "Exception" ) ;
+			}
 			vec.add( "error" ) ;
 			vec.add( "condition" ) ;
 		}
