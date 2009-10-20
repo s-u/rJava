@@ -17,7 +17,7 @@ isJavaArray <- function( o ){
 	}
 }
 isJavaArraySignature <- function( sig ){
-	substr( sig, 1, 1 ) == '['
+	identical( substr( sig, 1, 1 ), '[' )
 }
 
 #' get the component type of a java array
@@ -60,6 +60,8 @@ getComponentType <- function( o, check = TRUE ){
 }
 
 setMethod( "length", "jarrayRef", ._length_java_array )
+setMethod( "length", "jrectRef", ._length_java_array )
+
 setGeneric( "str" )
 setMethod("str", "jarrayRef", function(object, ...){
 	txt <- sprintf( "Formal class 'jarrayRef' [package \"rJava\"] with 2 slots
@@ -95,72 +97,73 @@ setMethod("str", "jrectRef", function(object, ...){
 
 # ._jctype <- function(x) if (is.jnull(x)) NA else if(is(x, "jarrayRef")) x@jsig else paste("L", x@jclass, ";", sep='')
 
-#' index a java array
-#' 
-#' @param x a reference to a java array
-#' @param i indexer (only 1D indexing supported so far)
-#' @param drop if the result if of length 1, just return the java object instead of an array of length one
-#' @param simplify further simplify the result
-._java_array_single_indexer <- function( x, i, j, drop, simplify = FALSE, silent = FALSE, ... ){
-	# arrays only
-	
-	if( !silent ){
-		if( ! missing( j ) ){
-			warning( "only one dimensional indexing is currently supported in i, ignoring j argument" )
-		}
-		dots <- list( ... )
-		if( length(dots) ){
-			unnamed.dots <- dots[ names(dots) == "" ]
-			if( length( unnamed.dots ) ){
-				warning( "only one dimensional indexing is currently supported in [, ignoring ... arguments" ) 
-			}
-		}
-	}
-	
-	# the component type of the array - maybe used to make 
-	# arrays with the same component type, but of length 0
-	component.type <- getComponentType( x, check = FALSE )
-	
-	# 'eval' the array
-	ja <- .jevalArray( x )
-	
-	# native type - use R subsetting and maybe remap to java 
-	if (!is.list(ja)) { 
-		# perform the subset
-		o <- ja[i]
-		
-		# return native type if simplify
-		if( simplify ){
-			return(o) 
-		}
-		
-		if( length(o) == 0L) {
-				# return an array of the same component type as the original array
-				# but of length 0
-				return( .jcall( "java/lang/reflect/Array", "Ljava/lang/Object;", "newInstance", component.type, 0L  ) )
-		} else {
-			# drop makes no sense here
-			return( .jarray( o ) )
-		}
-	}
-	
-	# the result an array of java objects
-	sl <- ja[i]
-	
-	if( length( sl ) == 0L ){
-		# TODO: make simplify influencial here
-		#       for example if x is int[] then we want to get integer(0)
-		return( .jcall( "java/lang/reflect/Array", "Ljava/lang/Object;", "newInstance", component.type, 0L  ) )
-	} else{
-		# just return the array
-		return( .jarray( sl ) )
-	}
-}
+# #' index a java array
+# #' 
+# #' @param x a reference to a java array
+# #' @param i indexer (only 1D indexing supported so far)
+# #' @param drop if the result if of length 1, just return the java object instead of an array of length one
+# #' @param simplify further simplify the result
+# ._java_array_single_indexer <- function( x, i, j, drop, simplify = FALSE, silent = FALSE, ... ){
+# 	# arrays only
+# 	
+# 	if( !silent ){
+# 		if( ! missing( j ) ){
+# 			warning( "only one dimensional indexing is currently supported in i, ignoring j argument" )
+# 		}
+# 		dots <- list( ... )
+# 		if( length(dots) ){
+# 			unnamed.dots <- dots[ names(dots) == "" ]
+# 			if( length( unnamed.dots ) ){
+# 				warning( "only one dimensional indexing is currently supported in [, ignoring ... arguments" ) 
+# 			}
+# 		}
+# 	}
+# 	
+# 	# the component type of the array - maybe used to make 
+# 	# arrays with the same component type, but of length 0
+# 	component.type <- getComponentType( x, check = FALSE )
+# 	
+# 	# 'eval' the array
+# 	ja <- .jevalArray( x )
+# 	
+# 	# native type - use R subsetting and maybe remap to java 
+# 	if (!is.list(ja)) { 
+# 		# perform the subset
+# 		o <- ja[i]
+# 		
+# 		# return native type if simplify
+# 		if( simplify ){
+# 			return(o) 
+# 		}
+# 		
+# 		if( length(o) == 0L) {
+# 				# return an array of the same component type as the original array
+# 				# but of length 0
+# 				return( .jcall( "java/lang/reflect/Array", "Ljava/lang/Object;", "newInstance", component.type, 0L  ) )
+# 		} else {
+# 			# drop makes no sense here
+# 			return( .jarray( o ) )
+# 		}
+# 	}
+# 	
+# 	# the result an array of java objects
+# 	sl <- ja[i]
+# 	
+# 	if( length( sl ) == 0L ){
+# 		# TODO: make simplify influencial here
+# 		#       for example if x is int[] then we want to get integer(0)
+# 		return( .jcall( "java/lang/reflect/Array", "Ljava/lang/Object;", "newInstance", component.type, 0L  ) )
+# 	} else{
+# 		# just return the array
+# 		return( .jarray( sl ) )
+# 	}
+# }
 
 # ## this is all weird - we need to distinguish between x[i] and x[i,] yet S4 fails to do so ...
-setMethod( "[", signature( x = "jarrayRef", i = "ANY" ), 
+setMethod( "[", signature( x = "jarrayRef" ), 
 	function(x, i, j, ..., drop = FALSE){
-		._java_array_single_indexer( x, i, j, drop = drop, ... )
+		# the code above is not good enough
+		.NotYetImplemented()
 	} )
 # }}}
 
@@ -493,7 +496,6 @@ setReplaceMethod( "dim", signature( x = "jrectRef" ), function(x, value){
 			                     .jcall( wrapper, "[Ljava/lang/Object;" , "flat_Object"  , evalArray = TRUE ) ) , 
 		dim = value )
 		                     
-    # then we give to flat the correct dimensions
 	.jarray(flat)
 	
 } )
@@ -530,9 +532,11 @@ setGeneric( "unique" )
 		.jcall( "RJavaArrayTools", "[Ljava/lang/Object;", "unique",
 			.jcast( x, "[Ljava/lang/Object;" ), evalArray = FALSE )
 	}
-	
-	
 }
+
+setMethod( "unique", "jarrayRef", function(x, incomparables = FALSE, ...){
+	.NotYetImplemented()
+} )
 setMethod( "unique", "jrectRef", ._unique_jrectRef )
 # }}}
 
@@ -557,6 +561,9 @@ setGeneric( "duplicated" )
 	}
 }
 setMethod( "duplicated", "jrectRef", ._duplicated_jrectRef )
+setMethod( "duplicated", "jarrayRef", function( x, incomparables = FALSE, ...){
+	.NotYetImplemented()
+})
 # }}}
 
 # {{{ anyDuplicated
@@ -580,6 +587,9 @@ setGeneric( "anyDuplicated" )
 	}
 }
 setMethod( "anyDuplicated", "jrectRef", ._anyduplicated_jrectRef )
+setMethod( "anyDuplicated", "jarrayRef", function( x, incomparables = FALSE, ...){
+	.NotYetImplemented()
+})
 # }}}
 
 # {{{ flat
@@ -597,6 +607,9 @@ setGeneric( "flat")
 	}
 }
 setMethod( "flat", "jrectRef", ._flat_jrectRef )
+setMethod( "flat", "jarrayRef", function(x, simplify=FALSE){
+	.NotYetImplemented()
+} )
 # }}}
 
 # {{{ sort
@@ -617,6 +630,9 @@ setGeneric( "sort" )
 
 }
 setMethod( "sort", "jrectRef", ._sort_jrectRef )
+setMethod( "sort", "jarrayRef", function(x, decreasing=FALSE, ...){
+	.NotYetImplemented()
+})
 # }}}
 
 # {{{ rev
@@ -635,6 +651,9 @@ setMethod( "rev", "jrectRef", function(x){
 	}
 
 } )
+setMethod( "rev", "jarrayRef", function(x){
+	.NotYetImplemented()
+}) 
 # }}}
 
 # {{{ as.list
@@ -668,6 +687,9 @@ setMethod("min", "jrectRef", function(x, ...,na.rm=TRUE){
 	}
 	
 } )
+setMethod("min", "jarrayRef", function(x, ...,na.rm=TRUE){ 
+	.NotYetImplemented()
+}) 
 setMethod("max", "jrectRef", function(x, ..., na.rm=TRUE){ 
 	
 	dim <- x@dimension
@@ -680,6 +702,9 @@ setMethod("max", "jrectRef", function(x, ..., na.rm=TRUE){
 		.jcall( summarizer, "Ljava/lang/Object;", "max", na.rm )
 	}
 	
+} )
+setMethod("max", "jarrayRef", function(x, ..., na.rm=TRUE){
+	.NotYetImplemented()
 } )
 setMethod("range", "jrectRef", function(x, ..., na.rm=TRUE){ 
 	
@@ -694,4 +719,7 @@ setMethod("range", "jrectRef", function(x, ..., na.rm=TRUE){
 	}
 	
 } )
+setMethod("range", "jarrayRef", function(x, ..., na.rm=TRUE){ 
+	.NotYetImplemented()
+}) 
 # }}}

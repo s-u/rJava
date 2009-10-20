@@ -3,6 +3,7 @@
 \docType{class}
 \alias{jrectRef-class}
 \alias{[,jrectRef-method}
+\alias{length,jrectRef-method}
 \alias{str,jrectRef-method}
 \alias{dim,jrectRef-method}
 \alias{dim<-,jrectRef-method}
@@ -36,8 +37,13 @@ Class \code{"\linkS4class{jobjRef}"}, by class "jarrayRef", distance 2.
 }
 \section{Methods}{
   \describe{
-    \item{[}{\code{signature(x = "jrectRef")}: R indexing of rectangular java arrays }
+    \item{length}{\code{signature(x = "jrectRef")}: The number of elements in the array. 
+    	Note that if the array has more than one dimension, 
+    	it gives the number of arrays in the first dimension, and not the total 
+    	number of atomic objects in tha array (like R does). This gives what would be 
+		returned by \code{array.length} in java.}
     \item{str}{\code{signature(object = "jrectRef")}: ... }
+    \item{[}{\code{signature(x = "jrectRef")}: R indexing of rectangular java arrays }
     \item{dim}{\code{signature(x = "jrectRef")}: extracts the dimensions of the array }
     \item{dim<-}{\code{signature(x = "jrectRef")}: sets the dimensions of the array }
     \item{unique}{\code{signature(x = "jrectRef")}: unique objects in the array}
@@ -54,7 +60,27 @@ Class \code{"\linkS4class{jobjRef}"}, by class "jarrayRef", distance 2.
 \dontshow{
 # these examples are only unit tests so far
 .jinit()
+}
+v <- new( J("java.util.Vector") )
+v$add( "hello" )
+v$add( "world" )
+v$add( new( J("java.lang.Double"), "10.2" ) )
+array <- v$toArray()
 
+array[ c(TRUE,FALSE,TRUE) ]
+array[ 1:2 ]
+array[ -3 ]
+
+# length 
+length( array )
+\dontshow{stopifnot(length(array) == 3L)}
+
+# also works as a pseudo field as in java
+array$length
+\dontshow{stopifnot(array$length == 3L)}
+
+
+\dontshow{
 # # 2d
 dim2d <- c(5L, 2L)
 

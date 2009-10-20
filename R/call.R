@@ -7,6 +7,8 @@
 # create a new object
 .jnew <- function(class, ..., check=TRUE, silent=!check) {
   class <- gsub("\\.", "/", as.character(class)) # allow non-JNI specifiation
+  # TODO: should this do "S" > "java/lang/String", ... like .jcall
+  
   if (check) .jcheck(silent=TRUE)
   o<-.External("RcreateObject", class, ..., silent=silent, PACKAGE="rJava")
   if (check) .jcheck(silent=silent)
@@ -20,7 +22,9 @@
   new("jobjRef", jobj=o, jclass=class)
 }
 
-# create a new object reference manually (avoid! for backward compat only!) the problem with this is that you need a valid `jobj' which is implementation-dependent so it is undefined outside rJava internals
+# create a new object reference manually (avoid! for backward compat only!) 
+# the problem with this is that you need a valid `jobj' which 
+# is implementation-dependent so it is undefined outside rJava internals
 # it is now used by JRI.createRJavaRef, though
 .jmkref <- function(jobj, jclass="java/lang/Object") {
   new("jobjRef", jobj=jobj, jclass=gsub('\\.','/',as.character(jclass)))
@@ -230,6 +234,8 @@ getDim <- function(x){
 	
 	# this is a two stage process, first we need to convert into 
 	# a flat array using the jni code
+	# TODO: but this needs to move to the internal jni world to avoid 
+	#       too many copies
 	
 	# common mistake is to not specify a list but just a single Java object
 	# but, well, people just keep doing it so we may as well support it 
@@ -304,7 +310,8 @@ is.jnull <- function(x) {
   cl
 }
 
-# return class object for a given class name; silent determines whether an error should be thrown on failure (FALSE) or just null reference (TRUE)
+# return class object for a given class name; silent determines whether
+# an error should be thrown on failure (FALSE) or just null reference (TRUE)
 .jfindClass <- function(cl, silent=FALSE) {
   if (inherits(cl, "jclassName")) return(cl@jobj)
   if (!is.character(cl) || length(cl)!=1)
@@ -321,7 +328,8 @@ is.jnull <- function(x) {
   a
 }
 
-# Java-side inheritance check; NULL inherits from any class, because it can be cast to any class type; cl can be a class name or a jobjRef to a class object
+# Java-side inheritance check; NULL inherits from any class, because 
+# it can be cast to any class type; cl can be a class name or a jobjRef to a class object
 .jinherits <- function(o, cl) {
   if (is.jnull(o)) return(TRUE)
   if (!is(o, "jobjRef")) stop("invalid object")

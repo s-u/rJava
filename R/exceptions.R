@@ -1,5 +1,7 @@
 ## functions for some basic exception handling
 
+# FIXME: should all these actually be deprecated or defunct
+
 ## poll for an exception
 .jgetEx <- function(clear=FALSE) {
   exo <- .Call("RpollException", PACKAGE="rJava")

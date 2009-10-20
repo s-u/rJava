@@ -149,14 +149,20 @@
     }
   }
   
+  # FIXME: is this the best place or should this be done 
+  #        internally right after the RJavaClassLoader is instanciated
   # init the cached RJavaTools class in the jni side
   .Call( "initRJavaTools", PACKAGE = "rJava" ) 
   
-  import( c( "java.lang", "java.util") )
+  # not yet
+  # import( c( "java.lang", "java.util") )
   
   invisible(xr)
 }
 
+# FIXME: this is not always true: osgi, eclipse etc use a different
+#        class loader strategy, we should add some sort of hook to let people
+#        define how they want this to be done
 .jmergeClassPath <- function(cp) {
   ccp <- .jcall("java/lang/System","S","getProperty","java.class.path")
   ccpc <- strsplit(ccp, .Platform$path.sep)[[1]]

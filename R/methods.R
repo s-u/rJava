@@ -3,6 +3,7 @@
 ## additional methods ($ and $<-) are defined in reflection.R
 
 # show method
+# FIXME: this should show the class of the object instead of Java-Object
 setMethod("show", c(object="jobjRef"), function(object) {
   if (is.jnull(object)) show("Java-Object<null>") else show(paste("Java-Object{", .jstrVal(object), "}", sep=''))
   invisible(NULL)

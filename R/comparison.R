@@ -7,6 +7,10 @@
   if (is.null(a)) a <- new("jobjRef")
   if (is.null(b)) b <- new("jobjRef")
   
+  if( isJavaArray(a) || isJavaArray(b) ){
+  	  stop( "comparison (<,>,<=,>=) is not implemented for java arrays yet" )
+  }
+  
   if( !is(a, "jobjRef" ) ) a <- ._java_valid_object( a )
   if( !is(b, "jobjRef" ) ) b <- ._java_valid_object( b )
   

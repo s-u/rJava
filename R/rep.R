@@ -12,7 +12,6 @@ setMethod( "rep", "jarrayRef", function(x, times = 1L, ...){
 setMethod( "rep", "jrectRef", function(x, times = 1L, ...){
 	.NotYetImplemented()
 } )
-
 # }}}
 
 # {{{ clone 

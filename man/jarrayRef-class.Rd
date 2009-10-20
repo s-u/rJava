@@ -8,6 +8,14 @@
 \alias{tail,jarrayRef-method}
 \alias{length,jarrayRef-method}
 \alias{str,jarrayRef-method}
+\alias{unique,jarrayRef-method}
+\alias{duplicated,jarrayRef-method}
+\alias{anyDuplicated,jarrayRef-method}
+\alias{sort,jarrayRef-method}
+\alias{rev,jarrayRef-method}
+\alias{min,jarrayRef-method}
+\alias{max,jarrayRef-method}
+\alias{range,jarrayRef-method}
 
 \title{Class "jarrayRef" Reference to an array Java object }
 \description{ This class is a subclass of \link{jobjRef-class} 
@@ -25,13 +33,21 @@ value of \code{\link{.jcall}} function.
 }
 \section{Methods}{
   \describe{
-    \item{[}{\code{signature(x = "jarrayRef")}: R indexing of java arrays }
+  	  \item{[}{\code{signature(x = "jarrayRef")}: \emph{not yet implemented} }
     \item{[[}{\code{signature(x = "jarrayRef")}: R indexing of java arrays }
     \item{[[<-}{\code{signature(x = "jarrayRef")}: replacement method }
     \item{\code{head}}{\code{signature(x = "jarrayRef")}: head of the java array }
     \item{\code{tail}}{\code{signature(x = "jarrayRef")}: tail of the java array }
     \item{length}{\code{signature(object = "jarrayRef")}: Number of java objects in the java array }
     \item{str}{\code{signature(object = "jarrayRef")}: ... }
+    \item{unique}{\code{signature(x = "jarrayRef")}: \emph{not yet implemented} }
+    \item{duplicated}{\code{signature(x = "jarrayRef")}: \emph{not yet implemented} }
+    \item{anyDuplicated}{\code{signature(x = "jarrayRef")}: \emph{not yet implemented} }
+    \item{sort}{\code{signature(x = "jarrayRef")}: \emph{not yet implemented} }
+    \item{rev}{\code{signature(x = "jarrayRef")}: \emph{not yet implemented} }
+    \item{min}{\code{signature(x = "jarrayRef")}: \emph{not yet implemented} }
+    \item{max}{\code{signature(x = "jarrayRef")}: \emph{not yet implemented} }
+    \item{range}{\code{signature(x = "jarrayRef")}: \emph{not yet implemented} }
   }
 }
 \section{Extends}{
@@ -39,36 +55,11 @@ Class \code{"\linkS4class{jobjRef}"}, directly.
 }
 \author{ Simon Urbanek }
 \seealso{
-  \code{\link{.jcall}} or \code{\link{jobjRef-class}}
+  \code{\link{.jcall}} or \code{\linkS4class{jobjRef}}
+  \code{\linkS4class{jrectRef}} for rectangular arrays
 }
-\section{Warning}{
-At the moment, only one dimensionnal indexing is implemented. 
-}
-\examples{
-\dontshow{.jinit()}
-v <- new( J("java.util.Vector") )
-v$add( "hello" )
-v$add( "world" )
-v$add( new( J("java.lang.Double"), "10.2" ) )
-array <- v$toArray()
-
-array[ c(TRUE,FALSE,TRUE) ]
-array[ 1:2 ]
-array[ -3 ]
-
-# length 
-length( array )
-\dontshow{stopifnot(length(array) == 3L)}
-
-# also works as a pseudo field as in java
-array$length
-\dontshow{stopifnot(array$length == 3L)}
-
-% # also with with
-% with( array, length )
-% \dontshow{
-% 	stopifnot( with(array, length) == 3L )
+% need to find examples of rugged arrays
+% \examples{
+% \dontshow{.jinit()}
 % }
-
-}
 \keyword{classes}
