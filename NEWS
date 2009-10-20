@@ -5,9 +5,12 @@
     o	new exception handling was introduced:
 
 	Java exceptions are mapped to Exception conditions which can
-	be used to catch the exception at R level. The class name
-	(without package path) of the exception is used as the
-	subclass of Exception such that targetted handlers can be used:
+	be used to catch the exception at R level using e.g tryCatch. 
+	
+	The class name automatically contains "Exception", "error"
+	and "condition", as well as all the names (without package path)
+	of the classes in the inheritance tree of the actual class of the 
+	Exception. This allows targetted handlers:
 	tryCatch(.jnew("foo"), NoClassDefFoundError=function(e) ...)
 
 	In addition JNI code now causes an error instead of a warning,
@@ -26,26 +29,26 @@
 	static methods and fields are accessed using J("class")$...
 	The corresponding implementation uses reflection in all cases.
 
-	An additional class jclassName was created to support static
+	An additional class "jclassName" was created to support static
 	calls to accessor methods such as $ and calls to new().
+	
+	o   [RF] arrays are now split in two classes : "jrectRef" for rectangular
+	    arrays, similar to R arrays, and jarrayRef for rugged arrays. 
+	    Indexing of all arrays is supported using the double bracket 
+	    indexer "[[" and "[[<-"
+	    
+	    The single indexer "[" is only currently implemented for 
+	    rectangular arrays. This is experimental. Replacement ([<-) 
+	    is not supported yet.
 
-    o   [RF] added with.jclassName and within.jclassName to support
+    o   [RF] with.jclassName and within.jclassName is added to support
         "with" semantics on static fields and methods of java classes
 
-    o   [RF] added (unexported) isJavaArray function to check if 
-        a "jobjRef" or a "jarrayRef" really refers to a java array
-
-    o   [RF] added length.jarrayRef to query the number
+    o   [RF] length.jarrayRef queries the number
         of objects in a java array. An exception is generated if the 
-        object is not an array
-
-    o   [RF] added "length" pseudo field for java arrays in syntactic sugar 
-        and with semantics
+        object is not an array. Also array$length can be used 
+        similary to array.length in java
         
-    o   [RF] R-style indexing of java arrays using [, [[, head and tail
-    
-    o   [RF] added str.jarrayRef as an alias to show.jarrayRef
-
     o   [RF] .jcast gains arguments "check" and "convert.array". Their 
              default value is FALSE for backwards compatibility with 
              previous releases of rJava
@@ -55,16 +58,18 @@
              d <- new( J("java.lang.Double"), 0.0 )
              d < 1.0
              d < 1L
+             Comparison of arrays is not currently supported
              
     o   [RF] lapply and sapply may now be used on Iterable java objects
-             and java arrays. see ?as.list.jobjRef
+             such as Vector and java arrays. see ?as.list.jobjRef
              
-    o   [RF] added generic clone function and implementation for 
+    o   [RF] The generic "clone" function is added, and an implementation for 
              java objects. an Object must implement the Cloneable 
              interface, otherwise an exception will be raised. 
              Furthermore, careful reading of the java documentation 
              of Object#clone is recommended since this is not standard
-             java behaviour.
+             java behaviour. Currently "clone" is not supported on 
+             arrays
 
 0.7-1	(under development)
     o	[RF] added .J high-level java constructor (based on reflection 
