@@ -32,14 +32,14 @@
 	An additional class "jclassName" was created to support static
 	calls to accessor methods such as $ and calls to new().
 	
-	o   [RF] arrays are now split in two classes : "jrectRef" for rectangular
-	    arrays, similar to R arrays, and jarrayRef for rugged arrays. 
-	    Indexing of all arrays is supported using the double bracket 
-	    indexer "[[" and "[[<-"
-	    
-	    The single indexer "[" is only currently implemented for 
-	    rectangular arrays. This is experimental. Replacement ([<-) 
-	    is not supported yet.
+    o   [RF] arrays are now split in two classes : "jrectRef" for rectangular
+        arrays, similar to R arrays, and jarrayRef for rugged arrays. 
+        Indexing of all arrays is supported using the double bracket 
+        indexer "[[" and "[[<-"
+        
+        The single indexer "[" is only currently implemented for 
+        rectangular arrays. This is experimental. Replacement ([<-) 
+        is not supported yet.
 
     o   [RF] with.jclassName and within.jclassName is added to support
         "with" semantics on static fields and methods of java classes
