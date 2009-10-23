@@ -70,6 +70,21 @@
              of Object#clone is recommended since this is not standard
              java behaviour. Currently "clone" is not supported on 
              arrays
+             
+    o   [RF] A mechanism for "attach"ing java packages has been introduced, 
+             following the mechanism of the RObjectTables package
+             from the OmegaHat project. This allows to "attach" a set of
+             java package paths to R's search path: 
+             
+             > attach( javaPackage( "java.util" ) )
+             
+             and then use classes from this package like this :
+             
+             > new( Vector )
+             > new( HashMap )
+             
+             This feature is currently very experimental and is as
+             dangerous as any other use of attach
 
 0.7-1	(under development)
     o	[RF] added .J high-level java constructor (based on reflection 

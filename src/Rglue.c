@@ -767,6 +767,44 @@ HIDE SEXP new_jobjRef(JNIEnv *env, jobject o, const char *klass) {
   return oo;
 }
 
+/** 
+ * creates a new jclassName object. similar to what the jclassName
+ * function does in the R side
+ *
+ * @param env pointer to the jni env
+ * @param cl Class instance
+ */
+HIDE SEXP new_jclassName(JNIEnv *env, jobject/*Class*/ cl ) {
+  SEXP oo = NEW_OBJECT(MAKE_CLASS("jclassName"));
+  if (!inherits(oo, "jclassName"))
+    error("unable to create jclassName object");
+  PROTECT(oo);
+  SET_SLOT(oo, install("name"), getName(env, cl) );
+  SET_SLOT(oo, install("jobj"), new_jobjRef( env, cl, "java/lang/Class" ) );
+  UNPROTECT(1);
+  return oo;
+}
+
+/** Calls the Class.getName method and return the result as an R STRSXP */
+HIDE SEXP getName( JNIEnv *env, jobject/*Class*/ cl){
+	char cn[128];
+	
+	jstring r = (*env)->CallObjectMethod(env, cl, mid_getName);
+  
+	cn[127]=0; *cn=0;
+  	int sl = (*env)->GetStringLength(env, r);
+  	if (sl>127) {
+  	  error("class name is too long");
+  	}
+  	if (sl) (*env)->GetStringUTFRegion(env, r, 0, sl, cn);
+  	char *c=cn; while(*c) { if (*c=='.') *c='/'; c++; }
+
+	SEXP res = PROTECT( mkString(cn ) ); 
+	releaseObject(env, r);
+	UNPROTECT(1); /* res */
+	return res;
+}
+
 static SEXP new_jarrayRef(JNIEnv *env, jobject a, const char *sig) {
   /* it is too tedious to try to do this in C, so we use 'new' R function instead */
   /* SEXP oo = eval(LCONS(install("new"),LCONS(mkString("jarrayRef"),R_NilValue)), R_GlobalEnv); */

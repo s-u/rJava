@@ -23,6 +23,7 @@ jmethodID mid_getField;
 
 /* internal classes and methods */
 jclass rj_RJavaTools_Class = (jclass)0;
+jclass rj_RJavaImport_Class = (jclass)0;
 jmethodID mid_rj_getSimpleClassNames = (jmethodID)0 ;
 
 int rJava_initialized = 0;
@@ -334,15 +335,26 @@ REP void doneJVM() {
 REPC SEXP initRJavaTools(){
 
 	JNIEnv *env=getJNIEnv();
-
-	// RJavaTools class
 	jclass c; 
+	
+	/* classes */
+	
+	// RJavaTools class
 	c= findClass( env, "RJavaTools" ) ; 
 	if (!c) error("unable to find the RJavaTools class");
 	rj_RJavaTools_Class=(*env)->NewGlobalRef(env, c);
 	if (!rj_RJavaTools_Class) error("unable to create a global reference to the RJavaTools class");
 	(*env)->DeleteLocalRef(env, c);
 	
+	// RJavaImport
+	c= findClass( env, "RJavaImport" ) ; 
+	if (!c) error("unable to find the RJavaImport class");
+	rj_RJavaImport_Class=(*env)->NewGlobalRef(env, c);
+	if (!rj_RJavaImport_Class) error("unable to create a global reference to the RJavaImport class");
+	(*env)->DeleteLocalRef(env, c);
+	
+	
+	/* methods */
 	mid_rj_getSimpleClassNames  = (*env)->GetStaticMethodID(env, rj_RJavaTools_Class, 
 		"getSimpleClassNames", "(Ljava/lang/Object;Z)[Ljava/lang/String;");
 	if (!mid_rj_getSimpleClassNames) error("cannot obtain RJavaTools.getDimpleClassNames method ID");

@@ -21,6 +21,9 @@
 #include <Rinternals.h>
 #include <Rversion.h>
 
+#include <Rdefines.h>
+#include <R_ext/Callbacks.h>
+
 /* flags used in function declarations:
    HIDE - hidden (used internally in rJava only)
 
@@ -134,6 +137,7 @@ extern jclass javaObjectClass;
 extern jclass javaClassClass;
 extern jclass javaFieldClass;
 extern jclass rj_RJavaTools_Class ;
+extern jclass rj_RJavaImport_Class ;
 
 extern jmethodID mid_forName;
 extern jmethodID mid_getName;
@@ -146,6 +150,24 @@ extern jmethodID mid_rj_getSimpleClassNames;
 
 HIDE void init_rJava(void);
 
+/* in otables.c */
+// turn this for debugging in otables.c
+// #define LOOKUP_DEBUG
+
+REPC SEXP newRJavaLookupTable(SEXP) ;
+
+HIDE SEXP R_getUnboundValue() ;
+HIDE SEXP rJavaLookupTable_objects(R_ObjectTable *) ;
+HIDE SEXP rJavaLookupTable_assign(const char * const, SEXP, R_ObjectTable * ) ;
+HIDE Rboolean rJavaLookupTable_canCache(const char * const, R_ObjectTable *) ;
+HIDE int rJavaLookupTable_remove(const char * const,  R_ObjectTable *) ;
+HIDE SEXP rJavaLookupTable_get(const char * const, Rboolean *, R_ObjectTable *) ;
+HIDE Rboolean rJavaLookupTable_exists(const char * const, Rboolean *, R_ObjectTable *) ;
+HIDE jobject getImporterReference(R_ObjectTable *) ;
+HIDE SEXP getKnownClasses( R_ObjectTable * ); 
+HIDE SEXP classNameLookup( R_ObjectTable *, const char * const ) ;
+HIDE Rboolean classNameLookupExists(R_ObjectTable *, const char * const ) ;
+
 /* in loader.c */
 extern jclass   clClassLoader;
 extern jobject  oClassLoader;
@@ -156,6 +178,8 @@ HIDE SEXP new_jobjRef(JNIEnv *env, jobject o, const char *klass);
 HIDE jvalue R1par2jvalue(JNIEnv *env, SEXP par, sig_buffer_t *sig, jobject *otr);
 HIDE void init_sigbuf(sig_buffer_t *sb);
 HIDE void done_sigbuf(sig_buffer_t *sb);
+HIDE SEXP getName( JNIEnv *, jobject/*Class*/ ); 
+HIDE SEXP new_jclassName(JNIEnv *, jobject/*Class*/ ) ;
 
 /* in tools.c */
 HIDE jstring callToString(JNIEnv *env, jobject o);

@@ -40,4 +40,5 @@ S3method( as.list, jrectRef )
 S3method( "$", "Throwable" )
 S3method( "$<-", "Throwable" )
 
+export( javaPackage )
 

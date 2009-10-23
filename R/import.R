@@ -134,3 +134,11 @@ lookup <- function( name = "Object", ..., caller = sys.function(-1L) ){
 		name, .jcast( importers, "java/util/Set" )  )
 }
 
+
+javaPackage <- function( packages = "java.lang" ){
+	importer <- .jnew( "RJavaImport" )
+	.jcall( importer, "V", "importPackage", packages )
+	.Call( "newRJavaLookupTable" , importer, 
+		PACKAGE = "rJava" )
+}
+
