@@ -1,15 +1,15 @@
-\name{javaPackage}
-\alias{javaPackage}
+\name{javaImport}
+\alias{javaImport}
 \title{
 Attach mechanism for java packages
 }
 \description{
-The \code{javaPackage} function creates an item on R's
+The \code{javaImport} function creates an item on R's
 search that maps names to class names references found in 
 one or several "imported" java packages.
 }
 \usage{
-javaPackage(packages = "java.lang")
+javaImport(packages = "java.lang")
 }
 \arguments{
   \item{packages}{character vector containing java package paths}
@@ -37,13 +37,20 @@ detach.
 }
 \examples{
 \dontrun{
-	attach( javaPackage( "java.util" ), pos = 2 , name = "java:java.util" )
+	attach( javaImport( "java.util" ), pos = 2 , name = "java:java.util" )
+	
+	# now we can just do something like this 
 	v <- new( Vector )
 	v$add( "foobar" )
 	ls( pos = 2 )
+	
+	# or this
 	m <- new( HashMap )
 	m$put( "foo", "bar" )
 	ls( pos = 2 )
+	
+	# or even this :
+	Collections$EMPTY_MAP
 }
 }
 \keyword{ programming }

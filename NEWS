@@ -42,7 +42,11 @@
         is not supported yet.
 
     o   [RF] with.jclassName and within.jclassName is added to support
-        "with" semantics on static fields and methods of java classes
+        "with" semantics on static fields and methods of java classes. 
+        
+        Double <- J("java.lang.Double" )
+        with( Double, parseDouble( "10.2" ) )
+        
 
     o   [RF] length.jarrayRef queries the number
         of objects in a java array. An exception is generated if the 
@@ -76,17 +80,20 @@
              from the OmegaHat project. This allows to "attach" a set of
              java package paths to R's search path: 
              
-             > attach( javaPackage( "java.util" ) )
+             > attach( javaImport( "java.util", "java.lang" ) )
              
              and then use classes from this package like this :
              
              > new( Vector )
              > new( HashMap )
+             > new( Double, 10.2 )
+             > new( Integer, 10L ) 
+             > Collections$EMPTY_MAP
              
-             This feature is currently very experimental and is as
+             This feature is currently __very__ experimental and is as
              dangerous as any other use of attach
 
-0.7-1	(under development)
+0.7-1	(never released)
     o	[RF] added .J high-level java constructor (based on reflection 
 	as opposed to complete match as .jnew does)
 

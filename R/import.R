@@ -135,7 +135,7 @@ lookup <- function( name = "Object", ..., caller = sys.function(-1L) ){
 }
 
 
-javaPackage <- function( packages = "java.lang" ){
+javaImport <- function( packages = "java.lang" ){
 	importer <- .jnew( "RJavaImport" )
 	.jcall( importer, "V", "importPackage", packages )
 	.Call( "newRJavaLookupTable" , importer, 
