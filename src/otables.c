@@ -22,7 +22,7 @@ HIDE SEXP R_getUnboundValue() {
 HIDE Rboolean rJavaLookupTable_exists(const char * const name, Rboolean *canCache, R_ObjectTable *tb){
 
 #ifdef LOOKUP_DEBUG
- Rprintf( "<rJavaLookupTable_exists>\n" ); 
+ Rprintf( "  >> rJavaLookupTable_exists\n" ); 
 #endif
 	
  if(tb->active == FALSE)
@@ -32,10 +32,6 @@ HIDE Rboolean rJavaLookupTable_exists(const char * const name, Rboolean *canCach
  Rboolean val = classNameLookupExists( tb, name );
  tb->active = TRUE;
  
-#ifdef LOOKUP_DEBUG
- Rprintf( "</rJavaLookupTable_exists>\n" ); 
-#endif
-
  return( val );
 }
 
@@ -50,7 +46,7 @@ HIDE Rboolean rJavaLookupTable_exists(const char * const name, Rboolean *canCach
 SEXP rJavaLookupTable_get(const char * const name, Rboolean *canCache, R_ObjectTable *tb){
 
 #ifdef LOOKUP_DEBUG
- Rprintf( "<rJavaLookupTable_get>\n" ); 
+ Rprintf( "  >> rJavaLookupTable_get\n" ); 
 #endif
 
  SEXP val;
@@ -61,11 +57,7 @@ SEXP rJavaLookupTable_get(const char * const name, Rboolean *canCache, R_ObjectT
  val = PROTECT( classNameLookup( tb, name ) );
  tb->active = TRUE;
 
-#ifdef LOOKUP_DEBUG
-	Rprintf( "</rJavaLookupTable_get>\n" ); 
-#endif
-
- UNPROTECT(1); 
+ UNPROTECT(1); /* val */ 
  return(val);
 }
 
@@ -74,13 +66,14 @@ SEXP rJavaLookupTable_get(const char * const name, Rboolean *canCache, R_ObjectT
  */
 int rJavaLookupTable_remove(const char * const name,  R_ObjectTable *tb){
 #ifdef LOOKUP_DEBUG
- Rprintf( "<rJavaLookupTableremove />\n" ); 
+ Rprintf( "  >> rJavaLookupTable_remove( %s) \n", name ); 
 #endif
 	error( "cannot remove from java package" ) ;
 }
 
 /**
- * Indicates if R can cahe the variable name. Currently allways return FALSE
+ * Indicates if R can cahe the variable name. 
+ * Currently allways return FALSE
  *
  * @param name name of the class
  * @param tb lookup table
@@ -88,7 +81,7 @@ int rJavaLookupTable_remove(const char * const name,  R_ObjectTable *tb){
  */ 
 HIDE Rboolean rJavaLookupTable_canCache(const char * const name, R_ObjectTable *tb){
 #ifdef LOOKUP_DEBUG
- Rprintf( "<rJavaLookupTable_canCache />\n" ); 
+ Rprintf( "  >> rJavaLookupTable_canCache\n" ); 
 #endif
 	return( FALSE );
 }
@@ -98,7 +91,7 @@ HIDE Rboolean rJavaLookupTable_canCache(const char * const name, R_ObjectTable *
  */
 HIDE SEXP rJavaLookupTable_assign(const char * const name, SEXP value, R_ObjectTable *tb){
 #ifdef LOOKUP_DEBUG
- Rprintf( "<rJavaLookupTable_assign />\n" ); 
+ Rprintf( "  >> rJavaLookupTable_assign( %s ) \n", name ); 
 #endif
     error("can't assign to java package lookup");
 }
@@ -111,9 +104,14 @@ HIDE SEXP rJavaLookupTable_assign(const char * const name, SEXP value, R_ObjectT
  */ 
 HIDE SEXP rJavaLookupTable_objects(R_ObjectTable *tb) {
 #ifdef LOOKUP_DEBUG
- Rprintf( "<rJavaLookupTable_objects />\n" ); 
+ Rprintf( "  >> rJavaLookupTable_objects\n" ); 
 #endif
-	return( getKnownClasses( tb ) ); 
+	
+	tb->active = FALSE;
+	SEXP res = PROTECT( getKnownClasses( tb ) ) ; 
+	tb->active = TRUE;
+	UNPROTECT(1); /* res */
+	return( res ); 
 }
 
 
@@ -128,7 +126,6 @@ REPC SEXP newRJavaLookupTable(SEXP importer){
   tb = (R_ObjectTable *) malloc(sizeof(R_ObjectTable));
   if(!tb)
       error( "cannot allocate space for an internal R object table" );
-  /* this is also checked on the R side, but well .. */
   
   tb->type = RJAVA_LOOKUP ; /* FIXME: not sure what this should be */
   tb->cachedNames = NULL;
@@ -163,36 +160,23 @@ HIDE jobject getImporterReference(R_ObjectTable *tb ){
 	jobject res = (jobject)EXTPTR_PTR( GET_SLOT( (SEXP)(tb->privateData), install( "jobj" ) ) );
 	
 #ifdef LOOKUP_DEBUG
-	Rprintf( " getImporterReference : [%d]\n", res ); 
+	Rprintf( "  >> getImporterReference : [%d]\n", res ); 
 #endif
 	return res ;
 }
 
 HIDE SEXP getKnownClasses( R_ObjectTable *tb ){
 #ifdef LOOKUP_DEBUG
- Rprintf( "<getKnownClasses>\n" ); 
+ Rprintf( "  >> getKnownClasses\n" ); 
 #endif
 	jobject importer = getImporterReference(tb); 
 	
 	JNIEnv *env=getJNIEnv();
-	jarray a ;
-	
-	jmethodID mid = (*env)->GetMethodID(env, rj_RJavaImport_Class, 
-		"getKnownClasses", "()[Ljava/lang/String;");
-#ifdef LOOKUP_DEBUG
-	Rprintf( "  <RJavaImport.getKnownClasses [%d] />\n", mid );
-	Rprintf( "  rj_RJavaImport_Class = [%d] />\n", rj_RJavaImport_Class );
-	
-#endif
-	a = (jarray) (*env)->CallObjectMethod(env, importer, mid ) ;
-	
-#ifdef LOOKUP_DEBUG
- Rprintf( "</getKnownClasses>\n" ); 
-#endif
+	jarray a = (jarray) (*env)->CallObjectMethod(env, importer, mid_RJavaImport_getKnownClasses ) ;
 	SEXP res = PROTECT( getStringArrayCont( a ) ) ;
 	
 #ifdef LOOKUP_DEBUG
- Rprintf( "  %d known classes\n", LENGTH(res) ); 
+ Rprintf( "    %d known classes\n", LENGTH(res) ); 
 #endif
 	
 	UNPROTECT(1); 
@@ -201,7 +185,7 @@ HIDE SEXP getKnownClasses( R_ObjectTable *tb ){
 
 HIDE SEXP classNameLookup( R_ObjectTable *tb, const char * const name ){
 #ifdef LOOKUP_DEBUG
- Rprintf( "<classNameLookup>\n" ); 
+ Rprintf( " >> classNameLookup\n" ); 
 #endif
 	JNIEnv *env=getJNIEnv();
 	
@@ -209,13 +193,7 @@ HIDE SEXP classNameLookup( R_ObjectTable *tb, const char * const name ){
 
 	jobject clazz = newString(env, name ) ;
 	jstring s ; /* Class */
-	jmethodID mid = (*env)->GetMethodID(env, rj_RJavaImport_Class, 
-		"lookup", "(Ljava/lang/String;)Ljava/lang/Class;");
-#ifdef LOOKUP_DEBUG
- Rprintf( "  RJavaImport.lookup [%d]\n", mid ); 
-#endif
-
-	s = (jstring) (*env)->CallObjectMethod(env, importer, mid, clazz ) ;
+	s = (jstring) (*env)->CallObjectMethod(env, importer, mid_RJavaImport_lookup, clazz ) ;
 	SEXP res ;
 	int np ;
 	if( !s ){
@@ -238,7 +216,7 @@ HIDE SEXP classNameLookup( R_ObjectTable *tb, const char * const name ){
 
 HIDE Rboolean classNameLookupExists(R_ObjectTable *tb, const char * const name ){
 #ifdef LOOKUP_DEBUG
- Rprintf( "<classNameLookupExists>\n" ); 
+ Rprintf( " classNameLookupExists\n" ); 
 #endif
 	
 	JNIEnv *env=getJNIEnv();
@@ -247,26 +225,15 @@ HIDE Rboolean classNameLookupExists(R_ObjectTable *tb, const char * const name )
 	jobject clazz = newString(env, name ) ;
 	
 	jboolean s ; /* Class */
-	
-	jmethodID mid = (*env)->GetMethodID(env, rj_RJavaImport_Class, 
-		"exists", "(Ljava/lang/String;)Z");
-
-#ifdef LOOKUP_DEBUG
- Rprintf( "  RJavaImport.exists [%d]\n", mid ); 
-#endif
-	
-	s = (jboolean) (*env)->CallBooleanMethod(env, importer, mid , clazz ) ;
+	s = (jboolean) (*env)->CallBooleanMethod(env, importer, 
+		mid_RJavaImport_exists , clazz ) ;
 	Rboolean res = (s) ? TRUE : FALSE; 
 
 #ifdef LOOKUP_DEBUG
- Rprintf( "  exists( %s ) = %d \n", name, res ); 
+ Rprintf( "    exists( %s ) = %d \n", name, res ); 
 #endif
 	
 	releaseObject(env, clazz);
-    
-#ifdef LOOKUP_DEBUG
- Rprintf( "</classNameLookupExists>\n" ); 
-#endif
     return res ;
 }
 

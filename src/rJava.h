@@ -137,7 +137,6 @@ extern jclass javaObjectClass;
 extern jclass javaClassClass;
 extern jclass javaFieldClass;
 extern jclass rj_RJavaTools_Class ;
-extern jclass rj_RJavaImport_Class ;
 
 extern jmethodID mid_forName;
 extern jmethodID mid_getName;
@@ -147,6 +146,11 @@ extern jmethodID mid_getType;
 extern jmethodID mid_getField;
 extern jmethodID mid_rj_getSimpleClassNames;
 
+/* RJavaImport */
+extern jclass rj_RJavaImport_Class ;
+extern jmethodID mid_RJavaImport_getKnownClasses ;
+extern jmethodID mid_RJavaImport_lookup ;
+extern jmethodID mid_RJavaImport_exists ;
 
 HIDE void init_rJava(void);
 

@@ -23,8 +23,12 @@ jmethodID mid_getField;
 
 /* internal classes and methods */
 jclass rj_RJavaTools_Class = (jclass)0;
-jclass rj_RJavaImport_Class = (jclass)0;
 jmethodID mid_rj_getSimpleClassNames = (jmethodID)0 ;
+
+jclass rj_RJavaImport_Class = (jclass)0;
+jmethodID mid_RJavaImport_getKnownClasses = (jmethodID)0 ;
+jmethodID mid_RJavaImport_lookup = (jmethodID)0 ;
+jmethodID mid_RJavaImport_exists = (jmethodID)0 ;
 
 int rJava_initialized = 0;
 
@@ -359,6 +363,17 @@ REPC SEXP initRJavaTools(){
 		"getSimpleClassNames", "(Ljava/lang/Object;Z)[Ljava/lang/String;");
 	if (!mid_rj_getSimpleClassNames) error("cannot obtain RJavaTools.getDimpleClassNames method ID");
 	
+	mid_RJavaImport_getKnownClasses = (*env)->GetMethodID(env, rj_RJavaImport_Class, 
+		"getKnownClasses", "()[Ljava/lang/String;");
+	if (!mid_RJavaImport_getKnownClasses) error("cannot obtain RJavaImport.getKnownClasses method ID");
+	
+	mid_RJavaImport_lookup = (*env)->GetMethodID(env, rj_RJavaImport_Class, 
+		"lookup", "(Ljava/lang/String;)Ljava/lang/Class;");
+	if( !mid_RJavaImport_lookup) error("cannot obtain RJavaImport.lookup method ID");
+	
+	mid_RJavaImport_exists = (*env)->GetMethodID(env, rj_RJavaImport_Class, 
+		"exists", "(Ljava/lang/String;)Z");
+	if( ! mid_RJavaImport_exists ) error("cannot obtain RJavaImport.exists method ID");
 	// maybe add RJavaArrayTools, ...
 	
 	return R_NilValue; 
