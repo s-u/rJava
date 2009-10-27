@@ -655,5 +655,22 @@ public class RJavaTools {
 		
 	}
 	
+	/**
+	 * @param cl class 
+	 * @param field name of the field 
+	 * 
+	 * @return the class name of the field of the class (or null) 
+	 * if the class does not have the given field)
+	 */
+	public static String getFieldTypeName( Class cl, String field){
+		String res = null ; 
+		try{
+			res = cl.getField( field ).getType().getName() ;
+		} catch( NoSuchFieldException e){
+			/* just return null */
+			res = null ;
+		}
+		return res ;
+	}
 	
 }

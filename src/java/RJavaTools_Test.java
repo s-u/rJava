@@ -98,7 +98,11 @@ public class RJavaTools_Test {
 			System.out.println( "Testing RJavaTools.invokeMethod" ) ;
 			invokemethod() ;
 			success() ;
-		
+			
+			System.out.println( "Testing RJavaTools.getFieldTypeName" ) ;
+			getfieldtypename(); 
+			success() ;
+			
 			System.out.println( "Testing RJavaTools.getMethod" ) ;
 			System.out.println( "NOT YET AVAILABLE" ) ;
 			
@@ -736,6 +740,16 @@ public class RJavaTools_Test {
 		}
 		System.out.println( " : ok " ) ;
 		// }}}
+	}
+	// }}}
+	
+	// {{{ @Test getFieldTypeName
+	private static void getfieldtypename() throws TestException{
+		System.out.print( "  * getFieldTypeName( Point, x )" ) ;
+		String s = RJavaTools.getFieldTypeName( Point.class, "x" ) ;
+		if( !s.equals("int") ){
+			throw new TestException("getFieldTypeName( Point, x ) != int") ;
+		}
 	}
 	// }}}
 	

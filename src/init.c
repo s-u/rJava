@@ -24,6 +24,8 @@ jmethodID mid_getField;
 /* internal classes and methods */
 jclass rj_RJavaTools_Class = (jclass)0;
 jmethodID mid_rj_getSimpleClassNames = (jmethodID)0 ;
+jmethodID mid_RJavaTools_getFieldTypeName = (jmethodID)0 ;
+
 
 jclass rj_RJavaImport_Class = (jclass)0;
 jmethodID mid_RJavaImport_getKnownClasses = (jmethodID)0 ;
@@ -359,6 +361,11 @@ REPC SEXP initRJavaTools(){
 	
 	
 	/* methods */
+	
+	mid_RJavaTools_getFieldTypeName  = (*env)->GetStaticMethodID(env, rj_RJavaTools_Class, 
+		"getFieldTypeName", "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/String;");
+	if (!mid_RJavaTools_getFieldTypeName) error("cannot obtain RJavaTools.getFieldTypeName method ID");
+	
 	mid_rj_getSimpleClassNames  = (*env)->GetStaticMethodID(env, rj_RJavaTools_Class, 
 		"getSimpleClassNames", "(Ljava/lang/Object;Z)[Ljava/lang/String;");
 	if (!mid_rj_getSimpleClassNames) error("cannot obtain RJavaTools.getDimpleClassNames method ID");

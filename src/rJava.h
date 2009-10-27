@@ -146,6 +146,8 @@ extern jmethodID mid_getType;
 extern jmethodID mid_getField;
 extern jmethodID mid_rj_getSimpleClassNames;
 
+extern jmethodID mid_RJavaTools_getFieldTypeName;
+
 /* RJavaImport */
 extern jclass rj_RJavaImport_Class ;
 extern jmethodID mid_RJavaImport_getKnownClasses ;
