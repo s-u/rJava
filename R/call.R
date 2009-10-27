@@ -66,10 +66,10 @@
     return(.Call("RgetStringArrayCont", jobj, PACKAGE="rJava"))
   else if (substr(sig,1,2)=="[L")
     return(lapply(.Call("RgetObjectArrayCont", jobj, PACKAGE="rJava"),
-                  function(x) new("jobjRef", jobj=x, jclass=substr(sig,3,nchar(sig)-1)) ))
+                  function(x) new("jobjRef", jobj=x, jclass=substr(sig, 3, nchar(sig)-1)) ))
   else if (substr(sig,1,2)=="[[")
     return(lapply(.Call("RgetObjectArrayCont", jobj, PACKAGE="rJava"),
-                  function(x) newArray( jobj = x, signature = substr(sig,2,nchar(sig))) ) )
+                  function(x) newArray(jobj=x, signature=substr(sig, 2, 999), simplify=FALSE)))
   # if we don't know how to evaluate this, issue a warning and return the jarrayRef
   if (!silent)
     warning(paste("I don't know how to evaluate an array with signature",sig,". Returning a reference."))
@@ -371,12 +371,8 @@ is.jnull <- function(x) {
   }
   r <- .Call("RgetField", o, sig, as.character(name), as.integer(true.class), PACKAGE="rJava")
   if (inherits(r, "jobjRef")) {
-    if ( isJavaArraySignature(r@jclass) ) {
-    	if (convert) {
-    		r <- .jevalArray(r, rawJNIRefSignature=r@jclass)
-        } else {
-        	r <- newArray( r )
-        }
+    if (isJavaArraySignature(r@jclass)) {
+    	r <- if (convert) .jevalArray(r, rawJNIRefSignature=r@jclass) else newArray(r, FALSE)
     }
     if (convert && inherits(r, "jobjRef")) {
       if (r@jclass == "java/lang/String")
