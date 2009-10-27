@@ -1,7 +1,7 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.8-0	(under development)
+0.8-0	2009-10-27
     o	new exception handling was introduced:
 
 	Java exceptions are mapped to Exception conditions which can
@@ -92,6 +92,7 @@
              
              This feature is currently __very__ experimental and is as
              dangerous as any other use of attach
+
 
 0.7-1	(never released)
     o	[RF] added .J high-level java constructor (based on reflection 
