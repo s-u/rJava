@@ -397,7 +397,17 @@ HIDE jarray getSimpleClassNames( jobject o, jboolean addConditionClasses ){
  * structure it as a STRSXP vector
  */ 
 HIDE SEXP getSimpleClassNames_asSEXP( jobject o, jboolean addConditionClasses ){
-	return getStringArrayCont( getSimpleClassNames( o, addConditionClasses ) ); 
+	if( !o ){
+		SEXP res = PROTECT( allocVector( STRSXP, 4) ) ;
+		SET_STRING_ELT( res, 0, mkChar( "Exception" ) ) ; 
+		SET_STRING_ELT( res, 1, mkChar( "Throwable" ) ) ; 
+		SET_STRING_ELT( res, 2, mkChar( "error" ) ) ; 
+		SET_STRING_ELT( res, 3, mkChar( "condition" ) ) ; 
+		UNPROTECT(1);
+		return res ;
+	} else{
+		return getStringArrayCont( getSimpleClassNames( o, addConditionClasses ) );
+	}
 }
 
 /**
