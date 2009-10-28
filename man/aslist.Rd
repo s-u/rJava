@@ -38,6 +38,7 @@ argument of \code{\link{lapply}}
 \examples{
 \dontshow{.jinit()}
 # lapplying over a java array
+\dontrun{ % because of AWT problem on macs
 a <- .jarray( list( 
 	.jnew( "java/awt/Point", 10L, 10L ), 
 	.jnew( "java/awt/Point", 30L, 30L )
@@ -47,7 +48,7 @@ lapply( a, function(point){
 		(x + y ) ^ 2
 	} )
 } )
-
+}
 # lapply over a Vector (implements Iterable)
 v <- .jnew("java/util/Vector")
 v$add( "foo" )

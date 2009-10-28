@@ -70,7 +70,10 @@ Double$parseDouble( "10.2")
 strings <- .jarray( c("string", "array") )
 # this uses the JList( Object[] ) constructor 
 # even though the "strings" parameter is a String[] 
+\dontrun{ 
+% because of this : Cant start the AWT because Java was started on the first thread
 l <- new( J("javax.swing.JList"), strings)
+}
 
 }
 \keyword{interface}
