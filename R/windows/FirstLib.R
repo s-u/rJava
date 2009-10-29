@@ -9,20 +9,20 @@ function(libname, pkgname) {
 	javahome <- NULL
 	library.dynam("WinRegistry", pkgname, libname)
 	key<-"Software\\JavaSoft\\Java Runtime Environment"
-	jrever <- .Call("RegGetStrValue",c(key,"CurrentVersion"), PACKAGE = "rJava")
+	jrever <- .Call("RegGetStrValue",c(key,"CurrentVersion"))
 	if (is.null(jrever)) { # try JDK if JRE fails
 	    key<-"Software\\JavaSoft\\Java Development Kit"
-	    jrever <- .Call("RegGetStrValue",c(key,"CurrentVersion"), PACKAGE = "rJava" )
+	    jrever <- .Call("RegGetStrValue",c(key,"CurrentVersion") )
 	}
 	if (!is.null(jrever)) {
 	    dispver <- jrever
 	    key<-paste(key,jrever,sep="\\")
-	    micro <- .Call("RegGetStrValue", c(key,"MicroVersion"), PACKAGE = "rJava")
+	    micro <- .Call("RegGetStrValue", c(key,"MicroVersion"))
 	    if (!is.null(micro)) dispver <- paste(dispver,micro,sep=".")
 	    #cat("using Java Runtime version",dispver,"\n")
-	    javahome <- .Call("RegGetStrValue",c(key,"JavaHome"), PACKAGE = "rJava")
+	    javahome <- .Call("RegGetStrValue",c(key,"JavaHome"))
 	    if (!is.null(javahome)) { # ok, let's try to get the real lib path
-		p <- .Call("RegGetStrValue",c(key,"RuntimeLib"), PACKAGE = "rJava")
+		p <- .Call("RegGetStrValue",c(key,"RuntimeLib"))
 		if (!is.null(p)) {
 		    # the following assumes that the entry is of the form
 		    # ...\jvm.dll - this should be ok since if it's not,
