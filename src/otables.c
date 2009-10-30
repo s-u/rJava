@@ -69,6 +69,7 @@ int rJavaLookupTable_remove(const char * const name,  R_ObjectTable *tb){
  Rprintf( "  >> rJavaLookupTable_remove( %s) \n", name ); 
 #endif
 	error( "cannot remove from java package" ) ;
+	return 0;
 }
 
 /**
@@ -94,6 +95,7 @@ HIDE SEXP rJavaLookupTable_assign(const char * const name, SEXP value, R_ObjectT
  Rprintf( "  >> rJavaLookupTable_assign( %s ) \n", name ); 
 #endif
     error("can't assign to java package lookup");
+    return R_NilValue;
 }
 
 /**
