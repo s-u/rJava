@@ -1,6 +1,8 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.8-1	(under development)
+
 0.8-0	2009-10-27
     o	new exception handling was introduced:
 
