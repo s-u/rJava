@@ -2,6 +2,9 @@
 --------------------------
 
 0.8-1	(under development)
+    o	fixed exception handling on Windows: the access to "call"
+	was off for Windows builds causing incorrect "call" entries
+	in exceptions which broke when encountered in try().
 
 0.8-0	2009-10-27
     o	new exception handling was introduced:

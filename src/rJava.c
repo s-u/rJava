@@ -15,6 +15,25 @@ JNIEnv *eenv;
 #if ( R_VERSION >= R_Version(1, 7, 0) )
 #include <setjmp.h>
 
+/* stuff we need to pull for Windows... */
+#ifdef WIN32
+/* this is from gnuwin32/fixed/h/psignal.h */
+#ifndef _SIGSET_T_
+#define _SIGSET_T_
+typedef int sigset_t;
+#endif  /* Not _SIGSET_T_ */
+typedef struct
+{    
+  jmp_buf jmpbuf;     /* Calling environment.  */  
+  int mask_was_saved;       /* Saved the signal mask?  */                   
+  sigset_t saved_mask;      /* Saved signal mask.  */                       
+} sigjmp_buf[1];
+/* we need to set HAVE_POSIX_SETJMP since we don't have config.h on Win */
+#ifndef HAVE_POSIX_SETJMP
+#define HAVE_POSIX_SETJMP
+#endif
+#endif
+
 #ifdef HAVE_POSIX_SETJMP
 #define JMP_BUF sigjmp_buf
 #else
