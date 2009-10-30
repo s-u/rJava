@@ -21,13 +21,12 @@
 
 \examples{
 \dontshow{.jinit()}
-\dontrun{%because of AWT problem on macs, need to find a non AWT example
 p <- .jnew( "java.awt.Point" )
 a <- rep( p, 10 )
 
 stopifnot( dim(a) == c(10L ) )
 a[[1]]$move( 10L, 50L )
 stopifnot( a[[2]]$getX() == 0.0 )
-}
+
 }
 

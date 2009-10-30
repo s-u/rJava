@@ -142,8 +142,7 @@ d1 >= d3
 d1 > d2
 
 # cannot compare a Double and a String
-# this next line fails on windows for some reason
-# try( d1 < "foo" )
+try( d1 < "foo" )
 
 # but can compare a Double and an Integer
 d1 < 10L
@@ -154,7 +153,7 @@ d1 < 10L
 		d1 <= d3      ,
 		d1 >= d3      ,
 		! (d1 > d2 )  , 
-		# inherits( try( d1 < "foo", silent = TRUE ), "try-error" ), 
+		inherits( try( d1 < "foo", silent = TRUE ), "try-error" ), 
 		d1 < 10L )
 }
 

@@ -12,7 +12,7 @@ function(libname, pkgname) {
 	jrever <- .Call("RegGetStrValue",c(key,"CurrentVersion"))
 	if (is.null(jrever)) { # try JDK if JRE fails
 	    key<-"Software\\JavaSoft\\Java Development Kit"
-	    jrever <- .Call("RegGetStrValue",c(key,"CurrentVersion") )
+	    jrever <- .Call("RegGetStrValue",c(key,"CurrentVersion"))
 	}
 	if (!is.null(jrever)) {
 	    dispver <- jrever
