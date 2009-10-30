@@ -567,7 +567,8 @@ setMethod( "duplicated", "jarrayRef", function( x, incomparables = FALSE, ...){
 # }}}
 
 # {{{ anyDuplicated
-if( !exists( "anyDuplicated", asNamespace("base") ) ){
+.base.has.anyDuplicated <- exists("anyDuplicated", asNamespace("base"))
+if (!.base.has.anyDuplicated) {
 	anyDuplicated <- function(x, incomparables = FALSE, ...) UseMethod("anyDuplicated")
 }
 setGeneric( "anyDuplicated" )

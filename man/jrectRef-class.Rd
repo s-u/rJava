@@ -227,14 +227,14 @@ stopifnot( dim( xu ) == 1L )
 x <- .jarray( rep( 1:2, each = 5 ) )
 xd <- duplicated( x )
 stopifnot( xd == rep( c( FALSE, TRUE, TRUE, TRUE, TRUE), 2L ) ) 
-stopifnot( anyDuplicated( x ) == 2L )
+if (rJava:::.base.has.anyDuplicated) stopifnot( anyDuplicated( x ) == 2L )
 
 p1 <- .jnew( "java/awt/Point" )
 p2 <- .jnew( "java/awt/Point" )
 x <- .jarray( list( p1, p2 ) )
 xd <- duplicated( x )
 stopifnot( xd == c( FALSE, TRUE) )
-stopifnot( anyDuplicated( x ) == 2L )
+if (rJava:::.base.has.anyDuplicated) stopifnot( anyDuplicated( x ) == 2L )
 
 # test sort, rev
 d1 <- .jnew("java/lang/Double", 0)

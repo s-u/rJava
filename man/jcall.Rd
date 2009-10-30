@@ -9,7 +9,7 @@
 \usage{
 .jcall(obj, returnSig = "V", method, ..., evalArray = TRUE, 
     evalString = TRUE, check = TRUE, interface = "RcallMethod", 
-    use.true.class = TRUE)
+    use.true.class = FALSE)
 }
 \arguments{
   \item{obj}{Java object (\code{jobjRef} as returned by

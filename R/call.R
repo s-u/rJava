@@ -78,7 +78,7 @@
 
 .jcall <- function(obj, returnSig="V", method, ..., evalArray=TRUE, 
 	evalString=TRUE, check=TRUE, interface="RcallMethod", 
-	use.true.class = TRUE) {
+	use.true.class = FALSE) {
   if (check) .jcheck()
   r<-NULL
   # S is a shortcut for Ljava/lang/String;
