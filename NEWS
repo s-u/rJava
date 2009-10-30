@@ -1,13 +1,13 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.8-1	(under development)
+0.8-1	2009-10-30
     o	fixed exception handling on Windows: the access to "call"
 	was off for Windows builds causing incorrect "call" entries
 	in exceptions which broke when encountered in try().
 
     o	fixed .jcall() which had inadvertently the default for
-	use.true.class argument set to TRUE. That was considered
+	use.true.class argument set to TRUE. That is considered
 	a bug since it breaks the original behavior and is against the
 	idea of .jcall being the low-level interface.
 
