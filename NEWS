@@ -1,6 +1,8 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.8-2	(under development)
+
 0.8-1	2009-10-30
     o	fixed exception handling on Windows: the access to "call"
 	was off for Windows builds causing incorrect "call" entries
