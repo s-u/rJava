@@ -68,11 +68,6 @@ public class RJavaClassLoader extends URLClassLoader {
 		 */ 
 		long lastModStamp;
 		
-		/**
-		 * cache (seems only used for jar files, maybe this should be a subclass)
-		 */
-		public Object cache;
-
 		/** 
 		 * Constructor. Modifies the path so that 
 		 * the proper path separator is used (most useful on windows)
@@ -98,7 +93,101 @@ public class RJavaClassLoader extends URLClassLoader {
 		}
 	}
 	// }}}
+	
+	// {{{ UnixJarFile
+	/**
+	 * Specialization of UnixFile that deals with jar files
+	 */
+	class UnixJarFile extends UnixFile {
+		
+		/**
+		 * The cached jar file
+		 */
+		private ZipFile zfile ;
+		
+		/**
+		 * common prefix for all URLs within this jar file
+		 */
+		private String urlPrefix ;
+		
+		public UnixJarFile( String filename ){
+			super( filename );
+		}
+		
+		/* @Override */
+		public void update(){
+			try {
+				if (zfile != null){
+					zfile.close();
+				}
+				zfile = new ZipFile( this ) ;
+			} catch (Exception tryCloseX) {}
 
+			/* time stamp */
+			super.update( ) ; 
+		}
+		
+		/**
+		 * Get an input stream for a resource contained in the jar file
+		 * 
+		 * @param name file name of the resource within the jar file
+		 * @return an input stream representing the resouce if it exists or null
+		 */ 
+		public InputStream getResourceAsStream( String name ){
+			
+			if (zfile==null || hasChanged()) {
+				update(); 
+			}
+			try {
+				if (zfile == null) return null;
+				ZipEntry e = zfile.getEntry(name);
+				if (e != null)
+					return zfile.getInputStream(e);
+			} catch(Exception e) {
+				if (verbose) System.err.println("RJavaClassLoader$UnixJarFile: exception: "+e.getMessage());
+			}
+			return null;
+		}
+
+				
+		public URL getResource(String name ){
+			if( zfile == null  || zfile.getEntry( name ) == null ){
+				return null ;
+			}
+			
+			URL u = null ; 
+			if( urlPrefix == null ){
+				try{
+					urlPrefix = "jar:" + toURL().toString() + "!" ;
+				} catch( java.net.MalformedURLException ex){
+				} catch( java.io.IOException ex){
+				}
+			}
+			
+			try{
+				u = new URL( urlPrefix + name ) ;
+			} catch( java.net.MalformedURLException ex ){
+				/* not to worry */
+			}
+			return u ;
+		}
+		
+	}
+	// }}}
+	
+	// {{{ UnixDirectory class
+	/**
+	 * Specialization of UnixFile representing a directory
+	 */ 
+	/* it is not really a specialization but makes possible to dispatch on instanceof*/
+	class UnixDirectory extends UnixFile {
+		public UnixDirectory( String dirname ){
+			super( dirname ) ;
+		}
+	}
+	// }}}	
+	
+	
 	// {{{ getPrimaryLoader
 	/**
 	 * Returns the singleton instance of RJavaClassLoader
@@ -128,7 +217,7 @@ public class RJavaClassLoader extends URLClassLoader {
 		libMap = new HashMap/*<String,UnixFile>*/();
 		
 		classPath = new Vector/*<UnixFile>*/();
-		classPath.add(new UnixFile(path+"/java"));
+		classPath.add(new UnixDirectory(path+"/java"));
 		
 		rJavaPath = path;
 		rJavaLibPath = libpath;
@@ -167,56 +256,6 @@ public class RJavaClassLoader extends URLClassLoader {
 	}
 	// }}}
 
-	// {{{ findClassInJAR
-	InputStream findClassInJAR(UnixFile jar, String cl) {
-		String cfn = classNameToFile(cl)+".class";
-
-		if (jar.cache==null || jar.hasChanged()) {
-			try {
-				if (jar.cache!=null) ((ZipFile)jar.cache).close();
-			} catch (Exception tryCloseX) {}
-			jar.update();
-			try {
-				jar.cache = new ZipFile(jar);
-			} catch (Exception zipCacheX) {}
-			if (verbose) System.out.println("RJavaClassLoader: creating cache for "+jar);
-		}
-		try {
-			ZipFile zf = (ZipFile) jar.cache;
-			if (zf == null) return null;
-			ZipEntry e = zf.getEntry(cfn);
-			if (e != null)
-				return zf.getInputStream(e);
-		} catch(Exception e) {
-			if (verbose) System.err.println("findClassInJAR: exception: "+e.getMessage());
-		}
-		return null;
-	}
-	// }}}
-
-	// {{{ findInJARURL
-	URL findInJARURL(String jar, String fn) {
-		try {
-			ZipInputStream ins = new ZipInputStream(new FileInputStream(jar));
-
-			ZipEntry e;
-			while ((e=ins.getNextEntry())!=null) {
-				if (e.getName().equals(fn)) {
-					ins.close();
-					try {
-						return new URL("jar:"+(new UnixFile(jar)).toURL().toString()+"!"+fn);
-					} catch (Exception ex) {
-					}
-					break;
-				}
-			}
-		} catch(Exception e) {
-			if (verbose) System.err.println("findInJAR: exception: "+e.getMessage());
-		}
-		return null;
-	}
-	// }}}
-
 	// {{{ findClass
 	protected Class findClass(String name) throws ClassNotFoundException {
 		Class cl = null;
@@ -234,7 +273,7 @@ public class RJavaClassLoader extends URLClassLoader {
 			} catch (Exception fnf) {
 			}	    
 		}
-		if (verbose) System.out.println("RJavaClassLoaaer.findClass(\""+name+"\")");
+		if (verbose) System.out.println("RJavaClassLoader.findClass(\""+name+"\")");
 		// }}}
 
 		// {{{ iterate through the elements of the class path
@@ -247,23 +286,31 @@ public class RJavaClassLoader extends URLClassLoader {
 			try {
 				ins = null;
 				/* a file - assume it is a jar file */
-				if (cp.isFile())
-					ins = findClassInJAR(cp, name);
-				
-				/* a directory */
-				if (ins == null && cp.isDirectory()) {
+				if (cp instanceof UnixJarFile){
+					ins = ((UnixJarFile)cp).getResourceAsStream( classNameToFile(name) + ".class" ) ;
+				} else if ( cp instanceof UnixDirectory ){
 					UnixFile class_f = new UnixFile(cp.getPath()+"/"+classNameToFile(name)+".class");
 					if (class_f.isFile() ) {
 						ins = new FileInputStream(class_f);
 					}
 				}
 				
+				/* some comments on the following :
+					
+				   we could call ZipEntry.getSize in case of a jar file to 
+				   find out the size of the byte[] directly
+				   
+				   also ByteBuffer seems more efficient, but the ByteBuffer class
+				   is java >= 1.4 and the defineClass method that uses the class
+				   is java >= 1.5
+				*/
+				
 				if (ins != null) {
 					int al = 128*1024;
 					byte fc[] = new byte[al];
 					int n = ins.read(fc);
 					int rp = n;
-					// System.out.println("  loading class file, initial n = "+n);
+					if( verbose ) System.out.println("  loading class file, initial n = "+n);
 					while (n > 0) {
 						if (rp == al) {
 							int nexa = al*2;
@@ -274,7 +321,7 @@ public class RJavaClassLoader extends URLClassLoader {
 							al = nexa;
 						}
 						n = ins.read(fc, rp, fc.length-rp);
-						// System.out.println("  next n = "+n+" (rp="+rp+", al="+al+")");
+						if( verbose ) System.out.println("  next n = "+n+" (rp="+rp+", al="+al+")");
 						if (n>0) rp += n;
 					}
 					ins.close();
@@ -290,7 +337,8 @@ public class RJavaClassLoader extends URLClassLoader {
 		}
 		// }}}
 		
-		// System.out.println("=== giving up");
+		// giving up
+		if( verbose ) System.out.println("    >> ClassNotFoundException ");
 		if (cl == null) {
 			throw (new ClassNotFoundException());
 		}
@@ -316,22 +364,20 @@ public class RJavaClassLoader extends URLClassLoader {
 		// }}}
 		
 		// {{{ iterate through the classpath
+		if (verbose) System.out.println(" - resource not found with URL loader, trying alternative");
 		Enumeration/*<UnixFile>*/ e = classPath.elements() ;
 		while( e.hasMoreElements()) {
 			UnixFile cp = (UnixFile) e.nextElement();
 
 			try {
 				/* is a file - assume it is a jar file */
-				if (cp.isFile()) {
-					URL u = findInJARURL(cp.getPath(), name);
+				if (cp instanceof UnixJarFile ) {
+					URL u = ( (UnixJarFile)cp ).getResource( name ) ;
 					if (u != null) {
 						if (verbose) System.out.println(" - found in a JAR file, URL "+u);
 						return u;
 					}
-				}
-				
-				/* directory */
-				if (cp.isDirectory()) {
+				} else if(cp instanceof UnixDirectory ) {
 					UnixFile res_f = new UnixFile(cp.getPath()+"/"+name);
 					if (res_f.isFile()) {
 						if (verbose) System.out.println(" - find as a file: "+res_f);
@@ -358,20 +404,27 @@ public class RJavaClassLoader extends URLClassLoader {
 	 * adds an entry to the class path
 	 */ 
 	public void addClassPath(String cp) {
+		UnixFile f = new UnixFile(cp);
+		
 		// use the URLClassLoader
 		if (useSystem) {
 			try {
-				addURL((new UnixFile(cp)).toURL());
+				addURL(f.toURL());
 				//return; // we need to add it anyway
 			} catch (Exception ufe) {
 			}
 		}
 		
-		UnixFile f = new UnixFile(cp);
-		if (!classPath.contains(f)) {
-			classPath.add(f);
+		UnixFile g = null ;
+		if( f.isFile() && f.getName().endsWith(".jar") ){
+			g = new UnixJarFile(cp) ;
+		} else if( f.isDirectory() ){
+			g = new UnixDirectory(cp) ;
+		}
+		
+		if (g != null && !classPath.contains(g)) {
 			System.setProperty("java.class.path",
-					System.getProperty("java.class.path")+File.pathSeparator+f.getPath());
+					System.getProperty("java.class.path")+File.pathSeparator+g.getPath());
 		}
 	}
 	
