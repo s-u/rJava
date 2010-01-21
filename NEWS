@@ -2,6 +2,10 @@
 --------------------------
 
 0.8-2	(under development)
+    o	faster class loader implementation
+
+    o	added support for 64-bit Windows (thanks to Brian Ripley)
+
 
 0.8-1	2009-10-30
     o	fixed exception handling on Windows: the access to "call"
