@@ -22,10 +22,6 @@ echo "  JAVA_HOME=$JAVA_HOME"
 
 echo "JAVA_HOME:=$JAVA_HOME" > src/Makevars.java
 
-echo "Install WinRegistry"
-mkdir -p inst/libs
-cp src/jvm-w32/WinRegistry.dll inst/libs
-
 if [ -e jri/configure.win ]; then
     echo "=== Building JRI ==="
     CONFIGURED=1
