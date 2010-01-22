@@ -1,6 +1,8 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.8-3	(under development)
+
 0.8-2	2010-01-22
     o	faster class loader implementation
 
