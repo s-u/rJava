@@ -1,7 +1,7 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.8-2	(under development)
+0.8-2	2010-01-22
     o	faster class loader implementation
 
     o	added support for 64-bit Windows (thanks to Brian Ripley)
