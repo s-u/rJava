@@ -21,7 +21,7 @@ REPC SEXP PushToREXP(SEXP clname, SEXP eng, SEXP engCl, SEXP robj) {
   cName = CHAR(STRING_ELT(clname,0));
   snprintf(sig,127,"(L%s;J)V",CHAR(STRING_ELT(engCl,0)));
   jpar[0].l = (jobject)EXTPTR_PTR(eng);
-  jpar[1].j = (jlong) (unsigned long) robj;
+  jpar[1].j = (jlong) robj;
   o = createObject(env, cName, sig, jpar, 1);
   if (!o) error("Unable to create Java object");
   return j2SEXP(env, o, 1);
@@ -34,13 +34,13 @@ REPC SEXP RReleaseREXP(SEXP ptr) {
   if (TYPEOF(ptr)==EXTPTRSXP) error("invalid object");
   o = (jobject)EXTPTR_PTR(ptr);
   {
-    JNIEnv *env=getJNIEnv();
+    JNIEnv *env = getJNIEnv();
     jclass cls = (*env)->GetObjectClass(env, o);
     if (cls) {
       jfieldID fid=(*env)->GetFieldID(env,cls,"xp","J");
       if (fid) {
-	jlong r=(*env)->GetLongField(env, o, fid);
-	SEXP x = (SEXP)(unsigned long)r;
+	jlong r = (*env)->GetLongField(env, o, fid);
+	SEXP x = (SEXP) r;
 	if (x) R_ReleaseObject(x);
       }
     }

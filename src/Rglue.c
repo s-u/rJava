@@ -841,24 +841,11 @@ static SEXP new_jrectRef(JNIEnv *env, jobject a, const char *sig, SEXP dim ) {
   SET_SLOT(oo, install("jsig"), mkString(sig));
   SET_SLOT(oo, install("dimension"), dim);
   
-  UNPROTECT(1); // oo
+  UNPROTECT(1); /* oo */
   return oo;
 }
 
-/**
- * Creates a rectangular array reference of dimension 1
- *
- * @param length the number of objects in the array
- */
-static SEXP new_jrectRef1(JNIEnv *env, jobject a, const char *sig, int length ) {
-	SEXP dim = allocVector( INTSXP, 1) ;
-	PROTECT(dim); 
-	INTEGER(dim)[0] = length ;
-	UNPROTECT(1); // dim 
-	return new_jrectRef( env, a, sig, dim ) ;
-}
-
-// this does not take care of multi dimensional arrays properly
+/* this does not take care of multi dimensional arrays properly */
 
 /**
  * Creates a one dimensionnal java array
