@@ -81,6 +81,12 @@ static void JNICALL exit_hook(int status) {
   exit(status);
 }
 
+/* in reality WIN64 implies WIN32 but to make sure ... */
+#if defined(_WIN64) || defined(_WIN32)
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 static int initJVM(const char *user_classpath, int opts, char **optv, int hooks) {
   int total_num_properties, propNum = 0;
   jint res;
@@ -137,6 +143,11 @@ static int initJVM(const char *user_classpath, int opts, char **optv, int hooks)
     error("Cannot create Java virtual machine (%d)", res);
   if (!eenv)
     error("Cannot obtain JVM environemnt");
+
+#if defined(_WIN64) || defined(_WIN32)
+  _setmode(0, _O_TEXT);
+#endif
+
   return 0;
 }
 
