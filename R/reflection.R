@@ -43,7 +43,7 @@
 # this is used for internal purposes only, in particular 
 # it does not dispatch arrays to jrectRef
 ._java_valid_object <- function(a) {
-  if (inherits(a, "jobjRef") || inherits(a, "jarrayRef") || inherits(a, "jrectRef") ) a 
+  if (is(a, "jobjRef")) a 
   else if (is.null(a)) .jnull() else {
     cm <- match(class(a)[1], names(.class.to.jclass))
     if (!any(is.na(cm))) { 
@@ -57,23 +57,24 @@
     }
   }
 }
-                       
+
 ### creates a list of valid java parameters, used in both .J and .jrcall
-._java_valid_objects_list <- function( ... ){
+._java_valid_objects_list <- function( ... )
   lapply(list(...), ._java_valid_object )
-}
+
 
 ### returns a list of Class objects
 ### this is used in both .J and .jrcall
-._isPrimitiveReference <- function( x) {
-	isTRUE( attr( x, "primitive") )
-}
+._isPrimitiveReference <- function(x) 
+  isTRUE(attr(x, "primitive"))
+
 ._java_class <- function( x ){
-	if (._isPrimitiveReference(x)) .jfield(x, "Ljava/lang/Class;", "TYPE") else .jcall(x, "Ljava/lang/Class;", "getClass")
+  if (is.jnull(x)) { if (is(x,"jobjRef")) .jfindClass(x@jclass) else .jclassObject } else {
+    if (._isPrimitiveReference(x)) .jfield(x, "Ljava/lang/Class;", "TYPE") else .jcall(x, "Ljava/lang/Class;", "getClass")
+  }
 }
-._java_class_list <- function( objects_list ){
+._java_class_list <- function( objects_list )
 	lapply(objects_list, ._java_class )
-}
                        
 ### reflected call - this high-level call uses reflection to call a method
 ### it is much less efficient than .jcall but doesn't require return type

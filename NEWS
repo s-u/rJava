@@ -4,6 +4,9 @@
 0.8-3	(under development)
     o	set text mode for stdin on Windows (thanks to Brian Ripley)
 
+    o	fix support of NULL arguments in new(J("SomeClass"), ...)
+
+
 0.8-2	2010-01-22
     o	faster class loader implementation
 
