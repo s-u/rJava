@@ -340,6 +340,14 @@ public class RJavaTools {
 		return o;                                 
 	}
 	
+	static boolean[] arg_is_null(Object[] args){
+		if( args == null ) return null ;
+		boolean[] is_null = new boolean[args.length];
+		for( int i=0; i<args.length; i++) {
+			is_null[i] = ( args[i] == null ) ;
+		}
+		return is_null ;
+	}
 	
 	/**
 	 * Invoke a method of a given class
@@ -347,7 +355,8 @@ public class RJavaTools {
 	 * then invokes the method
 	 */
 	public static Object invokeMethod( Class o_clazz, Object o, String name, Object[] args, Class[] clazzes) throws Throwable {
-		Method m = getMethod( o_clazz, name, clazzes );
+		
+		Method m = getMethod( o_clazz, name, clazzes, arg_is_null(args) );
 		
 		/* enforcing accessibility (workaround for bug 128) */
 		boolean access = m.isAccessible(); 
@@ -412,11 +421,7 @@ public class RJavaTools {
 			for (int i = 0; i < n; i++) {
 				if( arg_is_null[i] ){
 					/* then the class must not be a primitive type */
-					Class cl = arg_clazz[i] ;
-					if( cl.equals(Boolean.TYPE) || cl.equals(Integer.TYPE) || 
-						cl.equals(Double.TYPE) || cl.equals(Float.TYPE) || 
-						cl.equals(Long.TYPE) || cl.equals(Short.TYPE) ||
-						cl.equals(Character.TYPE) ){ /* anything else */ 
+					if( isPrimitive(arg_clazz[i]) ){ 
 						ok = false ;
 						break ;
 					}
@@ -441,6 +446,13 @@ public class RJavaTools {
 	}
 	
 	
+	static boolean isPrimitive(Class cl){
+		return cl.equals(Boolean.TYPE) || cl.equals(Integer.TYPE) || 
+						cl.equals(Double.TYPE) || cl.equals(Float.TYPE) || 
+						cl.equals(Long.TYPE) || cl.equals(Short.TYPE) ||
+						cl.equals(Character.TYPE) ;
+	}
+	
 	/**
 	 * Attempts to find the best-matching method of the class <code>o_clazz</code> with the method name <code>name</code> and arguments types defined by <code>arg_clazz</code>.
 	 * The lookup is performed by finding the most specific methods that matches the supplied arguments (see also {@link #isMoreSpecific}).
@@ -448,10 +460,13 @@ public class RJavaTools {
 	 * @param o_clazz class in which to look for the method
 	 * @param name method name
 	 * @param arg_clazz an array of classes defining the types of arguments
+	 * @param arg_is_null indicates if each argument is null
 	 *
 	 * @return <code>null</code> if no matching method could be found or the best matching method.
 	 */
-	public static Method getMethod(Class o_clazz, String name, Class[] arg_clazz) throws SecurityException, NoSuchMethodException {
+	public static Method getMethod(Class o_clazz, String name, Class[] arg_clazz, boolean[] arg_is_null) 
+		throws SecurityException, NoSuchMethodException {
+		
 		if (o_clazz == null)
 			return null; 
 
@@ -483,9 +498,17 @@ public class RJavaTools {
 			int n = arg_clazz.length;
 			boolean ok = true; 
 			for (int i = 0; i < n; i++) {
-				if (arg_clazz[i] != null && !param_clazz[i].isAssignableFrom(arg_clazz[i])) {
-					ok = false; 
-					break;
+				if( arg_is_null[i] ){
+					/* then the class must not be a primitive type */
+					if( isPrimitive(arg_clazz[i]) ){ 
+						ok = false ;
+						break ;
+					}
+				} else{
+					if (arg_clazz[i] != null && !param_clazz[i].isAssignableFrom(arg_clazz[i])) {
+						ok = false; 
+						break;
+					}
 				}
 			}
 			if (ok && (met == null || isMoreSpecific(m, met))) // it must be the only match so far or more specific than the current match
