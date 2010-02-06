@@ -15,7 +15,7 @@ import java.util.Vector ;
  * by Romain Francois <francoisromain@free.fr> licensed under GPL v2 or higher.
  */
 public class RJavaTools {
-		
+	
 	/**
 	 * Returns an inner class of the class with the given simple name
 	 * 
@@ -316,7 +316,13 @@ public class RJavaTools {
 	 * and invoke newInstance on the resolved constructor
 	 */
 	public static Object newInstance( Class o_clazz, Object[] args, Class[] clazzes ) throws Throwable {
-		Constructor cons = getConstructor( o_clazz, clazzes );
+		
+		boolean[] is_null = new boolean[args.length];
+		for( int i=0; i<args.length; i++) {
+			is_null[i] = ( args[i] == null ) ;
+		}
+		
+		Constructor cons = getConstructor( o_clazz, clazzes, is_null );
 		
 		/* enforcing accessibility (workaround for bug 128) */
 		boolean access = cons.isAccessible(); 
@@ -331,7 +337,7 @@ public class RJavaTools {
 		} finally{
 			cons.setAccessible( access ); 
 		}
-		return o; 
+		return o;                                 
 	}
 	
 	
@@ -365,11 +371,13 @@ public class RJavaTools {
 	 * 
 	 * @param o_clazz Class to look for a constructor
 	 * @param arg_clazz parameter types
+	 * @param arg_is_null indicates if each argument is null
 	 * 
 	 * @return <code>null</code> if no constructor is found, or the constructor
 	 *
 	 */
-	public static Constructor getConstructor( Class o_clazz, Class[] arg_clazz) throws SecurityException, NoSuchMethodException {
+	public static Constructor getConstructor( Class o_clazz, Class[] arg_clazz, boolean[] arg_is_null) 
+		throws SecurityException, NoSuchMethodException {
 		
 		if (o_clazz == null)
 			return null; 
@@ -402,12 +410,23 @@ public class RJavaTools {
 			int n = arg_clazz.length;
 			boolean ok = true; 
 			for (int i = 0; i < n; i++) {
-				if (arg_clazz[i] != null && !param_clazz[i].isAssignableFrom(arg_clazz[i])) {
-					ok = false; 
-					break;
+				if( arg_is_null[i] ){
+					/* then the class must not be a primitive type */
+					Class cl = arg_clazz[i] ;
+					if( cl.equals(Boolean.TYPE) || cl.equals(Integer.TYPE) || 
+						cl.equals(Double.TYPE) || cl.equals(Float.TYPE) || 
+						cl.equals(Long.TYPE) || cl.equals(Short.TYPE) ||
+						cl.equals(Character.TYPE) ){ /* anything else */ 
+						ok = false ;
+						break ;
+					}
+				} else{
+					if (arg_clazz[i] != null && !param_clazz[i].isAssignableFrom(arg_clazz[i])) {
+						ok = false; 
+						break;
+					}
 				}
 			}
-			
 			// it must be the only match so far or more specific than the current match
 			if (ok && (cons == null || isMoreSpecific(c, cons)))
 				cons = c; 

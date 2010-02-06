@@ -1,3 +1,4 @@
+
 // :tabSize=2:indentSize=2:noTabs=false:folding=explicit:collapseFolds=1:
 import javax.swing.JFrame ;
 import java.awt.Point ;
@@ -10,6 +11,12 @@ import java.util.Set ;
 import java.util.HashMap; 
 
 public class RJavaTools_Test {
+
+	private static class ExampleClass {
+		public ExampleClass( Object o1, String o2, boolean o3, boolean o4){}
+		public ExampleClass( Object o1, String o2, boolean o3){}
+		public ExampleClass(){}
+	}
 
 	/* so that we can check about access to private fields and methods */
 	private int bogus = 0 ; 
@@ -395,7 +402,7 @@ public class RJavaTools_Test {
 		// {{{ getConstructor( String, null )
 		System.out.print( "    * getConstructor( String, null )" ) ;
 		try{
-			cons = RJavaTools.getConstructor( String.class, (Class[])null ) ;
+			cons = RJavaTools.getConstructor( String.class, (Class[])null, (boolean[])null ) ;
 		} catch( Exception e ){
 			throw new TestException( "getConstructor( String, null )" ) ; 
 		}
@@ -405,7 +412,7 @@ public class RJavaTools_Test {
 		// {{{ getConstructor( Integer, { String.class } ) 
 		System.out.print( "    * getConstructor( Integer, { String.class } )" ) ;
 		try{
-			cons = RJavaTools.getConstructor( Integer.class, new Class[]{ String.class } ) ;
+			cons = RJavaTools.getConstructor( Integer.class, new Class[]{ String.class }, new boolean[]{false} ) ;
 		} catch( Exception e){
 			throw new TestException( "getConstructor( Integer, { String.class } )" ) ; 
 		}
@@ -415,7 +422,9 @@ public class RJavaTools_Test {
 		// {{{ getConstructor( JButton, { String.class, ImageIcon.class } )
 		System.out.print( "    * getConstructor( JButton, { String.class, ImageIcon.class } )" ) ;
 		try{
-			cons = RJavaTools.getConstructor( JButton.class, new Class[]{ String.class, ImageIcon.class } ) ;
+			cons = RJavaTools.getConstructor( JButton.class, 
+				new Class[]{ String.class, ImageIcon.class }, 
+				new boolean[]{ false, false} ) ;
 		} catch( Exception e){
 			throw new TestException( "getConstructor( JButton, { String.class, ImageIcon.class } )" ) ; 
 		}
@@ -426,7 +435,7 @@ public class RJavaTools_Test {
 		error = false ; 
 		System.out.print( "    * getConstructor( Integer, null )" ) ;
 		try{
-			cons = RJavaTools.getConstructor( Integer.class, (Class[])null ) ;
+			cons = RJavaTools.getConstructor( Integer.class, (Class[])null, (boolean[])null ) ;
 		} catch( Exception e){
 			 error = true ; 
 		}
@@ -440,7 +449,9 @@ public class RJavaTools_Test {
 		error = false ; 
 		System.out.print( "    * getConstructor( JButton, { String.class, JButton.class } )" ) ;
 		try{
-			cons = RJavaTools.getConstructor( JButton.class, new Class[]{ String.class, JButton.class } ) ;
+			cons = RJavaTools.getConstructor( JButton.class, 
+				new Class[]{ String.class, JButton.class }, 
+				new boolean[]{ false, false } ) ;
 		} catch( Exception e){
 			 error = true ; 
 		}
@@ -449,7 +460,29 @@ public class RJavaTools_Test {
 		}
 		System.out.println( " -> exception : ok " ) ;
 		// }}}
+
+
+		Object o1 = null ;
+		Object o2 = null ;
+		ExampleClass foo = new ExampleClass(o1,(String)o2,false) ;
+		// {{{ getConstructor( ExampleClass, { null, null, false } 
+		error = false ;
+		System.out.print( "    * getConstructor( ExampleClass, {Object.class, Object.class, boolean}) : " ) ;
+		try{
+			cons = RJavaTools.getConstructor( ExampleClass.class, 
+				new Class[]{ Object.class, Object.class, Boolean.TYPE}, 
+				new boolean[]{ true, true, false} );
+		} catch(Exception e){
+			error = true ;
+			e.printStackTrace() ;
+		}
+		if( error ){
+			throw new TestException( "getConstructor( ExampleClass, {Object.class, Object.class, boolean}) : exception " ) ;
+		}
+		System.out.println( " ok" ) ;
+		// }}}
 		
+	
 	}
 	// }}}
 	

@@ -10,11 +10,19 @@ all: compile test
 compile: $(JAVA_SRC)
 	$(JAVAC) $(JFLAGS) $(JAVA_SRC)
 
-test: compile
+test_RJavaTools: compile
 	$(JAVA) RJavaTools_Test
+
+test_RJavaArrayTools: compile
 	$(JAVA) RJavaArrayTools_Test
+
+test_ArrayWrapper:
 	$(JAVA) ArrayWrapper_Test
+
+test_RectangularArrayBuilder:
 	$(JAVA) RectangularArrayBuilder_Test
+
+test: compile test_RJavaTools test_RJavaArrayTools test_ArrayWrapper test_RectangularArrayBuilder
 
 javadoc:
 	$(JAVADOC) $(JAVADOCFLAGS) -d javadoc $(JAVA_SRC)
