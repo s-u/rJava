@@ -20,12 +20,37 @@
 	if( !is.jnull(fields) ) {
 		lapply( fields, function(x ){
   		  n <- .jcall( x, "S", "getName" )
+  		  type <- .jcall( .jcall( x, "Ljava/lang/Class;", "getType"), "Ljava/lang/String;" , "getName" )
+  		  suffix <- switch( type, 
+  		  	"boolean" = "Boolean", 
+  		  	"byte" = "Byte", 
+  		  	"char" = "Char",
+  		  	"double" = "Double", 
+  		  	"float" = "Float", 
+  		  	"int" = "Int", 
+  		  	"long" = "Long", 
+  		  	"short" = "Short",
+  		  	"" )
+  		  target <- switch( type,
+  		  	"boolean" = "Z", 
+  		  	"byte" = "B", 
+  		  	"char" = "C",
+  		  	"double" = "D", 
+  		  	"float" = "F", 
+  		  	"int" = "I", 
+  		  	"long" = "L", 
+  		  	"short" = "S",
+  		  	"Ljava/lang/Object;" )
+  		  set_method <- sprintf( "set%s", suffix)
+  		  get_method <- sprintf( "get%s", suffix )
+  		  	
   		  makeActiveBinding( n, function(v){
   		    if( missing(v) ){
   		      ## get
-  		      .jsimplify( .jcall( x, "Ljava/lang/Object;", "get", object ) )
+  		      .jcall( x, target, get_method, object )
   		    } else {
-  		      .jcall( x, "V", "set", object, v )
+  		      ## set
+  		      .jcall( x, "V", set_method , object, v )
   		    }
   		  }, env )
   		} )
