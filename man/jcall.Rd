@@ -98,10 +98,11 @@
   \code{\link{.jarray}}
 }
 \examples{
-\dontrun{
+\dontshow{.jinit()}
 .jcall("java/lang/System","S","getProperty","os.name")
-f <- .jnew("java/awt/Frame","Hello")
-.jcall(f,,"setVisible",TRUE)
+if (!nzchar(Sys.getenv("NOAWT"))) {
+  f <- .jnew("java/awt/Frame","Hello")
+  .jcall(f,,"setVisible",TRUE)
 }
 }
 \keyword{interface}

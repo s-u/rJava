@@ -36,14 +36,17 @@ A clone of the object
 
 \examples{
 \dontshow{.jinit()}
-p1 <- .jnew("java/awt/Point" )
-p2 <- clone( p1 )
-p2$move( 10L, 10L )
-p1$getX() 
+# we can run this example only if AWT is enabled
+if (!nzchar(Sys.getenv("NOAWT"))) {
+  p1 <- .jnew("java/awt/Point" )
+  p2 <- clone( p1 )
+  p2$move( 10L, 10L )
+  p1$getX() 
 
-# check that p1 and p2 are not references to the same java object
-stopifnot( p1$getX() == 0 )
-stopifnot( p2$getX() == 10 )
+  # check that p1 and p2 are not references to the same java object
+  stopifnot( p1$getX() == 0 )
+  stopifnot( p2$getX() == 10 )
+}
 }
 \keyword{ programming }
 

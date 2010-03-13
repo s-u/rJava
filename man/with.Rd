@@ -59,17 +59,18 @@ Romain Francois <francoisromain@free.fr>
 	\url{http://java.sun.com/j2se/1.5.0/docs/api/java/lang/reflect/package-summary.html}
 }
 \examples{
+\dontshow{.jinit()}
 \dontrun{
-
-p <- .jnew( "java/awt/Point", 0L, 0L )
-with( p, {
+if (!nzchar(Sys.getenv("NOAWT"))) {
+  p <- .jnew( "java/awt/Point", 0L, 0L )
+  with( p, {
 	# x and y and now 0
 	move( 10L, 10L )
 	# x and y are now 10
 	x <- x + y
-} )
+  } )
 
-f <- within( .jnew( "javax/swing/JFrame" ) , {
+  f <- within( .jnew( "javax/swing/JFrame" ) , {
 	layout <- .jnew( "java/awt/BorderLayout" )
 	setLayout( layout )
 	add( .jnew( "javax/swing/JLabel", "north" ), layout$NORTH )
@@ -78,10 +79,8 @@ f <- within( .jnew( "javax/swing/JFrame" ) , {
 	add( .jnew( "javax/swing/JLabel", "east" ), layout$EAST )
 	setSize( .jnew( "java/awt/Dimension", 400L, 400L ) )
 	setVisible( TRUE )
-} )
+  } )
 }
-
-\dontshow{.jinit()}
 
 Double <- J("java.lang.Double")
 with( Double, MIN_VALUE )

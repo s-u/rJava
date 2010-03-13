@@ -12,10 +12,12 @@ J("ArrayWrapper_Test")$runtests()
 J("RectangularArrayBuilder_Test")$runtests()
 
 # now testing some jni functions
-p <- .jnew( "java/awt/Point" )
-classes <- .Call( "RgetSimpleClassNames", p@jobj, TRUE, PACKAGE = "rJava" )
-stopifnot( all( c( "Point", "Point2D", "Object", "error", "condition" ) \%in\% classes ) )
-classes <- .Call( "RgetSimpleClassNames", p@jobj, FALSE, PACKAGE = "rJava" )
-stopifnot( all( c( "Point", "Point2D", "Object" )  \%in\% classes ) )
+if (!nzchar(Sys.getenv("NOAWT"))) {
+  p <- .jnew( "java/awt/Point" )
+  classes <- .Call( "RgetSimpleClassNames", p@jobj, TRUE, PACKAGE = "rJava" )
+  stopifnot( all( c( "Point", "Point2D", "Object", "error", "condition" ) \%in\% classes ) )
+  classes <- .Call( "RgetSimpleClassNames", p@jobj, FALSE, PACKAGE = "rJava" )
+  stopifnot( all( c( "Point", "Point2D", "Object" )  \%in\% classes ) )
+}
 }
 }

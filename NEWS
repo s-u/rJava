@@ -6,6 +6,8 @@
 
     o	fix support of NULL arguments in new(J("SomeClass"), ...)
 
+    o	disable AWT tests if NOAWT is set; enable a few more tests
+
 
 0.8-2	2010-01-22
     o	faster class loader implementation

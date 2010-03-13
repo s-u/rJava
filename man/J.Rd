@@ -55,9 +55,9 @@ most suitable method.
 \examples{
 \dontshow{.jinit()}
 
-\dontrun{
-f <- new(J("java.awt.Frame"), "Hello")
-f$setVisible(TRUE)
+if (!nzchar(Sys.getenv("NOAWT"))) {
+  f <- new(J("java.awt.Frame"), "Hello")
+  f$setVisible(TRUE)
 }
 
 J("java.lang.Double")$parseDouble("10.2")
@@ -66,11 +66,12 @@ J("java.lang.Double", "parseDouble", "10.2" )
 Double <- J("java.lang.Double")
 Double$parseDouble( "10.2")
 
+if (!nzchar(Sys.getenv("NOAWT"))) {
 # String[] strings = new String[]{ "string", "array" } ;
-strings <- .jarray( c("string", "array") )
+  strings <- .jarray( c("string", "array") )
 # this uses the JList( Object[] ) constructor 
 # even though the "strings" parameter is a String[] 
-l <- new( J("javax.swing.JList"), strings)
-
+  l <- new( J("javax.swing.JList"), strings)
+}
 }
 \keyword{interface}

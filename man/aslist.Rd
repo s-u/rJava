@@ -37,16 +37,18 @@ argument of \code{\link{lapply}}
 }
 \examples{
 \dontshow{.jinit()}
-# lapplying over a java array
-a <- .jarray( list( 
+if (!nzchar(Sys.getenv("NOAWT"))) {
+  # lapplying over a java array
+  a <- .jarray( list( 
 	.jnew( "java/awt/Point", 10L, 10L ), 
 	.jnew( "java/awt/Point", 30L, 30L )
-) )
-lapply( a, function(point){ 
+  ) )
+  lapply( a, function(point){ 
 	with(point, { 
 		(x + y ) ^ 2
 	} )
-} )
+  } )
+}
 
 # lapply over a Vector (implements Iterable)
 v <- .jnew("java/util/Vector")
