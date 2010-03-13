@@ -60,7 +60,7 @@ Romain Francois <francoisromain@free.fr>
 }
 \examples{
 \dontshow{.jinit()}
-\dontrun{
+
 if (!nzchar(Sys.getenv("NOAWT"))) {
   p <- .jnew( "java/awt/Point", 0L, 0L )
   with( p, {
