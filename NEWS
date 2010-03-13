@@ -1,7 +1,7 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.8-3	(under development)
+0.8-3	2010-03-13
     o	set text mode for stdin on Windows (thanks to Brian Ripley)
 
     o	fix support of NULL arguments in new(J("SomeClass"), ...)
