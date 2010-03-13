@@ -1,7 +1,5 @@
 // :tabSize=2:indentSize=2:noTabs=false:folding=explicit:collapseFolds=1:
 
-import java.awt.Point; 
-
 /**
  * Test suite for ArrayWrapper 
  */
@@ -1422,41 +1420,41 @@ public class ArrayWrapper_Test {
 	// {{{ flatten_Point_1
 	private static void flatten_Point_1() throws TestException{
 		
-		Point[] o = new Point[5] ;
-		for( int i=0;i<5;i++) o[i] = new Point(i,i) ;
+		DummyPoint[] o = new DummyPoint[5] ;
+		for( int i=0;i<5;i++) o[i] = new DummyPoint(i,i) ;
 		
 		ArrayWrapper wrapper = null ; 
-		System.out.print( "  >> new ArrayWrapper( Point[] ) " ); 
+		System.out.print( "  >> new ArrayWrapper( DummyPoint[] ) " ); 
 		try{
 			wrapper = new ArrayWrapper(o); 
 		} catch( NotAnArrayException e){
-			throw new TestException("new ArrayWrapper(Point[]) >> NotAnArrayException ") ; 
+			throw new TestException("new ArrayWrapper(DummyPoint[]) >> NotAnArrayException ") ; 
 		} 
 		System.out.println( "ok"); 
 		
 		System.out.print( "  >> isPrimitive()" ) ;
 		if( wrapper.isPrimitive() ){
-			throw new TestException( "ArrayWrapper(Point[]) is primitive" ) ; 
+			throw new TestException( "ArrayWrapper(DummyPoint[]) is primitive" ) ; 
 		}
 		System.out.println( " false : ok" ); 
 		
 		System.out.print( "  >> getObjectTypeName()" ) ;
-		if( !wrapper.getObjectTypeName().equals("java.awt.Point") ){
-			throw new TestException( "ArrayWrapper(Point[]).getObjectTypeName() != 'java.awt.Point'" ) ;
+		if( !wrapper.getObjectTypeName().equals("DummyPoint") ){
+			throw new TestException( "ArrayWrapper(DummyPoint[]).getObjectTypeName() != 'DummyPoint'" ) ;
 		}
-		System.out.println( " java.awt.Point : ok" ); 
+		System.out.println( " DummyPoint : ok" ); 
 		
 		System.out.print( "  >> flat_Object()" ) ;
-		Point[] flat ;
+		DummyPoint[] flat ;
 		try{
-			flat = (Point[])wrapper.flat_Object() ;
+			flat = (DummyPoint[])wrapper.flat_Object() ;
 		} catch( ObjectArrayException e){
 			throw new TestException( "ObjectArrayException" ) ;
 		} catch( FlatException e){
-			throw new TestException("new ArrayWrapper(Point[]) >> FlatException") ;
+			throw new TestException("new ArrayWrapper(DummyPoint[]) >> FlatException") ;
 		}
 		
-		Point p ; 
+		DummyPoint p ; 
 		for( int i=0; i<5; i++){
 			p = flat[i] ;
 			if( p.x != i || p.y != i) throw new TestException( "flat[" + i + "].x = " + p.x + "!=" + i); 
@@ -1469,40 +1467,40 @@ public class ArrayWrapper_Test {
 	// {{{ flatten_Point_2
 	private static void flatten_Point_2() throws TestException{
 		
-		Point[][] o = RectangularArrayExamples.getPointDoubleRectangularArrayExample(); 
+		DummyPoint[][] o = RectangularArrayExamples.getDummyPointDoubleRectangularArrayExample(); 
 		
 		ArrayWrapper wrapper = null ; 
-		System.out.print( "  >> new ArrayWrapper( Point[][] ) " ); 
+		System.out.print( "  >> new ArrayWrapper( DummyPoint[][] ) " ); 
 		try{
 			wrapper = new ArrayWrapper(o); 
 		} catch( NotAnArrayException e){
-			throw new TestException("new ArrayWrapper(Point[][]) >> NotAnArrayException ") ; 
+			throw new TestException("new ArrayWrapper(DummyPoint[][]) >> NotAnArrayException ") ; 
 		} 
 		System.out.println( "ok"); 
 		
 		System.out.print( "  >> isPrimitive()" ) ;
 		if( wrapper.isPrimitive() ){
-			throw new TestException( "ArrayWrapper(Point[][]) is primitive" ) ; 
+			throw new TestException( "ArrayWrapper(DummyPoint[][]) is primitive" ) ; 
 		}
 		System.out.println( " false : ok" ); 
 		
 		System.out.print( "  >> getObjectTypeName()" ) ;
-		if( !wrapper.getObjectTypeName().equals("java.awt.Point") ){
-			throw new TestException( "ArrayWrapper(Point[][]).getObjectTypeName() != 'java.awt.Point'" ) ;
+		if( !wrapper.getObjectTypeName().equals("DummyPoint") ){
+			throw new TestException( "ArrayWrapper(DummyPoint[][]).getObjectTypeName() != 'DummyPoint'" ) ;
 		}
-		System.out.println( " java.awt.Point : ok" ); 
+		System.out.println( " DummyPoint : ok" ); 
 		
 		System.out.print( "  >> flat_Object()" ) ;
-		Point[] flat;
+		DummyPoint[] flat;
 		try{
-			flat = (Point[])wrapper.flat_Object() ; 
+			flat = (DummyPoint[])wrapper.flat_Object() ; 
 		} catch( ObjectArrayException e){
 			throw new TestException( "ObjectArrayException" ) ;
 		} catch( FlatException e){
-			throw new TestException("new ArrayWrapper(Point[][]) >> FlatException") ;
+			throw new TestException("new ArrayWrapper(DummyPoint[][]) >> FlatException") ;
 		}
 		
-		Point p; 
+		DummyPoint p; 
 		for( int i=0; i<10; i++){
 			p = flat[i] ;
 			if( p.x != i || p.y != i) throw new TestException( "flat[" + i + "].x = " + p.x + "!=" + i); 
@@ -1515,40 +1513,40 @@ public class ArrayWrapper_Test {
   // {{{ flatten_Point_3
 	private static void flatten_Point_3() throws TestException{
 		
-		Point[][][] o = RectangularArrayExamples.getPointTripleRectangularArrayExample();
+		DummyPoint[][][] o = RectangularArrayExamples.getDummyPointTripleRectangularArrayExample();
 		
 		ArrayWrapper wrapper = null ; 
-		System.out.print( "  >> new ArrayWrapper( Point[][][] ) " ); 
+		System.out.print( "  >> new ArrayWrapper( DummyPoint[][][] ) " ); 
 		try{
 			wrapper = new ArrayWrapper(o); 
 		} catch( NotAnArrayException e){
-			throw new TestException("new ArrayWrapper(Point[][][]) >> NotAnArrayException ") ; 
+			throw new TestException("new ArrayWrapper(DummyPoint[][][]) >> NotAnArrayException ") ; 
 		}
 		System.out.println( "ok"); 
 		
 		System.out.print( "  >> isPrimitive()" ) ;
 		if( wrapper.isPrimitive() ){
-			throw new TestException( "ArrayWrapper(Point[][][]) is primitive" ) ; 
+			throw new TestException( "ArrayWrapper(DummyPoint[][][]) is primitive" ) ; 
 		}
 		System.out.println( " false : ok" ); 
 		
 		System.out.print( "  >> getObjectTypeName()" ) ;
-		if( !wrapper.getObjectTypeName().equals("java.awt.Point") ){
-			throw new TestException( "ArrayWrapper(Point[][][]).getObjectTypeName() != 'java.awt.Point'" ) ;
+		if( !wrapper.getObjectTypeName().equals("DummyPoint") ){
+			throw new TestException( "ArrayWrapper(DummyPoint[][][]).getObjectTypeName() != 'DummyPoint'" ) ;
 		}
-		System.out.println( " java.awt.Point : ok" ); 
+		System.out.println( " DummyPoint : ok" ); 
 		
 		System.out.print( "  >> flat_Object()" ) ;
-		Point[] flat;
-		try{
-			flat = (Point[])wrapper.flat_Object() ; 
+		DummyPoint[] flat;
+		try{         
+			flat = (DummyPoint[])wrapper.flat_Object() ; 
 		} catch( ObjectArrayException e){
 			throw new TestException( "ObjectArrayException" ) ;
 		} catch( FlatException e){
 			throw new TestException("new ArrayWrapper(Object[][][]) >> FlatException") ;
 		}
 		
-		Point p; 
+		DummyPoint p; 
 		for( int i=0; i<30; i++){
 			p = flat[i]; 
 			if( p.x != i || p.y != i ) throw new TestException( "flat[" + i + "].x = " + p.x + "!=" + i); 

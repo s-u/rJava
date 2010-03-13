@@ -1,10 +1,6 @@
 
 // :tabSize=2:indentSize=2:noTabs=false:folding=explicit:collapseFolds=1:
-import javax.swing.JFrame ;
-import java.awt.Point ;
 import java.lang.reflect.Constructor ;
-import javax.swing.JButton ;
-import javax.swing.ImageIcon ;
 import java.lang.reflect.* ;
 import java.util.Map ;
 import java.util.Set ;
@@ -138,25 +134,25 @@ public class RJavaTools_Test {
 	private static void getfieldnames() throws TestException{
 		String[] names; 
 		
-		// {{{ getFieldNames(Point, false) -> c('x', 'y' )
-		System.out.print( "    * getFieldNames(Point, false)" ) ;
-		names = RJavaTools.getFieldNames( Point.class, false ) ;
+		// {{{ getFieldNames(DummyPoint, false) -> c('x', 'y' )
+		System.out.print( "    * getFieldNames(DummyPoint, false)" ) ;
+		names = RJavaTools.getFieldNames( DummyPoint.class, false ) ;
 		if( names.length != 2 ){
-			throw new TestException( "getFieldNames(Point, false).length != 2" ) ;
+			throw new TestException( "getFieldNames(DummyPoint, false).length != 2" ) ;
 		}
 		for( int i=0; i<2; i++){
 			if( !( "x".equals(names[i]) || "y".equals(names[i] ) ) ){
-				throw new TestException( "getFieldNames(Point, false).length != c('x','y') " ) ;
+				throw new TestException( "getFieldNames(DummyPoint, false).length != c('x','y') " ) ;
 			}
 		}
 		System.out.println( " : ok " ) ;
 		// }}}
 		
 		// {{{ getFieldNames(Point, true ) --> character(0)
-		System.out.print( "    * getFieldNames(Point, true )" ) ;
-		names = RJavaTools.getFieldNames( Point.class, true ) ;
+		System.out.print( "    * getFieldNames(DummyPoint, true )" ) ;
+		names = RJavaTools.getFieldNames( DummyPoint.class, true ) ;
 		if( names.length != 0 ){
-			throw new TestException( "getFieldNames(Point, true ) != character(0)" ); 
+			throw new TestException( "getFieldNames(DummyPoint, true ) != character(0)" ); 
 		}
 		System.out.println( " : ok " ) ;
 		// }}}
@@ -419,17 +415,18 @@ public class RJavaTools_Test {
 		System.out.println( " : ok " ) ;
 		// }}}
 		
-		// {{{ getConstructor( JButton, { String.class, ImageIcon.class } )
-		System.out.print( "    * getConstructor( JButton, { String.class, ImageIcon.class } )" ) ;
-		try{
-			cons = RJavaTools.getConstructor( JButton.class, 
-				new Class[]{ String.class, ImageIcon.class }, 
-				new boolean[]{ false, false} ) ;
-		} catch( Exception e){
-			throw new TestException( "getConstructor( JButton, { String.class, ImageIcon.class } )" ) ; 
-		}
-		System.out.println( " : ok " ) ;
-		// }}}
+		// disabled for now
+		// // {{{ getConstructor( JButton, { String.class, ImageIcon.class } )
+		// System.out.print( "    * getConstructor( JButton, { String.class, ImageIcon.class } )" ) ;
+		// try{
+		// 	cons = RJavaTools.getConstructor( JButton.class, 
+		// 		new Class[]{ String.class, ImageIcon.class }, 
+		// 		new boolean[]{ false, false} ) ;
+		// } catch( Exception e){
+		// 	throw new TestException( "getConstructor( JButton, { String.class, ImageIcon.class } )" ) ; 
+		// }
+		// System.out.println( " : ok " ) ;
+		// // }}}
 		
 		// {{{ getConstructor( Integer, null ) -> exception 
 		error = false ; 
@@ -445,21 +442,22 @@ public class RJavaTools_Test {
 		System.out.println( " -> exception : ok " ) ;
 		// }}}
 		
-		// {{{ getConstructor( JButton, { String.class, JButton.class } ) -> exception
-		error = false ; 
-		System.out.print( "    * getConstructor( JButton, { String.class, JButton.class } )" ) ;
-		try{
-			cons = RJavaTools.getConstructor( JButton.class, 
-				new Class[]{ String.class, JButton.class }, 
-				new boolean[]{ false, false } ) ;
-		} catch( Exception e){
-			 error = true ; 
-		}
-		if( !error ){
-			throw new TestException( "getConstructor( JButton, { String.class, JButton.class } ) did not generate error" ) ;
-		}
-		System.out.println( " -> exception : ok " ) ;
-		// }}}
+		// disabled for now
+		// // {{{ getConstructor( JButton, { String.class, JButton.class } ) -> exception
+		// error = false ; 
+		// System.out.print( "    * getConstructor( JButton, { String.class, JButton.class } )" ) ;
+		// try{
+		// 	cons = RJavaTools.getConstructor( JButton.class, 
+		// 		new Class[]{ String.class, JButton.class }, 
+		// 		new boolean[]{ false, false } ) ;
+		// } catch( Exception e){
+		// 	 error = true ; 
+		// }
+		// if( !error ){
+		// 	throw new TestException( "getConstructor( JButton, { String.class, JButton.class } ) did not generate error" ) ;
+		// }
+		// System.out.println( " -> exception : ok " ) ;
+		// // }}}
 
 
 		Object o1 = null ;
@@ -495,17 +493,17 @@ public class RJavaTools_Test {
 	// {{{ @Test hasfields
 	private static void hasfield() throws TestException{
 		
-		Point p = new Point() ; 
-		System.out.println( "    java> Point p = new Point()" ) ; 
+		DummyPoint p = new DummyPoint() ; 
+		System.out.println( "    java> DummyPoint p = new DummyPoint()" ) ; 
 		System.out.print( "    * hasField( p, 'x' ) " ) ; 
 		if( !RJavaTools.hasField( p, "x" ) ){
-			throw new TestException( " hasField( Point, 'x' ) == false" ) ;
+			throw new TestException( " hasField( DummyPoint, 'x' ) == false" ) ;
 		}
 		System.out.println( " true : ok" ) ;
 		
 		System.out.print( "    * hasField( p, 'iiiiiiiiiiiii' ) " ) ; 
 		if( RJavaTools.hasField( p, "iiiiiiiiiiiii" ) ){
-			throw new TestException( " hasField( Point, 'iiiiiiiiiiiii' ) == true" ) ;
+			throw new TestException( " hasField( DummyPoint, 'iiiiiiiiiiiii' ) == true" ) ;
 		}
 		System.out.println( "  false : ok" ) ;
 		
@@ -524,11 +522,11 @@ public class RJavaTools_Test {
 	// {{{ @Test hasmethod
 	private static void hasmethod() throws TestException{
 		
-		Point p = new Point() ; 
-		System.out.println( "    java> Point p = new Point()" ) ; 
+		DummyPoint p = new DummyPoint() ; 
+		System.out.println( "    java> DummyPoint p = new DummyPoint()" ) ; 
 		System.out.print( "    * hasMethod( p, 'move' ) " ) ; 
 		if( !RJavaTools.hasMethod( p, "move" ) ){
-			throw new TestException( " hasField( Point, 'move' ) == false" ) ;
+			throw new TestException( " hasField( DummyPoint, 'move' ) == false" ) ;
 		}
 		System.out.println( " true : ok" ) ;
 		
@@ -778,11 +776,12 @@ public class RJavaTools_Test {
 	
 	// {{{ @Test getFieldTypeName
 	private static void getfieldtypename() throws TestException{
-		System.out.print( "  * getFieldTypeName( Point, x )" ) ;
-		String s = RJavaTools.getFieldTypeName( Point.class, "x" ) ;
+		System.out.print( "  * getFieldTypeName( DummyPoint, x )" ) ;
+		String s = RJavaTools.getFieldTypeName( DummyPoint.class, "x" ) ;
 		if( !s.equals("int") ){
-			throw new TestException("getFieldTypeName( Point, x ) != int") ;
+			throw new TestException("getFieldTypeName( DummyPoint, x ) != int") ;
 		}
+		System.out.println( ": ok" ) ;
 	}
 	// }}}
 	

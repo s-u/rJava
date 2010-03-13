@@ -1,5 +1,4 @@
 // :tabSize=2:indentSize=2:noTabs=false:folding=explicit:collapseFolds=1:
-import java.awt.Point ;
 
 public class RJavaArrayTools_Test {
 	
@@ -1453,25 +1452,25 @@ public class RJavaArrayTools_Test {
 	
 	// {{{ rep
 	private static void rep() throws TestException{
-		Point p = new Point(10, 10) ;
+		DummyPoint p = new DummyPoint(10, 10) ;
 		
-		Point[] res = null;
-		System.out.print( "  rep( Point, 10)" ); 
+		DummyPoint[] res = null;
+		System.out.print( "  rep( DummyPoint, 10)" ); 
 		try{
-			res = (Point[])RJavaArrayTools.rep( p, 10 );
+			res = (DummyPoint[])RJavaArrayTools.rep( p, 10 );
 		} catch( Throwable e){
-			throw new TestException( "rep(Point, 10) failed" ) ;
+			throw new TestException( "rep(DummyPoint, 10) failed" ) ;
 		}
 		if( res.length != 10 ){
-			throw new TestException( "rep(Point, 10).length != 10" ) ;
+			throw new TestException( "rep(DummyPoint, 10).length != 10" ) ;
 		}
 		if( res[5].getX() != 10.0 ){
-			throw new TestException( "rep(Point, 10)[5].getX() != 10" ) ;
+			throw new TestException( "rep(DummyPoint, 10)[5].getX() != 10" ) ;
 		}
 		System.out.println( ": ok " );
 		
 	}
 	/// }}}
-	
+		
 }
 

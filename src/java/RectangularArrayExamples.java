@@ -1,5 +1,4 @@
 // :tabSize=2:indentSize=2:noTabs=false:folding=explicit:collapseFolds=1:
-import java.awt.Point ;
 
 /**
  * Utility class that makes example rectangular java arrays of 2 and 3 dimensions
@@ -107,18 +106,16 @@ public class RectangularArrayExamples {
 		return x; 
 	}
 	
-	public static Point[][] getPointDoubleRectangularArrayExample(){
-		Point[][] x = new Point[5][2]; 
+	public static DummyPoint[][] getDummyPointDoubleRectangularArrayExample(){
+		DummyPoint[][] x = new DummyPoint[5][2]; 
 		int k= 0; 
 		for( int j=0; j<2; j++){
 			for( int i=0; i<5; i++, k++){
-				x[i][j] = new Point(k,k) ;
+				x[i][j] = new DummyPoint(k,k) ;
 			}
 		}
 		return x; 
 	}
-
-	
 	// }}}
 	
 	// {{{ Example 3d rect arrays 
@@ -239,13 +236,13 @@ public class RectangularArrayExamples {
 		return x; 
 	}
 	
-	public static Point[][][] getPointTripleRectangularArrayExample(){
-		Point[][][] x = new Point[5][3][2]; 
+	public static DummyPoint[][][] getDummyPointTripleRectangularArrayExample(){
+		DummyPoint[][][] x = new DummyPoint[5][3][2]; 
 		int current = 0 ;
 		for( int k=0; k<2; k++){
 			for( int j=0; j<3; j++){
 				for( int i=0; i<5; i++, current++){
-					x[i][j][k] = new Point( current, current ) ;
+					x[i][j][k] = new DummyPoint( current, current ) ;
 				}
 			}
 		}

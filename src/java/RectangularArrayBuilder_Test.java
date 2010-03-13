@@ -1,7 +1,5 @@
 // :tabSize=2:indentSize=2:noTabs=false:folding=explicit:collapseFolds=1:
 
-import java.awt.Point; 
-
 /**
  * Test suite for RectangularArrayBuilder 
  */
@@ -259,15 +257,15 @@ public class RectangularArrayBuilder_Test {
 		try{
 			builder = new RectangularArrayBuilder( points(10), dim1d );
 		} catch( NotAnArrayException e){
-			throw new TestException( "not an array Point[10]" ) ;
+			throw new TestException( "not an array DummyPoint[10]" ) ;
 		} catch( ArrayDimensionException e){
 			throw new TestException( "array dimensionexception" ) ;
 		}
 		
-		Point[] data = (Point[])builder.getArray();
+		DummyPoint[] data = (DummyPoint[])builder.getArray();
 		int current = 0; 
 		for( int i=0; i<dim1d[0]; i++, current++){
-			Point p = data[i] ;
+			DummyPoint p = data[i] ;
 			if( p.x != current || p.y != current ){
 				throw new TestException( "data["+i+"].x != " + current ) ;
 			}
@@ -486,11 +484,11 @@ public class RectangularArrayBuilder_Test {
 			throw new TestException( "array dimensionexception" ) ;
 		}
 		
-		Point[][] data = (Point[][])builder.getArray();
+		DummyPoint[][] data = (DummyPoint[][])builder.getArray();
 		int current = 0; 
 		for( int j=0; j<dim2d[1]; j++){
 			for( int i=0; i<dim2d[0]; i++, current++){
-				Point p = data[i][j] ;
+				DummyPoint p = data[i][j] ;
 				if( p.x != current || p.y != current ){
 					throw new TestException( "data["+i+"]["+j+"].x != " + current ) ;
 				}
@@ -720,12 +718,12 @@ public class RectangularArrayBuilder_Test {
 			throw new TestException( "array dimensionexception" ) ;
 		}
 		
-		Point[][][] data = (Point[][][])builder.getArray();
+		DummyPoint[][][] data = (DummyPoint[][][])builder.getArray();
 		int current = 0; 
 		for( int k=0; k<dim3d[2] ; k++ ){
 			for( int j=0; j<dim3d[1]; j++){
 				for( int i=0; i<dim3d[0]; i++, current++){
-					Point p = data[i][j][k] ;
+					DummyPoint p = data[i][j][k] ;
 					if( p.x != current || p.y != current ){
 						throw new TestException( "data["+i+"]["+j+"]["+k+"].x != " + current ) ;
 					}
@@ -809,10 +807,10 @@ public class RectangularArrayBuilder_Test {
 		return x; 
 	}
 	
-	private static Point[] points(int n){
-		Point[] x = new Point[n];
+	private static DummyPoint[] points(int n){
+		DummyPoint[] x = new DummyPoint[n];
 		for( int i=0; i<n; i++){
-			x[i] = new Point( i, i ) ;
+			x[i] = new DummyPoint( i, i ) ;
 		}
 		return x; 
 	}
