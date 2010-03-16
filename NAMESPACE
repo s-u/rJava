@@ -27,6 +27,9 @@ S3method(within, jobjRef)
 S3method(within, jarrayRef)
 S3method(within, jclassName)
 
+# within requires that with.jobjRef is visible outside
+export(with.jobjRef)
+
 if( exists( ".DollarNames", asNamespace("utils") ) ) importFrom( utils, .DollarNames )
 S3method(.DollarNames, jobjRef)
 S3method(.DollarNames, jarrayRef)

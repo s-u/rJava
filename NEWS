@@ -17,6 +17,10 @@
 
     o	fix support of NULL arguments in new(J("SomeClass"), ...)
 
+    o	fixed issues in with() and within() when used on jobjRef;
+	also the evaluation environment is now the parent frame as
+	expected
+
     o	disable AWT tests if NOAWT is set; enable a few more tests
 
 

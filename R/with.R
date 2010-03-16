@@ -96,7 +96,7 @@ grabDots <- function( env, ...){
 }
 
 with.jobjRef <- function( data, expr, ...){
-  env <- new.env( parent = environment() )
+  env <- new.env( parent = parent.frame() )
   clazz <- .jcall( data, "Ljava/lang/Class;", "getClass")
   
   fields  <- .jcall( clazz, "[Ljava/lang/reflect/Field;", "getFields" )
@@ -106,7 +106,7 @@ with.jobjRef <- function( data, expr, ...){
 
   assign( "this", data, env = env )
 
-  grabDots( ..., env )
+  grabDots( env, ... )
   
   eval( substitute( expr ), env = env )
 }
@@ -138,7 +138,7 @@ with.jarrayRef <- function( data, expr, ...){
   	}
   }, env = env )
   
-  grabDots( ..., env )
+  grabDots( env, ... )
   
   eval( substitute( expr ), env = env )
 }
@@ -161,7 +161,7 @@ with.jclassName <- function( data, expr, ... ){
 	._populate_with_fields_and_methods( env, static_fields, 
 		static_methods, static_classes, data, only.static = TRUE )
 	
-	grabDots( ..., env )
+	grabDots( env, ... )
 	eval( substitute( expr ), env = env )
 }
 
