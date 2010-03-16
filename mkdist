@@ -123,6 +123,33 @@ if [ ! -e jri/configure ]; then
     fi
 fi
 
+if [ -n "${ORGPATH}" ]; then
+    DEFAULTRENG="${ORGPATH}/rosuda/REngine"
+else
+    DEFAULTRENG="$SWD/../../../org/rosuda/REngine"
+fi
+if [ ! -e "$DEFAULTRENG/Makefile" ]; then
+    echo "*** WARNING *** cannot find REngine sources, the distribution will NOT include REngine!"
+else
+    (cd "$DEFAULTRENG"; make clean; make)
+    if [ ! -e "$DEFAULTRENG/REngine.jar" ]; then
+	echo "*** ERROR *** cannot compile REngine API"
+	exit 1
+    fi
+    ## NOTE: the makefile in REngine/JRI *always* uses org/rosuda/JRI and not our copy
+    ##       so beware of inconsistencies when building outside the org tree!!
+    (cd "$DEFAULTRENG/JRI" && make)
+    if [ ! -e "$DEFAULTRENG/JRI/JRIEngine.jar" ]; then
+	echo "*** ERROR *** cannot compile JRI part of the REngine API"
+	exit 1
+    fi
+    ## create JRIEngine that contains really just the JRIEngine and not JRI since that will be installed separately
+    (cd "$DEFAULTRENG/JRI" && jar fc JRIEngine.jar org/rosuda/REngine/JRI)
+    mkdir -p /tmp/rJava/inst/jri 2>/dev/null
+    cp "$DEFAULTRENG/REngine.jar" "$DEFAULTRENG/JRI/JRIEngine.jar" /tmp/rJava/inst/jri
+fi
+
+
 #cd ..
 #echo "Updating INDEX ..."
 # R CMD Rdindex rJava > rJava/INDEX

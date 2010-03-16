@@ -1,7 +1,18 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.8-3	2010-03-13
+0.8-3	2010-03-16
+    o	REngine and JRIEngine classes are now included in rJava/JRI
+	although they are not loaded by default.
+
+    o	.r2j now has convert parameter to allow the creation of
+	pure references (convert=FALSE)
+
+    o	toJava() is a new function equivalent to .r2j but resulting
+	in REngine API references (instances of REXPReference).
+	By default the references are not resolved since the primary
+	use is to pass R functions to Java for callbacks.
+
     o	set text mode for stdin on Windows (thanks to Brian Ripley)
 
     o	fix support of NULL arguments in new(J("SomeClass"), ...)
