@@ -6,10 +6,11 @@
    1) lock down the object in R
    2) call new Rengine(eng,robj)
  */
-REPC SEXP PushToREXP(SEXP clname, SEXP eng, SEXP engCl, SEXP robj) {
+REPC SEXP PushToREXP(SEXP clname, SEXP eng, SEXP engCl, SEXP robj, SEXP doConv) {
   char sig[128];
   jvalue jpar[4];
   jobject o;
+  int convert = asInteger(doConv);
   JNIEnv *env=getJNIEnv();
   const char *cName;
   
@@ -19,9 +20,10 @@ REPC SEXP PushToREXP(SEXP clname, SEXP eng, SEXP engCl, SEXP robj) {
   R_PreserveObject(robj);
   sig[127]=0;
   cName = CHAR(STRING_ELT(clname,0));
-  snprintf(sig,127,"(L%s;J)V",CHAR(STRING_ELT(engCl,0)));
+  snprintf(sig,127,"(L%s;JZ)V",CHAR(STRING_ELT(engCl,0)));
   jpar[0].l = (jobject)EXTPTR_PTR(eng);
   jpar[1].j = (jlong) robj;
+  jpar[2].z = (jboolean) convert;
   o = createObject(env, cName, sig, jpar, 1);
   if (!o) error("Unable to create Java object");
   return j2SEXP(env, o, 1);
