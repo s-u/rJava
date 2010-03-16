@@ -1,6 +1,9 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.8-4	(under development)
+
+
 0.8-3	2010-03-16
     o	REngine and JRIEngine classes are now included in rJava/JRI
 	although they are not loaded by default.
