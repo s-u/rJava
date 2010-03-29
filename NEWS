@@ -2,7 +2,12 @@
 --------------------------
 
 0.8-4	(under development)
-
+    o	JRI 0.5-2
+	IMPORTANT NOTE: handling of NAs in character vectors has been
+	fixed, NAs were	incorrectly passed as "NA" from R to Java
+	instead of nulls (it was correct the other way round). Any
+	code that relies on such incorrect behavior will need to be
+	fixed!
 
 0.8-3	2010-03-16
     o	REngine and JRIEngine classes are now included in rJava/JRI
