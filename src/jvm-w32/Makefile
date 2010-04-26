@@ -2,7 +2,7 @@
 # Author: Simon Urbanek
 #         with contributions from Brian Ripley
 
-include $(R_HOME)/etc/Makeconf
+include $(R_HOME)/etc$(R_ARCH)/Makeconf
 
 TARGETS=libjvm.dll.a findjava.exe
 
