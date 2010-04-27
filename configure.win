@@ -44,7 +44,7 @@ if [ -e jri/configure.win ]; then
 	    cp jri/src/jri.dll inst/jri${R_ARCH}/
 	fi
 	# yet still install into JRI in case users get confused
-	cp -r jri/src/jri.dll jri/src/JRI.jar jri/examples inst/jri/
+	cp -r jri/run.bat jri/src/jri.dll jri/src/JRI.jar jri/examples inst/jri/
     else
 	echo "**** WARNING: JRI could NOT be built" >&2
 	if [ -z "$INGORE" ]; then
