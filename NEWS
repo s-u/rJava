@@ -1,13 +1,18 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.8-4	(under development)
+0.8-4	2010-04-28
     o	JRI 0.5-2
 	IMPORTANT NOTE: handling of NAs in character vectors has been
 	fixed, NAs were	incorrectly passed as "NA" from R to Java
 	instead of nulls (it was correct the other way round). Any
 	code that relies on such incorrect behavior will need to be
 	fixed!
+
+	Other changes in JRI are mostly related to Windows support
+	(bugfixes R 2.11.0 and Windows 64-bit support)
+
+    o	run.bat is now installed as part of JRI
 
 0.8-3	2010-03-16
     o	REngine and JRIEngine classes are now included in rJava/JRI
