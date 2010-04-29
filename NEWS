@@ -1,6 +1,8 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.8-5	(under development)
+
 0.8-4	2010-04-28
     o	JRI 0.5-2
 	IMPORTANT NOTE: handling of NAs in character vectors has been
