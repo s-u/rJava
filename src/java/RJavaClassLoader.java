@@ -244,6 +244,11 @@ public class RJavaClassLoader extends URLClassLoader {
 			libMap.put("jri", jri);
 			if (verbose) System.out.println(" - registered JRI: "+jri);
 		}
+
+		/* if we are the primary loader, make us the context loader so
+		   projects that rely on the context loader pick us */
+		if (primaryLoader == this)
+			Thread.currentThread().setContextClassLoader(this);
 	}
 	// }}}
 

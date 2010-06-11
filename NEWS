@@ -2,6 +2,17 @@
 --------------------------
 
 0.8-5	(under development)
+    o	fix a bug introduced in 0.8-2 where .jclassPath() would not
+	show the real class path
+
+    o	if the rJava class loader is used as a primary loader it will
+	also register as the context class loader. Some projects
+	rely on the thread context class loader instead of
+	Class.getClassLoader() [which is still more reliable] 
+	so those will now work as well.
+
+    o	JRI 0.5-3 (bugfixes)
+
 
 0.8-4	2010-04-28
     o	JRI 0.5-2
