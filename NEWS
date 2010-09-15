@@ -1,6 +1,9 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.8-6	(under development)
+
+
 0.8-5	2010-09-02
     o	fix a bug introduced in 0.8-2 where .jclassPath() would not
 	show the real class path
