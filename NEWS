@@ -1,6 +1,8 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.8-7	(under development)
+
 0.8-6	2010-09-17
     o	JRI 0.5-4: rniStop() provides several ways to notify R on unix.
 	It improves handing of user interrupts via rniStop() by
