@@ -1,7 +1,7 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.8-7	(under development)
+0.8-7	2010-10-18
     o	Windows updates to accomodate changes in R 2.12 and layout
 	changes in recent Sun Java installations.
 
