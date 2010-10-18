@@ -26,6 +26,9 @@ if [ -e jri/configure.win ]; then
     echo "=== Building JRI ==="
     CONFIGURED=1
     export CONFIGURED
+    if [ -z "${RHOME}" ]; then
+	RHOME="${R_HOME}"
+    fi
     R_HOME=${RHOME}
     export R_HOME
     export RHOME

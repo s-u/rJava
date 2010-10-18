@@ -2,6 +2,9 @@
 --------------------------
 
 0.8-7	(under development)
+    o	Windows updates to accomodate changes in R 2.12 and layout
+	changes in recent Sun Java installations.
+
 
 0.8-6	2010-09-17
     o	JRI 0.5-4: rniStop() provides several ways to notify R on unix.
