@@ -234,7 +234,13 @@ public class RJavaClassLoader extends URLClassLoader {
 		String rarch = System.getProperty("r.arch");
 		if (rarch != null && rarch.length()>0) {
 			UnixFile af = new UnixFile(path+"/jri"+rarch+"/libjri.so");
-			if (af.exists()) jri=af;
+			if (af.exists())
+			    jri = af;
+			else {
+			    UnixFile af = new UnixFile(path+"/jri"+rarch+"/jri.dll");
+			    if (af.exists())
+				jri = af;
+			}			
 		}
 		if (!jri.exists())
 			jri = new UnixFile(path+"/jri/libjri.jnilib");
