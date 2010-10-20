@@ -237,7 +237,7 @@ public class RJavaClassLoader extends URLClassLoader {
 			if (af.exists())
 			    jri = af;
 			else {
-			    UnixFile af = new UnixFile(path+"/jri"+rarch+"/jri.dll");
+			    af = new UnixFile(path+"/jri"+rarch+"/jri.dll");
 			    if (af.exists())
 				jri = af;
 			}			
