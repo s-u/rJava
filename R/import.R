@@ -19,7 +19,7 @@ getImporterFromNamespace <- function( nm, create = TRUE ){
 	
 }
 addImporterNamespace <- function( nm ){
-	importer <- .jnew( "RJavaImport" )
+	importer <- .jnew( "RJavaImport", .jcast( .rJava.class.loader, "java/lang/ClassLoader" ) )
 	assign( ".namespaces",	
 		append( list( list( nm = nm, importer = importer ) ), get(".namespaces", envir = java_class_importers ) ), 
 		envir = java_class_importers )
@@ -44,7 +44,7 @@ getImporterFromGlobalEnv <- function( ){
 	}
 }
 initGlobalEnvImporter <- function(){
-	importer <- .jnew( "RJavaImport" )
+	importer <- .jnew( "RJavaImport", .jcast( .rJava.class.loader, "java/lang/ClassLoader" ) )
 	assign( "global", importer , envir = java_class_importers )
 	importer
 }
@@ -65,7 +65,7 @@ import <- function( package = "java.util", env = sys.frame(sys.parent()) ){
 		}
 		
 		if( ! exists( IMPORTER, env ) || is.jnull( get( IMPORTER, envir = env ) ) ){
-			importer <- .jnew( "RJavaImport" )
+			importer <- .jnew( "RJavaImport", .jcast( .rJava.class.loader, "java/lang/ClassLoader" ) )
 			if( isNamespace(env) ){
 				unlockBinding( IMPORTER, env = env )
 				assignInNamespace( IMPORTER, importer, envir = env ) 
@@ -136,7 +136,7 @@ lookup <- function( name = "Object", ..., caller = sys.function(-1L) ){
 
 
 javaImport <- function( packages = "java.lang" ){
-	importer <- .jnew( "RJavaImport" )
+	importer <- .jnew( "RJavaImport", .jcast( .rJava.class.loader, "java/lang/ClassLoader" ) )
 	.jcall( importer, "V", "importPackage", packages )
 	.Call( "newRJavaLookupTable" , importer, 
 		PACKAGE = "rJava" )

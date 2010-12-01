@@ -30,7 +30,7 @@ public class RJavaImport implements Serializable {
 	 */
 	/* TODO: vector is not good enough, we need to control the order
 	         in which the packages appear */
-	private Vector/*<Package>*/ importedPackages ;
+	private Vector/*<String>*/ importedPackages ;
 	
 	/**
 	 * maps a simple name to a fully qualified name
@@ -40,10 +40,16 @@ public class RJavaImport implements Serializable {
 	private Map/*<String,String>*/ cache ;
 	
 	/**
+	 * associated class loader
+	 */
+	public ClassLoader loader ;
+	
+	/**
 	 * Constructor. Initializes the imported package vector and the cache
 	 */ 
-	public RJavaImport( ){
-		importedPackages = new Vector/*<Package>*/(); 
+	public RJavaImport( ClassLoader loader ){
+	    this.loader = loader ;
+		importedPackages = new Vector/*<String>*/(); 
 		cache = new HashMap/*<String,String>*/() ;
 	}
 	
@@ -83,12 +89,17 @@ public class RJavaImport implements Serializable {
 		}
 		
 		int npacks = importedPackages.size() ;
+		if( DEBUG ) System.out.println( "    [J] " + npacks + " packages" ) ;
 		if( npacks > 0 ){
 			for( int i=0; i<npacks; i++){
 				try{
-					Package p = (Package)importedPackages.get(i); 
-					res = Class.forName( p.getName() + "." + clazz ) ;
-				} catch( Exception e){}
+				    String p = (String)importedPackages.get(i); 
+				    String candidate = p + "." + clazz ;
+				    if( DEBUG ) System.out.println( "    [J] trying class : " + candidate ) ;
+					res = Class.forName( candidate ) ;
+				} catch( Exception e){
+				    if( DEBUG ) System.out.println( "   [JE] " + e.getMessage() );
+				}
 				if( res != null ){
 					cache.put( clazz, res.getName() ) ;
 					return res ; 
@@ -119,10 +130,7 @@ public class RJavaImport implements Serializable {
 	 * @param packageName package path name
 	 */
   public void importPackage( String packageName ){
-  	Package p  = Package.getPackage( packageName ) ;
-  	if( p != null ){
-  		importedPackages.add( p ) ; 
-  	}
+  	importedPackages.add( packageName ) ; 
   }
 	
   /**
