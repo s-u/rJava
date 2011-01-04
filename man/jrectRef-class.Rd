@@ -134,47 +134,57 @@ stopifnot( identical( as.vector(x), as.character(0:9) ) )
 
 dim3d <- c(5L, 3L, 2L) 
 
-x <- .jcall( "RectangularArrayExamples", "[[[Z", "getBooleanTripleRectangularArrayExample",  evalArray = FALSE )
+x <- .jcall( "RectangularArrayExamples", "[[[Z",
+"getBooleanTripleRectangularArrayExample",  evalArray = TRUE, simplify =
+TRUE)
 stopifnot( identical( typeof( x ), "logical" ) )
 stopifnot( identical( dim(x) , dim3d ) )
 stopifnot( identical( as.vector(x), rep( c(FALSE,TRUE), 15L ) ) )
 
-x <- .jcall( "RectangularArrayExamples", "[[[I", "getIntTripleRectangularArrayExample",  evalArray = FALSE )
+x <- .jcall( "RectangularArrayExamples", "[[[I",
+"getIntTripleRectangularArrayExample",  evalArray = TRUE, simplify = TRUE )
 stopifnot( identical( typeof( x ), "integer" ) )
 stopifnot( identical( dim(x) , dim3d ) )
 stopifnot( identical( as.vector(x), 0:29 ) )
  
-x <- .jcall( "RectangularArrayExamples", "[[[B", "getByteTripleRectangularArrayExample",  evalArray = FALSE )
+x <- .jcall( "RectangularArrayExamples", "[[[B",
+"getByteTripleRectangularArrayExample",  evalArray = TRUE, simplify = TRUE )
 stopifnot( identical( typeof( x ), "raw" ) )
 stopifnot( identical( dim(x) , dim3d ) )
 stopifnot( identical( as.vector(x), as.raw(0:29) ) )
 
-x <- .jcall( "RectangularArrayExamples", "[[[J", "getLongTripleRectangularArrayExample",  evalArray = FALSE )
+x <- .jcall( "RectangularArrayExamples", "[[[J",
+"getLongTripleRectangularArrayExample",  evalArray = TRUE, simplify = TRUE )
 stopifnot( identical( typeof( x ), "double" ) )
 stopifnot( identical( dim(x) , dim3d ) )
 stopifnot( identical( as.vector(x), as.numeric(0:29) ) )
 
-x <- .jcall( "RectangularArrayExamples", "[[[S", "getShortTripleRectangularArrayExample",  evalArray = FALSE )
+x <- .jcall( "RectangularArrayExamples", "[[[S",
+"getShortTripleRectangularArrayExample",  evalArray = TRUE, simplify = TRUE )
 stopifnot( identical( typeof( x ), "integer" ) )
 stopifnot( identical( dim(x) , dim3d ) )
 stopifnot( identical( as.vector(x), 0:29 ) )
 
-x <- .jcall( "RectangularArrayExamples", "[[[D", "getDoubleTripleRectangularArrayExample",  evalArray = FALSE )
+x <- .jcall( "RectangularArrayExamples", "[[[D",
+"getDoubleTripleRectangularArrayExample",  evalArray = TRUE, simplify = TRUE )
 stopifnot( identical( typeof( x ), "double" ) )
 stopifnot( identical( dim(x) , dim3d ) )
 stopifnot( identical( as.vector(x), as.numeric(0:29) ) )
 
-x <- .jcall( "RectangularArrayExamples", "[[[C", "getCharTripleRectangularArrayExample",  evalArray = FALSE )
+x <- .jcall( "RectangularArrayExamples", "[[[C",
+"getCharTripleRectangularArrayExample",  evalArray = TRUE, simplify = TRUE )
 stopifnot( identical( typeof( x ), "integer" ) )
 stopifnot( identical( dim(x) , dim3d ) )
 stopifnot( identical( as.vector(x), 0:29 ) )
 
-x <- .jcall( "RectangularArrayExamples", "[[[F", "getFloatTripleRectangularArrayExample",  evalArray = FALSE )
+x <- .jcall( "RectangularArrayExamples", "[[[F",
+"getFloatTripleRectangularArrayExample",  evalArray = TRUE, simplify = TRUE )
 stopifnot( identical( typeof( x ), "double" ) )
 stopifnot( identical( dim(x) , dim3d ) )
 stopifnot( identical( as.vector(x), as.numeric(0:29) ) )
 
-x <- .jcall( "RectangularArrayExamples", "[[[Ljava/lang/String;", "getStringTripleRectangularArrayExample",  evalArray = FALSE )
+x <- .jcall( "RectangularArrayExamples", "[[[Ljava/lang/String;",
+"getStringTripleRectangularArrayExample",  evalArray = TRUE, simplify = TRUE )
 stopifnot( identical( typeof( x ), "character" ) )
 stopifnot( identical( dim(x) , dim3d ) )
 stopifnot( identical( as.vector(x), as.character(0:29) ) )
