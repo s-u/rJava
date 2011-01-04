@@ -1,12 +1,15 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000807 /* rJava v0.8-8 */
+#define RJAVA_VER 0x000900 /* rJava v0.9-0 */
 
 /* important changes between versions:
    3.0  - adds compiler
    2.0
    1.0
+   0.9  - rectangular arrays, flattening, import
+          (really introduced in later 0.8 versions but they broke
+	   the API compatibility so 0.9 attempts to fix that)
    0.8  - new exception handling using Exception condition
    0.7  - new reflection code, new REngine API (JRI)
    0.6  - adds serialization, (auto-)deserialization and cache

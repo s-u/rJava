@@ -9,7 +9,7 @@
 \usage{
 .jcall(obj, returnSig = "V", method, ..., evalArray = TRUE, 
     evalString = TRUE, check = TRUE, interface = "RcallMethod", 
-    use.true.class = FALSE)
+    simplify = FALSE, use.true.class = FALSE)
 }
 \arguments{
   \item{obj}{Java object (\code{jobjRef} as returned by
@@ -28,6 +28,8 @@
   \item{evalArray}{This flag determines whether the array return value
     is evaluated (\code{TRUE}) or passed back as Java object reference
     (\code{FALSE}).}
+  \item{simplify}{If \code{evalArray} is \code{TRUE} then this argument
+    is passed to \code{\link{.jevalArray}()}.}
   \item{evalString}{This flag determines whether string result is returned
     as characters or as Java object reference.}
   \item{check}{If set to \code{TRUE} then checks for exceptions are
@@ -44,7 +46,7 @@
 	Java.}
     }
   }
-  \item{use.true.class}{logical. If set to TRUE, the true class
+  \item{use.true.class}{logical. If set to \code{TRUE}, the true class
   of the returned object will be used instead of the declared signature. 
   \code{TRUE} allows for example to grab the actual class of an object when 
   the return type is an interface, or allows to grab an array when the 

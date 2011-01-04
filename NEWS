@@ -1,6 +1,26 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.9-0	(under development)
+    o	fixes issues introduced by several new features in the late
+	0.8 series. Most imporantly .jarray() and .jevalArray() behave
+	as intended (and as implemented in previous versions). The
+	same applies to .jcall() behavior with respect to arrays and
+	its evalArray arument. The defaults for some new arguments
+	have been changed to reflect the original behavior.
+
+    o	.jevalArray() has an additional argument `simplify' which allows
+	multi-dimensional arrays to be converted to native R
+	types. Use with care - it may convert more recursive types in
+	the future so it should be used preferrably where you have
+	control over the types converted.
+
+    o	fixed a bug in .jevalArray that was not simplifying string
+	vectors correctly when the array type was not specified
+	(.jclass returns dot notation whereas signatures use JNI
+	notation so a conversion was necessary)
+
+
 0.8-8	2010-12-20
     o	Add support for r.arch in RJavaClassLoader on Windows as well
 

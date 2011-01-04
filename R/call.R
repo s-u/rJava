@@ -32,14 +32,14 @@
 
 # evaluates an array reference. If rawJNIRefSignature is set, then obj is not assumed to be
 # jarrayRef, but rather direct JNI reference with the corresponding signature
-.jevalArray <- function(obj, rawJNIRefSignature=NULL, silent=FALSE) {
+.jevalArray <- function(obj, rawJNIRefSignature=NULL, silent=FALSE, simplify=FALSE) {
   jobj<-obj
   sig<-rawJNIRefSignature
   if (is.null(rawJNIRefSignature)) {
     if(!inherits(obj,"jarrayRef")) {
       if (!inherits(obj,"jobjRef"))
         stop("object is not a Java object reference (jobjRef/jarrayRef).")
-      cl <- .jclass(obj)
+      cl <- gsub("\\.","/",.jclass(obj))
       if (is.null(cl) || !isJavaArraySignature(cl) )
         stop("object is not a Java array.")
       sig <- cl
@@ -67,18 +67,25 @@
   else if (substr(sig,1,2)=="[L")
     return(lapply(.Call("RgetObjectArrayCont", jobj, PACKAGE="rJava"),
                   function(x) new("jobjRef", jobj=x, jclass=substr(sig, 3, nchar(sig)-1)) ))
-  else if (substr(sig,1,2)=="[[")
+  else if (substr(sig,1,2)=="[[") {
+    if (simplify) { # try to figure out if this is a rectangular array in which case we can do better
+      o <- newArray(simplify=TRUE, jobj=jobj, signature=sig)
+      # if o is not a reference then we were able to simplify it
+      if (!is(o, "jobjRef")) return(o)
+    }
+    # otherwise simplify has no effect
     return(lapply(.Call("RgetObjectArrayCont", jobj, PACKAGE="rJava"),
-                  function(x) newArray(jobj=x, signature=substr(sig, 2, 999), simplify=FALSE)))
+                  function(x) newArray(jobj=x, signature=substr(sig, 2, 999), simplify=simplify)))
+  }
   # if we don't know how to evaluate this, issue a warning and return the jarrayRef
   if (!silent)
     warning(paste("I don't know how to evaluate an array with signature",sig,". Returning a reference."))
-  newArray( jobj = jobj, signature = sig )
+  newArray(jobj = jobj, signature = sig, simplify = FALSE)
 }
 
 .jcall <- function(obj, returnSig="V", method, ..., evalArray=TRUE, 
 	evalString=TRUE, check=TRUE, interface="RcallMethod", 
-	use.true.class = FALSE) {
+	simplify=FALSE, use.true.class = FALSE) {
   if (check) .jcheck()
   r<-NULL
   # S is a shortcut for Ljava/lang/String;
@@ -106,17 +113,9 @@
   	  }
   }
   
-  if ( isJavaArraySignature(returnSig) ) {
-  	  if (evalArray){
-  	  	  r <- .jevalArray(r,rawJNIRefSignature=returnSig)
-      } else {
-      	  # since we don't know if it is going to be rectangular or not, 
-      	  # we need to use newArray to dispatch between 
-      	  # jarrayRef and jrectRef
-      	  # TODO: should we pass down evalString
-      	  # TODO: should we control simplify from .jcall
-      	  r <- newArray( jobj = r, signature = returnSig )
-      }
+  if (isJavaArraySignature(returnSig)) {
+      # eval or return a reference
+      r <- if (evalArray) .jevalArray(r, rawJNIRefSignature=returnSig, simplify=simplify) else newArray(jobj = r, signature = returnSig, simplify = FALSE)
   } else if ( substr(returnSig,1,1)=="L") {
   	  if (is.null(r)){
   	  	  if( check ) .jcheck( silent = FALSE )
@@ -199,7 +198,7 @@
     obj@jsig <- signature
     return(obj)
   }
-  newArray( obj )
+  newArray(obj, simplify=FALSE)
 }
 
 # creates a new "null" object of the specified class
@@ -228,7 +227,7 @@ getDim <- function(x){
 	dim
 }
 
-.jarray <- function(x, contents.class=NULL, dispatch = TRUE ) {
+.jarray <- function(x, contents.class = NULL, dispatch = FALSE) {
 	# this already is an array, so don't bother
 	if( isJavaArray( x ) ) return( newArray( x, simplify = FALSE) ) 
 	
@@ -239,19 +238,15 @@ getDim <- function(x){
 	
 	# common mistake is to not specify a list but just a single Java object
 	# but, well, people just keep doing it so we may as well support it 
-	if( inherits(x,"jobjRef") ){
+	dim <- if (inherits(x,"jobjRef")) {
 		x <- list(x)
-		dim <- 1L
-	} else{
-		dim <- getDim( x )
-	}
-	
+		1L
+	} else getDim(x)
+
 	# the jni call
 	array <- .Call("RcreateArray", x, contents.class, PACKAGE="rJava")
 	
-	if( !dispatch ){
-		return( array )
-	}
+	if (!dispatch) return( array )
 	
 	if( is.list( x ) ){
 		# if the input of RcreateArray was a list, we need some more care
@@ -372,7 +367,7 @@ is.jnull <- function(x) {
   r <- .Call("RgetField", o, sig, as.character(name), as.integer(true.class), PACKAGE="rJava")
   if (inherits(r, "jobjRef")) {
     if (isJavaArraySignature(r@jclass)) {
-    	r <- if (convert) .jevalArray(r, rawJNIRefSignature=r@jclass) else newArray(r, FALSE)
+    	r <- if (convert) .jevalArray(r, rawJNIRefSignature=r@jclass, simplify=TRUE) else newArray(r, simplify=FALSE)
     }
     if (convert && inherits(r, "jobjRef")) {
       if (r@jclass == "java/lang/String")
