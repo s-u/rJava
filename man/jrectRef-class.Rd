@@ -200,7 +200,7 @@ stopifnot( identical( as.vector(x), as.character(0:29) ) )
 
 # testing the indexing
 
-xj <- .jarray( x )
+xj <- .jarray( x, dispatch = TRUE )
 stopifnot( dim( xj[ ,, ] ) == c( 5L, 3L, 2L ) )
 stopifnot( dim( xj[ ] ) == c( 5L, 3L, 2L ) )
 stopifnot( dim( xj[ ,,1,drop= TRUE] ) == c( 5L, 3L ) )
@@ -231,20 +231,23 @@ stopifnot( xj@jsig == "[Ljava/lang/String;" )
 stopifnot( dim( xj ) == 30L )
 
 # test unique
-x <- .jarray( rep( 1:2, each = 5 ) )
+# **** FIXME: this should really work even with dispatch=FALSE since
+#             it's a vector but it does not! It applies to everything
+#             below
+x <- .jarray( rep( 1:2, each = 5 ), dispatch = TRUE )
 xu <- unique( x )
 stopifnot( dim(xu) == 2L )
 
 if (!nzchar(Sys.getenv("NOAWT"))) {
   p1 <- .jnew( "java/awt/Point" )
   p2 <- .jnew( "java/awt/Point" )
-  x <- .jarray( list( p1, p2 ) )
+  x <- .jarray( list( p1, p2 ), dispatch = TRUE )
   xu <- unique( x )
   stopifnot( dim( xu ) == 1L )
 }
 
 # test duplicated
-x <- .jarray( rep( 1:2, each = 5 ) )
+x <- .jarray( rep( 1:2, each = 5 ), dispatch = TRUE )
 xd <- duplicated( x )
 stopifnot( xd == rep( c( FALSE, TRUE, TRUE, TRUE, TRUE), 2L ) ) 
 if (rJava:::.base.has.anyDuplicated) stopifnot( anyDuplicated( x ) == 2L )
@@ -252,7 +255,7 @@ if (rJava:::.base.has.anyDuplicated) stopifnot( anyDuplicated( x ) == 2L )
 if (!nzchar(Sys.getenv("NOAWT"))) {
   p1 <- .jnew( "java/awt/Point" )
   p2 <- .jnew( "java/awt/Point" )
-  x <- .jarray( list( p1, p2 ) )
+  x <- .jarray( list( p1, p2 ), dispatch = TRUE )
   xd <- duplicated( x )
   stopifnot( xd == c( FALSE, TRUE) )
   if (rJava:::.base.has.anyDuplicated) stopifnot( anyDuplicated( x ) == 2L )
@@ -261,13 +264,14 @@ if (!nzchar(Sys.getenv("NOAWT"))) {
 # test sort, rev
 d1 <- .jnew("java/lang/Double", 0)
 d2 <- .jnew("java/lang/Double", -1)
-a <- .jarray( list( d1, d2) )
+a <- .jarray( list( d1, d2), dispatch = TRUE )
 stopifnot( sort( a )[[1]]$doubleValue() == -1.0 )
 stopifnot( rev( a )[[1]]$doubleValue() == -1.0 )
 
 # test min, max, range
 Double <- J("java.lang.Double")
-a <- .jarray( list( new( Double, 10 ), new( Double, 4), new( Double, 5) ), "java/lang/Double" )
+a <- .jarray( list( new( Double, 10 ), new( Double, 4), new( Double, 5)
+), "java/lang/Double", dispatch = TRUE )
 stopifnot( min( a )$doubleValue() == 4  )
 stopifnot( max( a )$doubleValue() == 10 )
 stopifnot( range(a)[[1]]$doubleValue() == 4 )
