@@ -457,7 +457,7 @@ setMethod( "[", signature( x = "jrectRef" ),
 		
 		# now if we need and can simplify it, we return the subsetted array as is
 		# otherwise, we rewrap it to java
-		if( simplify && (typename == "java.lang.String" || isprim ) ) subs else .jarray( subs )
+		if( simplify && (typename == "java.lang.String" || isprim ) ) subs else .jarray( subs, dispatch = TRUE )
 
 	} )
 # }}}
@@ -480,7 +480,6 @@ setReplaceMethod( "dim", signature( x = "jrectRef" ), function(x, value){
 	wrapper <- .jnew( "ArrayWrapper", .jcast(x) )
 	
 	typename <- .jcall( wrapper, "Ljava/lang/String;", "getObjectTypeName" )
-	isprim   <- .jcall( wrapper, "Z", "isPrimitive" )
 	
 	flat <- structure( 
 			switch( typename, 
@@ -496,7 +495,7 @@ setReplaceMethod( "dim", signature( x = "jrectRef" ), function(x, value){
 			                     .jcall( wrapper, "[Ljava/lang/Object;" , "flat_Object"  , evalArray = TRUE ) ) , 
 		dim = value )
 		                     
-	.jarray(flat)
+	.jarray(flat, dispatch = TRUE)
 	
 } )
 # }}}
@@ -527,10 +526,10 @@ setGeneric( "unique" )
 		"getObjectTypeName", .jcast(x) )
 	
 	if( isPrimitiveTypeName( typename, include.strings = TRUE ) ){
-		.jarray( unique( .jevalArray( x ) ) )
+		.jarray( unique( .jevalArray( x ) ), dispatch = TRUE )
 	} else{
 		.jcall( "RJavaArrayTools", "[Ljava/lang/Object;", "unique",
-			.jcast( x, "[Ljava/lang/Object;" ), evalArray = FALSE )
+			.jcast( x, "[Ljava/lang/Object;" ), evalArray = TRUE, simplify = TRUE )
 	}
 }
 
@@ -623,10 +622,10 @@ setGeneric( "sort" )
 		"getObjectTypeName", .jcast(x) )
 	
 	if( isPrimitiveTypeName( typename, include.strings = TRUE ) ){
-		.jarray( sort( .jevalArray( x ), decreasing = decreasing ) )
+		.jarray( sort( .jevalArray( x ), decreasing = decreasing ), dispatch = TRUE )
 	} else{
 		.jcall( "RJavaArrayTools", "[Ljava/lang/Object;", "sort",
-			.jcast( x, "[Ljava/lang/Object;" ), decreasing, evalArray = FALSE )
+			.jcast( x, "[Ljava/lang/Object;" ), decreasing, evalArray = TRUE, simplify = TRUE )
 	}
 
 }
@@ -645,10 +644,10 @@ setMethod( "rev", "jrectRef", function(x){
 		"getObjectTypeName", .jcast(x) )
 	
 	if( isPrimitiveTypeName( typename, include.strings = TRUE ) ){
-		.jarray( rev( .jevalArray( x ) ) )
+		.jarray( rev( .jevalArray( x ) ), dispatch = TRUE )
 	} else{
 		.jcall( "RJavaArrayTools", "[Ljava/lang/Object;", "rev",
-			.jcast( x, "[Ljava/lang/Object;" ), evalArray = FALSE )
+			.jcast( x, "[Ljava/lang/Object;" ), evalArray = TRUE, simplify = TRUE )
 	}
 
 } )
@@ -716,7 +715,7 @@ setMethod("range", "jrectRef", function(x, ..., na.rm=TRUE){
 		range( x[simplify=TRUE], na.rm = na.rm )
 	} else{
 		summarizer <- .jnew( "RectangularArraySummary", .jcast(x), dim )
-		.jcall( summarizer, "[Ljava/lang/Object;", "range", na.rm, evalArray = FALSE )
+		.jcall( summarizer, "[Ljava/lang/Object;", "range", na.rm, evalArray = TRUE, simplify = TRUE )
 	}
 	
 } )
