@@ -2,12 +2,13 @@
 
 // {{{ imports
 import java.io.*;
-import java.io.File ;
+import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Vector;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.zip.*;
 // }}}
@@ -207,6 +208,9 @@ public class RJavaClassLoader extends URLClassLoader {
 	 */
 	public RJavaClassLoader(String path, String libpath) {
 		super(new URL[] {});
+		// respect rJava.debug level
+		String rjd = System.getProperty("rJava.debug");
+		if (rjd != null && rjd.length() > 0 && !rjd.equals("0")) verbose = true;
 		if (verbose) System.out.println("RJavaClassLoader(\""+path+"\",\""+libpath+"\")");
 		if (primaryLoader==null) {
 			primaryLoader = this;
@@ -255,6 +259,17 @@ public class RJavaClassLoader extends URLClassLoader {
 		   projects that rely on the context loader pick us */
 		if (primaryLoader == this)
 			Thread.currentThread().setContextClassLoader(this);
+
+		if (verbose) {
+		    System.out.println("RJavaClassLoader initialized.\n\nRegistered libraries:");
+		    for(Iterator entries = libMap.keySet().iterator(); entries.hasNext(); ) {
+			Object key = entries.next(); System.out.println("  " + key + ": '" + libMap.get(key) + "'");
+		    }
+		    System.out.println("\nRegistered class paths:");
+		    for (Enumeration e = classPath.elements() ; e.hasMoreElements() ;)
+			System.out.println("  '"+e.nextElement()+"'");
+		    System.out.println("\n-- end of class loader report --");
+		}
 	}
 	// }}}
 
@@ -282,6 +297,7 @@ public class RJavaClassLoader extends URLClassLoader {
 					return cl;
 				}
 			} catch (Exception fnf) {
+			    if (verbose) System.out.println(" - URL loader did not find it: " + fnf);
 			}	    
 		}
 		if (verbose) System.out.println("RJavaClassLoader.findClass(\""+name+"\")");
@@ -289,6 +305,7 @@ public class RJavaClassLoader extends URLClassLoader {
 
 		// {{{ iterate through the elements of the class path
 		InputStream ins = null;
+		Exception defineException = null;
 		Enumeration/*<UnixFile>*/ e = classPath.elements() ;
 		while( e.hasMoreElements() ){
 			UnixFile cp = (UnixFile) e.nextElement();
@@ -299,11 +316,13 @@ public class RJavaClassLoader extends URLClassLoader {
 				/* a file - assume it is a jar file */
 				if (cp instanceof UnixJarFile){
 					ins = ((UnixJarFile)cp).getResourceAsStream( classNameToFile(name) + ".class" ) ;
+					if (verbose) System.out.println("   JAR file, can get '" + classNameToFile(name) + "'? " + ((ins == null) ? "YES" : "NO"));
 				} else if ( cp instanceof UnixDirectory ){
 					UnixFile class_f = new UnixFile(cp.getPath()+"/"+classNameToFile(name)+".class");
 					if (class_f.isFile() ) {
 						ins = new FileInputStream(class_f);
 					}
+					if (verbose) System.out.println("   Directory, can get '" + class_f + "'? " + ((ins == null) ? "YES" : "NO"));
 				}
 				
 				/* some comments on the following :
@@ -338,7 +357,14 @@ public class RJavaClassLoader extends URLClassLoader {
 					ins.close();
 					n = rp;
 					if (verbose) System.out.println("RJavaClassLoader: loaded class "+name+", "+n+" bytes");
-					cl = defineClass(name, fc, 0, n);
+					try {
+					    cl = defineClass(name, fc, 0, n);
+					} catch (Exception dce) {
+					    // we want to save this one so we can pass it on
+					    defineException = dce;
+					    break;
+					}
+					if (verbose) System.out.println("  defineClass('" + name +"') returned " + cl);
 					// System.out.println(" - class = "+cl);
 					return cl;
 				}
@@ -348,6 +374,9 @@ public class RJavaClassLoader extends URLClassLoader {
 		}
 		// }}}
 		
+		if (defineException != null) // we bailed out on class interpretation, re-throw it
+		    throw (new ClassNotFoundException("Class not found - candidate class binary found but could not be loaded", defineException));
+
 		// giving up
 		if( verbose ) System.out.println("    >> ClassNotFoundException ");
 		if (cl == null) {

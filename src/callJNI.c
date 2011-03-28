@@ -54,13 +54,18 @@ HIDE jclass findClass(JNIEnv *env, const char *cName) {
     printf("findClass(\"%s\") [with rJava loader]\n", cn);
 #endif
     cl = (jclass) (*env)->CallStaticObjectMethod(env, javaClassClass, mid_forName, cns, (jboolean) 1, oClassLoader);
+#if RJAVA_LEGACY
     clx(env);
+#endif
     _mp(MEM_PROF_OUT("  %08x LNEW class\n", (int) cl))
     releaseObject(env, cns);
 #ifdef DEBUG_CL
     printf(" - got %x\n", (unsigned int) cl);
 #endif
-    if (cl) return cl;
+#if RJAVA_LEGACY
+    if (cl)
+#endif
+	return cl;
   }
 #ifdef DEBUG_CL
   printf("findClass(\"%s\") (no loader)\n", cName);
