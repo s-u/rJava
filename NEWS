@@ -20,6 +20,8 @@
 	(.jclass returns dot notation whereas signatures use JNI
 	notation so a conversion was necessary)
 
+    o	use install.libs.R in R 2.13.1 to install multi-arch JRI
+
 
 0.8-8	2010-12-20
     o	Add support for r.arch in RJavaClassLoader on Windows as well
