@@ -42,11 +42,12 @@ if (length(grep("^darwin", R.version$os))) {
     }
   }
 } else { ## on other platforms we simply install in jri$(R_ARCH)
-  jni <- if (WINDOWS) "../jri/jri.dll" else "../jri/libjri.so"
+  jri <- if (WINDOWS) "jri.dll" else "libjri.so"
+  jni <- file.path("..", "jri", jri)
   if (isTRUE(file.exists(jni))) { ## continue only if JRI was actually compiled
     libarch <- if (nzchar(R_ARCH)) paste("jri", R_ARCH, sep='') else "jri"
     dir.create(file.path(R_PACKAGE_DIR, libarch), recursive = TRUE, showWarnings = FALSE)
-    dest <- file.path(R_PACKAGE_DIR, libarch, jni)
+    dest <- file.path(R_PACKAGE_DIR, libarch, jri)
     file.copy(jni, dest, overwrite = TRUE)
-  }  
+  }
 }
