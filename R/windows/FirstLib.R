@@ -4,14 +4,18 @@ function(libname, pkgname) {
     OPATH <- Sys.getenv("PATH")
     javahome <- Sys.getenv("JAVA_HOME")
     if(!nchar(javahome)) { ## JAVA_HOME was not set explicitly
-        for (root in c("HLM","HCU"))
-          for(key in c("Software\\JavaSoft\\Java Runtime Environment",
-                       "Software\\JavaSoft\\Java Development Kit")) {
-            hive <- try(utils::readRegistry(key, root, 2), silent=TRUE)
-            if (!inherits(hive, "try-error")) break
+        find.java <- function() {
+            for (root in c("HLM", "HCU"))
+                for(key in c("Software\\JavaSoft\\Java Runtime Environment",
+                             "Software\\JavaSoft\\Java Development Kit")) {
+                  hive <- try(utils::readRegistry(key, root, 2), silent=TRUE)
+                  if (!inherits(hive, "try-error")) return(hive)
+                }
+            hive
         }
+        hive <- find.java()
         if (inherits(hive, "try-error"))
-            stop("JAVA_HOME cannot be found from the Registry")
+            stop("JAVA_HOME cannot be determined from the Registry")
         if (!length(hive$CurrentVersion))
             stop("No CurrentVersion entry in '",key,"'! Try re-installing Java and make sure R and Java have matching architectures.")
         this <- hive[[hive$CurrentVersion]]

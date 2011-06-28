@@ -1,6 +1,10 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.9-1	2011-06-28
+    o	fixed Java detection from registry on Windows (bug introduced
+	in 0.9-0)
+
 0.9-0	2011-06-22
     o	fixes issues introduced by several new features in the late
 	0.8 series. Most imporantly .jarray() and .jevalArray() behave
