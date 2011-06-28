@@ -1,7 +1,7 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000901 /* rJava v0.9-1 */
+#define RJAVA_VER 0x000902 /* rJava v0.9-2 */
 
 /* important changes between versions:
    3.0  - adds compiler

@@ -91,6 +91,9 @@
   f<-.jcall(ic,"Ljava/lang/reflect/Field;","getField", "TYPE")
   assign(".jclass.void", .jcast(.jcall(f,"Ljava/lang/Object;","get",.jcast(ic,"java/lang/Object")),"java/lang/Class"), .env)
 
+  ## if NOAWT is set, set AWT to headless
+  if (nzchar(Sys.getenv("NOAWT"))) .jcall("java/lang/System","S","setProperty","java.awt.headless","true")
+
   lib <- "libs"
   if (nchar(.Platform$r_arch)) lib <- file.path("libs", .Platform$r_arch)
 
