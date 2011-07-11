@@ -37,7 +37,6 @@ argument of \code{\link{lapply}}
 }
 \examples{
 \dontshow{.jinit()}
-if (!nzchar(Sys.getenv("NOAWT"))) {
   # lapplying over a java array
   a <- .jarray( list( 
 	.jnew( "java/awt/Point", 10L, 10L ), 
@@ -48,7 +47,6 @@ if (!nzchar(Sys.getenv("NOAWT"))) {
 		(x + y ) ^ 2
 	} )
   } )
-}
 
 # lapply over a Vector (implements Iterable)
 v <- .jnew("java/util/Vector")
