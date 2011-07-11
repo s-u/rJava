@@ -10,7 +10,7 @@
   # TODO: should this do "S" > "java/lang/String", ... like .jcall
   
   if (check) .jcheck(silent=TRUE)
-  o<-.External("RcreateObject", class, ..., silent=silent, PACKAGE="rJava")
+  o<-.External(RcreateObject, class, ..., silent=silent)
   if (check) .jcheck(silent=silent)
   if (is.null(o)) {
   	  if (!silent) {
@@ -47,25 +47,25 @@
     jobj<-obj@jobj
   } else if (is(obj, "jobjRef")) jobj<-obj@jobj
   if (sig=="[I")
-    return(.Call("RgetIntArrayCont", jobj, PACKAGE="rJava"))
+    return(.Call(RgetIntArrayCont, jobj))
   else if (sig=="[J")
-    return(.Call("RgetLongArrayCont", jobj, PACKAGE="rJava"))
+    return(.Call(RgetLongArrayCont, jobj))
   else if (sig=="[Z")
-    return(.Call("RgetBoolArrayCont", jobj, PACKAGE="rJava"))
+    return(.Call(RgetBoolArrayCont, jobj))
   else if (sig=="[B")
-    return(.Call("RgetByteArrayCont", jobj, PACKAGE="rJava"))
+    return(.Call(RgetByteArrayCont, jobj))
   else if (sig=="[D")
-    return(.Call("RgetDoubleArrayCont", jobj, PACKAGE="rJava"))
+    return(.Call(RgetDoubleArrayCont, jobj))
   else if (sig=="[S")
-    return(.Call("RgetShortArrayCont", jobj, PACKAGE="rJava"))
+    return(.Call(RgetShortArrayCont, jobj))
   else if (sig=="[C")
-    return(.Call("RgetCharArrayCont", jobj, PACKAGE="rJava"))
+    return(.Call(RgetCharArrayCont, jobj))
   else if (sig=="[F")
-    return(.Call("RgetFloatArrayCont", jobj, PACKAGE="rJava"))
+    return(.Call(RgetFloatArrayCont, jobj))
   else if (sig=="[Ljava/lang/String;")
-    return(.Call("RgetStringArrayCont", jobj, PACKAGE="rJava"))
+    return(.Call(RgetStringArrayCont, jobj))
   else if (substr(sig,1,2)=="[L")
-    return(lapply(.Call("RgetObjectArrayCont", jobj, PACKAGE="rJava"),
+    return(lapply(.Call(RgetObjectArrayCont, jobj),
                   function(x) new("jobjRef", jobj=x, jclass=substr(sig, 3, nchar(sig)-1)) ))
   else if (substr(sig,1,2)=="[[") {
     if (simplify) { # try to figure out if this is a rectangular array in which case we can do better
@@ -74,7 +74,7 @@
       if (!is(o, "jobjRef")) return(o)
     }
     # otherwise simplify has no effect
-    return(lapply(.Call("RgetObjectArrayCont", jobj, PACKAGE="rJava"),
+    return(lapply(.Call(RgetObjectArrayCont, jobj),
                   function(x) newArray(jobj=x, signature=substr(sig, 2, 999), simplify=simplify)))
   }
   # if we don't know how to evaluate this, issue a warning and return the jarrayRef
@@ -87,6 +87,8 @@
 	evalString=TRUE, check=TRUE, interface="RcallMethod", 
 	simplify=FALSE, use.true.class = FALSE) {
   if (check) .jcheck()
+  iaddr <- .env[[interface]]
+  interface <- if (is.null(iaddr)) getNativeSymbolInfo(interface, "rJava", TRUE, FALSE)$address else iaddr
   r<-NULL
   # S is a shortcut for Ljava/lang/String;
   if (returnSig=="S")
@@ -98,17 +100,17 @@
   if (returnSig=="[T") returnSig <- "[S"
   
   if (inherits(obj,"jobjRef") || inherits(obj,"jarrayRef") || inherits(obj,"jrectRef") )
-    r<-.External(interface, obj@jobj, returnSig, method, ..., PACKAGE="rJava")
+    r<-.External(interface, obj@jobj, returnSig, method, ...)
   else
-    r<-.External(interface, as.character(obj), returnSig, method, ..., PACKAGE="rJava")
+    r<-.External(interface, as.character(obj), returnSig, method, ...)
   if (returnSig=="V") return(invisible(NULL))
   
   if( use.true.class && !is.null( r ) ){
   	  if( ! ( isPrimitiveTypeName(returnSig) || isArraySignature(returnSig) ) ){
   	  	  # avoid calling .jcall since we work on external pointers directly here
-  	  	  clazz     <- .External(interface, r    , "Ljava/lang/Class;", "getClass", PACKAGE = "rJava" )
-  	  	  clazzname <- .External(interface, clazz, "Ljava/lang/String;", "getName", PACKAGE = "rJava" )
-  	  	  clazzname <- .External("RgetStringValue", clazzname, PACKAGE="rJava")
+  	  	  clazz     <- .External(interface, r    , "Ljava/lang/Class;", "getClass")
+  	  	  clazzname <- .External(interface, clazz, "Ljava/lang/String;", "getName")
+  	  	  clazzname <- .External(RgetStringValue, clazzname)
   	  	  returnSig <- tojniSignature( clazzname ) 
   	  }
   }
@@ -124,7 +126,7 @@
     
   	if (returnSig=="Ljava/lang/String;" && evalString){
       if( check ) .jcheck( silent = FALSE )
-  	  return(.External("RgetStringValue", r, PACKAGE="rJava"))
+  	  return(.External(RgetStringValue, r))
     }
     r <- new("jobjRef", jobj=r, jclass=substr(returnSig,2,nchar(returnSig)-1))
   }
@@ -140,9 +142,9 @@
   if (!is(obj,"jobjRef"))
     stop("can get value of Java objects only")
   if (!is.null(obj@jclass) && obj@jclass=="lang/java/String")
-    r<-.External("RgetStringValue", obj@jobj, PACKAGE="rJava")
+    r<-.External(RgetStringValue, obj@jobj)
   else
-    r<-.External("RtoString", obj@jobj, PACKAGE="rJava")
+    r<-.External(RtoString, obj@jobj)
   r
 }
 
@@ -208,10 +210,7 @@
   new("jobjRef", jobj=.jzeroRef, jclass=as.character(class))
 }
 
-.jcheck <- function(silent=FALSE) {
-  r <- .C("RJavaCheckExceptions", silent, FALSE, PACKAGE="rJava")
-  invisible(r[[2]])
-}
+.jcheck <- function(silent=FALSE) invisible(.Call(RJavaCheckExceptions, silent))
 
 .jproperty <- function(key) {
   if (length(key)>1)
@@ -244,7 +243,7 @@ getDim <- function(x){
 	} else getDim(x)
 
 	# the jni call
-	array <- .Call("RcreateArray", x, contents.class, PACKAGE="rJava")
+	array <- .Call(RcreateArray, x, contents.class)
 	
 	if (!dispatch) return( array )
 	
@@ -282,7 +281,7 @@ getDim <- function(x){
   if (is.null(a)) a <- .jzeroRef
   if (is.null(b)) b <- .jzeroRef
   if (!inherits(a,"externalptr") || !inherits(b,"externalptr")) stop("Invalid argument to .jidenticalRef, must be a pointer or jobjRef")
-  .Call("RidenticalRef",a,b,PACKAGE="rJava")
+  .Call(RidenticalRef,a,b)
 }
 
 # returns TRUE only for NULL or jobjRef with jobj=0x0
@@ -318,7 +317,7 @@ is.jnull <- function(x) {
   else
     try(a <- .jcall("java/lang/Class","Ljava/lang/Class;","forName",cl,check=FALSE))
   # this is really .jcheck but we don't want it to appear on the call stack
-  .C("RJavaCheckExceptions", silent, FALSE, PACKAGE = "rJava")
+  .C(RJavaCheckExceptions, silent, FALSE, PACKAGE = "rJava")
   if (!silent && is.jnull(a)) stop("class not found")
   a
 }
@@ -331,7 +330,7 @@ is.jnull <- function(x) {
   if (is.character(cl)) cl <- .jfindClass(cl) else if (inherits(cl, "jclassName")) cl <- cl@jobj
   if (!is(cl, "jobjRef")) stop("invalid class object")  
   ocl <- .jclassRef(o)
-  .Call("RisAssignableFrom", ocl@jobj, cl@jobj, PACKAGE="rJava")
+  .Call(RisAssignableFrom, ocl@jobj, cl@jobj)
 }
 
 # compares two things which may be Java objects. invokes Object.equals if applicable and thus even different pointers can be equal. if one parameter is not Java object, but scalar string/int/number/boolean then a corresponding Java object is created for comparison
@@ -364,14 +363,14 @@ is.jnull <- function(x) {
     if (sig=='[S') sig<-"[Ljava/lang/String;"
     if (sig=='[T') sig<-"[S"
   }
-  r <- .Call("RgetField", o, sig, as.character(name), as.integer(true.class), PACKAGE="rJava")
+  r <- .Call(RgetField, o, sig, as.character(name), as.integer(true.class))
   if (inherits(r, "jobjRef")) {
     if (isJavaArraySignature(r@jclass)) {
     	r <- if (convert) .jevalArray(r, rawJNIRefSignature=r@jclass, simplify=TRUE) else newArray(r, simplify=FALSE)
     }
     if (convert && inherits(r, "jobjRef")) {
       if (r@jclass == "java/lang/String")
-        return(.External("RgetStringValue", r@jobj, PACKAGE="rJava"))
+        return(.External(RgetStringValue, r@jobj))
       if (.conv.in$.) return(.convert.in(r))
     }
   }
@@ -379,5 +378,5 @@ is.jnull <- function(x) {
 }
 
 ".jfield<-" <- function(o, name, value)
-  .Call("RsetField", o, name, value, PACKAGE="rJava")
+  .Call(RsetField, o, name, value)
 

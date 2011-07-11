@@ -6,6 +6,12 @@
 	by setting the java.awt.headless property to true during
 	initialization in .jinit()
 
+    o	All C-level entry points are now pre-cached when rJava is
+	loaded such that calls can be made much faster since symbols
+	don't need to be looked up. This should speed up calls to
+	methods that take very little time as well as other parts
+	such as checking for exceptions.
+
 0.9-1	2011-06-28
     o	fixed Java detection from registry on Windows (bug introduced
 	in 0.9-0)

@@ -25,5 +25,5 @@
     stop("update must be TRUE, FALSE of NULL")
   what <- update
   if (isTRUE(what)) what <- .jserialize(o)
-  invisible(.Call("javaObjectCache", o@jobj, what, PACKAGE="rJava"))
+  invisible(.Call(javaObjectCache, o@jobj, what))
 }

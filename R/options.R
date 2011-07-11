@@ -5,7 +5,7 @@
     v <- l[["jni.cache"]]
     if (!is.logical(v) || length(v)!=1)
       stop("jni.cache must be a logical vector of length 1")
-    .C("RuseJNICache",v,PACKAGE="rJava")
+    .C(RuseJNICache,v)
     invisible(NULL)
   }
 }

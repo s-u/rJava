@@ -33,15 +33,15 @@ getComponentType <- function( o, check = TRUE ){
 	Array <- "java/lang/reflect/Array"
 	obj <- switch( clname, 
 		# deal with array of primitive first
-		"[I"                  = .Call("RgetIntArrayCont"   , x@jobj, PACKAGE="rJava"), 
-		"[J"                  = .Call("RgetLongArrayCont"  , x@jobj, PACKAGE="rJava"), 
-		"[Z"                  = .Call("RgetBoolArrayCont"  , x@jobj, PACKAGE="rJava") , 
-		"[B"                  = .Call("RgetByteArrayCont"  , x@jobj, PACKAGE="rJava") ,
-		"[D"                  = .Call("RgetDoubleArrayCont", x@jobj, PACKAGE="rJava") ,
-		"[S"                  = .Call("RgetShortArrayCont" , x@jobj, PACKAGE="rJava") , 
-		"[C"                  = .Call("RgetCharArrayCont"  , x@jobj, PACKAGE="rJava") ,
-		"[F"                  = .Call("RgetFloatArrayCont" , x@jobj, PACKAGE="rJava") , 
-		"[Ljava.lang.String;" = .Call("RgetStringArrayCont", x@jobj, PACKAGE="rJava"),
+		"[I"                  = .Call(RgetIntArrayCont   , x@jobj), 
+		"[J"                  = .Call(RgetLongArrayCont  , x@jobj), 
+		"[Z"                  = .Call(RgetBoolArrayCont  , x@jobj) , 
+		"[B"                  = .Call(RgetByteArrayCont  , x@jobj) ,
+		"[D"                  = .Call(RgetDoubleArrayCont, x@jobj) ,
+		"[S"                  = .Call(RgetShortArrayCont , x@jobj) , 
+		"[C"                  = .Call(RgetCharArrayCont  , x@jobj) ,
+		"[F"                  = .Call(RgetFloatArrayCont , x@jobj) , 
+		"[Ljava.lang.String;" = .Call(RgetStringArrayCont, x@jobj),
 		
 		# otherwise, just get the object
 		x )

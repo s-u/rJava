@@ -11,12 +11,12 @@ FILE *memprof_f = 0;
 /* local to JRI */
 static void releaseLocal(JNIEnv *env, jobject o);
 
-REP void RJavaCheckExceptions(int *silent, int *result) {
-  JNIEnv *env=getJNIEnv();
-  if (env)
-    *result=checkExceptionsX(env, *silent);
-  else
-    *result=0;
+REPC SEXP RJavaCheckExceptions(SEXP silent) {
+    int result = 0;
+    JNIEnv *env = getJNIEnv();
+    if (env)
+	result = checkExceptionsX(env, asInteger(silent));
+    return ScalarInteger(result);
 }
 
 HIDE void* errJNI(const char *err, ...) {

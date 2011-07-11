@@ -5,7 +5,7 @@
 .r2j <- function(x, engine = NULL, convert = TRUE) {
   if (is.null(engine)) engine <- .jcall("org/rosuda/JRI/Rengine","Lorg/rosuda/JRI/Rengine;","getMainEngine")
   if (!is(engine, "jobjRef")) stop("invalid or non-existent engine")
-  new("jobjRef",jobj=.Call("PushToREXP","org/rosuda/JRI/REXP",engine@jobj,engine@jclass,x,convert,PACKAGE="rJava"),jclass="org/rosuda/JRI/REXP")
+  new("jobjRef",jobj=.Call(PushToREXP,"org/rosuda/JRI/REXP",engine@jobj,engine@jclass,x,convert),jclass="org/rosuda/JRI/REXP")
 }
 
 toJava <- function(x, engine = NULL) {
@@ -39,7 +39,7 @@ toJava <- function(x, engine = NULL) {
   }
   .jcheck(TRUE)
   if (!is(engine, "jobjRef")) stop("invalid or non-existent engine")
-  new("jobjRef",jobj=.Call("PushToREXP","org/rosuda/REngine/REXPReference",engine@jobj,"org/rosuda/REngine/REngine",x,NULL,PACKAGE="rJava"),jclass="org/rosuda/REngine/REXPReference")
+  new("jobjRef",jobj=.Call(PushToREXP,"org/rosuda/REngine/REXPReference",engine@jobj,"org/rosuda/REngine/REngine",x,NULL),jclass="org/rosuda/REngine/REXPReference")
 }
 
 .setupJRI <- function(new=TRUE) {

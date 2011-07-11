@@ -5,9 +5,9 @@
 ## $Id$
 
 .check.JVM <- function() 
-    .Call("RJava_checkJVM", PACKAGE="rJava")
+    .Call(RJava_checkJVM)
 .need.init <- function()
-    .Call("RJava_needs_init", PACKAGE="rJava")
+    .Call(RJava_needs_init)
 
 ## initialization
 .jinit <- function(classpath=NULL, parameters=getOption("java.parameters"), ..., silent=FALSE, force.init=FALSE) {
@@ -52,7 +52,7 @@
   #cat(">> init CLASSPATH =",classpath,"\n")
   #cat(">> boot class path: ", boot.classpath,"\n")
   # call the corresponding C routine to initialize JVM
-  xr<-.External("RinitJVM", boot.classpath, parameters, PACKAGE="rJava")
+  xr<-.External(RinitJVM, boot.classpath, parameters)
   if (xr==-1) stop("Unable to initialize JVM.")
   if (xr==-2) stop("Another VM is already running and rJava was unable to attach to that VM.")
   # we'll handle xr==1 later because we need fully initialized rJava for that
@@ -104,7 +104,7 @@
     # to be able to squeeze our loader in
 
     # first, see if this is actually JRIBootstrap so we have a loader already
-    rjcl <- .Call("RJava_primary_class_loader", PACKAGE="rJava")
+    rjcl <- .Call(RJava_primary_class_loader)
     if (is.null(rjcl) || .jidenticalRef(rjcl,.jzeroRef)) rjcl <- NULL
     else rjcl <- new("jobjRef", jobj=rjcl, jclass="RJavaClassLoader")
     if (is.jnull(rjcl))
@@ -133,14 +133,14 @@
     assign(".rJava.class.loader", rjcl, .env)
 
     ##-- set the class for native code
-    .Call("RJava_set_class_loader", .env$.rJava.class.loader@jobj, PACKAGE="rJava")
+    .Call(RJava_set_class_loader, .env$.rJava.class.loader@jobj)
 
     ## now it's time to add any additional class paths
     cpc <- unique(strsplit(classpath, .Platform$path.sep)[[1]])
     if (length(cpc)) .jaddClassPath(cpc)
   } else stop("Unable to create a Java class loader.")
   
-  ##.Call("RJava_new_class_loader", .rJava.base.path, file.path(.rJava.base.path, lib), PACKAGE="rJava")
+  ##.Call(RJava_new_class_loader, .rJava.base.path, file.path(.rJava.base.path, lib))
 
   ## lock namespace bindings
   for (x in .delayed.variables) lockBinding(x, .env)

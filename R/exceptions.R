@@ -4,7 +4,7 @@
 
 ## poll for an exception
 .jgetEx <- function(clear=FALSE) {
-  exo <- .Call("RpollException", PACKAGE="rJava")
+  exo <- .Call(RpollException)
   if (is.null(exo)) return(NULL)
   x <- new("jobjRef", jobj=exo, jclass="java/lang/Throwable")
   if (clear) .jclear()
@@ -13,7 +13,7 @@
 
 ## explicitly clear any pending exceptions
 .jclear <- function() {
-  .C("RclearException", PACKAGE="rJava")
+  .C(RclearException)
   invisible(NULL)
 }
 
@@ -22,7 +22,7 @@
   if (is.character(exception))
     exception <- .jnew(exception, as.character(message))
   if (is(exception, "jobjRef"))
-    .Call("RthrowException", exception, PACKAGE="rJava")
+    .Call(RthrowException, exception)
   else
     stop("Invalid exception.")
 }
