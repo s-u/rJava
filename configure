@@ -3181,7 +3181,7 @@ if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
 else
   ac_cv_header_stdc=no
 fi
-rm -f conftest*
+rm -f -r conftest*
 
 fi
 
@@ -3202,7 +3202,7 @@ if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
 else
   ac_cv_header_stdc=no
 fi
-rm -f conftest*
+rm -f -r conftest*
 
 fi
 
@@ -4000,19 +4000,17 @@ R was configured without Java support. Please run
 R CMD javareconf
 as root to add Java support to R.
 
-If you don't have root privileges, run
+If you do not have root privileges, run
 R CMD javareconf -e
-to set all Java-related variables and then install rJava.
-(works with R 2.5.0 only)" >&5
+to set all Java-related variables and then install rJava." >&5
 echo "$as_me: error: absent
 R was configured without Java support. Please run
 R CMD javareconf
 as root to add Java support to R.
 
-If you don't have root privileges, run
+If you do not have root privileges, run
 R CMD javareconf -e
-to set all Java-related variables and then install rJava.
-(works with R 2.5.0 only)" >&2;}
+to set all Java-related variables and then install rJava." >&2;}
    { (exit 1); exit 1; }; }
 fi
 
@@ -5407,7 +5405,7 @@ do
     cat >>$CONFIG_STATUS <<_ACEOF
     # First, check the format of the line:
     cat >"\$tmp/defines.sed" <<\\CEOF
-/^[	 ]*#[	 ]*undef[	 ][	 ]*$ac_word_re[	 ]*\$/b def
+/^[	 ]*#[	 ]*undef[	 ][	 ]*$ac_word_re[	 ]*/b def
 /^[	 ]*#[	 ]*define[	 ][	 ]*$ac_word_re[(	 ]/b def
 b
 :def

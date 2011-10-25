@@ -134,10 +134,9 @@ R was configured without Java support. Please run
 R CMD javareconf
 as root to add Java support to R.
 
-If you don't have root privileges, run
+If you do not have root privileges, run
 R CMD javareconf -e
-to set all Java-related variables and then install rJava.
-(works with R 2.5.0 only)])
+to set all Java-related variables and then install rJava.])
 fi
 
 : ${JAR=`"${RBIN}" CMD config JAR|sed 's/ERROR:.*//'`}
