@@ -1,7 +1,7 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000902 /* rJava v0.9-2 */
+#define RJAVA_VER 0x000903 /* rJava v0.9-3 */
 
 /* important changes between versions:
    3.0  - adds compiler
@@ -143,7 +143,6 @@ extern jclass rj_RJavaTools_Class ;
 
 extern jmethodID mid_forName;
 extern jmethodID mid_getName;
-extern jmethodID mid_getSimpleName;
 extern jmethodID mid_getSuperclass;
 extern jmethodID mid_getType;
 extern jmethodID mid_getField;

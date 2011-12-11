@@ -1,6 +1,12 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.9-3	2011-12-10
+    o	bugfix: .jinit() was failing on Java 1.4 with
+	"cannot obtain Class.getSimpleName method ID"
+	since the method is only present in Java 1.5+
+	This was inadvertent, rJava aims to support Java 1.2+
+
 0.9-2	2011-10-26
     o	When NOAWT is set, rJava will enable headless mode in the JVM
 	by setting the java.awt.headless property to true during

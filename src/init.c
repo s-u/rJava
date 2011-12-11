@@ -16,7 +16,6 @@ jclass javaFieldClass;
 /* cached, global method IDs */
 jmethodID mid_forName;
 jmethodID mid_getName;
-jmethodID mid_getSimpleName;
 jmethodID mid_getSuperclass;
 jmethodID mid_getType;
 jmethodID mid_getField;
@@ -235,9 +234,6 @@ HIDE void init_rJava(void) {
   
   mid_getName  = (*env)->GetMethodID(env, javaClassClass, "getName", "()Ljava/lang/String;");
   if (!mid_getName) error("cannot obtain Class.getName method ID");
-  
-  mid_getSimpleName  = (*env)->GetMethodID(env, javaClassClass, "getSimpleName", "()Ljava/lang/String;");
-  if (!mid_getSimpleName) error("cannot obtain Class.getSimpleName method ID");
   
   mid_getSuperclass =(*env)->GetMethodID(env, javaClassClass, "getSuperclass", "()Ljava/lang/Class;");
   if (!mid_getSuperclass) error("cannot obtain Class.getSuperclass method ID");
