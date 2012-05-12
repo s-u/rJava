@@ -1,6 +1,14 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.9-4	(under development)
+    o	Windows: add Java configuartion paths before existing PATH
+	entries
+
+    o	Windows: honor a new option "java.home" to override JAVA_HOME
+	environment variable and system settings to allow co-existence
+	of other tools that may require differen Java paths.
+
 0.9-3	2011-12-10
     o	bugfix: .jinit() was failing on Java 1.4 with
 	"cannot obtain Class.getSimpleName method ID"

@@ -2,7 +2,7 @@
 function(libname, pkgname) {
     require(methods)  ## we should not need this since it should be automatic
     OPATH <- Sys.getenv("PATH")
-    javahome <- Sys.getenv("JAVA_HOME")
+    javahome <- if (!is.null(getOption("java.home"))) getOption("java.home") else Sys.getenv("JAVA_HOME")
     if(!nchar(javahome)) { ## JAVA_HOME was not set explicitly
         find.java <- function() {
             for (root in c("HLM", "HCU"))
@@ -37,7 +37,7 @@ function(libname, pkgname) {
 
     ## add paths only if they are not in already and they exist
     for (path in unique(paths))
-        if (!path %in% cpc && file.exists(path)) curPath <- paste(curPath, path, sep=";")
+        if (!path %in% cpc && file.exists(path)) curPath <- paste(path, curPath, sep=";")
 
     ## set PATH only if it's not correct already (cannot use identical/isTRUE because of PATH name attribute)
     if (curPath != OPATH) {
