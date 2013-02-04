@@ -17,7 +17,7 @@ function(libname, pkgname) {
         if (inherits(hive, "try-error"))
             stop("JAVA_HOME cannot be determined from the Registry")
         if (!length(hive$CurrentVersion))
-            stop("No CurrentVersion entry in '",key,"'! Try re-installing Java and make sure R and Java have matching architectures.")
+            stop("No CurrentVersion entry in Software/JavaSoft registry! Try re-installing Java and make sure R and Java have matching architectures.")
         this <- hive[[hive$CurrentVersion]]
         javahome <- this$JavaHome
         paths <- dirname(this$RuntimeLib) # wrong on 64-bit
