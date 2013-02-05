@@ -220,6 +220,12 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, sig_buffer_t *sig, i
   while (p && TYPEOF(p)==LISTSXP && (e=CAR(p))) {
     /* skip all named arguments */
     if (TAG(p) && TAG(p)!=R_NilValue) { p=CDR(p); continue; };
+
+    if (jvpos >= maxpars) {
+	if (maxpars == maxJavaPars)
+	    Rf_error("Too many arguments in Java call. maxJavaPars is %d, recompile rJava with higher number if needed.", maxJavaPars);
+	break;
+    }
     
     _dbg(rjprintf("Rpar2jvalue: par %d type %d\n",i,TYPEOF(e)));
     if (TYPEOF(e)==STRSXP) {
@@ -370,7 +376,6 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, sig_buffer_t *sig, i
     }
     i++;
     p=CDR(p);
-    if (jvpos >= maxpars) break;
   }
   fintmpo(tmpo);
   return jvpos;

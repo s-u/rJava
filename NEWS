@@ -11,6 +11,11 @@
 
     o	Windows: fix a buglet in error reporting when no Java is installed
 
+    o	raise an error if the number of arguments to a Java call exceeds
+	maxJavaPars. Previously, calls woud be silently truncated.
+	Note that maxJavaPars can be raised by compiling rJava, e.g. with:
+	PKG_CFLAGS=-DmaxJavaPars=96 R CMD INSTAL rJava_...
+
 0.9-3	2011-12-10
     o	bugfix: .jinit() was failing on Java 1.4 with
 	"cannot obtain Class.getSimpleName method ID"

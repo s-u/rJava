@@ -195,7 +195,8 @@ fi
 
 echo "Creating package ..."
 cd ..
-tar fcz rJava_${VER}.tar.gz rJava
+rm -f `find . -name ._\*`
+R CMD build rJava
 cd ${SWD}
 cp /tmp/rJava_${VER}.tar.gz ..
 rm -rf /tmp/rJava
