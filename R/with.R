@@ -69,7 +69,7 @@
   		        fallback( ... )
   		      }
   		    } )
-  		  }, env = env )
+  		  }, env )
   		  done.this <<- c( done.this, n )
   		} )
   	}
@@ -78,7 +78,7 @@
   	if( !is.jnull( classes ) ){
   		lapply( classes, function( cl ){
   			name <- .jcall( cl, "S", "getSimpleName" )
-  			assign( name, new("jclassName", name=.jcall(cl, "S", "getName"), jobj=cl), env = env )
+  			assign( name, new("jclassName", name=.jcall(cl, "S", "getName"), jobj=cl), env )
   		} )
   	}
 }
@@ -88,7 +88,7 @@ grabDots <- function( env, ...){
   	dots.names <- names(dots)
   	sapply( dots.names, function( name ){
   		if( name != "" ){
-  			assign( name, dots[[ name ]], env = env )
+  			assign( name, dots[[ name ]], env )
   		}
   	} )
   	
@@ -104,11 +104,11 @@ with.jobjRef <- function( data, expr, ...){
   classes <- .jcall( clazz, "[Ljava/lang/Class;" , "getClasses" )
   ._populate_with_fields_and_methods( env, fields, methods, classes, data, only.static = FALSE )
 
-  assign( "this", data, env = env )
+  assign( "this", data, env )
 
   grabDots( env, ... )
   
-  eval( substitute( expr ), env = env )
+  eval( substitute( expr ), env )
 }
 
 within.jobjRef <- function(data, expr, ... ){
@@ -127,7 +127,7 @@ with.jarrayRef <- function( data, expr, ...){
   classes <- .jcall( clazz, "[Ljava/lang/Class;" , "getClasses" )
   ._populate_with_fields_and_methods( env, fields, methods, classes, data, only.static = FALSE )
 
-  assign( "this", data, env = env )
+  assign( "this", data, env )
 
   # add "length" pseudo field
   makeActiveBinding( "length", function(v){
@@ -136,11 +136,11 @@ with.jarrayRef <- function( data, expr, ...){
   	} else{
   		stop( "cannot modify length of java array" ) 
   	}
-  }, env = env )
+  }, env )
   
   grabDots( env, ... )
   
-  eval( substitute( expr ), env = env )
+  eval( substitute( expr ), env )
 }
 
 within.jarrayRef <- function(data, expr, ... ){
@@ -162,7 +162,7 @@ with.jclassName <- function( data, expr, ... ){
 		static_methods, static_classes, data, only.static = TRUE )
 	
 	grabDots( env, ... )
-	eval( substitute( expr ), env = env )
+	eval( substitute( expr ), env )
 }
 
 within.jclassName <- function(data, expr, ... ){

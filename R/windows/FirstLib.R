@@ -1,6 +1,5 @@
 .onLoad <-
 function(libname, pkgname) {
-    require(methods)  ## we should not need this since it should be automatic
     OPATH <- Sys.getenv("PATH")
     javahome <- if (!is.null(getOption("java.home"))) getOption("java.home") else Sys.getenv("JAVA_HOME")
     if(!nchar(javahome)) { ## JAVA_HOME was not set explicitly

@@ -1,5 +1,4 @@
 .onLoad <- function(libname, pkgname) {
-  require(methods)
   .setenv <- if (exists("Sys.setenv")) Sys.setenv else Sys.putenv
   .setenv("LD_LIBRARY_PATH"=paste(Sys.getenv("LD_LIBRARY_PATH"),"@JAVA_LD@",sep=':'))
   library.dynam("rJava", pkgname, libname)
