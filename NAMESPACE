@@ -15,7 +15,7 @@ exportMethods(show, "$", "$<-",
 	min, max, range, 
 	rep, 
 	clone )
-importFrom(methods, new)
+importFrom(methods, new, setClass, setMethod)
 importFrom(utils,head)
 importFrom(utils,tail)
 importFrom(utils,str)
