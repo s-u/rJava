@@ -64,6 +64,12 @@
     return(.Call(RgetFloatArrayCont, jobj))
   else if (sig=="[Ljava/lang/String;")
     return(.Call(RgetStringArrayCont, jobj))
+  else if (sig=="[Ljava/lang/Double;" && simplify) {
+    obj@jclass <- sig; return(.jcall("RJavaArrayTools", "[D", "unboxDoubles", obj)) }
+  else if (sig=="[Ljava/lang/Integer;" && simplify) {
+    obj@jclass <- sig; return(.jcall("RJavaArrayTools", "[I", "unboxIntegers", obj)) }
+  else if (sig=="[Ljava/lang/Boolean;" && simplify) {
+    obj@jclass <- sig; return(as.logical(.jcall("RJavaArrayTools", "[I", "unboxBooleans", obj))) }
   else if (substr(sig,1,2)=="[L")
     return(lapply(.Call(RgetObjectArrayCont, jobj),
                   function(x) new("jobjRef", jobj=x, jclass=substr(sig, 3, nchar(sig)-1)) ))

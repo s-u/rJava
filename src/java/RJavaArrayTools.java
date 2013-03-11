@@ -688,5 +688,62 @@ public class RJavaArrayTools {
 	}
 	// }}}
 	
-	
+	/// boxing and unboxing for Double[] and Integer[]
+        public static final int NA_INTEGER = -2147483648;
+	public static final double NA_REAL = Double.longBitsToDouble(0x7ff00000000007a2L);
+        static final long NA_bits = Double.doubleToRawLongBits(Double.longBitsToDouble(0x7ff00000000007a2L));
+
+	public static double[] unboxDoubles(Double[] o) {
+		if (o == null) return null;
+		int i = 0, n = o.length;
+		double d[] = new double[n];
+		for (i = 0; i < n; i++) d[i] = (o[i] == null) ? NA_REAL : o[i].doubleValue();
+		return d;
+	}
+
+	public static int[] unboxIntegers(Integer[] o) {
+		if (o == null) return null;
+		int i = 0, n = o.length;
+		int d[] = new int[n];
+		for (i = 0; i < n; i++) d[i] = (o[i] == null) ? NA_INTEGER : o[i].intValue();
+		return d;
+	}
+
+	public static int[] unboxBooleans(Boolean[] o) {
+		if (o == null) return null;
+		int i = 0, n = o.length;
+		int d[] = new int[n];
+		for (i = 0; i < n; i++) d[i] = (o[i] == null) ? NA_INTEGER : (o[i].booleanValue() ? 1 : 0);
+		return d;
+	}
+
+        public static boolean isNA(double value) {
+                /* on OS X i386 the MSB of the fraction is set even though R doesn't set it.
+                   Although this is technically a good idea (to make it a QNaN) it's not what R does and thus makes the comparison tricky */
+                return (Double.doubleToRawLongBits(value) & 0xfff7ffffffffffffL) == (NA_bits & 0xfff7ffffffffffffL);
+        }
+
+	public static Double[] boxDoubles(double[] d) {
+		if (d == null) return null;
+		int i = 0, n = d.length;
+		Double o[] = new Double[i];
+		for (i = 0; i < n; i++) if (!isNA(d[i])) o[i] = new Double(d[i]);
+		return o;
+	}
+
+	public static Integer[] boxIntegers(int[] d) {
+		if (d == null) return null;
+		int i = 0, n = d.length;
+		Integer o[] = new Integer[i];
+		for (i = 0; i < n; i++) if (d[i] != NA_INTEGER) o[i] = new Integer(d[i]);
+		return o;
+	}
+
+	public static Boolean[] boxBooleans(int[] d) {
+		if (d == null) return null;
+		int i = 0, n = d.length;
+		Boolean o[] = new Boolean[i];
+		for (i = 0; i < n; i++) if (d[i] != NA_INTEGER) o[i] = new Boolean((d[i] == 0) ? false : true);
+		return o;
+	}
 }
