@@ -1,6 +1,10 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.9-5	(under development)
+    o	add more debugging information in RJavaClassLoader to trace
+	cases where class path entries are invalid or discarded
+
 0.9-4	2013-03-11
     o	added support for unboxing of Double[], Integer[] and Boolean[]
 	to .jevalArray(.., simplify=TRUE) and thus also to .jcall()

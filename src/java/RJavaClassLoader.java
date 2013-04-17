@@ -316,13 +316,13 @@ public class RJavaClassLoader extends URLClassLoader {
 				/* a file - assume it is a jar file */
 				if (cp instanceof UnixJarFile){
 					ins = ((UnixJarFile)cp).getResourceAsStream( classNameToFile(name) + ".class" ) ;
-					if (verbose) System.out.println("   JAR file, can get '" + classNameToFile(name) + "'? " + ((ins == null) ? "YES" : "NO"));
+					if (verbose) System.out.println("   JAR file, can get '" + classNameToFile(name) + "'? " + ((ins == null) ? "NO" : "YES"));
 				} else if ( cp instanceof UnixDirectory ){
 					UnixFile class_f = new UnixFile(cp.getPath()+"/"+classNameToFile(name)+".class");
 					if (class_f.isFile() ) {
 						ins = new FileInputStream(class_f);
 					}
-					if (verbose) System.out.println("   Directory, can get '" + class_f + "'? " + ((ins == null) ? "YES" : "NO"));
+					if (verbose) System.out.println("   Directory, can get '" + class_f + "'? " + ((ins == null) ? "NO" : "YES"));
 				}
 				
 				/* some comments on the following :
@@ -450,17 +450,23 @@ public class RJavaClassLoader extends URLClassLoader {
 		if (useSystem) {
 			try {
 				addURL(f.toURL());
+				if (verbose) System.out.println("RJavaClassLoader: added '" + cp + "' to the URL class path loader");
 				//return; // we need to add it anyway so it appears in .jclassPath()
 			} catch (Exception ufe) {
 			}
 		}
 		
 		UnixFile g = null ;
-		if( f.isFile() && f.getName().endsWith(".jar") ){
+		if( f.isFile() && (f.getName().endsWith(".jar") || f.getName().endsWith(".JAR"))) {
 			g = new UnixJarFile(cp) ;
+			if (verbose) System.out.println("RJavaClassLoader: adding Java archive file '"+cp+"' to the internal class path");
 		} else if( f.isDirectory() ){
 			g = new UnixDirectory(cp) ;
-		}
+			if (verbose) System.out.println("RJavaClassLoader: adding class directory '"+cp+"' to the internal class path");
+		} else if (verbose)
+		    System.err.println(f.exists() ?
+				       ("WARNING: the path '"+cp+"' is neither a directory nor a .jar file, it will NOT be added to the internal class path!") :
+				       ("WARNING: the path '"+cp+"' does NOT exist, it will NOT be added to the internal class path!"));
 		
 		if (g != null && !classPath.contains(g)) {
 			// this is the real meat - add it to our internal list
