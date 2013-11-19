@@ -133,6 +133,8 @@ REPC SEXP RgetSimpleClassNames( SEXP, SEXP );
 extern JavaVM *jvm;
 extern int rJava_initialized;
 
+extern int java_is_dead;
+
 extern jclass javaStringClass;
 extern jclass javaObjectClass;
 extern jclass javaClassClass;

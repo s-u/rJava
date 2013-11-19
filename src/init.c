@@ -6,6 +6,9 @@
 /* global variables */
 JavaVM *jvm;
 
+/* this will be set when Java tries to exit() but we carry on */
+int java_is_dead = 0;
+
 /* cached, global objects */
 
 jclass javaStringClass;
@@ -74,6 +77,7 @@ static int JNICALL vfprintf_hook(FILE *f, const char *fmt, va_list ap) {
 
 static void JNICALL exit_hook(int status) {
     /* REprintf("\nJava requested System.exit(%d), trying to raise R error - this may crash if Java is in a bad state.\n", status); */
+    java_is_dead = 1;
     Rf_error("Java called System.exit(%d) requesting R to quit - trying to recover", status);
     /* FIXME: we could do something smart here such as running a call-back
        into R ... jump into R event loop ... at any rate we cannot return,

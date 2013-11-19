@@ -75,6 +75,8 @@ HIDE void profReport(char *fmt, ...) {
 #endif
 
 static void JRefObjectFinalizer(SEXP ref) {
+    if (java_is_dead) return;
+
   if (TYPEOF(ref)==EXTPTRSXP) {
     JNIEnv *env=getJNIEnv();
     jobject o = R_ExternalPtrAddr(ref);
