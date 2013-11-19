@@ -1,6 +1,5 @@
 .onLoad <- function(libname, pkgname) {
-  .setenv <- if (exists("Sys.setenv")) Sys.setenv else Sys.putenv
-  .setenv("LD_LIBRARY_PATH"=paste(Sys.getenv("LD_LIBRARY_PATH"),"@JAVA_LD@",sep=':'))
+  Sys.setenv("LD_LIBRARY_PATH"=paste(Sys.getenv("LD_LIBRARY_PATH"),"@JAVA_LD@",sep=':'))
   library.dynam("rJava", pkgname, libname)
   # pass on to the system-independent part
   .jfirst(libname, pkgname)
