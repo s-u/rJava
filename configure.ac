@@ -52,6 +52,12 @@ AC_ARG_ENABLE([jri],
 [want_jri="${enableval}"],
 [want_jri=auto])
 
+## enable headless
+AC_ARG_ENABLE([headless],
+[AC_HELP_STRING([--enable-headless],
+		[enable initialization in headless mode. @<:@auto@:>@])],
+[want_headless="${enableval}"],
+[want_headless=auto])
 
 ## enable debug flags
 AC_ARG_ENABLE([debug],
@@ -308,6 +314,19 @@ if test "${want_jni_cache}" = yes; then
   AC_DEFINE(JNI_CACHE, 1, [Set if caching JNI environment is enabled.])
 else
   AC_MSG_RESULT([no])
+fi
+
+AC_MSG_CHECKING([whether headless init is enabled])
+if test "${want_headless}" = auto; then
+  want_headless=no
+  ## only Darwin defaults to headless
+  if test x`uname -s 2>/dev/null` = xDarwin; then
+    want_headless=yes
+  fi
+fi
+AC_MSG_RESULT([${want_headless}])
+if test "${want_headless}" = yes; then
+  AC_DEFINE(USE_HEADLESS_INIT, 1, [Set if headless mode is to be used when starting the JVM])
 fi
 
 AC_MSG_CHECKING([whether JRI is requested])

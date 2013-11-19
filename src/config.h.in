@@ -86,5 +86,8 @@
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
+/* Set if headless mode is to be used when starting the JVM */
+#undef USE_HEADLESS_INIT
+
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const

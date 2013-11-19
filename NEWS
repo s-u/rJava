@@ -11,6 +11,11 @@
     o	restore locales after Java initialization (some JVMs clobber
 	locales with incompatible settings).
 
+    o	add --enable-headless option which sets the java.awt.headless
+	to true. In the auto mode this flag is only enabled on Mac OS X.
+	Note that it is only set upon initialization, it does not
+	affect already running JVMs.
+
 0.9-4	2013-03-11
     o	added support for unboxing of Double[], Integer[] and Boolean[]
 	to .jevalArray(.., simplify=TRUE) and thus also to .jcall()

@@ -273,8 +273,12 @@ REP SEXP RinitJVM(SEXP par)
   e = CADDR(par);
   if (TYPEOF(e)==STRSXP && LENGTH(e)>0) {
       int len = LENGTH(e), add_xrs = 1;
-      jvm_optv = (char**)malloc(sizeof(char*) * (len + 2));
+      jvm_optv = (char**)malloc(sizeof(char*) * (len + 3));
       if (!jvm_optv) Rf_error("Cannot allocate options buffer - out of memory");
+#ifdef USE_HEADLESS_INIT
+      /* prepend headless so the user can still override it */
+      jvm_optv[jvm_opts++] = "-Djava.awt.headless=true";
+#endif
       while (jvm_opts < len) {
 	  jvm_optv[jvm_opts] = strdup(CHAR(STRING_ELT(e, jvm_opts)));
 #ifdef HAVE_XRS
@@ -289,8 +293,13 @@ REP SEXP RinitJVM(SEXP par)
 	  jvm_optv[jvm_opts++] = "-Xrs";
 #endif
   } else {
+#ifdef USE_HEADLESS_INIT
+      jvm_optv = (char**)malloc(sizeof(char*) * 3);
+      if (!jvm_optv) Rf_error("Cannot allocate options buffer - out of memory");
+      jvm_optv[jvm_opts++] = "-Djava.awt.headless=true";
+#endif
 #ifdef HAVE_XRS
-      jvm_optv = (char**)malloc(sizeof(char*) * 2);
+      if (!jvm_optv) jvm_optv = (char**)malloc(sizeof(char*) * 2);
       if (!jvm_optv) Rf_error("Cannot allocate options buffer - out of memory");
       jvm_optv[jvm_opts++] = "-Xrs";
 #endif

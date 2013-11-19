@@ -689,6 +689,7 @@ enable_option_checking
 enable_threads
 enable_jni_cache
 enable_jri
+enable_headless
 enable_debug
 enable_mem_profile
 enable_callbacks
@@ -1327,6 +1328,7 @@ Optional Features:
                           with care. [no]
   --enable-jri            enable Java to R interface (JRI), which allows Java
                           programs to embed R. [auto]
+  --enable-headless       enable initialization in headless mode. [auto]
   --enable-debug          enable debug flags and output. [no]
   --enable-mem-profile    enable memory profiling. [debug]
   --enable-callbacks      enable the support for callbacks from Java into R.
@@ -2153,6 +2155,14 @@ else
   want_jri=auto
 fi
 
+
+## enable headless
+# Check whether --enable-headless was given.
+if test "${enable_headless+set}" = set; then :
+  enableval=$enable_headless; want_headless="${enableval}"
+else
+  want_headless=auto
+fi
 
 
 ## enable debug flags
@@ -3894,6 +3904,23 @@ $as_echo "#define JNI_CACHE 1" >>confdefs.h
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether headless init is enabled" >&5
+$as_echo_n "checking whether headless init is enabled... " >&6; }
+if test "${want_headless}" = auto; then
+  want_headless=no
+  ## only Darwin defaults to headless
+  if test x`uname -s 2>/dev/null` = xDarwin; then
+    want_headless=yes
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${want_headless}" >&5
+$as_echo "${want_headless}" >&6; }
+if test "${want_headless}" = yes; then
+
+$as_echo "#define USE_HEADLESS_INIT 1" >>confdefs.h
+
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether JRI is requested" >&5
