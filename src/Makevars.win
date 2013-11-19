@@ -22,7 +22,7 @@ $(warning JAVA_HOME is $(JAVA_HOME))
 # normally you don't have to touch this unless you want to add
 # debugging flags like -DRJ_DEBUG or -DRJ_PROFILE to PKG_CFLAGS
 JAVA_INCLUDES=$(JAVA_HOME)/include $(JAVA_HOME)/include/win32
-PKG_CPPFLAGS = -D_R_ -DWin32 -I$(RHOME)/src/include $(JAVA_INCLUDES:%=-I%)
+PKG_CPPFLAGS = -D_R_ -DWin32 -Ijvm-w32 -I$(RHOME)/src/include $(JAVA_INCLUDES:%=-I%)
 PKG_LIBS = -Ljvm-w32 -ljvm.dll
 
 $(warning PKG_CPPFLAGS are $(PKG_CPPFLAGS))

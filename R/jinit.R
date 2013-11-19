@@ -22,8 +22,7 @@
       return(0)
     }
   }
-  
-  
+
   ## determine path separator
   path.sep <- .Platform$path.sep
 
@@ -49,10 +48,21 @@
   if (is.character(.Platform$r_arch) && nzchar(.Platform$r_arch) && length(grep("-Dr.arch", parameters, fixed=TRUE)) == 0L)
     parameters <- c(paste("-Dr.arch=/", .Platform$r_arch, sep=''), as.character(parameters))
 
+  ## unfortunately Sys/setlocale()/Sys.getlocale() have incompatible interfaces so there
+  ## is no good way to get/set locales -- so we have to hack around it ...
+  locale.list <- c("LC_COLLATE", "LC_CTYPE", "LC_MONETARY", "LC_NUMERIC", "LC_TIME", "LC_MESSAGES", "LC_PAPER", "LC_MEASUREMENT")
+  locales <- sapply(locale.list, Sys.getlocale)
+  loc.sig <- Sys.getlocale()
+
   #cat(">> init CLASSPATH =",classpath,"\n")
   #cat(">> boot class path: ", boot.classpath,"\n")
   # call the corresponding C routine to initialize JVM
-  xr<-.External(RinitJVM, boot.classpath, parameters)
+  xr <- .External(RinitJVM, boot.classpath, parameters)
+
+  ## we have to re-set the locales right away
+  try(if (!identical(Sys.getlocale(), loc.sig)) for (i in names(locales)) try(Sys.setlocale(i, locales[i]), silent=TRUE),
+      silent=TRUE)
+
   if (xr==-1) stop("Unable to initialize JVM.")
   if (xr==-2) stop("Another VM is already running and rJava was unable to attach to that VM.")
   # we'll handle xr==1 later because we need fully initialized rJava for that

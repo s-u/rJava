@@ -57,9 +57,7 @@
 #define WIN32
 #endif
 
-#ifndef Win32
 #include "config.h"
-#endif
 
 #ifdef MEMPROF
 #include <stdio.h>

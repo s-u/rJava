@@ -91,13 +91,13 @@ AC_HEADER_TIME
 
 AC_CHECKING([whether ${CC} supports static inline])
 can_inline=no
-AC_COMPILE_IFELSE([
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 static inline int foo(int a, int b);
 static f = 1;
 static inline int foo(int a, int b) { return a+b; }
 int main(void) {
     return foo(f,-1);
-}],can_inline=yes)
+}])],can_inline=yes)
 AC_MSG_RESULT(${can_inline})
 if test "${can_inline}" = yes; then
   AC_DEFINE(HAVE_STATIC_INLINE, 1, [Define to 1 when static inline works])
@@ -194,15 +194,31 @@ LIBS="${LIBS} ${JAVA_LIBS0}"
 CFLAGS="${CFLAGS} ${JAVA_CPPFLAGS0}"
 LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${JAVA_LD_LIBRARY_PATH0}"
 
+AC_MSG_CHECKING([whether Java run-time works])
+if "$JAVA" getsp; then
+   AC_MSG_RESULT(yes)
+else
+   AC_MSG_RESULT(no)
+   AC_MSG_ERROR([Java interpreter '$JAVA' does not work])
+fi
+
+has_xrs=no
+AC_MSG_CHECKING([whether -Xrs is supported])
+if "$JAVA" -Xrs getsp; then
+   has_xrs=yes
+   AC_DEFINE(HAVE_XRS, 1, [Set if the Java parameter -Xrs is supported])
+fi
+AC_MSG_RESULT(${has_xrs})
+
 AC_MSG_CHECKING([whether JNI programs can be compiled])
-AC_LINK_IFELSE([
+AC_LINK_IFELSE([AC_LANG_SOURCE([
 #include <jni.h>
 int main(void) {
     jobject o;
     JNI_CreateJavaVM(0, 0, 0);
     return 0;
 }
-	],[AC_MSG_RESULT(yes)],
+	])],[AC_MSG_RESULT(yes)],
 	[AC_MSG_ERROR([Cannot compile a simple JNI program. See config.log for details.
 
 Make sure you have Java Development Kit installed and correctly registered in R.
