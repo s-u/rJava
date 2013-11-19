@@ -60,8 +60,8 @@
   xr <- .External(RinitJVM, boot.classpath, parameters)
 
   ## we have to re-set the locales right away
-  try(if (!identical(Sys.getlocale(), loc.sig)) for (i in names(locales)) try(Sys.setlocale(i, locales[i]), silent=TRUE),
-      silent=TRUE)
+  suppressWarnings(try(if (!identical(Sys.getlocale(), loc.sig)) for (i in names(locales)) try(Sys.setlocale(i, locales[i]), silent=TRUE),
+      silent=TRUE))
 
   if (xr==-1) stop("Unable to initialize JVM.")
   if (xr==-2) stop("Another VM is already running and rJava was unable to attach to that VM.")
