@@ -1,6 +1,11 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.9-6	(under development)
+    o	bugfix: the first JVM parameters was shadowed by headless
+	mode parameter if enabled (default on OS X).
+
+
 0.9-5	2012-12-03
     o	add more debugging information in RJavaClassLoader to trace
 	cases where class path entries are invalid or discarded

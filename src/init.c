@@ -272,15 +272,15 @@ REP SEXP RinitJVM(SEXP par)
 
   e = CADDR(par);
   if (TYPEOF(e)==STRSXP && LENGTH(e)>0) {
-      int len = LENGTH(e), add_xrs = 1;
+      int len = LENGTH(e), add_xrs = 1, joi = 0;
       jvm_optv = (char**)malloc(sizeof(char*) * (len + 3));
       if (!jvm_optv) Rf_error("Cannot allocate options buffer - out of memory");
 #ifdef USE_HEADLESS_INIT
       /* prepend headless so the user can still override it */
       jvm_optv[jvm_opts++] = "-Djava.awt.headless=true";
 #endif
-      while (jvm_opts < len) {
-	  jvm_optv[jvm_opts] = strdup(CHAR(STRING_ELT(e, jvm_opts)));
+      while (joi < len) {
+	  jvm_optv[jvm_opts] = strdup(CHAR(STRING_ELT(e, joi++)));
 #ifdef HAVE_XRS
 	  /* check if Xrs is already used */
 	  if (!strcmp(jvm_optv[jvm_opts], "-Xrs"))
