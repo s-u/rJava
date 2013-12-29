@@ -67,20 +67,17 @@ fi
 echo "Removing CVS/SVN and backup files ..."
 rm -rf `find . -name CVS -or -name .svn -or -name \*~`
 
+## since we merged JRI and rJava trees we no longer support ORG builds
 if [ ! -e jri/configure ]; then
     if [ -e "${SWD}/jri/mkdist" ]; then
 	DEFAULTJRI="${SWD}/jri"
-    else
-	if [ -n "${ORGPATH}" ]; then
-	    DEFAULTJRI="${ORGPATH}/rosuda/JRI"
-	else
-	    DEFAULTJRI="$SWD/../../../org/rosuda/JRI"
-	fi
     fi
     : ${JRI=$DEFAULTJRI}
     if [ ! -e "$JRI" ]; then
 	echo "*** ERROR: JRI dist is not in the jri subdirectory and JRI env var is not set!"
 	echo " Please set JRI to point to JRI sources or unpack JRI dist into the jri directory"
+	echo ""
+	echo " When using GIT, don't forget to use git clone --recursive"
 	exit 1
     fi
     if [ -e $JRI/mkdist ]; then
@@ -123,11 +120,7 @@ if [ ! -e jri/configure ]; then
     fi
 fi
 
-if [ -n "${ORGPATH}" ]; then
-    DEFAULTRENG="${ORGPATH}/rosuda/REngine"
-else
-    DEFAULTRENG="$SWD/../../../org/rosuda/REngine"
-fi
+DEFAULTRENG="${SWD}/jri/REngine"
 if [ ! -e "$DEFAULTRENG/Makefile" ]; then
     echo "*** WARNING *** cannot find REngine sources, the distribution will NOT include REngine!"
 else
@@ -136,8 +129,6 @@ else
 	echo "*** ERROR *** cannot compile REngine API"
 	exit 1
     fi
-    ## NOTE: the makefile in REngine/JRI *always* uses org/rosuda/JRI and not our copy
-    ##       so beware of inconsistencies when building outside the org tree!!
     (cd "$DEFAULTRENG/JRI" && make)
     if [ ! -e "$DEFAULTRENG/JRI/JRIEngine.jar" ]; then
 	echo "*** ERROR *** cannot compile JRI part of the REngine API"
@@ -147,6 +138,7 @@ else
     (cd "$DEFAULTRENG/JRI" && jar fc JRIEngine.jar org/rosuda/REngine/JRI)
     mkdir -p /tmp/rJava/inst/jri 2>/dev/null
     cp "$DEFAULTRENG/REngine.jar" "$DEFAULTRENG/JRI/JRIEngine.jar" /tmp/rJava/inst/jri
+    (cd "$DEFAULTRENG/JRI" && make clean)
 fi
 
 
@@ -195,7 +187,7 @@ fi
 
 echo "Creating package ..."
 cd ..
-rm -f `find . -name ._\*`
+rm -f `find rJava -name ._\* -name .git`
 R CMD build rJava
 cd ${SWD}
 cp /tmp/rJava_${VER}.tar.gz ..

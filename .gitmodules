@@ -1,0 +1,3 @@
+[submodule "jri/REngine"]
+	path = jri/REngine
+	url = ssh://git@github.com/s-u/REngine.git
