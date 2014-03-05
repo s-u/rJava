@@ -16,7 +16,7 @@ JRI.jar: $(JRI_JSRC) $(JNIPREFIX)jri$(JNISO)
 org_rosuda_JRI_Rengine.h: org/rosuda/JRI/Rengine.class
 	$(JAVAH) -d . -classpath . org.rosuda.JRI.Rengine
 
-Rcallbacks.o: Rcallbacks.c Rcallbacks.h globals.h
+Rcallbacks.o: Rcallbacks.c Rcallbacks.h globals.h org_rosuda_JRI_Rengine.h
 	$(CC) -c -o $@ $< $(CFLAGS) $(CPICF) $(JAVAINC) $(RINC)
 
 Rinit.o: Rinit.c Rinit.h Rcallbacks.h
