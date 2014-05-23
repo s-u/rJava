@@ -3,14 +3,14 @@ function(libname, pkgname) {
     OPATH <- Sys.getenv("PATH")
     javahome <- if (!is.null(getOption("java.home"))) getOption("java.home") else Sys.getenv("JAVA_HOME")
     if(!nchar(javahome)) { ## JAVA_HOME was not set explicitly
-        find.java <- function() {
-            for (root in c("HLM", "HCU"))
-                for(key in c("Software\\JavaSoft\\Java Runtime Environment",
-                             "Software\\JavaSoft\\Java Development Kit")) {
-                  hive <- try(utils::readRegistry(key, root, 2), silent=TRUE)
-                  if (!inherits(hive, "try-error")) return(hive)
-                }
-            hive
+        find.java <- function() {          
+          for (root in c("HLM", "HCU"))
+              for(key in c("Software\\JavaSoft\\Java Runtime Environment",
+                           "Software\\JavaSoft\\Java Development Kit")) {
+                hive <- try(utils::readRegistry(key, root, 2), silent=TRUE)
+                if (!inherits(hive, "try-error")) return(hive)
+              }
+          hive
         }
         hive <- find.java()
         if (inherits(hive, "try-error"))
@@ -31,7 +31,8 @@ function(libname, pkgname) {
                file.path(javahome, "bin", "client"), # 32-bit
                file.path(javahome, "bin", "server"), # 64-bit
                file.path(javahome, "bin"), # base (now needed for MSVCRT in recent Sun Java)
-               file.path(javahome, "jre", "bin", "client")) # old 32-bit
+               file.path(javahome, "jre", "bin", "server"), # jdk 64-bit
+               file.path(javahome, "jre", "bin", "client")) # jdk 32-bit
     cpc <- strsplit(curPath, ";", fixed=TRUE)[[1]] ## split it up so we can check presence/absence of a path
 
     ## add paths only if they are not in already and they exist
