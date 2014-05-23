@@ -3726,7 +3726,7 @@ LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${JAVA_LD_LIBRARY_PATH0}"
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether Java run-time works" >&5
 $as_echo_n "checking whether Java run-time works... " >&6; }
-if "$JAVA" getsp; then
+if "$JAVA" -classpath . getsp; then
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -3738,7 +3738,7 @@ fi
 has_xrs=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -Xrs is supported" >&5
 $as_echo_n "checking whether -Xrs is supported... " >&6; }
-if "$JAVA" -Xrs getsp; then
+if "$JAVA" -Xrs -classpath . getsp; then
    has_xrs=yes
 
 $as_echo "#define HAVE_XRS 1" >>confdefs.h

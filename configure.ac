@@ -201,7 +201,7 @@ CFLAGS="${CFLAGS} ${JAVA_CPPFLAGS0}"
 LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${JAVA_LD_LIBRARY_PATH0}"
 
 AC_MSG_CHECKING([whether Java run-time works])
-if "$JAVA" getsp; then
+if "$JAVA" -classpath . getsp; then
    AC_MSG_RESULT(yes)
 else
    AC_MSG_RESULT(no)
@@ -210,7 +210,7 @@ fi
 
 has_xrs=no
 AC_MSG_CHECKING([whether -Xrs is supported])
-if "$JAVA" -Xrs getsp; then
+if "$JAVA" -Xrs -classpath . getsp; then
    has_xrs=yes
    AC_DEFINE(HAVE_XRS, 1, [Set if the Java parameter -Xrs is supported])
 fi
