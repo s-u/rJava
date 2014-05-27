@@ -31,7 +31,8 @@ function(libname, pkgname) {
                file.path(javahome, "bin", "client"), # 32-bit
                file.path(javahome, "bin", "server"), # 64-bit
                file.path(javahome, "bin"), # base (now needed for MSVCRT in recent Sun Java)
-               file.path(javahome, "jre", "bin", "client")) # old 32-bit
+               file.path(javahome, "jre", "bin", "server"), # old 64-bit (or manual JAVA_HOME setting to JDK)
+               file.path(javahome, "jre", "bin", "client")) # old 32-bit (or manual JAVA_HOME setting to JDK)
     cpc <- strsplit(curPath, ";", fixed=TRUE)[[1]] ## split it up so we can check presence/absence of a path
 
     ## add paths only if they are not in already and they exist
