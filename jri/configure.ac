@@ -49,7 +49,7 @@ if test -z "${CC}"; then
 fi
 
 RINC=`"${RBIN}" CMD config --cppflags`
-RLD=`"${RBIN}" CMD config --ldflags`
+RLD=`"${RBIN}" CMD config --ldflags`" "`"${RBIN}" CMD config LDFLAGS`
 
 if test -z "$RLD"; then
    AC_MSG_ERROR([R was not compiled with --enable-R-shlib
