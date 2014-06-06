@@ -233,27 +233,36 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, sig_buffer_t *sig, i
     if (TYPEOF(e)==STRSXP) {
       _dbg(rjprintf(" string vector of length %d\n",LENGTH(e)));
       if (LENGTH(e)==1) {
-	strcats(sig,"Ljava/lang/String;");
-	addtmpo(tmpo, jpar[jvpos++].l=newString(env, CHAR_UTF8(STRING_ELT(e,0))));
+	  SEXP sv = STRING_ELT(e, 0);
+	  strcats(sig,"Ljava/lang/String;");
+	  if (sv == R_NaString) {
+	      addtmpo(tmpo, jpar[jvpos++].l = 0);
+	  } else {
+	      addtmpo(tmpo, jpar[jvpos++].l = newString(env, CHAR_UTF8(sv)));
+	  }
       } else {
-	int j=0;
-	jobjectArray sa=(*env)->NewObjectArray(env, LENGTH(e), javaStringClass, 0);
-	_mp(MEM_PROF_OUT("  %08x LNEW string[%d]\n", (int) sa, LENGTH(e)))
-	if (!sa) {
-	  fintmpo(tmpo);
-	  error("unable to create string array.");
-	  return -1;
-	}
-	addtmpo(tmpo, sa);
-	while (j<LENGTH(e)) {
-	  jobject s=newString(env, CHAR_UTF8(STRING_ELT(e,j)));
-	  _dbg(rjprintf (" [%d] \"%s\"\n",j,CHAR_UTF8(STRING_ELT(e,j))));
-	  (*env)->SetObjectArrayElement(env, sa, j, s);
-	  if (s) releaseObject(env, s);
-	  j++;
-	}
-	jpar[jvpos++].l=sa;
-	strcats(sig,"[Ljava/lang/String;");
+	  int j = 0;
+	  jobjectArray sa = (*env)->NewObjectArray(env, LENGTH(e), javaStringClass, 0);
+	  _mp(MEM_PROF_OUT("  %08x LNEW string[%d]\n", (int) sa, LENGTH(e)))
+	  if (!sa) {
+	      fintmpo(tmpo);
+	      error("unable to create string array.");
+	      return -1;
+	  }
+	  addtmpo(tmpo, sa);
+	  while (j < LENGTH(e)) {
+	      SEXP sv = STRING_ELT(e,j);
+	      if (sv == R_NaString) {
+	      } else {
+		  jobject s = newString(env, CHAR_UTF8(sv));
+		  _dbg(rjprintf (" [%d] \"%s\"\n",j,CHAR_UTF8(sv)));
+		  (*env)->SetObjectArrayElement(env, sa, j, s);
+		  if (s) releaseObject(env, s);
+	      }
+	      j++;
+	  }
+	  jpar[jvpos++].l = sa;
+	  strcats(sig,"[Ljava/lang/String;");
       }
     } else if (TYPEOF(e)==RAWSXP) {
       _dbg(rjprintf(" raw vector of length %d\n", LENGTH(e)));
@@ -902,11 +911,14 @@ REPC SEXP RcreateArray(SEXP ar, SEXP cl) {
       jobjectArray a = (*env)->NewObjectArray(env, LENGTH(ar), javaStringClass, 0);
       int i = 0;
       if (!a) error("unable to create a string array");
-      while (i<LENGTH(ar)) {
-	jobject so = newString(env, CHAR_UTF8(STRING_ELT(ar, i)));
-	(*env)->SetObjectArrayElement(env, a, i, so);
-	releaseObject(env, so);
-	i++;
+      while (i < LENGTH(ar)) {
+	  SEXP sa = STRING_ELT(ar, i);
+	  if (sa != R_NaString) {
+	      jobject so = newString(env, CHAR_UTF8(sa));
+	      (*env)->SetObjectArrayElement(env, a, i, so);
+	      releaseObject(env, so);
+	  }
+	  i++;
       }
       return new_jarrayRef(env, a, "[Ljava/lang/String;");
     }
