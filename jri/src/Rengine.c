@@ -318,7 +318,9 @@ JNIEXPORT jint JNICALL Java_org_rosuda_JRI_Rengine_rniExpType
 JNIEXPORT void JNICALL Java_org_rosuda_JRI_Rengine_rniIdle
   (JNIEnv *env, jobject this)
 {
-#ifndef Win32
+#ifdef Win32
+	if(!UserBreak)R_ProcessEvents();
+#else
     R_runHandlers(R_InputHandlers, R_checkActivity(0, 1));
 #endif
 }
