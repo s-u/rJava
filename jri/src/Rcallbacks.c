@@ -9,6 +9,10 @@
 #include "org_rosuda_JRI_Rengine.h"
 #include <R_ext/Parse.h>
 
+// for reencode function
+#include <R_ext/Riconv.h>
+#include <errno.h>
+
 #ifndef Win32
 #include <R_ext/eventloop.h>
 #endif
@@ -32,6 +36,68 @@
 #ifndef errorcall
 #define errorcall                Rf_errorcall
 #endif
+
+// reencode using Riconv. return NULL if failed
+char* reencode(const char *x, int nativeToUtf){
+#ifndef Win32
+	return NULL;
+#else
+	void *cd;
+    const char *fromcode = NULL, *tocode = NULL;
+	size_t res, destLen, srcLen = strlen(x)+1;
+	const char *src = x;
+	char *destBuffer, *dest;
+	size_t size = srcLen*2*sizeof(char);
+	
+	fromcode = (nativeToUtf) ? "" : "UTF-8";
+	tocode = (nativeToUtf) ? "UTF-8" : "";
+	
+	// open
+	cd = Riconv_open(tocode, fromcode);
+	if(cd == (void *)(-1)) return NULL;
+	
+	// prepare output buffer
+	destBuffer = (char *)malloc(size);
+	if(!destBuffer) {
+		Riconv_close(cd);
+		return NULL;
+	}
+	destLen = size;
+	dest = destBuffer;
+	
+	// convert
+	res = Riconv(cd, &src, &srcLen, &dest, &destLen);
+	while(res == (size_t)-1 && errno == E2BIG){
+		char *newBuffer;
+		size_t increase = strlen(x)+1;
+		
+		size += increase;
+		destLen += increase;
+		
+		newBuffer = (char *)realloc(destBuffer, size);
+		if(!newBuffer) {
+			free(destBuffer);
+			Riconv_close(cd);
+			return NULL;
+		}
+		dest = newBuffer + (dest - destBuffer);
+		destBuffer = newBuffer;
+		
+		res = Riconv(cd, &src, &srcLen, &dest, &destLen);
+	}
+	*dest = '\0';
+	
+	// close
+	Riconv_close(cd);
+	
+	if(res == (size_t)(-1)) {
+		free(destBuffer);
+		return NULL;
+	}
+	
+	return destBuffer;
+#endif
+}
 
 /* this method is used rather for debugging purposes - it finds the correct JNIEnv for the current thread. we still have some threading issues to solve, becuase eenv!=env should never happen (uncontrolled), because concurrency issues arise */
 static JavaVM *jvm=0;
@@ -77,14 +143,19 @@ int Re_ReadConsole(RCCONST char *prompt, unsigned char *buf, int len, int addtoh
 #endif
 	jri_checkExceptions(lenv, 0);
 	if (!mid) return -1;
-		
-	s=(*lenv)->NewStringUTF(eenv, prompt);
+	
+	char *prompt2 = reencode(prompt, 1);
+	s=(*lenv)->NewStringUTF(eenv, prompt2 ? prompt2 : prompt);
 	r=(jstring) (*lenv)->CallObjectMethod(lenv, engineObj, mid, s, addtohistory);
 	jri_checkExceptions(lenv, 1);
+	if(prompt2) free(prompt2);
 	(*lenv)->DeleteLocalRef(lenv, s);
 	jri_checkExceptions(lenv, 0);
 	if (r) {
-		const char *c=(*lenv)->GetStringUTFChars(lenv, r, 0);
+		char *c;
+		const char *c1= (*lenv)->GetStringUTFChars(lenv, r, 0);
+		char *c2 = reencode(c1, 0);
+		c = (c2) ? c2 : c1;
 		if (!c) return -1;
 		{
 			int l=strlen(c);
@@ -94,7 +165,8 @@ int Re_ReadConsole(RCCONST char *prompt, unsigned char *buf, int len, int addtoh
 			printf("Re_ReadConsole succeeded: \"%s\"\n",buf);
 #endif
 		}
-		(*lenv)->ReleaseStringUTFChars(lenv, r, c);
+		if(c2) free(c2);
+		(*lenv)->ReleaseStringUTFChars(lenv, r, c1);
 		(*lenv)->DeleteLocalRef(lenv, r);
 		return 1;
     }
@@ -121,7 +193,8 @@ void Re_WriteConsoleEx(RCCONST char *buf, int len, int oType)
     JNIEnv *lenv=checkEnvironment();
     jri_checkExceptions(lenv, 1);
     {
-      jstring s=(*lenv)->NewStringUTF(lenv, buf);
+      char *c = reencode(buf, 1);
+      jstring s=(*lenv)->NewStringUTF(lenv, c ? c : buf);
       jmethodID mid=(*lenv)->GetMethodID(lenv, engineClass, "jriWriteConsole", "(Ljava/lang/String;I)V");
       jri_checkExceptions(lenv, 0);
 #ifdef JRI_DEBUG
@@ -130,6 +203,7 @@ void Re_WriteConsoleEx(RCCONST char *buf, int len, int oType)
       if (!mid) return;
       (*lenv)->CallVoidMethod(lenv, engineObj, mid, s, oType);
       jri_checkExceptions(lenv, 1);
+      if(c) free(c);
       (*lenv)->DeleteLocalRef(lenv, s);
     }
 }
@@ -184,7 +258,10 @@ int Re_ChooseFile(int new, char *buf, int len)
 			jri_checkExceptions(lenv, 1);
 			if (r) {
 				int slen=0;
-				const char *c=(*lenv)->GetStringUTFChars(lenv, r, 0);
+				char *c;
+				const char *c1=(*lenv)->GetStringUTFChars(lenv, r, 0);
+				char *c2=reencode(c1, 0);
+				c = (c2) ? c2 : c1;
 				if (c) {
 					slen=strlen(c);
 					strncpy(buf, c, (slen>len-1)?len-1:slen);
@@ -193,7 +270,8 @@ int Re_ChooseFile(int new, char *buf, int len)
 					printf("Re_ChooseFile succeeded: \"%s\"\n",buf);
 #endif
 				}
-				(*lenv)->ReleaseStringUTFChars(lenv, r, c);
+				if(c2)free(c2);
+				(*lenv)->ReleaseStringUTFChars(lenv, r, c1);
 				(*lenv)->DeleteLocalRef(lenv, r);
 				jri_checkExceptions(lenv, 0);
 				return slen;
@@ -219,9 +297,11 @@ void Re_ShowMessage(RCCONST char *buf)
 	jstring s;
 	jmethodID mid;
     JNIEnv *lenv=checkEnvironment();
+	char *c;
 	
     jri_checkExceptions(lenv, 1);
-    s=(*lenv)->NewStringUTF(lenv, buf);
+    c = reencode(buf, 1);
+    s=(*lenv)->NewStringUTF(lenv, c ? c : buf);
     mid=(*lenv)->GetMethodID(lenv, engineClass, "jriShowMessage", "(Ljava/lang/String;)V");
     jri_checkExceptions(lenv, 0);
 #ifdef JGR_DEBUG
@@ -230,6 +310,7 @@ void Re_ShowMessage(RCCONST char *buf)
     if (mid)
         (*lenv)->CallVoidMethod(eenv, engineObj, mid, s);
     jri_checkExceptions(lenv, 0);
+	if (c) free(c);
     if (s) (*lenv)->DeleteLocalRef(eenv, s);
 }
 
