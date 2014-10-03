@@ -6,6 +6,7 @@ Maintainer: Simon Urbanek <simon.urbanek@r-project.org>
 Depends: R (>= 2.5.0), methods
 Description: Low-level interface to Java VM very much like .C/.Call and friends. Allows creation of objects, calling methods and accessing fields.
 License: GPL-2
-URL: http://www.rforge.net/rJava/
+URL: https://github.com/s-u/rJava
+BugReports: https://github.com/s-u/rJava/issues
 SystemRequirements: java
 
