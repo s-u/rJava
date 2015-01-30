@@ -9,6 +9,10 @@
     o	when constructing String references from character vectors,
 	treat NA as null on the Java side (see #15)
 
+    o	add .jsimplify(..., promote=TRUE) option to promote int
+	to double if integer NAs are to be interpreted literally as
+	-2147483648 values. (see #39)
+
 
 0.9-6	2012-12-23
     o	bugfix: the first JVM parameters was shadowed by headless

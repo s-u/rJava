@@ -8,10 +8,17 @@
   simple scalars into corresponding scalar representation in R.
 }
 \usage{
-.jsimplify(o)
+.jsimplify(o, promote=FALSE)
 }
 \arguments{
   \item{o}{arbitrary object}
+  \item{promote}{logical, if \code{TRUE} then an ambiguous conversion
+  where the native type value would map to \code{NA} (e.g., Java
+  \code{int} type with value -2147483648) will be taken
+  to represent an actual value and will be promoted to a larger type
+  that can represent the value (in case of \code{int} promoted to
+  \code{double}). If \code{FALSE} then such values are assumed to
+  represent \code{NA}s.}
 }
 \value{
   Simple scalar or \code{o} unchanged.
