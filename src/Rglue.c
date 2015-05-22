@@ -884,7 +884,11 @@ REPC SEXP RcreateArray(SEXP ar, SEXP cl) {
 	jcharArray a = newCharArrayI(env, INTEGER(ar), LENGTH(ar));
 	if (!a) error("unable to create a char array");
 	return new_jarrayRef(env, a, "[C" ); 
-	  } else {
+      } else if (inherits(ar, "jshort")) {
+	jshortArray a = newShortArrayI(env, INTEGER(ar), LENGTH(ar));
+	if (!a) error("unable to create a short integer array");
+	return new_jarrayRef(env, a, "[S");
+      } else {
 	jintArray a = newIntArray(env, INTEGER(ar), LENGTH(ar));
 	if (!a) error("unable to create an integer array");
 	return new_jarrayRef(env, a, "[I");

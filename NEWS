@@ -13,6 +13,8 @@
 	to double if integer NAs are to be interpreted literally as
 	-2147483648 values. (see #39)
 
+    o	fix .jarray(.jshort(...)) to respect the `jshort` tag (see #40)
+
 
 0.9-6	2012-12-23
     o	bugfix: the first JVM parameters was shadowed by headless
