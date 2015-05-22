@@ -31,7 +31,7 @@ import java.util.Vector ;
  * Tools used internally by rJava.
  * 
  * The method lookup code is heavily based on ReflectionTools 
- * by Romain Francois <francoisromain@free.fr> licensed under GPL v2 or higher.
+ * by Romain Francois &lt;francoisromain@free.fr&gt; licensed under GPL v2 or higher.
  */
 public class RJavaTools {
 	

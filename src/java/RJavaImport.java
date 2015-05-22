@@ -16,7 +16,7 @@ import java.io.Serializable;
  * databases. This is the back door of the <code>javaImport</code>
  * system in the R side
  *
- * @author Romain Francois <francoisromain@free.fr>
+ * @author Romain Francois &lt;francoisromain@free.fr&gt;
  */
 public class RJavaImport implements Serializable {
 
