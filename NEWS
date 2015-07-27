@@ -1,7 +1,7 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.9-7	(under development)
+0.9-7	2015-07-27
     o	explicitly set -classpath in configure for getps since the user
 	may have set CLASSPATH and thus override the default
 	(see #3)
