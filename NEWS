@@ -2,6 +2,9 @@
 --------------------------
 
 0.9-8	(under development)
+    o	Work around a bug on Oracle's Java on OS X by pre-loading jli
+
+    o	Work around DYLD_FALLBACK_LIBRARY_PATH being dropped in OS X 10.11
 
 
 0.9-7	2015-07-27
