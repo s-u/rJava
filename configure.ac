@@ -196,9 +196,16 @@ else
    JAVA_LD_LIBRARY_PATH0="${JAVA_LD_LIBRARY_PATH}"
 fi
 
+OSNAME=`uname -s 2>/dev/null`
+
 LIBS="${LIBS} ${JAVA_LIBS0}"
 CFLAGS="${CFLAGS} ${JAVA_CPPFLAGS0}"
 LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${JAVA_LD_LIBRARY_PATH0}"
+if test "x$OSNAME" = xDarwin; then
+  ## we need to pull that out of R in case re-export fails (which is does on 10.11)
+  DYLD_FALLBACK_LIBRARY_PATH=`R --slave --vanilla -e 'cat(Sys.getenv("DYLD_FALLBACK_LIBRARY_PATH"))'`
+  export DYLD_FALLBACK_LIBRARY_PATH
+fi
 
 AC_MSG_CHECKING([whether Java run-time works])
 if "$JAVA" -classpath . getsp; then
@@ -282,9 +289,8 @@ if test "${want_threads}" = yes; then
   AC_MSG_RESULT([yes])
   AC_MSG_CHECKING([whether threads can be enabled])
   # check whether we can add THREADS support
-  UNAME=`uname`
   # we don't want to run full AC_CANONICAL_HOST, all we care about is OS X
-  if test "x$UNAME" == "xDarwin"; then
+  if test "x$OSNAME" = xDarwin; then
     use_threads=yes
     AC_DEFINE(THREADS, 1, [Set if threading support should be enabled.])
   fi
@@ -320,7 +326,7 @@ AC_MSG_CHECKING([whether headless init is enabled])
 if test "${want_headless}" = auto; then
   want_headless=no
   ## only Darwin defaults to headless
-  if test x`uname -s 2>/dev/null` = xDarwin; then
+  if test "x$OSNAME" = xDarwin; then
     want_headless=yes
   fi
 fi

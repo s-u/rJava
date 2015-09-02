@@ -131,6 +131,13 @@ if test -n "${JAVA_PROG}" ; then
   acx_jc_result=
 fi
 
+if test "x`uname -s 2>/dev/null`" = xDarwin; then
+  ## we need to pull that out of R in case re-export fails (which is does on 10.11)                                                                  
+  DYLD_FALLBACK_LIBRARY_PATH=`R --slave --vanilla -e 'cat(Sys.getenv("DYLD_FALLBACK_LIBRARY_PATH"))'`
+  export DYLD_FALLBACK_LIBRARY_PATH
+fi
+
+
 if test -z "${CONFIGURED}"; then
 
 if test ${acx_java_works} = yes; then
