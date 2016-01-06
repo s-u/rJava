@@ -1,6 +1,9 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.9-9	(under development)
+
+
 0.9-8	2015-01-06
     o	Work around a bug on Oracle's Java on OS X by pre-loading jli
 
