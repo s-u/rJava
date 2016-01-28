@@ -2,6 +2,9 @@
 --------------------------
 
 0.9-9	(under development)
+    o	add support for --disable-Xrs configure option in case java -Xrs
+	is so broken that it cannot even be tested - reportedly the case
+	with Docker (see #63).
 
 
 0.9-8	2015-01-06

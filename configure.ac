@@ -59,6 +59,13 @@ AC_ARG_ENABLE([headless],
 [want_headless="${enableval}"],
 [want_headless=auto])
 
+## enable -Xrs support
+AC_ARG_ENABLE([Xrs],
+[AC_HELP_STRING([--enable-Xrs],
+		[use -Xrs in Java initialization. @<:@auto@:>@])],
+[want_xrs="${enableval}"],
+[want_xrs=auto])
+
 ## enable debug flags
 AC_ARG_ENABLE([debug],
 [AC_HELP_STRING([--enable-debug],
@@ -215,13 +222,22 @@ else
    AC_MSG_ERROR([Java interpreter '$JAVA' does not work])
 fi
 
-has_xrs=no
-AC_MSG_CHECKING([whether -Xrs is supported])
-if "$JAVA" -Xrs -classpath . getsp; then
-   has_xrs=yes
+has_xrs="$want_xrs"
+if test x"$has_xrs" = xauto; then
+   AC_MSG_CHECKING([whether -Xrs is supported])
+   if "$JAVA" -Xrs -classpath . getsp; then
+      has_xrs=yes
+   else
+      has_xrs=no
+   fi
+   AC_MSG_RESULT(${has_xrs})
+fi
+
+AC_MSG_CHECKING([whether -Xrs will be used])
+AC_MSG_RESULT(${has_xrs})
+if test "$has_xrs" = xyes; then
    AC_DEFINE(HAVE_XRS, 1, [Set if the Java parameter -Xrs is supported])
 fi
-AC_MSG_RESULT(${has_xrs})
 
 AC_MSG_CHECKING([whether JNI programs can be compiled])
 AC_LINK_IFELSE([AC_LANG_SOURCE([
