@@ -35,7 +35,7 @@ silent = FALSE, force.init = FALSE)
   not be set due to an existing or incompatible VM).
 }
 \details{
-  Starting with version 0.5 rJava provides a custom class laoder that can
+  Starting with version 0.5 rJava provides a custom class loader that can
   automatically track classes and native libraries that are provided in
   R packages. Therefore R packages should NOT use \code{.jinit}, but
   call \code{\link{.jpackage}} instead. In addition this allows the use
