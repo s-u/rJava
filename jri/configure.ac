@@ -264,7 +264,7 @@ case "${host_os}" in
 
     if test -e "${R_HOME}/lib/i386" -a -e "${R_HOME}/lib/ppc" -a -e "${R_HOME}/lib/libR.dylib"; then
        # we have an universal framework, so we will use stubs and fat lib
-       RLD="-framework R "`"${RBIN}" CMD config LDFLAGS`
+       RLD="-framework R"
        RINC="-I${R_HOME}/include"
        # we can even cross-compile, maybe
        if test -z "${FORCE_NATIVE}"; then
