@@ -146,14 +146,16 @@
   o
 }
 
+## make sure Java's -2147483648 
+.iNA <- function(o, convert=TRUE) if(convert && is.na(o)) -2147483648.0 else o
 
 ### simplify non-scalar reference to a scalar object if possible
-.jsimplify <- function(o) {
+.jsimplify <- function(o, promote=FALSE) {
   if (!inherits(o, "jobjRef") && !inherits(o, "jarrayRef"))
     return(o)
   cn <- .jclass(o, true=TRUE)
   if (cn == "java.lang.Boolean") .jcall(o, "Z", "booleanValue") else
-  if (cn == "java.lang.Integer" || cn == "java.lang.Short" || cn == "java.lang.Character" || cn == "java.lang.Byte") .jcall(o, "I", "intValue") else
+  if (cn == "java.lang.Integer" || cn == "java.lang.Short" || cn == "java.lang.Character" || cn == "java.lang.Byte") .iNA(.jcall(o, "I", "intValue"), promote) else
   if (cn == "java.lang.Number" || cn == "java.lang.Double" || cn == "java.lang.Long" || cn == "java.lang.Float") .jcall(o, "D", "doubleValue") else
   if (cn == "java.lang.String") .jstrVal(.jcast(o, "java/lang/String")) else
   o

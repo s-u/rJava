@@ -19,6 +19,8 @@ import(methods)
 importFrom(utils,head)
 importFrom(utils,tail)
 importFrom(utils,str)
+importFrom(utils, assignInNamespace)
+
 S3method(with, jobjRef)
 S3method(with, jarrayRef)
 S3method(with, jclassName)

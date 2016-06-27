@@ -690,6 +690,7 @@ enable_threads
 enable_jni_cache
 enable_jri
 enable_headless
+enable_Xrs
 enable_debug
 enable_mem_profile
 enable_callbacks
@@ -1329,6 +1330,7 @@ Optional Features:
   --enable-jri            enable Java to R interface (JRI), which allows Java
                           programs to embed R. [auto]
   --enable-headless       enable initialization in headless mode. [auto]
+  --enable-Xrs            use -Xrs in Java initialization. [auto]
   --enable-debug          enable debug flags and output. [no]
   --enable-mem-profile    enable memory profiling. [debug]
   --enable-callbacks      enable the support for callbacks from Java into R.
@@ -2162,6 +2164,15 @@ if test "${enable_headless+set}" = set; then :
   enableval=$enable_headless; want_headless="${enableval}"
 else
   want_headless=auto
+fi
+
+
+## enable -Xrs support
+# Check whether --enable-Xrs was given.
+if test "${enable_Xrs+set}" = set; then :
+  enableval=$enable_Xrs; want_xrs="${enableval}"
+else
+  want_xrs=auto
 fi
 
 
@@ -3720,9 +3731,16 @@ $as_echo "$as_me: WARNING: sed is not working properly - the configuration may f
    JAVA_LD_LIBRARY_PATH0="${JAVA_LD_LIBRARY_PATH}"
 fi
 
+OSNAME=`uname -s 2>/dev/null`
+
 LIBS="${LIBS} ${JAVA_LIBS0}"
 CFLAGS="${CFLAGS} ${JAVA_CPPFLAGS0}"
 LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${JAVA_LD_LIBRARY_PATH0}"
+if test "x$OSNAME" = xDarwin; then
+  ## we need to pull that out of R in case re-export fails (which is does on 10.11)
+  DYLD_FALLBACK_LIBRARY_PATH=`"${RBIN}" --slave --vanilla -e 'cat(Sys.getenv("DYLD_FALLBACK_LIBRARY_PATH"))'`
+  export DYLD_FALLBACK_LIBRARY_PATH
+fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether Java run-time works" >&5
 $as_echo_n "checking whether Java run-time works... " >&6; }
@@ -3735,17 +3753,28 @@ $as_echo "no" >&6; }
    as_fn_error $? "Java interpreter '$JAVA' does not work" "$LINENO" 5
 fi
 
-has_xrs=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -Xrs is supported" >&5
+has_xrs="$want_xrs"
+if test x"$has_xrs" = xauto; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -Xrs is supported" >&5
 $as_echo_n "checking whether -Xrs is supported... " >&6; }
-if "$JAVA" -Xrs -classpath . getsp; then
-   has_xrs=yes
+   if "$JAVA" -Xrs -classpath . getsp; then
+      has_xrs=yes
+   else
+      has_xrs=no
+   fi
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${has_xrs}" >&5
+$as_echo "${has_xrs}" >&6; }
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -Xrs will be used" >&5
+$as_echo_n "checking whether -Xrs will be used... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${has_xrs}" >&5
+$as_echo "${has_xrs}" >&6; }
+if test "$has_xrs" = xyes; then
 
 $as_echo "#define HAVE_XRS 1" >>confdefs.h
 
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${has_xrs}" >&5
-$as_echo "${has_xrs}" >&6; }
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether JNI programs can be compiled" >&5
 $as_echo_n "checking whether JNI programs can be compiled... " >&6; }
@@ -3858,9 +3887,8 @@ $as_echo "yes" >&6; }
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether threads can be enabled" >&5
 $as_echo_n "checking whether threads can be enabled... " >&6; }
   # check whether we can add THREADS support
-  UNAME=`uname`
   # we don't want to run full AC_CANONICAL_HOST, all we care about is OS X
-  if test "x$UNAME" == "xDarwin"; then
+  if test "x$OSNAME" = xDarwin; then
     use_threads=yes
 
 $as_echo "#define THREADS 1" >>confdefs.h
@@ -3911,7 +3939,7 @@ $as_echo_n "checking whether headless init is enabled... " >&6; }
 if test "${want_headless}" = auto; then
   want_headless=no
   ## only Darwin defaults to headless
-  if test x`uname -s 2>/dev/null` = xDarwin; then
+  if test "x$OSNAME" = xDarwin; then
     want_headless=yes
   fi
 fi

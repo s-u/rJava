@@ -124,7 +124,6 @@ public class RJavaArrayTools {
 	 * Indicates if o is a rectangular array
 	 * 
 	 * @param o an array
-	 * @throws NotAnArrayException if o is not an array
 	 * @deprecated use new ArrayWrapper(o).isRectangular() instead
 	 */
 	public static boolean isRectangularArray(Object o) {

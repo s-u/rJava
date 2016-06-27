@@ -1,10 +1,31 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.9-7	(under development)
+0.9-9	(under development)
+    o	add support for --disable-Xrs configure option in case java -Xrs
+	is so broken that it cannot even be tested - reportedly the case
+	with Docker (see #63).
+
+
+0.9-8	2016-01-06
+    o	Work around a bug on Oracle's Java on OS X by pre-loading jli
+
+    o	Work around DYLD_FALLBACK_LIBRARY_PATH being dropped in OS X 10.11
+
+
+0.9-7	2015-07-27
     o	explicitly set -classpath in configure for getps since the user
 	may have set CLASSPATH and thus override the default
 	(see #3)
+
+    o	when constructing String references from character vectors,
+	treat NA as null on the Java side (see #15)
+
+    o	add .jsimplify(..., promote=TRUE) option to promote int
+	to double if integer NAs are to be interpreted literally as
+	-2147483648 values. (see #39)
+
+    o	fix .jarray(.jshort(...)) to respect the `jshort` tag (see #40)
 
 
 0.9-6	2012-12-23

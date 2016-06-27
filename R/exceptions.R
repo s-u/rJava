@@ -29,8 +29,8 @@
 
 
 "$.Throwable" <- function( x, name ){
-	if( name %in% names(x) ){
-		x[[ name ]]
+	if( name %in% names(c(x)) ){
+		c(x)[[ name ]]
 	} else{
 		._jobjRef_dollar( x[["jobj"]], name )
 	}

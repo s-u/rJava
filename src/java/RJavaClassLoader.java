@@ -535,10 +535,10 @@ public class RJavaClassLoader extends URLClassLoader {
 
 	// {{{ setDebug
 	/**
-	 * Set the debug level. At the moment, there is only verbose (level>0)
+	 * Set the debug level. At the moment, there is only verbose (level &gt; 0)
 	 * or quiet
 	 *
-	 * @param level debug level. verbose (>0), quiet otherwise
+	 * @param level debug level. verbose (&gt;0), quiet otherwise
 	 */
 	public static void setDebug(int level) {
 		verbose=(level>0);

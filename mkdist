@@ -31,6 +31,10 @@ fi
 rm /tmp/rJava/mkdist
 rm -f /tmp/rJava/*~ /tmp/rJava/R/*~ /tmp/rJava/src/*~ /tmp/rJava/man/*~
 rm -rf /tmp/rJava/aclo* /tmp/rJava/autom*
+
+## remove GH README
+rm -f /tmp/rJava/README.md
+
 cd /tmp/rJava
 
 if [ "$1" = "-c" ]; then

@@ -59,6 +59,13 @@ AC_ARG_ENABLE([headless],
 [want_headless="${enableval}"],
 [want_headless=auto])
 
+## enable -Xrs support
+AC_ARG_ENABLE([Xrs],
+[AC_HELP_STRING([--enable-Xrs],
+		[use -Xrs in Java initialization. @<:@auto@:>@])],
+[want_xrs="${enableval}"],
+[want_xrs=auto])
+
 ## enable debug flags
 AC_ARG_ENABLE([debug],
 [AC_HELP_STRING([--enable-debug],
@@ -196,9 +203,16 @@ else
    JAVA_LD_LIBRARY_PATH0="${JAVA_LD_LIBRARY_PATH}"
 fi
 
+OSNAME=`uname -s 2>/dev/null`
+
 LIBS="${LIBS} ${JAVA_LIBS0}"
 CFLAGS="${CFLAGS} ${JAVA_CPPFLAGS0}"
 LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${JAVA_LD_LIBRARY_PATH0}"
+if test "x$OSNAME" = xDarwin; then
+  ## we need to pull that out of R in case re-export fails (which is does on 10.11)
+  DYLD_FALLBACK_LIBRARY_PATH=`"${RBIN}" --slave --vanilla -e 'cat(Sys.getenv("DYLD_FALLBACK_LIBRARY_PATH"))'`
+  export DYLD_FALLBACK_LIBRARY_PATH
+fi
 
 AC_MSG_CHECKING([whether Java run-time works])
 if "$JAVA" -classpath . getsp; then
@@ -208,13 +222,22 @@ else
    AC_MSG_ERROR([Java interpreter '$JAVA' does not work])
 fi
 
-has_xrs=no
-AC_MSG_CHECKING([whether -Xrs is supported])
-if "$JAVA" -Xrs -classpath . getsp; then
-   has_xrs=yes
+has_xrs="$want_xrs"
+if test x"$has_xrs" = xauto; then
+   AC_MSG_CHECKING([whether -Xrs is supported])
+   if "$JAVA" -Xrs -classpath . getsp; then
+      has_xrs=yes
+   else
+      has_xrs=no
+   fi
+   AC_MSG_RESULT(${has_xrs})
+fi
+
+AC_MSG_CHECKING([whether -Xrs will be used])
+AC_MSG_RESULT(${has_xrs})
+if test "$has_xrs" = xyes; then
    AC_DEFINE(HAVE_XRS, 1, [Set if the Java parameter -Xrs is supported])
 fi
-AC_MSG_RESULT(${has_xrs})
 
 AC_MSG_CHECKING([whether JNI programs can be compiled])
 AC_LINK_IFELSE([AC_LANG_SOURCE([
@@ -282,9 +305,8 @@ if test "${want_threads}" = yes; then
   AC_MSG_RESULT([yes])
   AC_MSG_CHECKING([whether threads can be enabled])
   # check whether we can add THREADS support
-  UNAME=`uname`
   # we don't want to run full AC_CANONICAL_HOST, all we care about is OS X
-  if test "x$UNAME" == "xDarwin"; then
+  if test "x$OSNAME" = xDarwin; then
     use_threads=yes
     AC_DEFINE(THREADS, 1, [Set if threading support should be enabled.])
   fi
@@ -320,7 +342,7 @@ AC_MSG_CHECKING([whether headless init is enabled])
 if test "${want_headless}" = auto; then
   want_headless=no
   ## only Darwin defaults to headless
-  if test x`uname -s 2>/dev/null` = xDarwin; then
+  if test "x$OSNAME" = xDarwin; then
     want_headless=yes
   fi
 fi
