@@ -40,8 +40,10 @@ HIDE void* errJNI(const char *err, ...) {
 	return 0;
 }
 
-HIDE jclass findClass(JNIEnv *env, const char *cName) {
-  if (clClassLoader) {
+/* loader: if NULL does NOT use any custom loader but uses system FindClass,
+   otherwise Class.forName(..., true, loader) if user first and system only as fall-back */
+HIDE jclass findClass(JNIEnv *env, const char *cName, jobject loader) {
+  if (loader) {
     char cn[128], *c=cn;
     jobject cns;
     jclass cl;
@@ -51,9 +53,9 @@ HIDE jclass findClass(JNIEnv *env, const char *cName) {
     cns = newString(env, cn);
     if (!cns) error("unable to create Java string from '%s'", cn);
 #ifdef DEBUG_CL
-    printf("findClass(\"%s\") [with rJava loader]\n", cn);
+    printf("findClass(\"%s\") [with %s loader]\n", cn, (loader && loader == oClassLoader) ? "rJava" : "custom");
 #endif
-    cl = (jclass) (*env)->CallStaticObjectMethod(env, javaClassClass, mid_forName, cns, (jboolean) 1, oClassLoader);
+    cl = (jclass) (*env)->CallStaticObjectMethod(env, javaClassClass, mid_forName, cns, (jboolean) 1, loader);
 #if RJAVA_LEGACY
     clx(env);
 #endif
@@ -80,13 +82,14 @@ HIDE jclass findClass(JNIEnv *env, const char *cName) {
   }
 }
 
-HIDE jobject createObject(JNIEnv *env, const char *class, const char *sig, jvalue *par, int silent) {
+/* loader: if NULL, uses oClassLoader (rJava class loader) */
+HIDE jobject createObject(JNIEnv *env, const char *class, const char *sig, jvalue *par, int silent, jobject loader) {
   /* va_list ap; */
   jmethodID mid;
   jclass cls;
   jobject o;
 
-  cls=findClass(env, class);
+  cls=findClass(env, class, loader ? loader : oClassLoader);
   if (!cls) return silent?0:errJNI("createObject.FindClass %s failed",class);
   mid=(*env)->GetMethodID(env, cls, "<init>", sig);
   if (!mid) {

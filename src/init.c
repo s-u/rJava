@@ -385,14 +385,14 @@ REPC SEXP initRJavaTools(){
 	/* classes */
 	
 	/* RJavaTools class */
-	c= findClass( env, "RJavaTools" ) ; 
+	c = findClass(env, "RJavaTools", oClassLoader);
 	if (!c) error("unable to find the RJavaTools class");
 	rj_RJavaTools_Class=(*env)->NewGlobalRef(env, c);
 	if (!rj_RJavaTools_Class) error("unable to create a global reference to the RJavaTools class");
 	(*env)->DeleteLocalRef(env, c);
 	
 	/* RJavaImport */
-	c= findClass( env, "RJavaImport" ) ; 
+	c = findClass(env, "RJavaImport", oClassLoader); 
 	if (!c) error("unable to find the RJavaImport class");
 	rj_RJavaImport_Class=(*env)->NewGlobalRef(env, c);
 	if (!rj_RJavaImport_Class) error("unable to create a global reference to the RJavaImport class");

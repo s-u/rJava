@@ -193,8 +193,8 @@ HIDE SEXP new_jclassName(JNIEnv *, jobject/*Class*/ ) ;
 HIDE jstring callToString(JNIEnv *env, jobject o);
 
 /* in callJNI */
-HIDE jobject createObject(JNIEnv *env, const char *class, const char *sig, jvalue *par, int silent);
-HIDE jclass findClass(JNIEnv *env, const char *class);
+HIDE jobject createObject(JNIEnv *env, const char *class, const char *sig, jvalue *par, int silent, jobject loader);
+HIDE jclass findClass(JNIEnv *env, const char *class, jobject loader);
 HIDE jclass objectClass(JNIEnv *env, jobject o);
 
 HIDE jdoubleArray newDoubleArray(JNIEnv *env, double *cont, int len);

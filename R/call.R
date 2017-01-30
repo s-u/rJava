@@ -5,12 +5,12 @@
 ## $Id$
 
 # create a new object
-.jnew <- function(class, ..., check=TRUE, silent=!check) {
+.jnew <- function(class, ..., check=TRUE, silent=!check, class.loader=NULL) {
   class <- gsub("\\.", "/", as.character(class)) # allow non-JNI specifiation
   # TODO: should this do "S" > "java/lang/String", ... like .jcall
   
   if (check) .jcheck(silent=TRUE)
-  o<-.External(RcreateObject, class, ..., silent=silent)
+  o<-.External(RcreateObject, class, ..., silent=silent, class.loader=class.loader)
   if (check) .jcheck(silent=silent)
   if (is.null(o)) {
   	  if (!silent) {

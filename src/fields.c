@@ -104,7 +104,7 @@ REPC SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
   else {
     char *c = clnam;
     while(*c) { if (*c=='/') *c='.'; c++; }
-    cls = findClass(env, clnam);
+    cls = findClass(env, clnam, oClassLoader);
     free(clnam);
     if (!cls) {
       error("cannot find class %s", CHAR(STRING_ELT(obj, 0)));
@@ -302,7 +302,7 @@ REPC SEXP RsetField(SEXP ref, SEXP name, SEXP value) {
   else {
     char *c = clnam;
     while(*c) { if (*c=='/') *c='.'; c++; }
-    cls = findClass(env, clnam);
+    cls = findClass(env, clnam, oClassLoader);
     if (!cls) {
       error("cannot find class %s", CHAR(STRING_ELT(obj, 0)));
     }
