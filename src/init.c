@@ -462,7 +462,7 @@ static void* findBound(char *from, char *limit, int dir)
       if (write(pipefd[1], from, psize) == -1) {
         if (errno == EFAULT) {
           /* now proceed byte by byte */
-          for(from -= dir * psize; from != limit; from += dir)
+          for(; from != limit; from += dir)
             if (write(pipefd[1], from, 1) == -1) {
               if (errno != EFAULT)
                 failed = 1;
@@ -524,6 +524,8 @@ static SEXP RinitJVM_jsw(SEXP par) {
   if (val < 0 || val > 3)
     error("Invalid value for RJAVA_JVM_STACK_WORKAROUND");
 
+  _dbg(rjprintf("JSW workaround: (level %d)\n", val));
+
   if (val == JSW_DISABLED)
     return RinitJVM_real(par);
 
@@ -533,22 +535,37 @@ static SEXP RinitJVM_jsw(SEXP par) {
   struct rlimit rlim;
   if (getrlimit(RLIMIT_STACK, &rlim) == 0) {
     rlim_t lim = rlim.rlim_cur;
-    if (lim != RLIM_INFINITY)
+    if (lim != RLIM_INFINITY) {
       rlimsize = (uintptr_t)lim;
+       _dbg(rjprintf("  RLIMIT_STACK (rlimsize) %lu\n",
+                     (unsigned long) rlimsize));
+    } else {
+       _dbg(rjprintf("  RLIMIT_STACK unlimited\n"));
+    }
   }
 
-  if (rlimsize == 0 && R_CStackLimit != -1)
+  if (rlimsize == 0 && R_CStackLimit != -1) {
     /* getrlimit should work on linux, so this should only happen
        when stack size is unlimited */
     rlimsize = (uintptr_t) (R_CStackLimit / 0.95);
+    _dbg(rjprintf("  expanded R_CStackLimit (rlimsize) %lu\n",
+                  (unsigned long) rlimsize));
+  }
 
-  if (rlimsize == 0 || rlimsize > JSW_CHECK_BOUND)
+  if (rlimsize == 0 || rlimsize > JSW_CHECK_BOUND) {
     /* use a reasonable limit when looking for guard pages when
        stack size is unlimited or very large  */
     rlimsize = JSW_CHECK_BOUND;
+    _dbg(rjprintf("  hardcoded rlimsize %lu\n",
+                  (unsigned long) rlimsize));
+  }
 
+  _dbg(rjprintf("  R_CStackStart %p\n", R_CStackStart));
+  _dbg(rjprintf("  R_CStackLimit %lu\n", (unsigned long)R_CStackLimit));
   void *maxBound = (void *)((intptr_t)R_CStackStart - (intptr_t)R_CStackDir*rlimsize);
   void *oldBound = findBound((void*)R_CStackStart, maxBound, -R_CStackDir);
+  _dbg(rjprintf("  maxBound %p\n", maxBound));
+  _dbg(rjprintf("  oldBound %p\n", oldBound));
 
   /* it is expected that newBound < maxBound, because not all of the "rlim"
      stack is accessible even before JVM initialization */
@@ -566,10 +583,12 @@ static SEXP RinitJVM_jsw(SEXP par) {
     /* reduce the risk that dummy will be optimized out */
   dummy[0] = (char) (uintptr_t) &dummy;
   SEXP ans = PROTECT(RinitJVM_with_padding(par, padding, dummy));
+  _dbg(rjprintf("JSW workaround (ctd): (level %d)\n", val));
 
   if (val >= JSW_DETECT) {
 
     void *newBound = findBound((void*)R_CStackStart, oldBound, -R_CStackDir);
+    _dbg(rjprintf("  newBound %p\n", newBound));
     if (oldBound == newBound) {
       /* No guard pages inserted, keep the original stack size.
          This includes the case when the original stack size was
@@ -584,8 +603,10 @@ static SEXP RinitJVM_jsw(SEXP par) {
     uintptr_t newlim = (uintptr_t) (lim * 0.95);
 
     uintptr_t oldlim = R_CStackLimit;
-    if (val >= JSW_ADJUST)
+    if (val >= JSW_ADJUST) {
       R_CStackLimit = newlim;
+      _dbg(rjprintf("  new R_CStackLimit %lu\n", (unsigned long)R_CStackLimit));
+    }
 
     /* Only report when the loss is big. There will always be some bytes
        lost because even with the original setting of R_CStackLimit before
