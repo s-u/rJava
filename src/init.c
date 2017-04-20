@@ -412,6 +412,7 @@ extern int R_CStackDir;
 #include <unistd.h>
 #include <errno.h>
 #include <sys/resource.h>
+#include <inttypes.h>
 
 /*
   Find a new limit for the C stack, within the existing limit.  Looks for
@@ -427,14 +428,21 @@ extern int R_CStackDir;
 
   returns NULL in case of error, limit when no new limit is found,
     a new limit when found
+
+  returns NULL when from == limit
 */
+
+volatile int globald = 0;
 static void* findBound(char *from, char *limit, int dir)
 {
   int pipefd[2];
   pid_t cpid;
     /* any positive size could be used, using page size is a heuristic */
-  size_t psize = sysconf(_SC_PAGESIZE);
+  int psize = (int) sysconf(_SC_PAGESIZE);
   char buf[psize];
+
+  if ((dir==-1 && from<=limit) || (dir == 1 && from>=limit))
+    return NULL;
 
   if (pipe(pipefd) == -1)
     return NULL; /* error */
@@ -457,17 +465,18 @@ static void* findBound(char *from, char *limit, int dir)
     */
     close(pipefd[0]);
     int failed = 0;
+    intmax_t diff = imaxabs(from-limit);
+    int step = (diff < psize) ? diff : psize;
 
-    for(;(limit - from) * dir > 0; from += dir * psize)
-      if (write(pipefd[1], from, psize) == -1) {
+    for(; (dir == -1) ? (from-step+1 >= limit) : (from+step-1 <= limit)
+        ; from += dir * step)
+
+      if (write(pipefd[1], (dir == -1) ? (from-step+1) : from, step) == -1) {
         if (errno == EFAULT) {
-          /* now proceed byte by byte */
-          for(; from != limit; from += dir)
-            if (write(pipefd[1], from, 1) == -1) {
-              if (errno != EFAULT)
-                failed = 1;
-              break;
-            }
+          if (step > 1) {
+             step = 1; /* now proceed byte by byte */
+             continue;
+          } /* otherwise we are done */
         } else
           failed = 1;
         break;
@@ -568,7 +577,8 @@ static SEXP RinitJVM_jsw(SEXP par) {
   _dbg(rjprintf("  oldBound %p\n", oldBound));
 
   /* it is expected that newBound < maxBound, because not all of the "rlim"
-     stack is accessible even before JVM initialization */
+     stack is accessible even before JVM initialization, which can be e.g.
+     because of imprecise detection of the stack start */
 
   intptr_t padding = 0;
   if (val >= JSW_PREVENT) {
@@ -597,7 +607,6 @@ static SEXP RinitJVM_jsw(SEXP par) {
       return ans;
     }
 
-    intptr_t oldb = (intptr_t)oldBound;
     intptr_t newb = (intptr_t)newBound;
     intptr_t lim = ((intptr_t)R_CStackStart - newb) * R_CStackDir;
     uintptr_t newlim = (uintptr_t) (lim * 0.95);
@@ -610,7 +619,8 @@ static SEXP RinitJVM_jsw(SEXP par) {
 
     /* Only report when the loss is big. There will always be some bytes
        lost because even with the original setting of R_CStackLimit before
-       initializing the JVM, one cannot access all bytes of stack. */
+       initializing the JVM, one cannot access all bytes of stack
+       (e.g. because of imprecise detection of the stack start). */
 
     int bigloss = 0;
     if (oldlim == -1) {
