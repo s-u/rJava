@@ -420,6 +420,7 @@ extern int R_CStackDir;
   process.  This code could easily be made to work on different Unix
   systems, not just on Linux, but it does not seem necessary at the moment.
 
+  from is the first address to access
   limit is the first address not to access
   bound is the new first address not to access
   dir is 1 (stack grows up) or -1 (stack grows down, the usual)
@@ -464,24 +465,32 @@ static void* findBound(char *from, char *limit, int dir)
        it is re-tried byte-by-byte for the last buffer not read successfully.
     */
     close(pipefd[0]);
-    int failed = 0;
     intmax_t diff = imaxabs(from-limit);
     int step = (diff < psize) ? diff : psize;
+    int failed = 0;
+    int reached_fault = 0;
+    char *origfrom = from;
 
+    /* start search at bigger granularity for performance */
     for(; (dir == -1) ? (from-step+1 >= limit) : (from+step-1 <= limit)
         ; from += dir * step)
 
       if (write(pipefd[1], (dir == -1) ? (from-step+1) : from, step) == -1) {
-        if (errno == EFAULT) {
-          if (step > 1) {
-             step = 1; /* now proceed byte by byte */
-             continue;
-          } /* otherwise we are done */
-        } else
+        if (errno == EFAULT)
+          reached_fault = 1;
+        else
           failed = 1;
         break;
       }
 
+    /* finetune with step 1 */
+    if (reached_fault && step > 1 && origfrom != from)
+      for(from -= dir * step; from != limit ; from += dir)
+        if (write(pipefd[1], from, 1) == -1) {
+          if (errno != EFAULT)
+            failed = 1;
+          break;
+        }
     close(pipefd[1]);
     wait(NULL);
     return failed ? NULL : from;
@@ -572,7 +581,7 @@ static SEXP RinitJVM_jsw(SEXP par) {
   _dbg(rjprintf("  R_CStackStart %p\n", R_CStackStart));
   _dbg(rjprintf("  R_CStackLimit %lu\n", (unsigned long)R_CStackLimit));
   void *maxBound = (void *)((intptr_t)R_CStackStart - (intptr_t)R_CStackDir*rlimsize);
-  void *oldBound = findBound((void*)R_CStackStart, maxBound, -R_CStackDir);
+  void *oldBound = findBound((void*)R_CStackStart - R_CStackDir, maxBound, -R_CStackDir);
   _dbg(rjprintf("  maxBound %p\n", maxBound));
   _dbg(rjprintf("  oldBound %p\n", oldBound));
 
@@ -597,7 +606,7 @@ static SEXP RinitJVM_jsw(SEXP par) {
 
   if (val >= JSW_DETECT) {
 
-    void *newBound = findBound((void*)R_CStackStart, oldBound, -R_CStackDir);
+    void *newBound = findBound((void*)R_CStackStart - R_CStackDir, oldBound, -R_CStackDir);
     _dbg(rjprintf("  newBound %p\n", newBound));
     if (oldBound == newBound) {
       /* No guard pages inserted, keep the original stack size.
