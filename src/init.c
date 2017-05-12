@@ -388,8 +388,8 @@ static SEXP RinitJVM_real(SEXP par)
    limit is implemented in os::Linux::capture_initial_stack (the limit 4M on
    Itanium which is ignored here by rJava and 2M on other Linux systems) and
    is claimed to be a workaround for issues in RH7.2.  The problem is still
-   present in JVM 9.  Moreover, on Linux the JVM inserts also guard pages
-   also based on the setting of -Xss.
+   present in JVM 9.  Moreover, on Linux the JVM inserts guard pages also
+   based on the setting of -Xss.
 */
 
 #undef JVM_STACK_WORKAROUND
@@ -577,8 +577,8 @@ static SEXP RinitJVM_jsw(SEXP par) {
   _dbg(rjprintf("  oldBound %p\n", oldBound));
 
   /* it is expected that newBound < maxBound, because not all of the "rlim"
-     stack is accessible even before JVM initialization, which can be e.g.
-     because of imprecise detection of the stack start */
+     stack may be accessible even before JVM initialization, which can be e.g.
+     because of an imprecise detection of the stack start */
 
   intptr_t padding = 0;
   if (val >= JSW_PREVENT) {
@@ -617,9 +617,9 @@ static SEXP RinitJVM_jsw(SEXP par) {
       _dbg(rjprintf("  new R_CStackLimit %lu\n", (unsigned long)R_CStackLimit));
     }
 
-    /* Only report when the loss is big. There will always be some bytes
+    /* Only report when the loss is big. There may be some bytes
        lost because even with the original setting of R_CStackLimit before
-       initializing the JVM, one cannot access all bytes of stack
+       initializing the JVM, one may not be able to access all bytes of stack
        (e.g. because of imprecise detection of the stack start). */
 
     int bigloss = 0;
