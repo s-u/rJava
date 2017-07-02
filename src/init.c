@@ -434,7 +434,7 @@ extern int R_CStackDir;
 */
 
 volatile int globald = 0;
-static void* findBound(char *from, char *limit, int dir)
+static char* findBound(char *from, char *limit, int dir)
 {
   int pipefd[2];
   pid_t cpid;
@@ -580,8 +580,8 @@ static SEXP RinitJVM_jsw(SEXP par) {
 
   _dbg(rjprintf("  R_CStackStart %p\n", R_CStackStart));
   _dbg(rjprintf("  R_CStackLimit %lu\n", (unsigned long)R_CStackLimit));
-  void *maxBound = (void *)((intptr_t)R_CStackStart - (intptr_t)R_CStackDir*rlimsize);
-  void *oldBound = findBound((void*)R_CStackStart - R_CStackDir, maxBound, -R_CStackDir);
+  char *maxBound = (char *)((intptr_t)R_CStackStart - (intptr_t)R_CStackDir*rlimsize);
+  char *oldBound = findBound((char*)R_CStackStart - R_CStackDir, maxBound, -R_CStackDir);
   _dbg(rjprintf("  maxBound %p\n", maxBound));
   _dbg(rjprintf("  oldBound %p\n", oldBound));
 
@@ -606,7 +606,7 @@ static SEXP RinitJVM_jsw(SEXP par) {
 
   if (val >= JSW_DETECT) {
 
-    void *newBound = findBound((void*)R_CStackStart - R_CStackDir, oldBound, -R_CStackDir);
+    char *newBound = findBound((char*)R_CStackStart - R_CStackDir, oldBound, -R_CStackDir);
     _dbg(rjprintf("  newBound %p\n", newBound));
     if (oldBound == newBound) {
       /* No guard pages inserted, keep the original stack size.
