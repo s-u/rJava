@@ -323,7 +323,7 @@ is.jnull <- function(x) {
   else
     try(a <- .jcall("java/lang/Class","Ljava/lang/Class;","forName",cl,check=FALSE))
   # this is really .jcheck but we don't want it to appear on the call stack
-  .C(RJavaCheckExceptions, silent, FALSE, PACKAGE = "rJava")
+  .Call(RJavaCheckExceptions, silent)
   if (!silent && is.jnull(a)) stop("class not found")
   a
 }
