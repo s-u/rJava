@@ -1,5 +1,5 @@
 JAVA_SRC=$(wildcard *.java)
-JFLAGS=-source 1.2 -target 1.2
+JFLAGS=-source 1.6 -target 1.6
 JAVAC=javac
 JAVA=java
 JAVADOC=javadoc
