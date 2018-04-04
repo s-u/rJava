@@ -10,8 +10,10 @@
        dyn.load(jli, FALSE)
        dlp <- Sys.getenv("DYLD_LIBRARY_PATH")
        if (nzchar(dlp)) dlp <- paste0(":", dlp)
-       if (file.exists(file.path(jh, "lib/server/libjvm.dylib")))
+       if (file.exists(jvm <- file.path(jh, "lib/server/libjvm.dylib"))) {
+         dyn.load(jvm, FALSE) ## pre-load libjvm because Oracle's version have broken ID-paths so they cannot be localized
          Sys.setenv(DYLD_LIBRARY_PATH=paste0(file.path(jh, "lib/server"), dlp))
+       }
      }
   }
   library.dynam("rJava", pkgname, libname)
