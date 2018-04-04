@@ -107,15 +107,51 @@ AC_PATH_PROGS(JAVAH,javah,,${JAVA_PATH})
 AC_PATH_PROGS(JAR,jar,,${JAVA_PATH})
 fi
 
+AC_MSG_CHECKING([Java version])
+JVER=`"$JAVA" -version 2>&1 | sed -n 's:^java version "::p' | sed 's:".*::'`
+AC_MSG_RESULT([$JVER])
+
+AC_MSG_CHECKING([whether $JAVAH actually works])
+if "$JAVAH" -version >/dev/null 2>&1; then
+   AC_MSG_RESULT([yes])
+else
+   AC_MSG_RESULT([no])
+   JAVAH=
+fi
+
 have_all_java=yes
+## Java 1.10 has no javah anymore -- it uses javac -h . instaead
+if test -z "$JAVAH"; then
+   AC_MSG_CHECKING([whether javah was replaced by javac -h])
+   if echo "$JVER" | grep '^1@<:@0-9@:>@' >/dev/null; then
+      AC_MSG_RESULT([yes])
+      ## create headres in the compile step instead
+      JFLAGS=' -h .'
+   else
+      AC_MSG_RESULT([no])
+      have_all_java=no;
+   fi
+fi
 if test -z "$JAVA_PROG"; then have_all_java=no; fi
 if test -z "$JAVAC"; then have_all_java=no; fi
-if test -z "$JAVAH"; then have_all_java=no; fi
 if test -z "$JAR"; then have_all_java=no; fi
 if test ${have_all_java} = no; then
   AC_MSG_ERROR([one or more Java tools are missing.
 
 *** JDK is incomplete! Please make sure you have a complete JDK. JRE is *not* sufficient.])
+fi
+
+AC_MSG_CHECKING([for target flags])
+## set JFLAGS target -- depends on the JDK version
+if echo $JFLAGS | grep '[[-]]target' >/dev/null; then
+   AC_MSG_RESULT([user-supplied: $JFLAGS])
+else
+   if echo $JVER | grep '^1\.' >/dev/null; then
+      JFLAGS="$JFLAGS -target 1.4 -source 1.4"
+   else
+      JFLAGS="$JFLAGS -target 1.6 -source 1.6"
+   fi
+   AC_MSG_RESULT([$JFLAGS])
 fi
 
 ## this is where our test-class lives
@@ -327,6 +363,7 @@ AC_SUBST(JAVA_INC)
 AC_SUBST(JAVA_CFLAGS)
 AC_SUBST(JAVAC)
 AC_SUBST(JAVAH)
+AC_SUBST(JFLAGS)
 AC_SUBST(JAR)
 AC_SUBST(JNILD)
 AC_SUBST(JNISO)

@@ -595,6 +595,7 @@ CPICF
 JNIPREFIX
 JNISO
 JNILD
+JFLAGS
 JAVA_CFLAGS
 JAVA_INC
 JAVA_LIBS
@@ -3429,15 +3430,62 @@ done
 
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking Java version" >&5
+$as_echo_n "checking Java version... " >&6; }
+JVER=`"$JAVA" -version 2>&1 | sed -n 's:^java version "::p' | sed 's:".*::'`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $JVER" >&5
+$as_echo "$JVER" >&6; }
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $JAVAH actually works" >&5
+$as_echo_n "checking whether $JAVAH actually works... " >&6; }
+if "$JAVAH" -version >/dev/null 2>&1; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+   JAVAH=
+fi
+
 have_all_java=yes
+## Java 1.10 has no javah anymore -- it uses javac -h . instaead
+if test -z "$JAVAH"; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether javah was replaced by javac -h" >&5
+$as_echo_n "checking whether javah was replaced by javac -h... " >&6; }
+   if echo "$JVER" | grep '^1[0-9]' >/dev/null; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      ## create headres in the compile step instead
+      JFLAGS=' -h .'
+   else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      have_all_java=no;
+   fi
+fi
 if test -z "$JAVA_PROG"; then have_all_java=no; fi
 if test -z "$JAVAC"; then have_all_java=no; fi
-if test -z "$JAVAH"; then have_all_java=no; fi
 if test -z "$JAR"; then have_all_java=no; fi
 if test ${have_all_java} = no; then
   as_fn_error $? "one or more Java tools are missing.
 
 *** JDK is incomplete! Please make sure you have a complete JDK. JRE is *not* sufficient." "$LINENO" 5
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for target flags" >&5
+$as_echo_n "checking for target flags... " >&6; }
+## set JFLAGS target -- depends on the JDK version
+if echo $JFLAGS | grep '[-]target' >/dev/null; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: user-supplied: $JFLAGS" >&5
+$as_echo "user-supplied: $JFLAGS" >&6; }
+else
+   if echo $JVER | grep '^1\.' >/dev/null; then
+      JFLAGS="$JFLAGS -target 1.4 -source 1.4"
+   else
+      JFLAGS="$JFLAGS -target 1.6 -source 1.6"
+   fi
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $JFLAGS" >&5
+$as_echo "$JFLAGS" >&6; }
 fi
 
 ## this is where our test-class lives
@@ -3839,6 +3887,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 CFLAGS=${origCFLAGS}
+
 
 
 
