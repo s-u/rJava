@@ -26,8 +26,5 @@ since the checkout is not the acutal package.
 
 ### Mailing list and bug reports
 
-Please use
-[stats-rosuda-devel](https://mailman.rz.uni-augsburg.de/mailman/listinfo/stats-rosuda-devel)
-mailing list for questions about rJava and [rJava GitHub issues
-page](https://github.com/s-u/rJava/issues) to report bugs.
+Please use [rJava GitHub issues page](https://github.com/s-u/rJava/issues) to report bugs.
 
