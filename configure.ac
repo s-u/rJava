@@ -176,7 +176,7 @@ if test -z "${JAVAC}"; then
 fi
 
 have_all_flags=no
-if test -n "${JAVA}" && test -n "${JAVAC}" && test -n "${JAVAH}" && \
+if test -n "${JAVA}" && test -n "${JAVAC}" && \
    test -n "${JAVA_CPPFLAGS}" && test -n "${JAVA_LIBS}" && test -n "${JAR}"; then
   have_all_flags=yes;
 fi
