@@ -2,8 +2,7 @@
 R/Java interface allowing the use of Java from R as well as embedding
 R into Java (via JRI)
 
-Please visit the [main rJava project page on
-RForge.net](http://rforge.net) for details.
+Please visit the [main rJava project page on RForge.net](http://rforge.net) for details.
 
 ### Installation
 
@@ -22,12 +21,10 @@ When checking out the sources, you *must* use
 
 since rJava includes REngine as a submodule. If you want to create a
 package from the source checkout, you *must* use `sh mkdist` to do so
-since the checkout is not the acutal package.
+since the checkout is not the actual R package but a source to
+generate one (which involves compilation of Java code).
 
-### Mailing list and bug reports
+### Bug reports
 
-Please use
-[stats-rosuda-devel](https://mailman.rz.uni-augsburg.de/mailman/listinfo/stats-rosuda-devel)
-mailing list for questions about rJava and [rJava GitHub issues
-page](https://github.com/s-u/rJava/issues) to report bugs.
-
+Please use [rJava GitHub issues page](https://github.com/s-u/rJava/issues) to
+report bugs.
