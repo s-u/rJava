@@ -108,8 +108,12 @@ AC_PATH_PROGS(JAR,jar,,${JAVA_PATH})
 fi
 
 AC_MSG_CHECKING([Java version])
-JVER=`"$JAVA" -version 2>&1 | sed -n 's:^java version "::p' | sed 's:".*::'`
+JVER=`"$JAVA" -version 2>&1 | sed -n 's:^.* version "::p' | sed 's:".*::'`
 AC_MSG_RESULT([$JVER])
+
+if test -z "$JVER"; then
+   AC_MSG_WARN([**** Cannot detect Java version - the java -version output is unknown! ****])
+fi
 
 AC_MSG_CHECKING([whether $JAVAH actually works])
 if "$JAVAH" -version >/dev/null 2>&1; then
