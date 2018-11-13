@@ -235,7 +235,7 @@ fi
 
 AC_MSG_CHECKING([whether -Xrs will be used])
 AC_MSG_RESULT(${has_xrs})
-if test "$has_xrs" = xyes; then
+if test x"$has_xrs" = xyes; then
    AC_DEFINE(HAVE_XRS, 1, [Set if the Java parameter -Xrs is supported])
 fi
 
