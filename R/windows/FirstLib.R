@@ -34,6 +34,7 @@ function(libname, pkgname) {
     paths <- c(paths,
                file.path(javahome, "bin", "client"), # 32-bit
                file.path(javahome, "bin", "server"), # 64-bit
+               file.path(javahome, "bin", "j9vm"), # IBM
                file.path(javahome, "bin"), # base (now needed for MSVCRT in recent Sun Java)
                file.path(javahome, "jre", "bin", "server"), # old 64-bit (or manual JAVA_HOME setting to JDK)
                file.path(javahome, "jre", "bin", "client")) # old 32-bit (or manual JAVA_HOME setting to JDK)
