@@ -63,6 +63,7 @@ AC_SUBST(R_SHARE_DIR)
 AC_SUBST(R_DOC_DIR)
 AC_SUBST(R_INCLUDE_DIR)
 
+AC_LANG(C)
 AC_PROG_CC
 AC_HEADER_STDC
 
@@ -113,6 +114,15 @@ AC_MSG_RESULT([$JVER])
 
 if test -z "$JVER"; then
    AC_MSG_WARN([**** Cannot detect Java version - the java -version output is unknown! ****])
+else
+   AC_MSG_CHECKING([Java compatibility version (integer)])
+   ## .. Oracle decided to completely screw up Java version so have to try extract something meaningful ..
+   if echo $JVER | grep '^[[0-9]]\.' >/dev/null; then ## old style 1.X
+      JMVER=`echo $JVER | sed 's:..::' | sed 's:\..*::'`
+   else ## new stype omitting the major version
+      JMVER=`echo $JVER | sed 's:\..*::'`
+   fi
+   AC_MSG_RESULT([$JMVER])
 fi
 
 AC_MSG_CHECKING([whether $JAVAH actually works])
@@ -127,7 +137,7 @@ have_all_java=yes
 ## Java 1.10 has no javah anymore -- it uses javac -h . instaead
 if test -z "$JAVAH"; then
    AC_MSG_CHECKING([whether javah was replaced by javac -h])
-   if echo "$JVER" | grep '^1@<:@0-9@:>@' >/dev/null; then
+   if test "$JMVER" -gt 9; then
       AC_MSG_RESULT([yes])
       ## create headres in the compile step instead
       JFLAGS=' -h .'
@@ -150,10 +160,14 @@ AC_MSG_CHECKING([for target flags])
 if echo $JFLAGS | grep '[[-]]target' >/dev/null; then
    AC_MSG_RESULT([user-supplied: $JFLAGS])
 else
-   if echo $JVER | grep '^1\.' >/dev/null; then
+   if test "$JMVER" -lt 9; then
       JFLAGS="$JFLAGS -target 1.4 -source 1.4"
    else
-      JFLAGS="$JFLAGS -target 1.6 -source 1.6"
+      if test "$JMVER" -lt 12; then
+         JFLAGS="$JFLAGS -target 1.6 -source 1.6"
+      else
+         JFLAGS="$JFLAGS -target 1.8 -source 1.8"
+      fi
    fi
    AC_MSG_RESULT([$JFLAGS])
 fi
@@ -260,27 +274,28 @@ LIBS="${LIBS} ${JAVA_LIBS0}"
 CFLAGS="${CFLAGS} ${JAVA_CFLAGS} ${JAVA_INC0}"
 
 AC_MSG_CHECKING([whether JNI programs can be compiled])
-AC_LINK_IFELSE([
+AC_LINK_IFELSE([AC_LANG_SOURCE([[
 #include <jni.h>
 int main(void) {
     jobject o;
     return 0;
 }
-        ],[AC_MSG_RESULT(yes)],
+        ]])],[AC_MSG_RESULT(yes)],
         [AC_MSG_ERROR([Cannot compile a simple JNI program. See config.log for details.])])
 
 LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_LD_PATH0}
 export LD_LIBRARY_PATH
 
 AC_MSG_CHECKING([whether JNI programs can be run])
-AC_RUN_IFELSE([
+AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <jni.h>
 int main(void) {
     jobject o;
     return 0;
 }
-        ],[AC_MSG_RESULT(yes)],
-        [AC_MSG_ERROR([Cannot run a simple JNI program - probably your jvm library is in non-standard location or JVM is unsupported. See config.log for details.])])
+        ]])],[AC_MSG_RESULT(yes)],
+        [AC_MSG_RESULT(no)
+	 AC_MSG_ERROR([Cannot run a simple JNI program - probably your jvm library is in non-standard location or JVM is unsupported. See config.log for details.])])
 
 AC_MSG_CHECKING([JNI data types])
 AC_RUN_IFELSE([AC_LANG_SOURCE([[
@@ -335,25 +350,25 @@ origCFLAGS=$CFLAGS
 CFLAGS="${CFLAGS} ${R_CFLAGS} ${RINC}"
 
 AC_MSG_CHECKING([whether Rinterface.h exports R_CStackXXX variables])
-AC_COMPILE_IFELSE([
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #define CSTACK_DEFNS
 #include <R.h>
 #include <Rinterface.h>
 int main(void) {
     return R_CStackLimit?0:1;
 }
-        ],[AC_MSG_RESULT(yes)
+        ])],[AC_MSG_RESULT(yes)
            DEFFLAGS="${DEFFLAGS} -DRIF_HAS_CSTACK"],
         [AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING([whether Rinterface.h exports R_SignalHandlers])
-AC_COMPILE_IFELSE([
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #include <R.h>
 #include <Rinterface.h>
 int main(void) {
     return R_SignalHandlers;
 }
-        ],[AC_MSG_RESULT(yes)
+        ])],[AC_MSG_RESULT(yes)
            DEFFLAGS="${DEFFLAGS} -DRIF_HAS_RSIGHAND"],
         [AC_MSG_RESULT(no)])
 
