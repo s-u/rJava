@@ -91,7 +91,13 @@ static void JNICALL exit_hook(int status) {
 #include <fcntl.h>
 #endif
 
-static int initJVM(const char *user_classpath, int opts, char **optv, int hooks) {
+/* disableGuardPages - nonzero when the VM should be initialized with
+     experimental option to disable primordial thread guard pages.  If the
+     VM fails to initialize for any reason, including because it does not
+     support this option, -2 is returned; this feature is relevant to Oracle
+     JVM version 10 and above on Linux; only used with JVM_STACK_WORKAROUND */
+static int initJVM(const char *user_classpath, int opts, char **optv, int hooks,
+                   int disableGuardPages) {
   int total_num_properties, propNum = 0;
   jint res;
   char *classpath;
@@ -106,14 +112,28 @@ static int initJVM(const char *user_classpath, int opts, char **optv, int hooks)
     error("JNI 1.2 or higher is required");
     return -1;    
   }
+
+  vm_args.version = JNI_VERSION_1_2; /* should we do that or keep the default? */
+
+  /* quick pre-check whether there is a chance that primordial thread guard
+     pages may be disabled */
+#ifndef JNI_VERSION_10
+  if (disableGuardPages) return -2;
+#else
+  if (disableGuardPages) {
+    vm_args.version = JNI_VERSION_10;
+    if(JNI_GetDefaultJavaVMInitArgs(&vm_args) != JNI_OK)
+      return -2;
+    vm_args.version = JNI_VERSION_10; /* probably not needed */
+  }
+#endif
     
   /* leave room for class.path, and optional jni args */
-  total_num_properties = 6 + opts;
+  total_num_properties = 8 + opts;
     
   vm_options = (JavaVMOption *) calloc(total_num_properties, sizeof(JavaVMOption));
-  vm_args.version = JNI_VERSION_1_2; /* should we do that or keep the default? */
   vm_args.options = vm_options;
-  vm_args.ignoreUnrecognized = JNI_TRUE;
+  vm_args.ignoreUnrecognized = disableGuardPages ? JNI_FALSE : JNI_TRUE;
   
   classpath = (char*) calloc(24 + strlen(user_classpath), sizeof(char));
   sprintf(classpath, "-Djava.class.path=%s", user_classpath);
@@ -138,11 +158,18 @@ static int initJVM(const char *user_classpath, int opts, char **optv, int hooks)
     vm_options[propNum].optionString = "exit";
     vm_options[propNum++].extraInfo  = exit_hook;
   }
+  if (disableGuardPages) {
+    vm_options[propNum++].optionString = "-XX:+UnlockExperimentalVMOptions";
+    vm_options[propNum++].optionString = "-XX:+DisablePrimordialThreadGuardPages";
+  }
   vm_args.nOptions = propNum;
 
   /* Create the Java VM */
   res = JNI_CreateJavaVM(&jvm,(void **)&eenv, &vm_args);
   
+  if (disableGuardPages && (res != 0 || !eenv))
+    return -2; /* perhaps this VM does not allow disabling guard pages */
+
   if (res != 0)
     error("Cannot create Java virtual machine (%d)", res);
   if (!eenv)
@@ -176,7 +203,7 @@ static void *initJVMthread(void *classpath)
   jclass c;
   JNIEnv *lenv;
 
-  thInitResult=initJVM((char*)classpath, jvm_opts, jvm_optv, default_hooks);
+  thInitResult=initJVM((char*)classpath, jvm_opts, jvm_optv, default_hooks, 0);
   if (thInitResult) return 0;
 
   init_rJava();
@@ -254,8 +281,11 @@ HIDE void init_rJava(void) {
   rJava_initialized = 1;
 }
 
-
-static SEXP RinitJVM_real(SEXP par)
+/* disableGuardPages - attempt to disable primordial thread guard pages,
+     see initJVM(); if the VM fails to initialize for any reason including
+     that disabling is not supported, NULL (C level) is returned;
+     disableGuardPages is ignored with THREADS. */
+static SEXP RinitJVM_real(SEXP par, int disableGuardPages)
 {
   const char *c=0;
   SEXP e=CADR(par);
@@ -352,7 +382,13 @@ static SEXP RinitJVM_real(SEXP par)
   r = thInitResult;
 #else
   profStart();
-  r=initJVM(c, jvm_opts, jvm_optv, default_hooks);
+  r=initJVM(c, jvm_opts, jvm_optv, default_hooks, disableGuardPages);
+  if (disableGuardPages && r==-2) {
+    _dbg(rjprintf("RinitJVM(non-threaded): cannot disable guard pages\n"));
+    if (jvm_optv) free(jvm_optv);
+    jvm_opts=0;
+    return NULL;
+  }
   init_rJava();
   _prof(profReport("init_rJava:"));
   _dbg(rjprintf("RinitJVM(non-threaded): initJVM returned %d\n", r));
@@ -390,6 +426,11 @@ static SEXP RinitJVM_real(SEXP par)
    is claimed to be a workaround for issues in RH7.2.  The problem is still
    present in JVM 9.  Moreover, on Linux the JVM inserts guard pages also
    based on the setting of -Xss.
+
+   As of Java 10, Oracle JVM allows to disable these guard pages via
+   an experimental VM option -XX:+DisablePrimordialThreadGuardPages. This is
+   by default tried first, and only if it fails, the machinery of filling up
+   slightly the C stack is attempted as described above.
 */
 
 #undef JVM_STACK_WORKAROUND
@@ -507,7 +548,7 @@ static SEXP RinitJVM_with_padding(SEXP par, intptr_t padding, char *last) {
   dummy[0] = (char) (uintptr_t) &dummy;
   padding -= (last - dummy) * R_CStackDir;
   if (padding <= 0)
-    return RinitJVM_real(par);
+    return RinitJVM_real(par, 0);
   else
     return RinitJVM_with_padding(par, padding, dummy);
 }
@@ -527,6 +568,7 @@ static SEXP RinitJVM_jsw(SEXP par) {
   #define JSW_DETECT   1
   #define JSW_ADJUST   2
   #define JSW_PREVENT  3
+  #define JSW_JAVA10   4
 
   #define JSW_PADDING 2*1024*1024
   #define JSW_CHECK_BOUND 16*1024*1024
@@ -534,18 +576,29 @@ static SEXP RinitJVM_jsw(SEXP par) {
   /* 0 - disabled
      1 - detect guard pages
      2 - detect guard pages and adjust R stack size
-     3 - prevent guard page creation, detect, and adjust */
-  int val = JSW_PREVENT;
+     3 - prevent guard page creation, detect, and adjust
+     4 - try to use JAVA10 feature to disable guard pages, (3) if it fails */
+  int val = JSW_JAVA10;
   char *vval = getenv("RJAVA_JVM_STACK_WORKAROUND");
   if (vval != NULL)
     val = atoi(vval);
-  if (val < 0 || val > 3)
+  if (val < 0 || val > 4)
     error("Invalid value for RJAVA_JVM_STACK_WORKAROUND");
 
   _dbg(rjprintf("JSW workaround: (level %d)\n", val));
 
+  if (val == JSW_JAVA10) {
+    /* try to use Java 10 experimental option to disable guard pages */
+    SEXP res = RinitJVM_real(par, 1);
+    if (res != NULL) {
+      _dbg(rjprintf("JSW workaround: disabled guard pages\n", val));
+      return res;
+    }
+    val = JSW_PREVENT;
+  }
+
   if (val == JSW_DISABLED)
-    return RinitJVM_real(par);
+    return RinitJVM_real(par, 0);
 
   /* Figure out the original stack limit */
   uintptr_t rlimsize = 0;
@@ -667,7 +720,7 @@ static SEXP RinitJVM_jsw(SEXP par) {
 REP SEXP RinitJVM(SEXP par) {
 
 #ifndef JVM_STACK_WORKAROUND
-  return RinitJVM_real(par);
+  return RinitJVM_real(par, 0);
 #else
   return RinitJVM_jsw(par);
 #endif
