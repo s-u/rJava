@@ -118,10 +118,14 @@ HIDE void ckx(JNIEnv *env) {
 	/* we create the jobj first, because the exception may in theory disappear after being cleared, 
 	   yet this can be (also in theory) risky as it uses further JNI calls ... */
 	xobj = j2SEXP(env, x, 0);
+	if (!rj_RJavaTools_Class) {
+	    REprintf("ERROR: Java exception occurred during rJava bootstrap:\n");
+	    (*env)->ExceptionDescribe(env);
+	}
 	(*env)->ExceptionClear(env);
 	
 	/* grab the list of class names (without package path) */
-	SEXP clazzes = PROTECT( getSimpleClassNames_asSEXP( (jobject)x, (jboolean)1 ) ) ;
+	SEXP clazzes = rj_RJavaTools_Class ? PROTECT( getSimpleClassNames_asSEXP( (jobject)x, (jboolean)1 ) ) : R_NilValue;
 	
 	/* ok, now this is a critical part that we do manually to avoid recursion */
 	{
