@@ -118,16 +118,18 @@ static int initJVM(const char *user_classpath, int opts, char **optv, int hooks,
   /* quick pre-check whether there is a chance that primordial thread guard
      pages may be disabled */
 #ifndef JNI_VERSION_10
-  if (disableGuardPages) return -2;
-#else
+  /* the binary can be compiled against older JVM includes,
+     but run with a new JDK, so we cannot assume absence of the define
+     to mean anything. Hence we define it according to the current specs. */
+#define JNI_VERSION_10  0x000a0000
+#endif
   if (disableGuardPages) {
     vm_args.version = JNI_VERSION_10;
     if(JNI_GetDefaultJavaVMInitArgs(&vm_args) != JNI_OK)
       return -2;
     vm_args.version = JNI_VERSION_10; /* probably not needed */
   }
-#endif
-    
+
   /* leave room for class.path, and optional jni args */
   total_num_properties = 8 + opts;
     
