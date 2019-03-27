@@ -35,6 +35,14 @@ echo "  R_HOME=$R_HOME"
 echo "JAVAHOME:=$JAVA_HOME" > src/Makefile.wconf
 echo "RHOME:=$R_HOME" >> src/Makefile.wconf
 
+if [ -e "$JAVA_HOME/bin/javah.exe" ]; then ## does the JDK have javah?
+    echo 'JDK includes javah.exe'
+    echo 'JAVAH=$(JAVAHOME)/bin/javah' >> src/Makefile.wconf
+else ## else we have to create headers during the compilation
+    echo 'JDK has no javah.exe - using javac -h . instead'
+    echo 'JFLAGS=-h .' >> src/Makefile.wconf
+fi
+
 echo "Creating Makefiles ..."
 cp Makefile.win Makefile
 cp src/Makefile.win src/Makefile

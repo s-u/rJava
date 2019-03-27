@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
     } else {
       javakey="Software\\R-core\\R"; s=32767;
       if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,javakey,0,KEY_QUERY_VALUE,&k)!=ERROR_SUCCESS ||
-	  RegQueryValueEx(k,"InstallPAth",0,&t,RegStrBuf,&s)!=ERROR_SUCCESS) {
+	  RegQueryValueEx(k,"InstallPath",0,&t,RegStrBuf,&s)!=ERROR_SUCCESS) {
 	if (RegOpenKeyEx(HKEY_CURRENT_USER,javakey,0,KEY_QUERY_VALUE,&k)!=ERROR_SUCCESS ||
 	    RegQueryValueEx(k,"InstallPath",0,&t,RegStrBuf,&s)!=ERROR_SUCCESS) {
 	  fprintf(stderr, "ERROR*> R - can't open registry keys.\n");
@@ -34,15 +34,23 @@ int main(int argc, char **argv) {
 #ifdef FINDJRE
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,javakey,0,KEY_QUERY_VALUE,&k)!=ERROR_SUCCESS ||
 	RegQueryValueEx(k,"CurrentVersion",0,&t,RegStrBuf,&s)!=ERROR_SUCCESS) {
+	javakey="Software\\JavaSoft\\JRE"; s=32767;
+	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,javakey,0,KEY_QUERY_VALUE,&k)!=ERROR_SUCCESS ||
+	    RegQueryValueEx(k,"CurrentVersion",0,&t,RegStrBuf,&s)!=ERROR_SUCCESS) {
 #endif
-      javakey="Software\\JavaSoft\\Java Development Kit"; s=32767;
-      if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,javakey,0,KEY_QUERY_VALUE,&k)!=ERROR_SUCCESS ||
-	  RegQueryValueEx(k,"CurrentVersion",0,&t,RegStrBuf,&s)!=ERROR_SUCCESS) {
-	fprintf(stderr, "ERROR*> JavaSoft\\{JRE|JDK} can't open registry keys.\n");
-	/* MessageBox(wh, "Can't find Sun's Java runtime.\nPlease install Sun's J2SE JRE or JDK 1.4.2 or later (see http://java.sun.com/).","Can't find Sun's Java",MB_OK|MB_ICONERROR); */
-	return -1;
-      }
+	    javakey="Software\\JavaSoft\\Java Development Kit"; s=32767;
+	    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,javakey,0,KEY_QUERY_VALUE,&k)!=ERROR_SUCCESS ||
+		RegQueryValueEx(k,"CurrentVersion",0,&t,RegStrBuf,&s)!=ERROR_SUCCESS) {
+		javakey="Software\\JavaSoft\\JDK"; s=32767;
+		if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,javakey,0,KEY_QUERY_VALUE,&k)!=ERROR_SUCCESS ||
+		    RegQueryValueEx(k,"CurrentVersion",0,&t,RegStrBuf,&s)!=ERROR_SUCCESS) {
+		    fprintf(stderr, "ERROR*> JavaSoft\\{JRE|JDK} can't open registry keys.\n");
+		    /* MessageBox(wh, "Can't find Sun's Java runtime.\nPlease install Sun's J2SE JRE or JDK 1.4.2 or later (see http://java.sun.com/).","Can't find Sun's Java",MB_OK|MB_ICONERROR); */
+		    return -1;
+		}
+	    }
 #ifdef FINDJRE
+	}
     }
 #endif
     RegCloseKey(k); s=32767;

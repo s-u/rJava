@@ -595,6 +595,7 @@ CPICF
 JNIPREFIX
 JNISO
 JNILD
+JFLAGS
 JAVA_CFLAGS
 JAVA_INC
 JAVA_LIBS
@@ -645,6 +646,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -715,6 +717,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -967,6 +970,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1104,7 +1116,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1257,6 +1269,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -2051,6 +2064,12 @@ fi
 
 
 
+
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -3429,15 +3448,82 @@ done
 
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking Java version" >&5
+$as_echo_n "checking Java version... " >&6; }
+JVER=`"$JAVA" -version 2>&1 | sed -n 's:^.* version "::p' | sed 's:".*::'`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $JVER" >&5
+$as_echo "$JVER" >&6; }
+
+if test -z "$JVER"; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: **** Cannot detect Java version - the java -version output is unknown! ****" >&5
+$as_echo "$as_me: WARNING: **** Cannot detect Java version - the java -version output is unknown! ****" >&2;}
+else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Java compatibility version (integer)" >&5
+$as_echo_n "checking Java compatibility version (integer)... " >&6; }
+   ## .. Oracle decided to completely screw up Java version so have to try extract something meaningful ..
+   if echo $JVER | grep '^[0-9]\.' >/dev/null; then ## old style 1.X
+      JMVER=`echo $JVER | sed 's:..::' | sed 's:\..*::'`
+   else ## new stype omitting the major version
+      JMVER=`echo $JVER | sed 's:\..*::'`
+   fi
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $JMVER" >&5
+$as_echo "$JMVER" >&6; }
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $JAVAH actually works" >&5
+$as_echo_n "checking whether $JAVAH actually works... " >&6; }
+if "$JAVAH" -version >/dev/null 2>&1; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+   JAVAH=
+fi
+
 have_all_java=yes
+## Java 1.10 has no javah anymore -- it uses javac -h . instaead
+if test -z "$JAVAH"; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether javah was replaced by javac -h" >&5
+$as_echo_n "checking whether javah was replaced by javac -h... " >&6; }
+   if test "$JMVER" -gt 9; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      ## create headres in the compile step instead
+      JFLAGS=' -h .'
+   else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      have_all_java=no;
+   fi
+fi
 if test -z "$JAVA_PROG"; then have_all_java=no; fi
 if test -z "$JAVAC"; then have_all_java=no; fi
-if test -z "$JAVAH"; then have_all_java=no; fi
 if test -z "$JAR"; then have_all_java=no; fi
 if test ${have_all_java} = no; then
   as_fn_error $? "one or more Java tools are missing.
 
 *** JDK is incomplete! Please make sure you have a complete JDK. JRE is *not* sufficient." "$LINENO" 5
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for target flags" >&5
+$as_echo_n "checking for target flags... " >&6; }
+## set JFLAGS target -- depends on the JDK version
+if echo $JFLAGS | grep '[-]target' >/dev/null; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: user-supplied: $JFLAGS" >&5
+$as_echo "user-supplied: $JFLAGS" >&6; }
+else
+   if test "$JMVER" -lt 9; then
+      JFLAGS="$JFLAGS -target 1.4 -source 1.4"
+   else
+      if test "$JMVER" -lt 12; then
+         JFLAGS="$JFLAGS -target 1.6 -source 1.6"
+      else
+         JFLAGS="$JFLAGS -target 1.8 -source 1.8"
+      fi
+   fi
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $JFLAGS" >&5
+$as_echo "$JFLAGS" >&6; }
 fi
 
 ## this is where our test-class lives
@@ -3714,7 +3800,9 @@ if ac_fn_c_try_run "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
-  as_fn_error $? "Cannot run a simple JNI program - probably your jvm library is in non-standard location or JVM is unsupported. See config.log for details." "$LINENO" 5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	 as_fn_error $? "Cannot run a simple JNI program - probably your jvm library is in non-standard location or JVM is unsupported. See config.log for details." "$LINENO" 5
 fi
 rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
@@ -3839,6 +3927,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 CFLAGS=${origCFLAGS}
+
 
 
 

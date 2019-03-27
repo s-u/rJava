@@ -11,8 +11,6 @@
 EX_JAVA=$(wildcard examples/*.java)
 EX_CLASS=$(EX_JAVA:%.java=%.class)
 
-JFLAGS+=-target 1.4 -source 1.4
-
 TARGETS=src/JRI.jar $(JRILIB) $(EX_CLASS)
 
 all: $(TARGETS)

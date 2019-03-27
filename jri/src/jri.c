@@ -303,9 +303,9 @@ SEXP jri_getObjectArray(JNIEnv *env, jarray o) {
   if (l<1) return R_NilValue;
   PROTECT(ar=allocVector(INTSXP,l));
   i=0;
-  while (i < l) { /* to avoid warnings we cast ptr -> ljong -> int
+  while (i < l) { /* to avoid warnings we cast ptr -> size_t -> int
 		     with loss of precision */
-    INTEGER(ar)[i] = (int)(jlong)(*env)->GetObjectArrayElement(env, o, i);
+    INTEGER(ar)[i] = (int)(size_t)(*env)->GetObjectArrayElement(env, o, i);
     i++;
   }
   UNPROTECT(1);

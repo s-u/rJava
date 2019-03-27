@@ -21,14 +21,14 @@ REPC SEXP PushToREXP(SEXP clname, SEXP eng, SEXP engCl, SEXP robj, SEXP doConv) 
   sig[127]=0;
   cName = CHAR(STRING_ELT(clname,0));
   jpar[0].l = (jobject)EXTPTR_PTR(eng);
-  jpar[1].j = (jlong) robj;
+  jpar[1].j = (jlong) (size_t) robj;
   if (convert == -1)
     snprintf(sig,127,"(L%s;J)V",CHAR(STRING_ELT(engCl,0)));
   else {
     snprintf(sig,127,"(L%s;JZ)V",CHAR(STRING_ELT(engCl,0)));
     jpar[2].z = (jboolean) convert;
   }
-  o = createObject(env, cName, sig, jpar, 1);
+  o = createObject(env, cName, sig, jpar, 1, 0);
   if (!o) error("Unable to create Java object");
   return j2SEXP(env, o, 1);
   /* ok, some thoughts on mem mgmt - j2SEXP registers a finalizer. But I believe that is ok, because the pushed reference is useless until it is passed as an argument to some Java method. And then, it will have another reference which will prevent the Java side from being collected. The R-side reference may be gone, but that's ok, because it's the Java finalizer that needs to clean up the pushed R object and for that it doesn't need the proxy object at all. This is the reason why RReleaseREXP uses EXTPTR - all the Java finalizaer has to do is to call RReleaseREXP(self). For that it can create a fresh proxy object containing the REXP. But here comes he crux - this proxy cannot again create a reference - it must be plain pass-through, so this part needs to be verified.

@@ -9,7 +9,6 @@ CFLAGS+=-DWin32 -D_JNI_IMPLEMENTATION_
 JAVA_PROG=$(JAVAHOME)/bin/java
 JAVA=$(JAVAHOME)/bin/java
 JAVAC=$(JAVAHOME)/bin/javac
-JAVAH=$(JAVAHOME)/bin/javah
 JAR=$(JAVAHOME)/bin/jar
 JRIDEPS=win32/libjvm.dll.a
 JNIPREFIX=

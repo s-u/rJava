@@ -5,8 +5,12 @@ function(libname, pkgname) {
     if(!nchar(javahome)) { ## JAVA_HOME was not set explicitly
         find.java <- function() {
             for (root in c("HLM", "HCU"))
-                for(key in c("Software\\JavaSoft\\Java Runtime Environment",
-                             "Software\\JavaSoft\\Java Development Kit")) {
+                for(key in c(
+                               "Software\\JavaSoft\\JRE",
+                               "Software\\JavaSoft\\JDK",
+                               "Software\\JavaSoft\\Java Runtime Environment",
+                               "Software\\JavaSoft\\Java Development Kit"
+                             )) {
                   hive <- try(utils::readRegistry(key, root, 2), silent=TRUE)
                   if (!inherits(hive, "try-error")) return(hive)
                 }
@@ -19,7 +23,7 @@ function(libname, pkgname) {
             stop("No CurrentVersion entry in Software/JavaSoft registry! Try re-installing Java and make sure R and Java have matching architectures.")
         this <- hive[[hive$CurrentVersion]]
         javahome <- this$JavaHome
-        paths <- dirname(this$RuntimeLib) # wrong on 64-bit
+        paths <- if (is.character(this$RuntimeLib)) dirname(this$RuntimeLib) else character() # wrong on 64-bit
     } else paths <- character()
     if(is.null(javahome) || !length(javahome) || !nchar(javahome))
         stop("JAVA_HOME is not set and could not be determined from the registry")

@@ -453,7 +453,7 @@ REPE SEXP RcallMethod(SEXP par) {
   }
 #endif
   if (clnam)
-    cls = findClass(env, clnam);
+    cls = findClass(env, clnam, oClassLoader);
   else
     cls = objectClass(env,o);
   if (!cls)
@@ -686,7 +686,7 @@ REPE SEXP RcreateObject(SEXP par) {
   sig_buffer_t sig;
   jvalue jpar[maxJavaPars];
   jobject tmpo[maxJavaPars+1];
-  jobject o;
+  jobject o, loader = 0;
   JNIEnv *env=getJNIEnv();
 
   if (TYPEOF(p)!=LISTSXP) {
@@ -712,12 +712,25 @@ REPE SEXP RcreateObject(SEXP par) {
     if (TAG(p) && isSymbol(TAG(p))) {
       if (TAG(p)==install("silent") && isLogical(CAR(p)) && LENGTH(CAR(p))==1)
 	silent=LOGICAL(CAR(p))[0];
-    }
-    p=CDR(p);
-  }
 
+      /* class.loader */
+      if (TAG(p)==install("class.loader")) {
+	SEXP e = CAR(p);
+	if (TYPEOF(e) == S4SXP && IS_JOBJREF(e)) {
+	  SEXP sref = GET_SLOT(e, install("jobj"));
+	  if (sref && TYPEOF(sref) == EXTPTRSXP) {
+	    jverify(sref);
+	    loader = (jobject)EXTPTR_PTR(sref);
+	  }
+	} else if (e != R_NilValue)
+	  Rf_error("invalid class.loader");
+      }
+    }
+    p = CDR(p);
+  }
+  if (!loader) loader = oClassLoader;
 BEGIN_RJAVA_CALL
-  o = createObject(env, class, sig.sig, jpar, silent);
+  o = createObject(env, class, sig.sig, jpar, silent, loader);
 END_RJAVA_CALL
   done_sigbuf(&sig);
   Rfreejpars(env, tmpo);
@@ -953,7 +966,7 @@ REPC SEXP RcreateArray(SEXP ar, SEXP cl) {
       if (TYPEOF(cl)==STRSXP && LENGTH(cl)>0) {
 	const char *cname = CHAR_UTF8(STRING_ELT(cl, 0));
 	if (cname) {
-	  ac = findClass(env, cname);
+	  ac = findClass(env, cname, oClassLoader);
 	  if (!ac)
 	    error("Cannot find class %s.", cname);
 	  if (strlen(cname)<253) {

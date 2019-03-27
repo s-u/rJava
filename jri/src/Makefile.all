@@ -4,9 +4,6 @@
 JRI_JSRC=$(wildcard ../*.java)
 TARGETS=$(JNIPREFIX)jri$(JNISO) JRI.jar
 
-# we need to force JDK 1.4 for compatibility
-JFLAGS+=-target 1.4 -source 1.4
-
 all: $(TARGETS)
 
 JRI.jar: $(JRI_JSRC) $(JNIPREFIX)jri$(JNISO)
@@ -14,7 +11,7 @@ JRI.jar: $(JRI_JSRC) $(JNIPREFIX)jri$(JNISO)
 	$(JAR) fc $@ org $(JNIPREFIX)jri$(JNISO)
 
 org_rosuda_JRI_Rengine.h: org/rosuda/JRI/Rengine.class
-	$(JAVAH) -d . -classpath . org.rosuda.JRI.Rengine
+	if [ -n "$(JAVAH)" ]; then $(JAVAH) -d . -classpath . org.rosuda.JRI.Rengine; fi
 
 Rcallbacks.o: Rcallbacks.c Rcallbacks.h globals.h org_rosuda_JRI_Rengine.h
 	$(CC) -c -o $@ $< $(CFLAGS) $(CPICF) $(JAVAINC) $(RINC)

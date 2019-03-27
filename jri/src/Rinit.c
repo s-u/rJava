@@ -101,6 +101,7 @@ void initRinside() {
 #include <winreg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 
 /* before we include RStatup.h we need to work around a bug in it for Win64:
    it defines wrong R_size_t if R_SIZE_T_DEFINED is not set */

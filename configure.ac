@@ -89,6 +89,7 @@ AC_ARG_ENABLE([callbacks],
 
 
 # Checks for programs.
+AC_LANG(C)
 AC_PROG_CC
 
 # Checks for libraries.
@@ -104,13 +105,14 @@ AC_HEADER_TIME
 
 AC_CHECKING([whether ${CC} supports static inline])
 can_inline=no
-AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 static inline int foo(int a, int b);
 static f = 1;
 static inline int foo(int a, int b) { return a+b; }
 int main(void) {
     return foo(f,-1);
-}])],can_inline=yes)
+}
+]])],[can_inline=yes])
 AC_MSG_RESULT(${can_inline})
 if test "${can_inline}" = yes; then
   AC_DEFINE(HAVE_STATIC_INLINE, 1, [Define to 1 when static inline works])
@@ -176,7 +178,7 @@ if test -z "${JAVAC}"; then
 fi
 
 have_all_flags=no
-if test -n "${JAVA}" && test -n "${JAVAC}" && test -n "${JAVAH}" && \
+if test -n "${JAVA}" && test -n "${JAVAC}" && \
    test -n "${JAVA_CPPFLAGS}" && test -n "${JAVA_LIBS}" && test -n "${JAR}"; then
   have_all_flags=yes;
 fi
@@ -235,36 +237,46 @@ fi
 
 AC_MSG_CHECKING([whether -Xrs will be used])
 AC_MSG_RESULT(${has_xrs})
-if test "$has_xrs" = xyes; then
+if test x"$has_xrs" = xyes; then
    AC_DEFINE(HAVE_XRS, 1, [Set if the Java parameter -Xrs is supported])
 fi
 
 AC_MSG_CHECKING([whether JNI programs can be compiled])
-AC_LINK_IFELSE([AC_LANG_SOURCE([
+AC_LINK_IFELSE([AC_LANG_SOURCE([[
 #include <jni.h>
 int main(void) {
     jobject o;
     JNI_CreateJavaVM(0, 0, 0);
     return 0;
 }
-	])],[AC_MSG_RESULT(yes)],
+	]])],[AC_MSG_RESULT(yes)],
 	[AC_MSG_ERROR([Cannot compile a simple JNI program. See config.log for details.
 
 Make sure you have Java Development Kit installed and correctly registered in R.
 If in doubt, re-run "R CMD javareconf" as root.
 ])])
 
+AC_MSG_CHECKING([whether JNI programs run])
+AC_RUN_IFELSE([AC_LANG_SOURCE([
+#include <jni.h>
+int main(void) {
+  jsize n;
+  JNI_GetCreatedJavaVMs(NULL, 0, &n);
+  return 0;
+}
+	])],
+	[AC_MSG_RESULT([yes])],
+	[AC_MSG_ERROR([Unable to run a simple JNI program. Make sure you have configured R with Java support (see R documentation) and check config.log for failure reason.])],
+	[AC_MSG_RESULT([don't know (cross-compiling)])])
+
 AC_MSG_CHECKING([JNI data types])
-AC_TRY_RUN(
-	[
+AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <jni.h>
 int main(void) {
   return (sizeof(int)==sizeof(jint) && sizeof(long)==sizeof(long) && sizeof(jbyte)==sizeof(char) && sizeof(jshort)==sizeof(short) && sizeof(jfloat)==sizeof(float) && sizeof(jdouble)==sizeof(double))?0:1;
 }
-	],
-	[AC_MSG_RESULT([ok])],
-	[AC_MSG_ERROR([One or more JNI types differ from the corresponding native type. You may need to use non-standard compiler flags or a different compiler in order to fix this.])],
-	[AC_MSG_RESULT([don't know (cross-compiling)])])
+        ]])],[AC_MSG_RESULT([ok])],[AC_MSG_ERROR([One or more JNI types differ from the corresponding native type. You may need to use non-standard compiler flags or a different compiler in order to fix this.])],[])
+
 
 if test "${want_jri}" = auto; then
    AC_MSG_CHECKING([whether JRI should be compiled (autodetect)])

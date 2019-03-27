@@ -1,10 +1,73 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.9-9	(under development)
+*************  Java 12 has broken JNI support and cannot be used! It has
+** WARNING **  has been reported and will likely be fixed in future
+*************  versions of Java, but for now do NOT upgrade to Java 12!
+	       (see #175 for details)
+
+
+0.9-11	2019-03-27
+    o	fix segfault if en exception is thrown during rJava initialization
+	(#177)
+
+    o	disable Java stack workaround if loaded from a JVM process (#130)
+
+    o	bump JVM target to 1.8 for JDK 12 and higher since such target is
+	no longer supported (#174).
+
+    o	fix HAVE_XRS detection (#168)
+
+    o	Windows: fix build if javah.exe is missing (#157)
+
+    o	Windows: detect JAVA_HOME correctly from registry even if the
+	key is using JDK instead Java Development Kit (#120)
+	
+    o	Windows: don't fail if `RuntimeLib` registry entry is missing (#163)
+
+    o	Windows: fix build if javah.exe is missing (#157)
+
+    o	Windows: fix build if javah.exe is missing (#157)
+
+
+0.9-10	2018-05-29
+    o	support builds with JDKs that are missing javah (#141)
+
+    o	detect JDKs that don't call themselves Java (such as openjdk)
+	(#146)
+
+    o	macOS: pre-load libjvm.dylib to avoid issues with incorrect ID
+	in Oracle's released binaries
+
+
+0.9-9	2017-10-11
     o	add support for --disable-Xrs configure option in case java -Xrs
 	is so broken that it cannot even be tested - reportedly the case
 	with Docker (see #63).
+
+    o	add optional class.loader= argument to .jnew() which allows to
+	use a custom loader in special cases.
+
+    o	change target to 1.6 and higher since Java 1.9 breaks when asked
+	to compile anything older than that. There is no technical reason,
+	so you can still build 1.2/1.4 targets by reverting 992828b and
+	using a JDK that won't break on 1.4 targets.
+
+    o	Process events on Widnows while in rniIndle. (#23)
+
+    o	Work around a bug of Oracle's Java on Linux which caps the stack of
+	R at 2M. (#102) The bug leads to segfaults in recursive
+	computations (not an R error as R doesn't know the stack size has
+	been reduced).  The workaround can be disabled via environment
+	variable RJAVA_JVM_STACK_WORKAROUND=0, which may produce better
+	results with memory access checkers (ASAN, valgrind), because the
+	workaround detects the new stack size by trying to access
+	inaccessible memory.  This JVM behavior was a workaround for an
+	issue in old Linux systems (JDK-4466587) and is going to be fixed in
+	Java 10.
+
+    o	Work around a change in registry location on Windows for Oracle
+	Java 1.9. (#120)
 
 
 0.9-8	2016-01-06

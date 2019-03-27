@@ -1,7 +1,7 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x000909 /* rJava v0.9-9 */
+#define RJAVA_VER 0x00090b /* rJava v0.9-11 */
 
 /* important changes between versions:
    3.0  - adds compiler
@@ -193,8 +193,8 @@ HIDE SEXP new_jclassName(JNIEnv *, jobject/*Class*/ ) ;
 HIDE jstring callToString(JNIEnv *env, jobject o);
 
 /* in callJNI */
-HIDE jobject createObject(JNIEnv *env, const char *class, const char *sig, jvalue *par, int silent);
-HIDE jclass findClass(JNIEnv *env, const char *class);
+HIDE jobject createObject(JNIEnv *env, const char *class, const char *sig, jvalue *par, int silent, jobject loader);
+HIDE jclass findClass(JNIEnv *env, const char *class, jobject loader);
 HIDE jclass objectClass(JNIEnv *env, jobject o);
 
 HIDE jdoubleArray newDoubleArray(JNIEnv *env, double *cont, int len);
