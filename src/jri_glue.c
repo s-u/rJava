@@ -21,7 +21,7 @@ REPC SEXP PushToREXP(SEXP clname, SEXP eng, SEXP engCl, SEXP robj, SEXP doConv) 
   sig[127]=0;
   cName = CHAR(STRING_ELT(clname,0));
   jpar[0].l = (jobject)EXTPTR_PTR(eng);
-  jpar[1].j = (jlong) robj;
+  jpar[1].j = (jlong) (size_t) robj;
   if (convert == -1)
     snprintf(sig,127,"(L%s;J)V",CHAR(STRING_ELT(engCl,0)));
   else {

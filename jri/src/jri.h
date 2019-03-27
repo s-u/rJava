@@ -15,15 +15,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
-  /* jlong can always hold a pointer 
-     to avoid warnings we go ptr->ulong->jlong */
-#define SEXP2L(s) ((jlong)(s))
-#ifdef WIN64
-#define L2SEXP(s) ((SEXP)((jlong)(s)))
-#else
-#define L2SEXP(s) ((SEXP)((jlong)((unsigned long)(s))))
-#endif
+
+/* jlong can always hold a pointer
+   to avoid warnings we go ptr->size_t->jlong */
+#define SEXP2L(s) ((jlong)((size_t)(s)))
+#define L2SEXP(s) ((SEXP)((jlong)((size_t)(s))))
 
 jstring jri_callToString(JNIEnv *env, jobject o);
 
