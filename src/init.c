@@ -589,6 +589,17 @@ static SEXP RinitJVM_jsw(SEXP par) {
 
   _dbg(rjprintf("JSW workaround: (level %d)\n", val));
 
+  /* before we get anywhere, check whether we're inside a running JVM already */
+  {
+    JavaVM *jvms[32];
+    jsize vms = 0;
+    int r = JNI_GetCreatedJavaVMs(jvms, 32, &vms);
+    if (r == 0 && vms > 0) {
+      _dbg(rjprintf("JSW workaround: detected running VMs, disabling work-around."));
+      return RinitJVM_real(par, 0);
+    }
+  }
+
   if (val == JSW_JAVA10) {
     /* try to use Java 10 experimental option to disable guard pages */
     SEXP res = RinitJVM_real(par, 1);
