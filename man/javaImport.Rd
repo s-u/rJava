@@ -19,7 +19,7 @@ An external pointer to a java specific \code{UserDefinedDatabase} object
 }
 \references{
 	\emph{User-Defined Tables in the R Search Path}. Duncan Temple Lang. December 4, 2001
-	\url{http://www.omegahat.org/RObjectTables/}
+	\url{http://www.omegahat.net/RObjectTables/}
 }
 \author{
 Romain Francois <francoisromain@free.fr>
