@@ -103,7 +103,6 @@ REPC SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
     cls = objectClass(env, o);
   else {
     char *c = clnam;
-    while(*c) { if (*c=='/') *c='.'; c++; }
     cls = findClass(env, clnam, oClassLoader);
     free(clnam);
     if (!cls) {
