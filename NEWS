@@ -1,10 +1,13 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-*************  Java 12 has broken JNI support and cannot be used! It has
-** WARNING **  has been reported and will likely be fixed in future
-*************  versions of Java, but for now do NOT upgrade to Java 12!
-	       (see #175 for details)
+0.9-12	(under development)
+    o	fix a bug in .jfield() which prevented accessing static fields
+	if rJava class loader was not present yet (only affected
+	initialization).
+
+    o	modify boostrap to avoid reflection calls which are broken in
+	Java 12 (see #175 and https://bugs.openjdk.java.net/browse/JDK-8221530).
 
 
 0.9-11	2019-03-27
