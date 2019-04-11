@@ -28,10 +28,6 @@
 	
     o	Windows: don't fail if `RuntimeLib` registry entry is missing (#163)
 
-    o	Windows: fix build if javah.exe is missing (#157)
-
-    o	Windows: fix build if javah.exe is missing (#157)
-
 
 0.9-10	2018-05-29
     o	support builds with JDKs that are missing javah (#141)
