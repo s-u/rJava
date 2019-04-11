@@ -12,7 +12,24 @@ int use_eenv = 1;
 JNIEnv *eenv;
 
 /* -- hack to get at the current call from C code using contexts */
-#if ( R_VERSION >= R_Version(1, 7, 0) )
+#if ( R_VERSION >= R_Version(3, 6, 0) )
+
+static SEXP getCurrentCall() {
+    SEXP cexp, sys_calls = PROTECT(install("sys.calls"));
+    cexp = PROTECT(lang1(sys_calls));
+    SEXP cl = eval(cexp, R_GetCurrentEnv());
+    UNPROTECT(2);
+    /* find the last call */
+    if (TYPEOF(cl) != LISTSXP) return R_NilValue;
+    while (cl != R_NilValue) {
+	if (CDR(cl) == R_NilValue && CAR(cl) != R_NilValue)
+	    return CAR(cl);
+	cl = CDR(cl);
+    }
+    return R_NilValue; /* (LENGTH(cl) > 0) ? VECTOR_ELT(cl, 0) : R_NilValue; */
+}
+
+#elif ( R_VERSION >= R_Version(1, 7, 0) )
 #include <setjmp.h>
 
 /* stuff we need to pull for Windows... */
