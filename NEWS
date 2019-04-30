@@ -9,6 +9,8 @@
     o	modify boostrap to avoid reflection calls which are broken in
 	Java 12 (see #175 and https://bugs.openjdk.java.net/browse/JDK-8221530).
 
+    o	added .jgc() to run JVM garbage collector (#180)
+
 
 0.9-11	2019-03-27
     o	fix segfault if en exception is thrown during rJava initialization
