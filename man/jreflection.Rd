@@ -10,7 +10,7 @@
   a given class or object.
   \code{.jmethods} returns a character vector with all methods for
   a given class or object.
-  \code{.jfields} returns a character vector with all fileds (aka attributes) for a given class or object.
+  \code{.jfields} returns a character vector with all fields (aka attributes) for a given class or object.
 }
 \usage{
 .jconstructors(o, as.obj = FALSE)

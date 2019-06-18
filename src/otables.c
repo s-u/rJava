@@ -15,38 +15,38 @@ HIDE SEXP R_getUnboundValue() {
 /**
  * @param name name of a java class
  * @param canCache Can R cache this object
- * @param tb 
+ * @param tb
  * @return TRUE if the a class called name exists in on of the packages
  */
 /* not actually used by R */
 HIDE Rboolean rJavaLookupTable_exists(const char * const name, Rboolean *canCache, R_ObjectTable *tb){
 
 #ifdef LOOKUP_DEBUG
- Rprintf( "  >> rJavaLookupTable_exists\n" ); 
+ Rprintf( "  >> rJavaLookupTable_exists\n" );
 #endif
-	
+
  if(tb->active == FALSE)
     return(FALSE);
 
  tb->active = FALSE;
  Rboolean val = classNameLookupExists( tb, name );
  tb->active = TRUE;
- 
+
  return( val );
 }
 
 /**
- * Returns a new jclassName object if the class exists or the 
+ * Returns a new jclassName object if the class exists or the
  * unbound value if it does not
  *
  * @param name class name
- * @param canCache ?? 
+ * @param canCache ??
  * @param tb lookup table
  */
 SEXP rJavaLookupTable_get(const char * const name, Rboolean *canCache, R_ObjectTable *tb){
 
 #ifdef LOOKUP_DEBUG
- Rprintf( "  >> rJavaLookupTable_get\n" ); 
+ Rprintf( "  >> rJavaLookupTable_get\n" );
 #endif
 
  SEXP val;
@@ -57,7 +57,7 @@ SEXP rJavaLookupTable_get(const char * const name, Rboolean *canCache, R_ObjectT
  val = PROTECT( classNameLookup( tb, name ) );
  tb->active = TRUE;
 
- UNPROTECT(1); /* val */ 
+ UNPROTECT(1); /* val */
  return(val);
 }
 
@@ -66,23 +66,23 @@ SEXP rJavaLookupTable_get(const char * const name, Rboolean *canCache, R_ObjectT
  */
 int rJavaLookupTable_remove(const char * const name,  R_ObjectTable *tb){
 #ifdef LOOKUP_DEBUG
- Rprintf( "  >> rJavaLookupTable_remove( %s) \n", name ); 
+ Rprintf( "  >> rJavaLookupTable_remove( %s) \n", name );
 #endif
 	error( "cannot remove from java package" ) ;
 	return 0;
 }
 
 /**
- * Indicates if R can cahe the variable name. 
- * Currently allways return FALSE
+ * Indicates if R can cache the variable name.
+ * Currently always return FALSE
  *
  * @param name name of the class
  * @param tb lookup table
- * @return allways FALSE (for now)
- */ 
+ * @return always FALSE (for now)
+ */
 HIDE Rboolean rJavaLookupTable_canCache(const char * const name, R_ObjectTable *tb){
 #ifdef LOOKUP_DEBUG
- Rprintf( "  >> rJavaLookupTable_canCache\n" ); 
+ Rprintf( "  >> rJavaLookupTable_canCache\n" );
 #endif
 	return( FALSE );
 }
@@ -92,34 +92,34 @@ HIDE Rboolean rJavaLookupTable_canCache(const char * const name, R_ObjectTable *
  */
 HIDE SEXP rJavaLookupTable_assign(const char * const name, SEXP value, R_ObjectTable *tb){
 #ifdef LOOKUP_DEBUG
- Rprintf( "  >> rJavaLookupTable_assign( %s ) \n", name ); 
+ Rprintf( "  >> rJavaLookupTable_assign( %s ) \n", name );
 #endif
     error("can't assign to java package lookup");
     return R_NilValue;
 }
 
 /**
- * Returns the list of classes known to be included in the 
+ * Returns the list of classes known to be included in the
  * packages. Currently returns NULL
  *
  * @param tb lookup table
- */ 
+ */
 HIDE SEXP rJavaLookupTable_objects(R_ObjectTable *tb) {
 #ifdef LOOKUP_DEBUG
- Rprintf( "  >> rJavaLookupTable_objects\n" ); 
+ Rprintf( "  >> rJavaLookupTable_objects\n" );
 #endif
-	
+
 	tb->active = FALSE;
-	SEXP res = PROTECT( getKnownClasses( tb ) ) ; 
+	SEXP res = PROTECT( getKnownClasses( tb ) ) ;
 	tb->active = TRUE;
 	UNPROTECT(1); /* res */
-	return( res ); 
+	return( res );
 }
 
 
 REPC SEXP newRJavaLookupTable(SEXP importer){
 #ifdef LOOKUP_DEBUG
- Rprintf( "<newRJavaLookupTable>\n" ); 
+ Rprintf( "<newRJavaLookupTable>\n" );
 #endif
 
  R_ObjectTable *tb;
@@ -128,12 +128,12 @@ REPC SEXP newRJavaLookupTable(SEXP importer){
   tb = (R_ObjectTable *) malloc(sizeof(R_ObjectTable));
   if(!tb)
       error( "cannot allocate space for an internal R object table" );
-  
+
   tb->type = RJAVA_LOOKUP ; /* FIXME: not sure what this should be */
   tb->cachedNames = NULL;
-  
-  R_PreserveObject(importer); 
-  tb->privateData = importer; 
+
+  R_PreserveObject(importer);
+  tb->privateData = importer;
 
   tb->exists = rJavaLookupTable_exists;
   tb->get = rJavaLookupTable_get;
@@ -152,7 +152,7 @@ REPC SEXP newRJavaLookupTable(SEXP importer){
   UNPROTECT(2);
 
 #ifdef LOOKUP_DEBUG
- Rprintf( "</newRJavaLookupTable>\n" ); 
+ Rprintf( "</newRJavaLookupTable>\n" );
 #endif
   return(val);
 }
@@ -160,38 +160,38 @@ REPC SEXP newRJavaLookupTable(SEXP importer){
 
 HIDE jobject getImporterReference(R_ObjectTable *tb ){
 	jobject res = (jobject)EXTPTR_PTR( GET_SLOT( (SEXP)(tb->privateData), install( "jobj" ) ) );
-	
+
 #ifdef LOOKUP_DEBUG
-	Rprintf( "  >> getImporterReference : [%d]\n", res ); 
+	Rprintf( "  >> getImporterReference : [%d]\n", res );
 #endif
 	return res ;
 }
 
 HIDE SEXP getKnownClasses( R_ObjectTable *tb ){
 #ifdef LOOKUP_DEBUG
- Rprintf( "  >> getKnownClasses\n" ); 
+ Rprintf( "  >> getKnownClasses\n" );
 #endif
-	jobject importer = getImporterReference(tb); 
-	
+	jobject importer = getImporterReference(tb);
+
 	JNIEnv *env=getJNIEnv();
 	jarray a = (jarray) (*env)->CallObjectMethod(env, importer, mid_RJavaImport_getKnownClasses ) ;
 	SEXP res = PROTECT( getStringArrayCont( a ) ) ;
-	
+
 #ifdef LOOKUP_DEBUG
- Rprintf( "    %d known classes\n", LENGTH(res) ); 
+ Rprintf( "    %d known classes\n", LENGTH(res) );
 #endif
-	
-	UNPROTECT(1); 
+
+	UNPROTECT(1);
 	return res ;
 }
 
 HIDE SEXP classNameLookup( R_ObjectTable *tb, const char * const name ){
 #ifdef LOOKUP_DEBUG
- Rprintf( " >> classNameLookup\n" ); 
+ Rprintf( " >> classNameLookup\n" );
 #endif
 	JNIEnv *env=getJNIEnv();
-	
-	jobject importer = getImporterReference(tb); 
+
+	jobject importer = getImporterReference(tb);
 
 	jobject clazz = newString(env, name ) ;
 	jstring s ; /* Class */
@@ -200,42 +200,41 @@ HIDE SEXP classNameLookup( R_ObjectTable *tb, const char * const name ){
 	int np ;
 	if( !s ){
 		res = R_getUnboundValue() ;
-		np = 0; 
+		np = 0;
 	} else{
 		PROTECT( res = new_jclassName( env, s ) );
-		np = 1; 
+		np = 1;
 	}
 
 	releaseObject(env, clazz);
 	releaseObject(env, s);
-    
-	if( np ) UNPROTECT(1); 
+
+	if( np ) UNPROTECT(1);
 #ifdef LOOKUP_DEBUG
- Rprintf( "</classNameLookup>\n" ); 
+ Rprintf( "</classNameLookup>\n" );
 #endif
-	return res ; 
+	return res ;
 }
 
 HIDE Rboolean classNameLookupExists(R_ObjectTable *tb, const char * const name ){
 #ifdef LOOKUP_DEBUG
- Rprintf( " classNameLookupExists\n" ); 
+ Rprintf( " classNameLookupExists\n" );
 #endif
-	
+
 	JNIEnv *env=getJNIEnv();
-	
-	jobject importer = getImporterReference(tb); 
+
+	jobject importer = getImporterReference(tb);
 	jobject clazz = newString(env, name ) ;
-	
+
 	jboolean s ; /* Class */
-	s = (jboolean) (*env)->CallBooleanMethod(env, importer, 
+	s = (jboolean) (*env)->CallBooleanMethod(env, importer,
 		mid_RJavaImport_exists , clazz ) ;
-	Rboolean res = (s) ? TRUE : FALSE; 
+	Rboolean res = (s) ? TRUE : FALSE;
 
 #ifdef LOOKUP_DEBUG
- Rprintf( "    exists( %s ) = %d \n", name, res ); 
+ Rprintf( "    exists( %s ) = %d \n", name, res );
 #endif
-	
+
 	releaseObject(env, clazz);
     return res ;
 }
-

@@ -2,7 +2,7 @@
 #include <Rinternals.h>
 #include "rJava.h"
 
-/* creates a reference to an R object on the Java side 
+/* creates a reference to an R object on the Java side
    1) lock down the object in R
    2) call new Rengine(eng,robj) {or any other class such as REXPReference for REngine API}
  */
@@ -13,7 +13,7 @@ REPC SEXP PushToREXP(SEXP clname, SEXP eng, SEXP engCl, SEXP robj, SEXP doConv) 
   int convert = (doConv == R_NilValue) ? -1 : asInteger(doConv);
   JNIEnv *env=getJNIEnv();
   const char *cName;
-  
+
   if (!isString(clname) || LENGTH(clname)!=1) error("invalid class name");
   if (!isString(engCl) || LENGTH(engCl)!=1) error("invalid engine class name");
   if (TYPEOF(eng)!=EXTPTRSXP) error("invalid engine object");
@@ -31,7 +31,7 @@ REPC SEXP PushToREXP(SEXP clname, SEXP eng, SEXP engCl, SEXP robj, SEXP doConv) 
   o = createObject(env, cName, sig, jpar, 1, 0);
   if (!o) error("Unable to create Java object");
   return j2SEXP(env, o, 1);
-  /* ok, some thoughts on mem mgmt - j2SEXP registers a finalizer. But I believe that is ok, because the pushed reference is useless until it is passed as an argument to some Java method. And then, it will have another reference which will prevent the Java side from being collected. The R-side reference may be gone, but that's ok, because it's the Java finalizer that needs to clean up the pushed R object and for that it doesn't need the proxy object at all. This is the reason why RReleaseREXP uses EXTPTR - all the Java finalizaer has to do is to call RReleaseREXP(self). For that it can create a fresh proxy object containing the REXP. But here comes he crux - this proxy cannot again create a reference - it must be plain pass-through, so this part needs to be verified.
+  /* ok, some thoughts on mem mgmt - j2SEXP registers a finalizer. But I believe that is ok, because the pushed reference is useless until it is passed as an argument to some Java method. And then, it will have another reference which will prevent the Java side from being collected. The R-side reference may be gone, but that's ok, because it's the Java finalizer that needs to clean up the pushed R object and for that it doesn't need the proxy object at all. This is the reason why RReleaseREXP uses EXTPTR - all the Java finalizer has to do is to call RReleaseREXP(self). For that it can create a fresh proxy object containing the REXP. But here comes he crux - this proxy cannot again create a reference - it must be plain pass-through, so this part needs to be verified.
 
 Note: as of REngine API the references assume protected objects and use rniRelease to clean up, so RReleaseREXP won't be called and is not needed. That is good, because RReleaseREXP assumes JRI objects whereas REngine will create REXPReference (no xp there). However, if we ever change that REXPReference assumption we will be in trouble.
  */
@@ -56,5 +56,3 @@ REPC SEXP RReleaseREXP(SEXP ptr) {
   }
   return R_NilValue;
 }
-
-    

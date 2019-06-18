@@ -84,7 +84,7 @@
   hold a reference to a Java object in R that is also referenced by
   the serialized Java object on the Java side, then this relationship
   cannot be retained upon restore. Instead, two copies of disjoint
-  objects will be created which can cause confusion and errorneous
+  objects will be created which can cause confusion and erroneous
   behavior.
 
   The cache is attached to the reference external pointer and thus it

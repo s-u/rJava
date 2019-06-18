@@ -12,7 +12,7 @@
 
   \code{.jthrow} throws a Java exception.
 
-  \code{.jgetEx} polls for any pending expections and returns the exception object.
+  \code{.jgetEx} polls for any pending exceptions and returns the exception object.
 
   \code{.jclear} clears a pending exception.
 }
@@ -29,7 +29,7 @@
     \code{stderr} so it will not appear there (as of rJava 0.5-1 some
     errors that the JVM prints using the vfprintf callback are passed
     to R. However, some parts are printed using \code{System.err} in
-    which case the ususal redirection using the \code{System} class
+    which case the usual redirection using the \code{System} class
     can be used by the user).}
   \item{exception}{is either a class name of an exception to create or a
     throwable object reference that is to be thrown.}
@@ -54,9 +54,9 @@
   instructed to not do so. If you want to handle Java exceptions, you
   should make sure that those function don't clear the exception you may
   want to catch.
-  
+
   The exception handling is still as a very low-level and experimental,
-  because it requires polling of exceptions. A more elaboate system
+  because it requires polling of exceptions. A more elaborate system
   using constructs similar to \code{try} ... \code{catch} is planned for
   next major version of \code{rJava}.
 

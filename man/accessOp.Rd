@@ -41,14 +41,14 @@
 	 }
 }
 \details{
-  rJava provies two levels of API: low-level JNI-API in the form of \code{\link{.jcall}} function and high-level reflection API based on the \code{$} operator. The former is very fast, but inflexible. The latter is a convenient way to use Java-like programming at the cost of performance. The reflection API is build around the \code{$} operator on \code{\link{jobjRef-class}} objects that allows to access Java attributes and call object methods.
+  rJava provides two levels of API: low-level JNI-API in the form of \code{\link{.jcall}} function and high-level reflection API based on the \code{$} operator. The former is very fast, but inflexible. The latter is a convenient way to use Java-like programming at the cost of performance. The reflection API is build around the \code{$} operator on \code{\link{jobjRef-class}} objects that allows to access Java attributes and call object methods.
 
  \code{$} returns either the value of the attribute or calls a method, depending on which name matches first.
 
  \code{$<-} assigns a value to the corresponding Java attribute.
 
- \code{names} and \code{.DollarNames} returns all fields and methods associated with the object. 
- Method names are followed by \code{(} or \code{()} depending on arity. 
+ \code{names} and \code{.DollarNames} returns all fields and methods associated with the object.
+ Method names are followed by \code{(} or \code{()} depending on arity.
  This use of names is mainly useful for code completion, it is not intended to be used programmatically.
 
  This is just a convenience API. Internally all calls are mapped into \code{\link{.jcall}} calls, therefore the calling conventions and returning objects use the same rules. For time-critical Java calls \code{\link{.jcall}} should be used directly.
@@ -66,7 +66,7 @@ names(v)
 
 \dontshow{
 stopifnot( v$length() == 12L )
-stopifnot( v$indexOf("World") == 6L ) 
+stopifnot( v$indexOf("World") == 6L )
 }
 
 J("java.lang.String")$valueOf(10)
@@ -74,7 +74,7 @@ J("java.lang.String")$valueOf(10)
 Double <- J("java.lang.Double")
 # the class pseudo field - instance of Class for the associated class
 # similar to java Double.class
-Double$class 
+Double$class
 \dontshow{
 	stopifnot( Double$class$getName() == "java.lang.Double" )
 }

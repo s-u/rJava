@@ -8,7 +8,7 @@
   \code{.jaddClassPath} adds directories or JAR files to the class
   path.
 
-  \code{.jclassPath} returns a vector containg the current entries in
+  \code{.jclassPath} returns a vector containing the current entries in
   the class path
 }
 \usage{
@@ -23,7 +23,7 @@
   \code{.jclassPath} returns a character vector listing the class path sequence.
 }
 %\details{
-% 
+%
 %}
 %\seealso{
 %  \code{\link{.jpackage}}

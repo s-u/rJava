@@ -6,7 +6,7 @@
 	if rJava class loader was not present yet (only affected
 	initialization).
 
-    o	modify boostrap to avoid reflection calls which are broken in
+    o	modify bootstrap to avoid reflection calls which are broken in
 	Java 12 (see #175 and https://bugs.openjdk.java.net/browse/JDK-8221530).
 
     o	added .jgc() to run JVM garbage collector (#180)
@@ -27,7 +27,7 @@
 
     o	Windows: detect JAVA_HOME correctly from registry even if the
 	key is using JDK instead Java Development Kit (#120)
-	
+
     o	Windows: don't fail if `RuntimeLib` registry entry is missing (#163)
 
 
@@ -54,7 +54,7 @@
 	so you can still build 1.2/1.4 targets by reverting 992828b and
 	using a JDK that won't break on 1.4 targets.
 
-    o	Process events on Widnows while in rniIndle. (#23)
+    o	Process events on Windows while in rniIndle. (#23)
 
     o	Work around a bug of Oracle's Java on Linux which caps the stack of
 	R at 2M. (#102) The bug leads to segfaults in recursive
@@ -116,17 +116,17 @@
     o	added support for unboxing of Double[], Integer[] and Boolean[]
 	to .jevalArray(.., simplify=TRUE) and thus also to .jcall()
 
-    o	Windows: add Java configuartion paths before existing PATH
+    o	Windows: add Java configuration paths before existing PATH
 	entries
 
     o	Windows: honor a new option "java.home" to override JAVA_HOME
 	environment variable and system settings to allow co-existence
-	of other tools that may require differen Java paths.
+	of other tools that may require different Java paths.
 
     o	Windows: fix a buglet in error reporting when no Java is installed
 
     o	raise an error if the number of arguments to a Java call exceeds
-	maxJavaPars. Previously, calls woud be silently truncated.
+	maxJavaPars. Previously, calls would be silently truncated.
 	Note that maxJavaPars can be raised by compiling rJava, e.g. with:
 	PKG_CFLAGS=-DmaxJavaPars=96 R CMD INSTAL rJava_...
 
@@ -153,16 +153,16 @@
 
 0.9-0	2011-06-22
     o	fixes issues introduced by several new features in the late
-	0.8 series. Most imporantly .jarray() and .jevalArray() behave
+	0.8 series. Most importantly .jarray() and .jevalArray() behave
 	as intended (and as implemented in previous versions). The
 	same applies to .jcall() behavior with respect to arrays and
-	its evalArray arument. The defaults for some new arguments
+	its evalArray argument. The defaults for some new arguments
 	have been changed to reflect the original behavior.
 
     o	.jevalArray() has an additional argument `simplify' which allows
 	multi-dimensional arrays to be converted to native R
 	types. Use with care - it may convert more recursive types in
-	the future so it should be used preferrably where you have
+	the future so it should be used preferably where you have
 	control over the types converted.
 
     o	fixed a bug in .jevalArray that was not simplifying string
@@ -180,7 +180,7 @@
         loader (not from additional jars)
 
 0.8-7	2010-10-18
-    o	Windows updates to accomodate changes in R 2.12 and layout
+    o	Windows updates to accommodate changes in R 2.12 and layout
 	changes in recent Sun Java installations.
 
 0.8-6	2010-09-17
@@ -196,7 +196,7 @@
     o	if the rJava class loader is used as a primary loader it will
 	also register as the context class loader. Some projects
 	rely on the thread context class loader instead of
-	Class.getClassLoader() [which is still more reliable] 
+	Class.getClassLoader() [which is still more reliable]
 	so those will now work as well.
 
     o	JRI 0.5-3 (bugfixes)
@@ -259,12 +259,12 @@
     o	new exception handling was introduced:
 
 	Java exceptions are mapped to Exception conditions which can
-	be used to catch the exception at R level using e.g tryCatch. 
-	
+	be used to catch the exception at R level using e.g tryCatch.
+
 	The class name automatically contains "Exception", "error"
 	and "condition", as well as all the names (without package path)
-	of the classes in the inheritance tree of the actual class of the 
-	Exception. This allows targetted handlers:
+	of the classes in the inheritance tree of the actual class of the
+	Exception. This allows targeted handlers:
 	tryCatch(.jnew("foo"), NoClassDefFoundError=function(e) ...)
 
 	In addition JNI code now causes an error instead of a warning,
@@ -285,71 +285,71 @@
 
 	An additional class "jclassName" was created to support static
 	calls to accessor methods such as $ and calls to new().
-	
+
     o   [RF] arrays are now split in two classes : "jrectRef" for rectangular
-        arrays, similar to R arrays, and jarrayRef for rugged arrays. 
-        Indexing of all arrays is supported using the double bracket 
+        arrays, similar to R arrays, and jarrayRef for rugged arrays.
+        Indexing of all arrays is supported using the double bracket
         indexer "[[" and "[[<-"
-        
-        The single indexer "[" is only currently implemented for 
-        rectangular arrays. This is experimental. Replacement ([<-) 
+
+        The single indexer "[" is only currently implemented for
+        rectangular arrays. This is experimental. Replacement ([<-)
         is not supported yet.
 
     o   [RF] with.jclassName and within.jclassName is added to support
-        "with" semantics on static fields and methods of java classes. 
-        
+        "with" semantics on static fields and methods of java classes.
+
         Double <- J("java.lang.Double" )
         with( Double, parseDouble( "10.2" ) )
-        
+
 
     o   [RF] length.jarrayRef queries the number
-        of objects in a java array. An exception is generated if the 
-        object is not an array. Also array$length can be used 
-        similary to array.length in java
-        
-    o   [RF] .jcast gains arguments "check" and "convert.array". Their 
-             default value is FALSE for backwards compatibility with 
+        of objects in a java array. An exception is generated if the
+        object is not an array. Also array$length can be used
+        similarly to array.length in java
+
+    o   [RF] .jcast gains arguments "check" and "convert.array". Their
+             default value is FALSE for backwards compatibility with
              previous releases of rJava
-             
-    o   [RF] Binary operators <, >, <=, >= to compare two objects where 
-             at least one is a java object reference. 
+
+    o   [RF] Binary operators <, >, <=, >= to compare two objects where
+             at least one is a java object reference.
              d <- new( J("java.lang.Double"), 0.0 )
              d < 1.0
              d < 1L
              Comparison of arrays is not currently supported
-             
+
     o   [RF] lapply and sapply may now be used on Iterable java objects
              such as Vector and java arrays. see ?as.list.jobjRef
-             
-    o   [RF] The generic "clone" function is added, and an implementation for 
-             java objects. an Object must implement the Cloneable 
-             interface, otherwise an exception will be raised. 
-             Furthermore, careful reading of the java documentation 
+
+    o   [RF] The generic "clone" function is added, and an implementation for
+             java objects. an Object must implement the Cloneable
+             interface, otherwise an exception will be raised.
+             Furthermore, careful reading of the java documentation
              of Object#clone is recommended since this is not standard
-             java behaviour. Currently "clone" is not supported on 
+             java behaviour. Currently "clone" is not supported on
              arrays
-             
-    o   [RF] A mechanism for "attach"ing java packages has been introduced, 
+
+    o   [RF] A mechanism for "attach"ing java packages has been introduced,
              following the mechanism of the RObjectTables package
              from the OmegaHat project. This allows to "attach" a set of
-             java package paths to R's search path: 
-             
+             java package paths to R's search path:
+
              > attach( javaImport( "java.util", "java.lang" ) )
-             
+
              and then use classes from this package like this :
-             
+
              > new( Vector )
              > new( HashMap )
              > new( Double, 10.2 )
-             > new( Integer, 10L ) 
+             > new( Integer, 10L )
              > Collections$EMPTY_MAP
-             
+
              This feature is currently __very__ experimental and is as
              dangerous as any other use of attach
 
 
 0.7-1	(never released)
-    o	[RF] added .J high-level java constructor (based on reflection 
+    o	[RF] added .J high-level java constructor (based on reflection
 	as opposed to complete match as .jnew does)
 
     o	[RF] added .jinstanceof and instanceof operator
@@ -397,7 +397,7 @@
     o	fix --enable-debug to really enable debug code
 
     o	improve Windows setup (add only paths if they are not already
-	listed and check thier presence first) and warn if the system
+	listed and check their presence first) and warn if the system
 	suffers from PATH truncation bug (or PATH is truncated in
 	general)
 
@@ -458,7 +458,7 @@
 
     o	Add support for short Java type
 
-    o	Add support for convertors
+    o	Add support for converters
 
     o	Fix R-devel compatibility issues
 
@@ -480,7 +480,7 @@
 
 0.4-13	2007-01-14
     o	Fix Java-side memory leaks (temporary parameters to methods
-	were not propery released, thanks to Erik van Barneveld for
+	were not properly released, thanks to Erik van Barneveld for
 	supplying a reproducible example).
 
     o	Fix a bug that caused only the first VM parameter to be passed
@@ -498,7 +498,7 @@
 
     o	Update URL to http://www.rforge.net/rJava/
 
-    o	Update to JRI 0.3-7 (LCons, createRJavaRef, assign XT_NONE) 
+    o	Update to JRI 0.3-7 (LCons, createRJavaRef, assign XT_NONE)
 
 0.4-12	2006-11-29
     o	Added documentation for .jthrow, .jclear and .jgetEx and
@@ -569,7 +569,7 @@
 	Also `show' is now used instead of `print' and the
 	output format was changed.
 
-    o	Protoype for jobjRef is now a valid null-Object
+    o	Prototype for jobjRef is now a valid null-Object
 
     o	Added .jequals and corresponding ==, != op methods.
 	Currently == and != operators feature the same behavior as

@@ -14,7 +14,7 @@ cat(" running R gc\n")
 gc()
 cat(" running java GC\n")
 cat(.jcall("Leaks","S","reportMem"),"\n")
-cat(" - static pass thorugh parameters\n")
+cat(" - static pass through parameters\n")
 for (i in 1:800) {
   if (i==400) { cat('   (forcing R gc)\n'); gc() }
   .i <- .jcall("Leaks", "[I", "passI", .i)

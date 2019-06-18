@@ -22,7 +22,7 @@ static char *classToJNI(const char *cl) {
   if (!strcmp(cl, "short"))   return strdup("S");
   if (!strcmp(cl, "float"))   return strdup("F");
   if (!strcmp(cl, "char"))    return strdup("C");
- 
+
   /* anything else is a real class -> wrap into L..; */
   char *jc = malloc(strlen(cl)+3);
   *jc='L';
@@ -133,7 +133,7 @@ REPC SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
     retsig = CHAR(STRING_ELT(sig,0));
   }
   _dbg(rjprintf("field %s signature is %s\n",fnam,retsig));
-  
+
   if (o) { /* first try non-static fields */
     fid = (*env)->GetFieldID(env, cls, fnam, retsig);
     checkExceptionsX(env, 1);
@@ -243,7 +243,7 @@ REPC SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
       if (detsig) free(detsig);
       return new_jobjRef(env, r, 0);
     }
-    if (*retsig=='L') { /* need to fix the class name */      
+    if (*retsig=='L') { /* need to fix the class name */
       char *d = strdup(retsig), *c = d;
       while (*c) { if (*c==';') { *c=0; break; }; c++; }
       rv = new_jobjRef(env, r, d+1);
@@ -313,7 +313,7 @@ REPC SEXP RsetField(SEXP ref, SEXP name, SEXP value) {
 #endif
   init_sigbuf(&sig);
   jval = R1par2jvalue(env, value, &sig, &otr);
-  
+
   if (o) {
     fid = (*env)->GetFieldID(env, cls, fnam, sig.sig);
     if (!fid) {
@@ -372,7 +372,7 @@ REPC SEXP RsetField(SEXP ref, SEXP name, SEXP value) {
     releaseObject(env, cls);
     if (otr) releaseObject(env, otr);
     done_sigbuf(&sig);
-    error("unknown field sighanture %s", sig.sigbuf);
+    error("unknown field siganture %s", sig.sigbuf);
   }
   done_sigbuf(&sig);
   releaseObject(env, cls);

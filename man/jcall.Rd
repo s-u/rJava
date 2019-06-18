@@ -7,8 +7,8 @@
   \code{.jcall} calls a Java method with the supplied arguments.
 }
 \usage{
-.jcall(obj, returnSig = "V", method, ..., evalArray = TRUE, 
-    evalString = TRUE, check = TRUE, interface = "RcallMethod", 
+.jcall(obj, returnSig = "V", method, ..., evalArray = TRUE,
+    evalString = TRUE, check = TRUE, interface = "RcallMethod",
     simplify = FALSE, use.true.class = FALSE)
 }
 \arguments{
@@ -22,7 +22,7 @@
     type \code{short}.}
   \item{method}{The name of the method to be called}
   \item{...}{
-    Any parametes that will be passed to the Java method. The parameter
+    Any parameters that will be passed to the Java method. The parameter
     types are determined automatically and/or taken from the
     \code{jobjRef} object. All named parameters are discarded.}
   \item{evalArray}{This flag determines whether the array return value
@@ -35,22 +35,22 @@
   \item{check}{If set to \code{TRUE} then checks for exceptions are
     performed before and after the call using
     \code{\link{.jcheck}(silent=FALSE)}. This is usually the desired
-    behavior, because all calls fail until an expection is cleared.}
+    behavior, because all calls fail until an exception is cleared.}
   \item{interface}{This option is experimental and specifies the
     interface used for calling the Java method; the current
     implementation supports two interfaces:
     \itemize{
       \item{\code{"RcallMethod"}}{the default interface.}
       \item{\code{"RcallSyncMethod"}}{synchronized call of a
-	method. This has simmilar effect as using \code{synchronize} in
+	method. This has similar effect as using \code{synchronize} in
 	Java.}
     }
   }
   \item{use.true.class}{logical. If set to \code{TRUE}, the true class
-  of the returned object will be used instead of the declared signature. 
-  \code{TRUE} allows for example to grab the actual class of an object when 
-  the return type is an interface, or allows to grab an array when the 
-  declared type is Object and the returned object is an array. Use \code{FALSE} 
+  of the returned object will be used instead of the declared signature.
+  \code{TRUE} allows for example to grab the actual class of an object when
+  the return type is an interface, or allows to grab an array when the
+  declared type is Object and the returned object is an array. Use \code{FALSE}
   for efficiency when you are sure about the return type. }
 }
 \value{
@@ -88,7 +88,7 @@
   memory usage), but 3rd party code may not (e.g. older
   packages). Also rJava relies on correct encoding flags for strings
   passed to it and will attempt to perform conversions where
-  necessary. If some 3rd party code produces strings incorreclty
+  necessary. If some 3rd party code produces strings incorrectly
   flagged, all bets are off.
 
   Finally, for performance reasons class, method and field names as
