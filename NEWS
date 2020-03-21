@@ -15,6 +15,9 @@
 	Find ${JAVA_HOME}[/jre]/lib/server/libjvm.{so|dylib}
 	If not found, Java cannot be loaded.
 
+    o	convert class names from Java objects into JNI notation when
+	constructing method signatures. (#81)
+
     o	fix a bug in .jfield() which prevented accessing static fields
 	if rJava class loader was not present yet (only affected
 	initialization).
