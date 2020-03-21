@@ -15,9 +15,9 @@ fi
 # we attempt to use the same compiler as R did
 RBIN="${R_HOME}/bin/R"
 R_CC=`"${RBIN}" CMD config CC`
-R_CPP=`"${RBIN}" CMD config CPP`
+## CPP is now deprecated
+R_CPP="${R_CC} -E"
 R_CFLAGS=`"${RBIN}" CMD config CFLAGS`
-
 
 # find R_SHARE_DIR
 : ${R_SHARE_DIR=`"${RBIN}" CMD sh -c 'echo $R_SHARE_DIR'`}
