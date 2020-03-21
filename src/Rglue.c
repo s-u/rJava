@@ -198,6 +198,18 @@ static void strcats(sig_buffer_t *sig, const char *add) {
   sig->len += l;
 }
 
+/* call strcats() but also convert class names to JNI notation */
+static void strcats_conv(sig_buffer_t *sig, const char *add) {
+  int ol = sig->len, nl;
+  strcats(sig, add);
+  nl = sig->len;
+  while (ol < nl) {
+    if (sig->sig[ol] == '.')
+      sig->sig[ol] = '/';
+    ol++;
+  }
+}
+
 /* initialize a signature buffer */
 HIDE void init_sigbuf(sig_buffer_t *sb) {
   sb->len = 0;
@@ -375,9 +387,9 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, sig_buffer_t *sig, i
 	}
 	if (jc) {
 	  if (*jc!='[') { /* not an array, we assume it's an object of that class */
-	    strcats(sig,"L"); strcats(sig,jc); strcats(sig,";");
+	    strcats(sig,"L"); strcats_conv(sig,jc); strcats(sig,";");
 	  } else /* array signature is passed as-is */
-	    strcats(sig,jc);
+	    strcats_conv(sig,jc);
 	} else
 	  strcats(sig,"Ljava/lang/Object;");
 	jpar[jvpos++].l=o;
