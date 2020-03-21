@@ -1,6 +1,6 @@
 # we need to add JNI specific stuff here
 PKG_CPPFLAGS=-I. @JAVA_CPPFLAGS@
-PKG_LIBS=@JAVA_LIBS@
+@USE_DYNLOAD_FALSE@PKG_LIBS=@JAVA_LIBS@
 JAVA_HOME=@JAVA_HOME@
 # make SHLIB believe that we know better what the objects are
 #OBJECTS=Rglue.o callJNI.o initJNI.o rJava.o jri.o jri_glue.o

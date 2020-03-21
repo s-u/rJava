@@ -66,6 +66,13 @@ AC_ARG_ENABLE([Xrs],
 [want_xrs="${enableval}"],
 [want_xrs=auto])
 
+## enable dynloaded JVM
+AC_ARG_ENABLE([dynload],
+[AC_HELP_STRING([--enable-dynload],
+		[load JVM dynamically (without linking). @<:@auto@:>@])],
+[want_dynload="${enableval}"],
+[want_dynload=auto])
+
 ## enable debug flags
 AC_ARG_ENABLE([debug],
 [AC_HELP_STRING([--enable-debug],
@@ -240,6 +247,21 @@ AC_MSG_RESULT(${has_xrs})
 if test x"$has_xrs" = xyes; then
    AC_DEFINE(HAVE_XRS, 1, [Set if the Java parameter -Xrs is supported])
 fi
+
+use_dynload="$want_dynload"
+if test x"$use_dynload" = xauto; then
+   if test "x$OSNAME" = xDarwin; then
+      use_dynload=yes
+   else
+      use_dynload=no
+   fi
+fi
+if test x"$use_dynload" != xyes; then
+   use_dynload=no
+fi
+AC_MSG_CHECKING([whether JVM will be loaded dynamically])
+AC_MSG_RESULT(${use_dynload})
+AM_CONDITIONAL(USE_DYNLOAD, [test "x${use_dynload}" = xyes])
 
 AC_MSG_CHECKING([whether JNI programs can be compiled])
 AC_LINK_IFELSE([AC_LANG_SOURCE([[

@@ -2,6 +2,19 @@
 --------------------------
 
 0.9-12	(under development)
+    o	rJava has a new option --enable-dynload which enables rJava to load
+	JVM dynamically at run-time. It is only supported on unix platforms
+	at this point and is enabled by default on macOS. When enabled,
+	rJava library does not link to JVM, but instead assumes that the
+	JVM library will be loaded into R before JVM functions are used.
+
+	The default initialization uses the following order to find JVM at
+	run-time:
+	- use JAVA_HOME (typically set by R CMD javareconf)
+	- call /usr/libsexec/java_home (if JAVA_HOME is not set)
+	Find ${JAVA_HOME}[/jre]/lib/server/libjvm.{so|dylib}
+	If not found, Java cannot be loaded.
+
     o	fix a bug in .jfield() which prevented accessing static fields
 	if rJava class loader was not present yet (only affected
 	initialization).
