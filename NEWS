@@ -27,6 +27,8 @@
 
     o	added .jgc() to run JVM garbage collector (#180)
 
+    o   Check if JAVA_HOME exists, and give an error if not (#209)
+
 
 0.9-11	2019-03-27
     o	fix segfault if en exception is thrown during rJava initialization
