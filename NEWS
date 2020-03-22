@@ -27,6 +27,12 @@
 
     o	added .jgc() to run JVM garbage collector (#180)
 
+    o	fix filtered .jfields() to return actual values (#213)
+
+    o	.jfields() and .methods() now correctly filter results even for
+	as.obj=TRUE (#212). Filtering is done by retrieving the names and
+	applying the regular expression specified in `name'.
+
 
 0.9-11	2019-03-27
     o	fix segfault if en exception is thrown during rJava initialization
