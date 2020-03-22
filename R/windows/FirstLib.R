@@ -24,7 +24,12 @@ function(libname, pkgname) {
         this <- hive[[hive$CurrentVersion]]
         javahome <- this$JavaHome
         paths <- if (is.character(this$RuntimeLib)) dirname(this$RuntimeLib) else character() # wrong on 64-bit
-    } else paths <- character()
+    } else {
+      if (!dir.exists(javahome)) {
+        stop('Either `getOption("java.home")` or `Sys.getenv("JAVA_HOME")` is set to a path that does not exist: ', javahome)
+      }
+      paths <- character()
+    }
     if(is.null(javahome) || !length(javahome) || !nchar(javahome))
         stop("JAVA_HOME is not set and could not be determined from the registry")
     #else cat("using JAVA_HOME =", javahome, "\n")
