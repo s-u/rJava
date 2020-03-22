@@ -7,12 +7,11 @@
 .jmethods <- function(o, name=NULL, as.obj=FALSE) {
   cl <- if (is(o, "jobjRef")) .jcall(o, "Ljava/lang/Class;", "getClass") else if (is(o, "jclassName")) o@jobj else .jfindClass(as.character(o))
   ms<-.jcall(cl,"[Ljava/lang/reflect/Method;","getMethods")
-  if (isTRUE(as.obj)) return(ms)
-  ss<-unlist(lapply(ms,function(x) .jcall(x,"S","toString")))
-  if (!is.null(name))
-    grep(paste("\\.",name,"\\(",sep=''),ss,value=TRUE)
-  else
-    ss
+  if (length(name)) {
+     n <- sapply(ms, function(o) .jcall(o, "S", "getName"))
+     ms <- ms[grep(name, n)]
+  }
+  if (isTRUE(as.obj)) ms else unlist(lapply(ms,function(x) .jcall(x,"S","toString")))
 }
 
 .jconstructors <- function(o, as.obj=FALSE) {
@@ -191,9 +190,12 @@
 .jfields <- function(o, name=NULL, as.obj=FALSE) {
   cl <- if (is(o, "jobjRef")) .jcall(o, "Ljava/lang/Class;", "getClass") else if (is(o, "jclassName")) o@jobj else .jfindClass(as.character(o))
   f <- .jcall(cl, "[Ljava/lang/reflect/Field;", "getFields")
-  if (isTRUE(as.obj)) return(f)
-  fl <- unlist(lapply(f, function(x) .jcall(x, "S", "toString")))
-  if (!is.null(name)) grep(paste("\\.",name,"$",sep=''), fl) else fl
+  if (length(name)) {
+     n <- sapply(f, function(o) .jcall(o, "S", "getName"))
+     f <- f[grep(name, n)]
+  }
+  if (isTRUE(as.obj)) f else
+  unlist(lapply(f, function(x) .jcall(x, "S", "toString")))
 }
 
 ._must_be_character_of_length_one <- function(name){
