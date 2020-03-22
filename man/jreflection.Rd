@@ -20,8 +20,7 @@
 \arguments{
   \item{o}{Name of a class (either notation is fine) or an object whose
     class will be queried}
-  \item{name}{Name of the method/field to look for. May contain regular
-    expressions except for \code{^$}.}
+  \item{name}{string, regular expression of the method/field to look for}
   \item{as.obj}{if \code{TRUE} then a list of Java objects is
     returned, otherwise a character vector (obtained by calling
     \code{toString()} on each entry).}
@@ -29,13 +28,15 @@
 \value{
   Returns a character vector (if \code{as.obj} is \code{FALSE}) or a
   list of Java objects. Each entry corresponds to the
-  \code{Constructor} resp. \code{Method} resp. \code{Field} object.
+  \code{Constructor} resp. \code{Method} resp. \code{Field}
+  object. The string result is constructed by calling
+  \code{toString()} on the objects.
 }
 \details{
   There first two functions are intended to help with finding correct
   signatures for methods and constructors. Since the low-level API in
   rJava doesn't use reflection automatically, it is necessary to
-  provide a proper  signature. That is somewhat easier using the above
+  provide a proper signature. That is somewhat easier using the above
   methods.
 }
 \seealso{
