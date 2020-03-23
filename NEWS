@@ -1,7 +1,7 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.9-12	(under development)
+0.9-12	2020-03-23
     o	rJava has a new option --enable-dynload which enables rJava to load
 	JVM dynamically at run-time. It is only supported on unix platforms
 	at this point and is enabled by default on macOS. When enabled,
@@ -18,8 +18,8 @@
 	On Windows the order has not changed: getOption("java.home"),
 	JAVA_HOME environment variable and registry. However, if the
 	Java home setting is specified, it must be a valid directory,
-	otherwise a warning is issued (#209), it is assumed to be ""
-	and thus the search continues in the registry.
+	otherwise a warning is issued (#209) and it is assumed to
+	be "" and thus the search continues in the registry.
 
     o	convert class names from Java objects into JNI notation when
 	constructing method signatures. (#81)
