@@ -2,7 +2,13 @@
 function(libname, pkgname) {
     OPATH <- Sys.getenv("PATH")
     javahome <- if (!is.null(getOption("java.home"))) getOption("java.home") else Sys.getenv("JAVA_HOME")
-    if(!nchar(javahome)) { ## JAVA_HOME was not set explicitly
+    if (nzchar(javahome) && !dir.exists(javahome)) {
+         message("java.home option: ", getOption("java.home"))
+         message("JAVA_HOME environment variable: ", Sys.getenv("JAVA_HOME"))
+         warning("Java home setting is INVALID, it will be ignored.\nPlease do NOT set it unless you want to override system settings.")
+         javahome <- ""
+    }
+    if(!nzchar(javahome)) { ## JAVA_HOME was not set explicitly
         find.java <- function() {
             for (root in c("HLM", "HCU"))
                 for(key in c(
