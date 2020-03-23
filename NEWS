@@ -11,9 +11,15 @@
 	The default initialization uses the following order to find JVM at
 	run-time:
 	- use JAVA_HOME (typically set by R CMD javareconf)
-	- call /usr/libsexec/java_home (if JAVA_HOME is not set)
+	- call /usr/libexec/java_home (if JAVA_HOME is not set)
 	Find ${JAVA_HOME}[/jre]/lib/server/libjvm.{so|dylib}
 	If not found, Java cannot be loaded.
+
+	On Windows the order has not changed: getOption("java.home"),
+	JAVA_HOME environment variable and registry. However, if the
+	Java home setting is specified, it must be a valid directory,
+	otherwise a warning is issued (#209), it is assumed to be ""
+	and thus the search continues in the registry.
 
     o	convert class names from Java objects into JNI notation when
 	constructing method signatures. (#81)
@@ -29,7 +35,7 @@
 
     o	fix filtered .jfields() to return actual values (#213)
 
-    o	.jfields() and .methods() now correctly filter results even for
+    o	.jfields() and .jmethods() now correctly filter results even for
 	as.obj=TRUE (#212). Filtering is done by retrieving the names and
 	applying the regular expression specified in `name'.
 
