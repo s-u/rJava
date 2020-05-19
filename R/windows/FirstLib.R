@@ -1,10 +1,12 @@
+.msg <- message
+
 .onLoad <-
 function(libname, pkgname) {
     OPATH <- Sys.getenv("PATH")
     javahome <- if (!is.null(getOption("java.home"))) getOption("java.home") else Sys.getenv("JAVA_HOME")
     if (nzchar(javahome) && !dir.exists(javahome)) {
-         message("java.home option: ", getOption("java.home"))
-         message("JAVA_HOME environment variable: ", Sys.getenv("JAVA_HOME"))
+         .msg("java.home option: ", getOption("java.home"))
+         .msg("JAVA_HOME environment variable: ", Sys.getenv("JAVA_HOME"))
          warning("Java home setting is INVALID, it will be ignored.\nPlease do NOT set it unless you want to override system settings.")
          javahome <- ""
     }
