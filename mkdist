@@ -193,7 +193,7 @@ echo "Creating package ..."
 cd ..
 rm -f `find rJava -name ._\*`
 rm -rf rJava/.git rJava/jri/REngine/.git
-rm -f version
+rm -f rJava/version
 R CMD build rJava
 cd ${SWD}
 cp /tmp/rJava_${VER}.tar.gz ..
