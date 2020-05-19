@@ -13,9 +13,9 @@ J("RectangularArrayBuilder_Test")$runtests()
 
 
   p <- .jnew( "java/awt/Point" )
-  classes <- .Call( "RgetSimpleClassNames", p@jobj, TRUE, PACKAGE = "rJava" )
+  classes <- .Call( rJava:::RgetSimpleClassNames, p@jobj, TRUE )
   stopifnot( all( c( "Point", "Point2D", "Object", "error", "condition" ) \%in\% classes ) )
-  classes <- .Call( "RgetSimpleClassNames", p@jobj, FALSE, PACKAGE = "rJava" )
+  classes <- .Call( rJava:::RgetSimpleClassNames, p@jobj, FALSE )
   stopifnot( all( c( "Point", "Point2D", "Object" )  \%in\% classes ) )
 
 }
