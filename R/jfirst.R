@@ -25,7 +25,9 @@
                      # .External
                     "RcreateObject", "RgetStringValue", "RinitJVM", "RtoString",
                      # .C
-                    "RclearException", "RuseJNICache"
+                    "RclearException", "RuseJNICache",
+                     # Interfaces
+                    "RcallMethod", "RcallSyncMethod"
                     )
 
 .jfirst <- function(libname, pkgname) {
