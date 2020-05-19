@@ -21,9 +21,9 @@
                     "RgetLongArrayCont", "RgetNullReference", "RgetObjectArrayCont",
                     "RgetShortArrayCont", "RgetStringArrayCont", "RidenticalRef",
                     "RisAssignableFrom", "RpollException", "RsetField", "RthrowException",
-                    "javaObjectCache",
+                    "javaObjectCache", "initRJavaTools", "newRJavaLookupTable",
                      # .External
-                    "RcreateObject", "RgetStringValue", "RinitJVM", "RtoString",
+                    "RcreateObject", "RgetStringValue", "RinitJVM", "RtoString", "RcallMethod",
                      # .C
                     "RclearException", "RuseJNICache"
                     )

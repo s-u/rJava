@@ -271,9 +271,9 @@ getDim <- function(x){
 			
 			# we cannot use .jcall here since it will try to simplify the array
 			# or go back to java to calculate its dimensions, ...
-			r <- .External( "RcallMethod", builder@jobj, 
-				"Ljava/lang/Object;", "getArray", PACKAGE="rJava")
-			
+			r <- .External( RcallMethod, builder@jobj,
+				"Ljava/lang/Object;", "getArray" )
+
 			new( "jrectRef", jobj = r, dimension = dim, 
 				jclass = clazz, jsig = tojni( clazz ) ) 
 		}  

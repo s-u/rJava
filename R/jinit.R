@@ -157,9 +157,9 @@
   }
   
   # FIXME: is this the best place or should this be done 
-  #        internally right after the RJavaClassLoader is instanciated
+  #        internally right after the RJavaClassLoader is instantiated
   # init the cached RJavaTools class in the jni side
-  .Call( "initRJavaTools", PACKAGE = "rJava" ) 
+  .Call(initRJavaTools)
   
   # not yet
   # import( c( "java.lang", "java.util") )
