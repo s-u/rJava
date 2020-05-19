@@ -2,6 +2,7 @@
 AC_INIT(rJava, 0.8, Simon.Urbanek@r-project.org)
 AC_CONFIG_SRCDIR([src/rJava.c])
 AC_CONFIG_HEADER([src/config.h])
+AC_CONFIG_AUX_DIR([tools])
 
 # find R home and set CC/CFLAGS
 : ${R_HOME=`R RHOME`}
@@ -224,7 +225,7 @@ if test "x$OSNAME" = xDarwin; then
 fi
 
 AC_MSG_CHECKING([whether Java run-time works])
-if "$JAVA" -classpath . getsp; then
+if "$JAVA" -classpath tools getsp; then
    AC_MSG_RESULT(yes)
 else
    AC_MSG_RESULT(no)
@@ -234,7 +235,7 @@ fi
 has_xrs="$want_xrs"
 if test x"$has_xrs" = xauto; then
    AC_MSG_CHECKING([whether -Xrs is supported])
-   if "$JAVA" -Xrs -classpath . getsp; then
+   if "$JAVA" -Xrs -classpath tools getsp; then
       has_xrs=yes
    else
       has_xrs=no

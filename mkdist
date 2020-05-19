@@ -38,7 +38,7 @@ rm -f /tmp/rJava/README.md
 cd /tmp/rJava
 
 if [ "$1" = "-c" ]; then
-    rm -f configure install-sh jri/configure
+    rm -f configure tools/install-sh jri/configure
 fi
 
 if [ -e /tmp/rJava/configure ]; then
@@ -50,7 +50,7 @@ else
     rm -rf autom4te* acloc*
 fi
 
-if [ ! -e install-sh ]; then
+if [ ! -e tools/install-sh ]; then
     echo "Fetching install-sh ..."
     ams=/usr/share/automake/install-sh
     if [ ! -e $ams ]; then
@@ -60,12 +60,12 @@ if [ ! -e install-sh ]; then
 	echo "*** ERROR: install-sh is not present and I can't find it in /usr/share"
 	exit 2
     fi
-    cp $ams install-sh
+    cp $ams tools/install-sh
 fi
 
-if [ ! -e getsp.class ]; then
+if [ ! -e tools/getsp.class ]; then
     echo "Compiling getsp.class"
-    javac -target 1.2 -source 1.2 getsp.java
+    (cd tools && javac -target 1.2 -source 1.2 getsp.java)
 fi
 
 echo "Removing CVS/SVN and backup files ..."
