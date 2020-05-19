@@ -40,8 +40,9 @@
   case by default).
 }
 \examples{
-\donttest{
-.jmemprof("rJava.mem.profile.txt")
-}
+## memory profiling support is optional so only works when enabled
+tryCatch(
+.jmemprof("rJava.mem.profile.txt"),
+error=function(e) message(e))
 }
 \keyword{interface}
