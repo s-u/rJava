@@ -1,6 +1,10 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.9-13	(under development)
+    o	add missing C entry points to the symbol cache. (#221)
+
+
 0.9-12	2020-03-23
     o	rJava has a new option --enable-dynload which enables rJava to load
 	JVM dynamically at run-time. It is only supported on unix platforms
