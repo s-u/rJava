@@ -19,9 +19,9 @@
                     "RcreateArray", "RgetBoolArrayCont", "RgetByteArrayCont", "RgetCharArrayCont",
                     "RgetDoubleArrayCont", "RgetField", "RgetFloatArrayCont", "RgetIntArrayCont",
                     "RgetLongArrayCont", "RgetNullReference", "RgetObjectArrayCont",
-                    "RgetShortArrayCont", "RgetStringArrayCont", "RidenticalRef",
+                    "RgetShortArrayCont", "RgetStringArrayCont", "RidenticalRef", "RgetSimpleClassNames",
                     "RisAssignableFrom", "RpollException", "RsetField", "RthrowException",
-                    "javaObjectCache", "initRJavaTools", "newRJavaLookupTable",
+                    "javaObjectCache", "initRJavaTools", "newRJavaLookupTable", "useDynamicSymbols",
                      # .External
                     "RcreateObject", "RgetStringValue", "RinitJVM", "RtoString", "RcallMethod",
                      # .C
@@ -33,6 +33,11 @@
   addr <- getNativeSymbolInfo(.register.addr, pkgname)
   for (name in .register.addr)
      .env[[name]] <- addr[[name]]$address
+
+  # disable symbol lookup from now on - if there is an error
+  # in native calls from now on, it means a symbol has not
+  # been added to the list above
+  .Call(useDynamicSymbols, FALSE)
 
   assign(".rJava.base.path", paste(libname, pkgname, sep=.Platform$file.sep), .env)
   assign(".jzeroRef", .Call(RgetNullReference), .env)
