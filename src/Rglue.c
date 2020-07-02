@@ -357,7 +357,8 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, sig_buffer_t *sig, i
 	addtmpo(tmpo, jpar[jvpos++].l=newBooleanArrayI(env, LOGICAL(e),LENGTH(e)));
       }
     } else if (TYPEOF(e)==VECSXP || TYPEOF(e)==S4SXP) {
-      _dbg(rjprintf(" generic vector of length %d\n", LENGTH(e)));
+      if (TYPEOF(e) == VECSXP)
+	_dbg(rjprintf(" generic vector of length %d\n", LENGTH(e)));
       if (IS_JOBJREF(e)) {
 	jobject o=(jobject)0;
 	const char *jc=0;
