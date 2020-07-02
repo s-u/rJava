@@ -2,6 +2,12 @@
 --------------------------
 
 0.9-13	(under development)
+    o	increase default JVM stack size by adding -Xss2m to JVM parameters
+	unless -Xss is already specified in .jinit(). This is an
+	attempt to address stack overflow problems in Java 11 and higher
+	on some platforms which appear to use very small stack
+	sizes. (#224)
+
     o	add missing C entry points to the symbol cache. (#221)
 
     o	disable dynamic symbol lookup to catch any (inadvertent) use of
