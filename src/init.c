@@ -98,7 +98,7 @@ static void JNICALL exit_hook(int status) {
      JVM version 10 and above on Linux; only used with JVM_STACK_WORKAROUND */
 static int initJVM(const char *user_classpath, int opts, char **optv, int hooks,
                    int disableGuardPages) {
-  int total_num_properties, propNum = 0;
+  int total_num_properties, propNum = 0, add_Xss = 1;
   jint res;
   char *classpath;
   
@@ -146,9 +146,15 @@ static int initJVM(const char *user_classpath, int opts, char **optv, int hooks,
   /* vm_options[propNum++].optionString = "-verbose:class,jni"; */
   
   if (optv) {
-    int i=0;
-    while (i<opts) {
-      if (optv[i]) vm_options[propNum++].optionString = optv[i];
+    int i = 0;
+    while (i < opts) {
+      if (optv[i]) {
+	vm_options[propNum++].optionString = optv[i];
+	/* we look for -Xss since we want to raise it to avoid overflows,
+	   but not if the user already supplied it */
+	if (!strncmp(optv[i], "-Xss", 4))
+	  add_Xss = 0;
+      }
       i++;
     }
   }
@@ -164,6 +170,9 @@ static int initJVM(const char *user_classpath, int opts, char **optv, int hooks,
     vm_options[propNum++].optionString = "-XX:+UnlockExperimentalVMOptions";
     vm_options[propNum++].optionString = "-XX:+DisablePrimordialThreadGuardPages";
   }
+  if (add_Xss)
+    vm_options[propNum++].optionString = "-Xss2m";
+
   vm_args.nOptions = propNum;
 
   /* Create the Java VM */
