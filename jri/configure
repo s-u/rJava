@@ -3680,7 +3680,10 @@ $as_echo "$ac_res" >&6; }
 if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
   JNI_H="${JAVA_HOME}/../include"
 else
-  as_fn_error $? "jni headers not found. Please make sure you have a proper JDK installed." "$LINENO" 5
+  as_fn_error $? "Cannot compile JNI programs, check jri/config.log for details.
+Please make sure you have a proper JDK installed.
+Use --disable-jri when you install rJava and don't need JRI.
+" "$LINENO" 5
 
 fi
 

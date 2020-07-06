@@ -238,7 +238,10 @@ AC_CHECK_FILE(${JAVA_HOME}/include/jni.h,
   [JNI_H="${JAVA_HOME}"],
   [AC_CHECK_FILE(${JAVA_HOME}/../include/jni.h,
    [JNI_H="${JAVA_HOME}/../include"],
-   [AC_MSG_ERROR([jni headers not found. Please make sure you have a proper JDK installed.])
+   [AC_MSG_ERROR([Cannot compile JNI programs, check jri/config.log for details.
+Please make sure you have a proper JDK installed.
+Use --disable-jri when you install rJava and don't need JRI.
+])
   ])
  ])
 ])

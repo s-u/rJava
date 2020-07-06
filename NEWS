@@ -1,12 +1,15 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.9-13	(under development)
+0.9-13	2020-07-06
     o	increase default JVM stack size by adding -Xss2m to JVM parameters
 	unless -Xss is already specified in .jinit(). This is an
 	attempt to address stack overflow problems in Java 11 and higher
 	on some platforms which appear to use very small stack
 	sizes. (#224)
+
+    o	re-define EXTPTR_xx macros to avoid ABI breakage between R 4.0.0
+	and later R 4.0.x versions.
 
     o	add missing C entry points to the symbol cache. (#221)
 
