@@ -5,6 +5,22 @@
 #include <R_ext/Parse.h>
 #include <R_ext/Print.h>
 
+/* R 4.0.1 broke EXTPTR_PTR ABI so re-map it to safety at
+   the small expense of speed */
+#ifdef  EXTPTR_PTR
+#undef  EXTPTR_PTR
+#endif
+#define EXTPTR_PTR(X) R_ExternalPtrAddr(X)
+/* PROT/TAG are safe so far, but just to make sure ... */
+#ifdef  EXTPTR_PROT
+#undef  EXTPTR_PROT
+#endif
+#define EXTPTR_PROT(X) R_ExternalPtrProtected(X)
+#ifdef  EXTPTR_TAG
+#undef  EXTPTR_TAG
+#endif
+#define EXTPTR_TAG(X) R_ExternalPtrTag(X)
+
 #include <stdarg.h>
 
 /* max supported # of parameters to Java methdos */
@@ -163,7 +179,7 @@ HIDE void deserializeSEXP(SEXP o) {
 	    if (go) {
 	      _dbg(rjprintf(" - succeeded: %p\n", go));
 	      /* set the deserialized object */
-	      EXTPTR_PTR(o) = (SEXP) go;
+	      R_SetExternalPtrAddr(o, go);
 	      /* Note: currently we don't remove the serialized content, because it was created explicitly using .jcache to allow repeated saving. Once this is handled by a hook, we shall remove it. However, to assure compatibility TAG is always NULL for now, so we do clear the cache if TAG is non-null for future use. */
 	      if (EXTPTR_TAG(o) != R_NilValue) {
 		/* remove the serialized raw vector */
