@@ -3452,7 +3452,7 @@ $as_echo_n "checking Java compatibility version (integer)... " >&6; }
    if echo $JVER | grep '^[0-9]\.' >/dev/null; then ## old style 1.X
       JMVER=`echo $JVER | sed 's:..::' | sed 's:\..*::'`
    else ## new stype omitting the major version
-      JMVER=`echo $JVER | sed 's:\..*::'`
+      JMVER=`echo $JVER | sed 's:\..*::' | cut -d- -f1`
    fi
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $JMVER" >&5
 $as_echo "$JMVER" >&6; }
