@@ -122,6 +122,8 @@ else
    else ## new stype omitting the major version
       JMVER=`echo $JVER | sed 's:\..*::'`
    fi
+   ## strip -.* for versions like 13-ea
+   JMVER=`echo $JMVER | sed 's:-.*::'`
    AC_MSG_RESULT([$JMVER])
 fi
 
