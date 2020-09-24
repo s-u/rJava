@@ -3449,8 +3449,8 @@ else
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking Java compatibility version (integer)" >&5
 $as_echo_n "checking Java compatibility version (integer)... " >&6; }
    ## .. Oracle decided to completely screw up Java version so have to try extract something meaningful ..
-   if echo $JVER | grep '^[0-9]\.' >/dev/null; then ## old style 1.X
-      JMVER=`echo $JVER | sed 's:..::' | sed 's:\..*::'`
+   if echo $JVER | grep '^1\.' >/dev/null; then ## old style 1.X
+      JMVER=`echo $JVER | sed 's:^..::' | sed 's:\..*::'`
    else ## new stype omitting the major version
       JMVER=`echo $JVER | sed 's:\..*::'`
    fi

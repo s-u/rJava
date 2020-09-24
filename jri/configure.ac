@@ -117,8 +117,8 @@ if test -z "$JVER"; then
 else
    AC_MSG_CHECKING([Java compatibility version (integer)])
    ## .. Oracle decided to completely screw up Java version so have to try extract something meaningful ..
-   if echo $JVER | grep '^[[0-9]]\.' >/dev/null; then ## old style 1.X
-      JMVER=`echo $JVER | sed 's:..::' | sed 's:\..*::'`
+   if echo $JVER | grep '^1\.' >/dev/null; then ## old style 1.X
+      JMVER=`echo $JVER | sed 's:^..::' | sed 's:\..*::'`
    else ## new stype omitting the major version
       JMVER=`echo $JVER | sed 's:\..*::'`
    fi
