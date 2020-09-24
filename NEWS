@@ -2,7 +2,9 @@
 --------------------------
 
 0.9-14	(under development)
-    o	JRI: fixed detection of the major Java version
+    o	JRI: fixed detection of the major Java version (#239)
+
+    o	JRI: support Java major versions with suffixes like 13-ea (#236)
 
 
 0.9-13	2020-07-06
