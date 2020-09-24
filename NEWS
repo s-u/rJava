@@ -1,6 +1,10 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+0.9-14	(under development)
+    o	JRI: fixed detection of the major Java version
+
+
 0.9-13	2020-07-06
     o	increase default JVM stack size by adding -Xss2m to JVM parameters
 	unless -Xss is already specified in .jinit(). This is an
