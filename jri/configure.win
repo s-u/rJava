@@ -40,7 +40,15 @@ if [ -e "$JAVA_HOME/bin/javah.exe" ]; then ## does the JDK have javah?
     echo 'JAVAH=$(JAVAHOME)/bin/javah' >> src/Makefile.wconf
 else ## else we have to create headers during the compilation
     echo 'JDK has no javah.exe - using javac -h . instead'
-    echo 'JFLAGS=-h .' >> src/Makefile.wconf
+    ## if this is at least 1.8 we can set source/target
+    ## it is mandatory for 14 (and may be earlier) due to yield
+    tgt=`"${JAVA_HOME}/bin/java" -cp tools getsp -minver 8`
+    echo "Is the Java version at least 1.8 ... $tgt"
+    if [ x$tgt = xyes ]; then
+	echo 'JFLAGS=-source 1.8 -target 1.8 -h .' >> src/Makefile.wconf
+    else
+	echo 'JFLAGS=-h .' >> src/Makefile.wconf
+    fi
 fi
 
 echo "Creating Makefiles ..."
