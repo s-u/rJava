@@ -6,6 +6,9 @@
 
     o	JRI: support Java major versions with suffixes like 13-ea (#236)
 
+    o	JRI: Windows: flags sources as 1.8 to support Java 14 and
+	higher where changes in the language break old code (#241)
+
 
 0.9-13	2020-07-06
     o	increase default JVM stack size by adding -Xss2m to JVM parameters
