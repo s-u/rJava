@@ -26,6 +26,25 @@ public class getsp {
 		}
 		if (r!=null) System.out.println(r);
 	    } else
+	    if (args[0].equals("-minver")) {
+		boolean meets = false;
+		String jv = System.getProperty("java.version");
+		if (jv.startsWith("1."))
+		    jv = jv.substring(2);
+		try {
+		    int i = 0;
+		    while (i < jv.length() && jv.charAt(i) >= '0' && jv.charAt(i) < '9')
+			i++;
+		    jv = jv.substring(0, i);
+		    if (args.length > 1) {
+			int req = Integer.parseInt(args[1]);
+			int cv  = Integer.parseInt(jv);
+			meets = cv >= req;
+		    }
+		} catch (Exception e) {
+		}
+		System.out.println(meets ? "yes" : "no");
+	    } else
 		System.out.println(System.getProperty(args[0]));
 	}
     }
