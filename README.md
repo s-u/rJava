@@ -19,10 +19,13 @@ When checking out the sources, you *must* use
 
     git clone --recursive https://github.com/s-u/rJava.git
 
-since rJava includes REngine as a submodule. If you want to create a
-package from the source checkout, you *must* use `sh mkdist` to do so
+since rJava includes REngine as a submodule. To build this package so that 
+it can be installed, you *must* use `sh mkdist` to do so
 since the checkout is not the actual R package but a source to
-generate one (which involves compilation of Java code).
+generate one (which involves compilation of Java code). Note this package 
+is not build with the normal unix sequence of ./configure, make. Successful 
+building produces an R source package as a .tar.gz one level above the source 
+directory. 
 
 ### Bug reports
 
