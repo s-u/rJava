@@ -3582,8 +3582,10 @@ $as_echo "in ${JAVA_HOME}" >&6; }
 
     case "${host_os}" in
       darwin*)
-        JAVA_LIBS="-framework JavaVM"
-        JAVA_LD_PATH=
+        if  -z "${JAVA_LIBS}" ; then
+          JAVA_LIBS="-framework JavaVM"
+          JAVA_LD_PATH=
+        fi
         ;;
       *)
 
@@ -3839,7 +3841,7 @@ JNILD=`"${RBIN}" CMD config SHLIB_LDFLAGS`" ${JAVA_LIBS}"
 case "${host_os}" in
   darwin*)
     JNISO=.jnilib
-    JNILD="-dynamiclib -framework JavaVM"
+    JNILD="-dynamiclib $JNILD"
     CPICF=-fno-common
 
     if test -e "${R_HOME}/lib/i386" -a -e "${R_HOME}/lib/ppc" -a -e "${R_HOME}/lib/libR.dylib"; then
