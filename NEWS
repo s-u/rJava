@@ -9,6 +9,11 @@
     o	JRI: Windows: flags sources as 1.8 to support Java 14 and
 	higher where changes in the language break old code (#241)
 
+    o	Fixed compilation of JRI on macOS to not require the JavaVM
+	framework, but rely on flags from R CMD javareconf. This avoids
+	breakage on macOS 11 which no longer provides JavaVM in the SDK.
+	(#248)
+
 
 0.9-13	2020-07-06
     o	increase default JVM stack size by adding -Xss2m to JVM parameters
