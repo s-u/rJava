@@ -1,6 +1,6 @@
 AC_INIT([JRI],[0.3],[simon.urbanek@r-project.org])
 AC_CONFIG_SRCDIR([src/jri.h])
-AC_CONFIG_HEADER([src/config.h])
+AC_CONFIG_HEADERS([src/config.h])
 AC_CONFIG_AUX_DIR([tools])
 
 AC_CANONICAL_BUILD
@@ -215,8 +215,10 @@ if test ${acx_java_works} = yes; then
 
     case "${host_os}" in
       darwin*)
-        JAVA_LIBS="-framework JavaVM"
-        JAVA_LD_PATH=
+        if [ -z "${JAVA_LIBS}" ]; then
+          JAVA_LIBS="-framework JavaVM"
+          JAVA_LD_PATH=
+        fi
         ;;
       *)
         RUN_JAVA(JAVA_LIBS, [-classpath ${getsp_cp} getsp -libs])
@@ -319,7 +321,7 @@ JNILD=`"${RBIN}" CMD config SHLIB_LDFLAGS`" ${JAVA_LIBS}"
 case "${host_os}" in
   darwin*)
     JNISO=.jnilib
-    JNILD="-dynamiclib -framework JavaVM"
+    JNILD="-dynamiclib $JNILD"
     CPICF=-fno-common
 
     if test -e "${R_HOME}/lib/i386" -a -e "${R_HOME}/lib/ppc" -a -e "${R_HOME}/lib/libR.dylib"; then
