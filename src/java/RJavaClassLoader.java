@@ -201,23 +201,37 @@ public class RJavaClassLoader extends URLClassLoader {
 	// {{{ constructor
 	/**
 	 * Constructor. The first time an RJavaClassLoader is created, it is
-	 * cached as the primary loader. 
+	 * cached as the primary loader.
 	 *
 	 * @param path path of the rJava package
 	 * @param libpath lib sub directory of the rJava package
 	 */
 	public RJavaClassLoader(String path, String libpath) {
-		super(new URL[] {});
+		this(path, libpath, null);
+	}
+
+	/**
+	 * Constructor. The first time an RJavaClassLoader is created, it is
+	 * cached as the primary loader.
+	 *
+	 * @param path path of the rJava package
+	 * @param libpath lib sub directory of the rJava package
+	 * @param parent parent loader if we should fall back upstream or NULL
+	 */
+	public RJavaClassLoader(String path, String libpath, RJavaClassLoader parent) {
+		super(new URL[] {}, parent);
+
 		// respect rJava.debug level
 		String rjd = System.getProperty("rJava.debug");
 		if (rjd != null && rjd.length() > 0 && !rjd.equals("0")) verbose = true;
-		if (verbose) System.out.println("RJavaClassLoader(\""+path+"\",\""+libpath+"\")");
+		if (verbose) System.out.println("RJavaClassLoader(\""+path+"\", \""+libpath+"\", "+ ((parent == null) ? "no parent" : parent) + ")");
 		if (primaryLoader==null) {
 			primaryLoader = this;
 			if (verbose) System.out.println(" - primary loader");
 		} else {
 			if (verbose) System.out.println(" - NOT primrary (this="+this+", primary="+primaryLoader+")");
 		}
+
 		libMap = new HashMap/*<String,UnixFile>*/();
 		
 		classPath = new Vector/*<UnixFile>*/();
@@ -378,8 +392,8 @@ public class RJavaClassLoader extends URLClassLoader {
 		    throw (new ClassNotFoundException("Class not found - candidate class binary found but could not be loaded", defineException));
 
 		// giving up
-		if( verbose ) System.out.println("    >> ClassNotFoundException ");
 		if (cl == null) {
+			if( verbose ) System.out.println("    >> ClassNotFoundException ");
 			throw (new ClassNotFoundException());
 		}
 		return cl;
