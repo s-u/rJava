@@ -78,13 +78,13 @@
 ### reflected call - this high-level call uses reflection to call a method
 ### it is much less efficient than .jcall but doesn't require return type
 ### specification or exact matching of parameter types
-.jrcall <- function(o, method, ..., simplify=TRUE) {
+.jrcall <- function(o, method, ..., simplify=TRUE, class.loader=.rJava.class.loader) {
   if (!is.character(method) | length(method) != 1)
     stop("Invalid method name - must be exactly one character string.")
   if (inherits(o, "jobjRef") || inherits(o, "jarrayRef"))
     cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
   else
-    cl <- .jfindClass(o)
+    cl <- .jfindClass(o, class.loader=class.loader)
   if (is.null(cl))
     stop("Cannot find class of the object.")
   
@@ -125,7 +125,7 @@
 ### on the classes of the ... it does not require exact match between 
 ### the objects and the constructor parameters
 ### This is to .jnew what .jrcall is to .jcall
-.J <- function(class, ...) {
+.J <- function(class, ..., class.loader=.rJava.class.loader) {
   # allow non-JNI specifiation
   class <- gsub("\\.","/",class) 
   
@@ -137,7 +137,7 @@
 
   # use RJavaTools to find create the object
   o <- .jcall("RJavaTools", "Ljava/lang/Object;", 
-  	"newInstance", .jfindClass(class), 
+        "newInstance", .jfindClass(class, class.loader=class.loader),
   	.jarray(p,"java/lang/Object", dispatch = FALSE ), 
   	.jarray(pc,"java/lang/Class", dispatch = FALSE ), 
   	evalString = FALSE, evalArray = FALSE, use.true.class = TRUE )
@@ -187,8 +187,8 @@
 #! }
 
 ### list the fields of a class or object
-.jfields <- function(o, name=NULL, as.obj=FALSE) {
-  cl <- if (is(o, "jobjRef")) .jcall(o, "Ljava/lang/Class;", "getClass") else if (is(o, "jclassName")) o@jobj else .jfindClass(as.character(o))
+.jfields <- function(o, name=NULL, as.obj=FALSE, class.loader=.rJava.class.loader) {
+  cl <- if (is(o, "jobjRef")) .jcall(o, "Ljava/lang/Class;", "getClass") else if (is(o, "jclassName")) o@jobj else .jfindClass(as.character(o), class.loader=class.loader)
   f <- .jcall(cl, "[Ljava/lang/reflect/Field;", "getFields")
   if (length(name)) {
      n <- sapply(f, function(o) .jcall(o, "S", "getName"))
@@ -220,20 +220,20 @@ hasClass <- function( x, name){
 }
 
 ### the following ones are needed for the static version of $
-classHasField <- function(x, name, static=FALSE) {
-	if (is(x, "jclassName")) x <- x@jobj else if (!is(x, "jobjRef")) x <- .jfindClass(as.character(x))
+classHasField <- function(x, name, static=FALSE, class.loader=.rJava.class.loader) {
+	if (is(x, "jclassName")) x <- x@jobj else if (!is(x, "jobjRef")) x <- .jfindClass(as.character(x), class.loader=class.loader)
 	._must_be_character_of_length_one(name)
 	.jcall("RJavaTools", "Z", "classHasField", x, name, static)
 }
 
-classHasMethod <- function(x, name, static=FALSE) {
-	if (is(x, "jclassName")) x <- x@jobj else if (!is(x, "jobjRef")) x <- .jfindClass(as.character(x))
+classHasMethod <- function(x, name, static=FALSE, class.loader=.rJava.class.loader) {
+	if (is(x, "jclassName")) x <- x@jobj else if (!is(x, "jobjRef")) x <- .jfindClass(as.character(x), class.loader=class.loader)
 	._must_be_character_of_length_one(name)
 	.jcall("RJavaTools", "Z", "classHasMethod", x, name, static)
 }
 
-classHasClass <- function(x, name, static=FALSE) {
-	if (is(x, "jclassName")) x <- x@jobj else if (!is(x, "jobjRef")) x <- .jfindClass(as.character(x))
+classHasClass <- function(x, name, static=FALSE, class.loader=.rJava.class.loader) {
+	if (is(x, "jclassName")) x <- x@jobj else if (!is(x, "jobjRef")) x <- .jfindClass(as.character(x), class.loader=class.loader)
 	._must_be_character_of_length_one(name)
 	.jcall("RJavaTools", "Z", "classHasClass", x, name, static)
 }

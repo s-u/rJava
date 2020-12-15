@@ -312,14 +312,14 @@ is.jnull <- function(x) {
 
 # return class object for a given class name; silent determines whether
 # an error should be thrown on failure (FALSE) or just null reference (TRUE)
-.jfindClass <- function(cl, silent=FALSE) {
+.jfindClass <- function(cl, silent=FALSE, class.loader=.rJava.class.loader) {
   if (inherits(cl, "jclassName")) return(cl@jobj)
   if (!is.character(cl) || length(cl)!=1)
     stop("invalid class name")
   cl<-gsub("/",".",cl)
   a <- NULL
-  if (!is.jnull(.rJava.class.loader))
-    try(a <- .jcall("java/lang/Class","Ljava/lang/Class;","forName",cl,TRUE,.jcast(.rJava.class.loader,"java.lang.ClassLoader"), check=FALSE))
+  if (!is.jnull(class.loader))
+    try(a <- .jcall("java/lang/Class","Ljava/lang/Class;","forName",cl,TRUE,.jcast(class.loader, "java.lang.ClassLoader"), check=FALSE))
   else
     try(a <- .jcall("java/lang/Class","Ljava/lang/Class;","forName",cl,check=FALSE))
   # this is really .jcheck but we don't want it to appear on the call stack
@@ -330,10 +330,10 @@ is.jnull <- function(x) {
 
 # Java-side inheritance check; NULL inherits from any class, because 
 # it can be cast to any class type; cl can be a class name or a jobjRef to a class object
-.jinherits <- function(o, cl) {
+.jinherits <- function(o, cl, class.loader=.rJava.class.loader) {
   if (is.jnull(o)) return(TRUE)
   if (!is(o, "jobjRef")) stop("invalid object")
-  if (is.character(cl)) cl <- .jfindClass(cl) else if (inherits(cl, "jclassName")) cl <- cl@jobj
+  if (is.character(cl)) cl <- .jfindClass(cl, class.loader) else if (inherits(cl, "jclassName")) cl <- cl@jobj
   if (!is(cl, "jobjRef")) stop("invalid class object")  
   ocl <- .jclassRef(o)
   .Call(RisAssignableFrom, ocl@jobj, cl@jobj)

@@ -1,11 +1,12 @@
 setClass("jclassName", representation(name="character", jobj="jobjRef"))
-jclassName <- function(class){
+
+jclassName <- function(class, class.loader=.rJava.class.loader) {
 	if( is( class, "jobjRef" ) && .jinherits(class, "java/lang/Class" ) ){
 		jobj <- class
 		name <- .jcall( class, "Ljava/lang/String;", "getName", evalString = TRUE )
 	} else{
 		name <- gsub("/",".",as.character(class))
-		jobj <- .jfindClass(as.character(class))
+		jobj <- .jfindClass(as.character(class), class.loader=class.loader)
 	}
 	new("jclassName", name=name, jobj=jobj)
 }
@@ -32,4 +33,4 @@ setMethod("show", c(object="jclassName"), function(object) invisible(show(paste(
 setMethod("as.character", c(x="jclassName"), function(x, ...) x@name)
 
 ## the magic `J'
-J<-function(class, method, ...) if (nargs() == 1L && missing(method)) jclassName(class) else .jrcall(class, method, ...)
+J<-function(class, method, ..., class.loader=.rJava.class.loader) if (nargs() == 1L && missing(method)) jclassName(class, class.loader=class.loader) else .jrcall(class, method, ..., class.loader=class.loader)
