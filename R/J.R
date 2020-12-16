@@ -18,9 +18,9 @@ setMethod("$", c(x="jclassName"), function(x, name) {
 	if( name == "class" ){
 		x@jobj
 	} else if (classHasField(x@jobj, name, TRUE)){
-		.jfield(x@name, , name) 
+		.jfield(x, , name)
 	} else if (classHasMethod(x@jobj, name, TRUE)){
-		function(...) .jrcall(x@name, name, ...) 
+		function(...) .jrcall(x, name, ...)
 	} else if( classHasClass(x@jobj, name, FALSE) ){
 		inner.cl <- .jcall( "RJavaTools", "Ljava/lang/Class;", "getClass", x@jobj, name, FALSE ) 
 		new("jclassName", name=.jcall(inner.cl, "S", "getName"), jobj=inner.cl)
@@ -28,7 +28,7 @@ setMethod("$", c(x="jclassName"), function(x, name) {
 		stop("no static field, method or inner class called `", name, "' in `", x@name, "'")
 	}
 })
-setMethod("$<-", c(x="jclassName"), function(x, name, value) .jfield(x@name, name) <- value)
+setMethod("$<-", c(x="jclassName"), function(x, name, value) .jfield(x, name) <- value)
 setMethod("show", c(object="jclassName"), function(object) invisible(show(paste("Java-Class-Name:",object@name))))
 setMethod("as.character", c(x="jclassName"), function(x, ...) x@name)
 

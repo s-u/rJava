@@ -68,6 +68,7 @@
   isTRUE(attr(x, "primitive"))
 
 ._java_class <- function( x ){
+  ## FIXME: not sure how to pass though the class loader here - only affects NULL objects
   if (is.jnull(x)) { if (is(x,"jobjRef")) .jfindClass(x@jclass) else .jclassObject } else {
     if (._isPrimitiveReference(x)) .jfield(x, "Ljava/lang/Class;", "TYPE") else .jcall(x, "Ljava/lang/Class;", "getClass")
   }
@@ -81,11 +82,13 @@
 .jrcall <- function(o, method, ..., simplify=TRUE, class.loader=.rJava.class.loader) {
   if (!is.character(method) | length(method) != 1)
     stop("Invalid method name - must be exactly one character string.")
-  if (inherits(o, "jobjRef") || inherits(o, "jarrayRef"))
+  if (is(o, "jclassName"))
+    cl <- o@jobj
+  else if (is(o, "jobjRef"))
     cl <- .jcall(o, "Ljava/lang/Class;", "getClass")
   else
     cl <- .jfindClass(o, class.loader=class.loader)
-  if (is.null(cl))
+  if (is.jnull(cl))
     stop("Cannot find class of the object.")
   
   # p is a list of parameters that are formed solely by valid Java objects

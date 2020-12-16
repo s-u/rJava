@@ -384,5 +384,4 @@ is.jnull <- function(x) {
 }
 
 ".jfield<-" <- function(o, name, value)
-  .Call(RsetField, o, name, value)
-
+    .Call(RsetField, o, name, value)
