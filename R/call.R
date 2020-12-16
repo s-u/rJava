@@ -333,7 +333,7 @@ is.jnull <- function(x) {
 .jinherits <- function(o, cl, class.loader=.rJava.class.loader) {
   if (is.jnull(o)) return(TRUE)
   if (!is(o, "jobjRef")) stop("invalid object")
-  if (is.character(cl)) cl <- .jfindClass(cl, class.loader) else if (inherits(cl, "jclassName")) cl <- cl@jobj
+  if (is.character(cl)) cl <- .jfindClass(cl, class.loader=class.loader) else if (inherits(cl, "jclassName")) cl <- cl@jobj
   if (!is(cl, "jobjRef")) stop("invalid class object")  
   ocl <- .jclassRef(o)
   .Call(RisAssignableFrom, ocl@jobj, cl@jobj)
