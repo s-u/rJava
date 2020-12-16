@@ -12,7 +12,7 @@ jclassName <- function(class, class.loader=.rJava.class.loader) {
 }
 
 setGeneric("new")
-setMethod("new", signature(Class="jclassName"), function(Class, ...) .J(Class@name, ...))
+setMethod("new", signature(Class="jclassName"), function(Class, ...) .J(Class, ...))
 
 setMethod("$", c(x="jclassName"), function(x, name) {
 	if( name == "class" ){
@@ -33,4 +33,4 @@ setMethod("show", c(object="jclassName"), function(object) invisible(show(paste(
 setMethod("as.character", c(x="jclassName"), function(x, ...) x@name)
 
 ## the magic `J'
-J<-function(class, method, ..., class.loader=.rJava.class.loader) if (nargs() == 1L && missing(method)) jclassName(class, class.loader=class.loader) else .jrcall(class, method, ..., class.loader=class.loader)
+J<-function(class, method, ..., class.loader=.rJava.class.loader) if (nargs() <= 2L && missing(method)) jclassName(class, class.loader=class.loader) else .jrcall(class, method, ..., class.loader=class.loader)

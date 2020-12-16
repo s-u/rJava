@@ -126,9 +126,15 @@
 ### the objects and the constructor parameters
 ### This is to .jnew what .jrcall is to .jcall
 .J <- function(class, ..., class.loader=.rJava.class.loader) {
-  # allow non-JNI specifiation
-  class <- gsub("\\.","/",class) 
-  
+    ## if it is a name, load the class, otherwise assume we have the object
+    if (is.character(class)) {
+        ## allow non-JNI specifiation
+        class <- gsub("\\.","/",class)
+        class <- .jfindClass(class, class.loader=class.loader)
+    } else if (is(class, "jclassName")) {
+        class <- class@jobj
+    }
+
   # p is a list of parameters that are formed solely by valid Java objects
   p <- ._java_valid_objects_list(...)
   
@@ -137,7 +143,7 @@
 
   # use RJavaTools to find create the object
   o <- .jcall("RJavaTools", "Ljava/lang/Object;", 
-        "newInstance", .jfindClass(class, class.loader=class.loader),
+        "newInstance", class,
   	.jarray(p,"java/lang/Object", dispatch = FALSE ), 
   	.jarray(pc,"java/lang/Class", dispatch = FALSE ), 
   	evalString = FALSE, evalArray = FALSE, use.true.class = TRUE )
