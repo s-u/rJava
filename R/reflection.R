@@ -4,8 +4,8 @@
 ### reflection tools (inofficial so far, because it returns strings
 ### instead of the reflection objects - it's useful for quick checks,
 ### though)
-.jmethods <- function(o, name=NULL, as.obj=FALSE) {
-  cl <- if (is(o, "jobjRef")) .jcall(o, "Ljava/lang/Class;", "getClass") else if (is(o, "jclassName")) o@jobj else .jfindClass(as.character(o))
+.jmethods <- function(o, name=NULL, as.obj=FALSE, class.loader=.rJava.class.loader) {
+  cl <- if (is(o, "jobjRef")) .jcall(o, "Ljava/lang/Class;", "getClass") else if (is(o, "jclassName")) o@jobj else .jfindClass(as.character(o), class.loader=class.loader)
   ms<-.jcall(cl,"[Ljava/lang/reflect/Method;","getMethods")
   if (length(name)) {
      n <- sapply(ms, function(o) .jcall(o, "S", "getName"))
@@ -14,8 +14,8 @@
   if (isTRUE(as.obj)) ms else unlist(lapply(ms,function(x) .jcall(x,"S","toString")))
 }
 
-.jconstructors <- function(o, as.obj=FALSE) {
-  cl <- if (is(o, "jobjRef")) .jcall(o, "Ljava/lang/Class;", "getClass") else if (is(o, "jclassName")) o@jobj else .jfindClass(as.character(o))
+.jconstructors <- function(o, as.obj=FALSE, class.loader=.rJava.class.loader) {
+  cl <- if (is(o, "jobjRef")) .jcall(o, "Ljava/lang/Class;", "getClass") else if (is(o, "jclassName")) o@jobj else .jfindClass(as.character(o), class.loader=class.loader)
   cs<-.jcall(cl,"[Ljava/lang/reflect/Constructor;","getConstructors")
   if (isTRUE(as.obj)) return(cs)
   unlist(lapply(cs,function(x) .jcall(x,"S","toString")))
