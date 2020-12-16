@@ -7,7 +7,7 @@ High level API for accessing Java
 \code{J} creates a Java class reference or calls a Java method
 }
 \usage{
-J(class, method, ...)
+J(class, method, ..., class.loader=.rJava.class.loader)
 }
 \arguments{
   \item{class}{
@@ -23,6 +23,8 @@ J(class, method, ...)
     optional parameters that will be passed to the method (if the
     \code{method} argument is present)
   }
+  \item{class.loader}{optional, custom loader to use if a class look-up
+    is necessary (i.e., if \code{class} is a string)}
 }
 \details{
 \code{J} is the high-level access to Java.
