@@ -14,6 +14,9 @@ jclassName <- function(class, class.loader=.rJava.class.loader) {
 setGeneric("new")
 setMethod("new", signature(Class="jclassName"), function(Class, ...) .J(Class, ...))
 
+## FIXME: this is not quite right - it looks at static method/fields only,
+## but that prevents things like x = J("foo"); x$equals(x) from working
+## while x$class$equals(x) works.
 setMethod("$", c(x="jclassName"), function(x, name) {
 	if( name == "class" ){
 		x@jobj
