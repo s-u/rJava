@@ -219,7 +219,7 @@ public class RJavaClassLoader extends URLClassLoader {
 	 * @param parent parent loader if we should fall back upstream or NULL
 	 */
 	public RJavaClassLoader(String path, String libpath, RJavaClassLoader parent) {
-		super(new URL[] {}, parent);
+		super(new URL[] {}, (parent == null) ? ClassLoader.getSystemClassLoader() : parent);
 
 		// respect rJava.debug level
 		String rjd = System.getProperty("rJava.debug");
