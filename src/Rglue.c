@@ -375,6 +375,10 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, sig_buffer_t *sig, i
     } else if (TYPEOF(e)==VECSXP || TYPEOF(e)==S4SXP) {
       if (TYPEOF(e) == VECSXP)
 	_dbg(rjprintf(" generic vector of length %d\n", LENGTH(e)));
+      if (inherits(e, "jclassName")) {
+	_dbg(rjprintf(" jclassName, replacing with embedded class jobjRef"));
+	e = GET_SLOT(e, install("jobj"));
+      }
       if (IS_JOBJREF(e)) {
 	jobject o=(jobject)0;
 	const char *jc=0;
