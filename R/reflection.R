@@ -42,7 +42,8 @@
 # this is used for internal purposes only, in particular 
 # it does not dispatch arrays to jrectRef
 ._java_valid_object <- function(a) {
-  if (is(a, "jobjRef")) a 
+  if (is(a, "jobjRef")) a
+  else if (is(a, "jclassName")) a@jobj
   else if (is.null(a)) .jnull() else {
     cm <- match(class(a)[1], names(.class.to.jclass))
     if (!any(is.na(cm))) { 
