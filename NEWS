@@ -1,7 +1,7 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-0.9-14	(under development)
+0.9-14	2021-02-04
     o	JRI: fixed detection of the major Java version (#239)
 
     o	JRI: support Java major versions with suffixes like 13-ea (#236)
