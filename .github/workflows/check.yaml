@@ -48,6 +48,9 @@ jobs:
         if: runner.os == 'macOS'
         run: "bash -c 'NOAWT=1 R CMD check --no-manual ../rJava_*.tar.gz'"
 
+      - name: Show install log
+        run: "bash -c 'if [ -e rJava.Rcheck/00install.out ]; then cat rJava.Rcheck/00install.out; fi'"
+
       - name: Upload check results
         if: failure()
         uses: actions/upload-artifact@master
