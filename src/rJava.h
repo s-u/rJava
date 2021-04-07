@@ -1,12 +1,12 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x00090e /* rJava v0.9-14 */
+#define RJAVA_VER 0x010001 /* rJava v1.0-1 */
 
 /* important changes between versions:
    3.0  - adds compiler
    2.0
-   1.0
+   1.0  - custom package class loaders
    0.9  - rectangular arrays, flattening, import
           (really introduced in later 0.8 versions but they broke
 	   the API compatibility so 0.9 attempts to fix that)
