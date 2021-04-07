@@ -12,9 +12,8 @@
 
 int RJava_request_lock();
 int RJava_clear_lock();
-/* void RJava_request_callback(callbackfn *fn, void *data); */
+/* int RJava_request_callback(callbackfn *fn, void *data); */
 void RJava_setup(int _in, int _out);
 void RJava_init_ctrl();
 
 #endif
-
