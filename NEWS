@@ -1,6 +1,24 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+1.0-1	(under development)
+    o	New feature: support for custom class loaders. It is strongly
+	recommended that package authors that use rJava in their
+	package use this new feature since it avoids conflicts of
+	classes in packages. (#250)
+
+	The main mechanism is the own.loader=TRUE option in
+	.jpackage() which instantiates a new, clean class loader for a
+	package such that it is not affected by subsequent class path
+	changes by the user or other packages. In order to use it, the
+	package has to use class.loader=.rJava.class.loader in calls
+	to functions that need to load classes such as .jnew() or J().
+	This can also be done automatically via something like
+	J <- function(...) rJava::J(..., class.loader=.rJava.class.loader)
+	in the package without need to change every call to J()
+	separately. See the documentation for .jpackage() for details.
+
+
 0.9-14	2021-02-04
     o	JRI: fixed detection of the major Java version (#239)
 

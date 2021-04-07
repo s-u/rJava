@@ -31,9 +31,9 @@
   }
   \item{class.loader}{optional class loader to force for loading the
     class. If not set, the rJava class loader is used first. The default
-    Java class loader is always used as a last resort. This is for
-    expert use only! If you set the class loader, the class loading
-    behavior changes - use only in very special circumstances.}
+    Java class loader is always used as a last resort. Set to
+    \code{.rJava.class.loader} inside a package if it uses its own class
+    loader (see \code{\link{.jpackage}} for details).}
 }
 \value{
   Returns the reference (\code{jobjRef}) to the newly created object or

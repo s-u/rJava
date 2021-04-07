@@ -13,9 +13,9 @@
   \code{.jfields} returns a character vector with all fileds (aka attributes) for a given class or object.
 }
 \usage{
-.jconstructors(o, as.obj = FALSE)
-.jmethods(o, name = NULL, as.obj = FALSE)
-.jfields(o, name = NULL, as.obj = FALSE)
+.jconstructors(o, as.obj = FALSE, class.loader=.rJava.class.loader)
+.jmethods(o, name = NULL, as.obj = FALSE, class.loader=.rJava.class.loader)
+.jfields(o, name = NULL, as.obj = FALSE, class.loader=.rJava.class.loader)
 }
 \arguments{
   \item{o}{Name of a class (either notation is fine) or an object whose
@@ -24,6 +24,8 @@
   \item{as.obj}{if \code{TRUE} then a list of Java objects is
     returned, otherwise a character vector (obtained by calling
     \code{toString()} on each entry).}
+  \item{class.loader}{optional, class loader to use for class look up if
+    needed (i.e., if \code{o} is a string)}
 }
 \value{
   Returns a character vector (if \code{as.obj} is \code{FALSE}) or a
@@ -44,8 +46,8 @@
 }
 \examples{
 \dontrun{
-.jconstructors("java/util/Vector")
-v <- .jnew("java/util/Vector")
+.jconstructors("java.util.Vector")
+v <- .jnew("java.util.Vector")
 .jmethods(v, "add")
 }
 }
