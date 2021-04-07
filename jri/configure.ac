@@ -85,7 +85,7 @@ AC_DEFUN([RUN_JAVA],
 ])
 
 if test -n "${CONFIGURED}"; then
-## re-map varibles that don't match
+## re-map variables that don't match
 JAVA_PROG="${JAVA}"
 JAVA_INC="${JAVA_CPPFLAGS}"
 JAVA_LD_PATH="${JAVA_LD_LIBRARY_PATH}"
@@ -188,7 +188,7 @@ if test -n "${JAVA_PROG}" ; then
 fi
 
 if test "x`uname -s 2>/dev/null`" = xDarwin; then
-  ## we need to pull that out of R in case re-export fails (which is does on 10.11)                                                                  
+  ## we need to pull that out of R in case re-export fails (which is does on 10.11)
   DYLD_FALLBACK_LIBRARY_PATH=`"${RBIN}" --slave --vanilla -e 'cat(Sys.getenv("DYLD_FALLBACK_LIBRARY_PATH"))'`
   export DYLD_FALLBACK_LIBRARY_PATH
 fi
@@ -200,7 +200,7 @@ if test ${acx_java_works} = yes; then
   AC_MSG_RESULT([yes])
 
   AC_MSG_CHECKING([for Java environment])
-  ## retrieve JAVA_HOME from Java itself if not set 
+  ## retrieve JAVA_HOME from Java itself if not set
   if test -z "${JAVA_HOME}" ; then
     RUN_JAVA(JAVA_HOME,[-classpath ${getsp_cp} getsp java.home])
   fi

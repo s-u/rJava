@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* determine whether eenv chache should be used (has no effect if JNI_CACHE is not set) */
+/* determine whether eenv cache should be used (has no effect if JNI_CACHE is not set) */
 int use_eenv = 1;
 
 /* cached environment. Do NOT use directly! Always use getJNIEnv()! */
@@ -28,7 +28,7 @@ static SEXP getCurrentCall() {
 
 /** throw an exception using R condition code.
  *  @param msg - message string
- *  @param jobj - jobjRef object of the exception 
+ *  @param jobj - jobjRef object of the exception
  *  @param clazzes - simple name of all the classes in the inheritance tree of the exception plus "error" and "condition"
  */
 HIDE void throwR(SEXP msg, SEXP jobj, SEXP clazzes) {
@@ -40,7 +40,7 @@ HIDE void throwR(SEXP msg, SEXP jobj, SEXP clazzes) {
 	SET_STRING_ELT(names, 0, mkChar("message"));
 	SET_STRING_ELT(names, 1, mkChar("call"));
 	SET_STRING_ELT(names, 2, mkChar("jobj"));
-	
+
 	setAttrib(cond, R_NamesSymbol, names);
 	setAttrib(cond, R_ClassSymbol, clazzes);
 	UNPROTECT(2); /* clazzes, names */
@@ -50,7 +50,7 @@ HIDE void throwR(SEXP msg, SEXP jobj, SEXP clazzes) {
 
 /* check for exceptions and throw them to R level */
 HIDE void ckx(JNIEnv *env) {
-	SEXP xr, xobj, msg = 0, xclass = 0; /* note: we don't bother counting protections becasue we never return */
+	SEXP xr, xobj, msg = 0, xclass = 0; /* note: we don't bother counting protections because we never return */
 	jthrowable x = 0;
 	if (env && !(x = (*env)->ExceptionOccurred(env))) return;
 	if (!env) {
@@ -61,19 +61,19 @@ HIDE void ckx(JNIEnv *env) {
 		return;
 	}
 	/* env is valid and an exception occurred */
-	/* we create the jobj first, because the exception may in theory disappear after being cleared, 
+	/* we create the jobj first, because the exception may in theory disappear after being cleared,
 	   yet this can be (also in theory) risky as it uses further JNI calls ... */
 	xobj = j2SEXP(env, x, 0);
 	if (!rj_RJavaTools_Class) {
 	    /* temporary warning due the JDK 12 breakage */
-	    REprintf("WARNING: Initial Java 12 release has broken JNI support and does NOT work. Use stable Java 11 (or watch for 12u if avaiable).\nERROR: Java exception occurred during rJava bootstrap - see stderr for Java stack trace.\n");
+	    REprintf("WARNING: Initial Java 12 release has broken JNI support and does NOT work. Use stable Java 11 (or watch for 12u if available).\nERROR: Java exception occurred during rJava bootstrap - see stderr for Java stack trace.\n");
 	    (*env)->ExceptionDescribe(env);
 	}
 	(*env)->ExceptionClear(env);
-	
+
 	/* grab the list of class names (without package path) */
 	SEXP clazzes = rj_RJavaTools_Class ? PROTECT( getSimpleClassNames_asSEXP( (jobject)x, (jboolean)1 ) ) : R_NilValue;
-	
+
 	/* ok, now this is a critical part that we do manually to avoid recursion */
 	{
 		jclass cls = (*env)->GetObjectClass(env, x);
@@ -94,14 +94,14 @@ HIDE void ckx(JNIEnv *env) {
 			cname = (jstring) (*env)->CallObjectMethod(env, cls, mid_getName);
 			if (cname) {
 				const char *c = (*env)->GetStringUTFChars(env, cname, 0);
-				if (c) {                          
+				if (c) {
 					/* convert full class name to JNI notation */
 					char *cn = strdup(c), *d = cn;
 					while (*d) { if (*d == '.') *d = '/'; d++; }
 					xclass = mkString(cn);
 					free(cn);
 					(*env)->ReleaseStringUTFChars(env, cname, c);
-				}		
+				}
 				(*env)->DeleteLocalRef(env, cname);
 			}
 			if ((*env)->ExceptionOccurred(env))
@@ -120,7 +120,7 @@ HIDE void ckx(JNIEnv *env) {
 		SET_SLOT(xr, install("jclass"), xclass ? xclass : mkString("java/lang/Throwable"));
 		SET_SLOT(xr, install("jobj"), xobj);
 	}
-	
+
 	/* and off to R .. (we're keeping xr and clazzes protected) */
 	throwR(msg, xr, clazzes);
 	/* throwR never returns so don't even bother ... */
@@ -162,7 +162,7 @@ HIDE JNIEnv *getJNIEnv()
       error("AttachCurrentThread failed! (result:%d)", (int)res); return 0;
     }
     if (env && !eenv) eenv=env;
-    
+
     /* if (eenv!=env)
         fprintf(stderr, "Warning! eenv=%x, but env=%x - different environments encountered!\n", eenv, env); */
     return env;

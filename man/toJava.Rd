@@ -5,7 +5,7 @@ Convert R objects to REXP references in Java
 }
 \description{
 \code{toJava} takes an R object and creates a reference to that object
-in Java. This reference can then be passed to Java methods such taht
+in Java. This reference can then be passed to Java methods such that
 they can refer to it back in R. This is commonly used to pass functions
 to Java such that Java code can call those functions later.
 }

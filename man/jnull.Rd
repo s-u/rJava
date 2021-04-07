@@ -28,7 +28,7 @@ is.jnull(x)
   \code{TRUE} or if \code{x} is a Java \code{null} reference.
 }
 \details{
-  \code{.jnull} is necesary if \code{null} is to be passed as an
+  \code{.jnull} is necessary if \code{null} is to be passed as an
   argument of \code{\link{.jcall}} or \code{\link{.jnew}}, in order to be
   able to find the correct method/constructor.
 

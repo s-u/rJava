@@ -40,10 +40,10 @@ int rJava_initialized = 0;
 static int    jvm_opts=0;
 static char **jvm_optv=0;
 
-#ifdef JNI_VERSION_1_2 
+#ifdef JNI_VERSION_1_2
 static JavaVMOption *vm_options;
 static JavaVMInitArgs vm_args;
-#else  
+#else
 #error "Java/JNI 1.2 or higher is required!"
 #endif
 
@@ -101,16 +101,16 @@ static int initJVM(const char *user_classpath, int opts, char **optv, int hooks,
   int total_num_properties, propNum = 0, add_Xss = 1;
   jint res;
   char *classpath;
-  
+
   if(!user_classpath)
     /* use the CLASSPATH environment variable as default */
     user_classpath = getenv("CLASSPATH");
   if(!user_classpath) user_classpath = "";
-  
+
   vm_args.version = JNI_VERSION_1_2;
   if(JNI_GetDefaultJavaVMInitArgs(&vm_args) != JNI_OK) {
     error("JNI 1.2 or higher is required");
-    return -1;    
+    return -1;
   }
 
   vm_args.version = JNI_VERSION_1_2; /* should we do that or keep the default? */
@@ -132,19 +132,19 @@ static int initJVM(const char *user_classpath, int opts, char **optv, int hooks,
 
   /* leave room for class.path, and optional jni args */
   total_num_properties = 8 + opts;
-    
+
   vm_options = (JavaVMOption *) calloc(total_num_properties, sizeof(JavaVMOption));
   vm_args.options = vm_options;
   vm_args.ignoreUnrecognized = disableGuardPages ? JNI_FALSE : JNI_TRUE;
-  
+
   classpath = (char*) calloc(24 + strlen(user_classpath), sizeof(char));
   sprintf(classpath, "-Djava.class.path=%s", user_classpath);
-  
-  vm_options[propNum++].optionString = classpath;   
-  
+
+  vm_options[propNum++].optionString = classpath;
+
   /*   print JNI-related messages */
   /* vm_options[propNum++].optionString = "-verbose:class,jni"; */
-  
+
   if (optv) {
     int i = 0;
     while (i < opts) {
@@ -177,14 +177,14 @@ static int initJVM(const char *user_classpath, int opts, char **optv, int hooks,
 
   /* Create the Java VM */
   res = JNI_CreateJavaVM(&jvm,(void **)&eenv, &vm_args);
-  
+
   if (disableGuardPages && (res != 0 || !eenv))
     return -2; /* perhaps this VM does not allow disabling guard pages */
 
   if (res != 0)
     error("Cannot create Java virtual machine (%d)", res);
   if (!eenv)
-    error("Cannot obtain JVM environemnt");
+    error("Cannot obtain JVM environment");
 
 #if defined(_WIN64) || defined(_WIN32)
   _setmode(0, _O_TEXT);
@@ -246,8 +246,8 @@ HIDE void init_rJava(void) {
   jclass c;
   JNIEnv *env = getJNIEnv();
   if (!env) return; /* initJVMfailed, so we cannot proceed */
-  
-  /* get global classes. we make the references explicitely global (although unloading of String/Object is more than unlikely) */
+
+  /* get global classes. we make the references explicitly global (although unloading of String/Object is more than unlikely) */
   c=(*env)->FindClass(env, "java/lang/String");
   if (!c) error("unable to find the basic String class");
   javaStringClass=(*env)->NewGlobalRef(env, c);
@@ -274,17 +274,17 @@ HIDE void init_rJava(void) {
 
   mid_forName  = (*env)->GetStaticMethodID(env, javaClassClass, "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
   if (!mid_forName) error("cannot obtain Class.forName method ID");
-  
+
   mid_getName  = (*env)->GetMethodID(env, javaClassClass, "getName", "()Ljava/lang/String;");
   if (!mid_getName) error("cannot obtain Class.getName method ID");
-  
+
   mid_getSuperclass =(*env)->GetMethodID(env, javaClassClass, "getSuperclass", "()Ljava/lang/Class;");
   if (!mid_getSuperclass) error("cannot obtain Class.getSuperclass method ID");
-  
+
   mid_getField = (*env)->GetMethodID(env, javaClassClass, "getField",
 				     "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
   if (!mid_getField) error("cannot obtain Class.getField method ID");
- 
+
   mid_getType  = (*env)->GetMethodID(env, javaFieldClass, "getType",
 				     "()Ljava/lang/Class;");
   if (!mid_getType) error("cannot obtain Field.getType method ID");
@@ -303,10 +303,10 @@ static SEXP RinitJVM_real(SEXP par, int disableGuardPages)
   int r=0;
   JavaVM *jvms[32];
   jsize vms=0;
-  
+
   jvm_opts=0;
   jvm_optv=0;
-  
+
   if (TYPEOF(e)==STRSXP && LENGTH(e)>0)
 	  c=CHAR(STRING_ELT(e,0));
 
@@ -346,7 +346,7 @@ static SEXP RinitJVM_real(SEXP par, int disableGuardPages)
   }
   if (jvm_opts)
       jvm_optv[jvm_opts] = 0;
-  
+
   r=JNI_GetCreatedJavaVMs(jvms, 32, &vms);
   if (r) {
     Rf_error("JNI_GetCreatedJavaVMs returned %d\n", r);
@@ -477,7 +477,7 @@ extern int R_CStackDir;
   bound is the new first address not to access
   dir is 1 (stack grows up) or -1 (stack grows down, the usual)
     so, incrementing by dir one traverses from stack start, from the oldest
-    things on the stace; note that in R_CStackDir, 1 means stack grows down
+    things on the stack; note that in R_CStackDir, 1 means stack grows down
 
   returns NULL in case of error, limit when no new limit is found,
     a new limit when found
@@ -512,7 +512,7 @@ static char* findBound(char *from, char *limit, int dir)
     _exit(0);
   } else {
     /* Parent process, writes data to the pipe looking for EFAULT error which
-       indicates an inaccesible page. For performance, the reading is first
+       indicates an inaccessible page. For performance, the reading is first
        done using a buffer (of the size of a page), but once EFAULT is reached,
        it is re-tried byte-by-byte for the last buffer not read successfully.
     */
@@ -758,52 +758,51 @@ REP void doneJVM() {
  * Initializes the cached values of classes and methods used internally
  * These classes and methods are the ones that are in rJava (RJavaTools, ...)
  * not java standard classes (Object, Class)
- */ 
+ */
 REPC SEXP initRJavaTools(){
 
 	JNIEnv *env=getJNIEnv();
-	jclass c; 
-	
+	jclass c;
+
 	/* classes */
-	
+
 	/* RJavaTools class */
 	c = findClass(env, "RJavaTools", oClassLoader);
 	if (!c) error("unable to find the RJavaTools class");
 	rj_RJavaTools_Class=(*env)->NewGlobalRef(env, c);
 	if (!rj_RJavaTools_Class) error("unable to create a global reference to the RJavaTools class");
 	(*env)->DeleteLocalRef(env, c);
-	
+
 	/* RJavaImport */
-	c = findClass(env, "RJavaImport", oClassLoader); 
+	c = findClass(env, "RJavaImport", oClassLoader);
 	if (!c) error("unable to find the RJavaImport class");
 	rj_RJavaImport_Class=(*env)->NewGlobalRef(env, c);
 	if (!rj_RJavaImport_Class) error("unable to create a global reference to the RJavaImport class");
 	(*env)->DeleteLocalRef(env, c);
-	
-	
+
+
 	/* methods */
-	
-	mid_RJavaTools_getFieldTypeName  = (*env)->GetStaticMethodID(env, rj_RJavaTools_Class, 
+
+	mid_RJavaTools_getFieldTypeName  = (*env)->GetStaticMethodID(env, rj_RJavaTools_Class,
 		"getFieldTypeName", "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/String;");
 	if (!mid_RJavaTools_getFieldTypeName) error("cannot obtain RJavaTools.getFieldTypeName method ID");
-	
-	mid_rj_getSimpleClassNames  = (*env)->GetStaticMethodID(env, rj_RJavaTools_Class, 
+
+	mid_rj_getSimpleClassNames  = (*env)->GetStaticMethodID(env, rj_RJavaTools_Class,
 		"getSimpleClassNames", "(Ljava/lang/Object;Z)[Ljava/lang/String;");
 	if (!mid_rj_getSimpleClassNames) error("cannot obtain RJavaTools.getDimpleClassNames method ID");
-	
-	mid_RJavaImport_getKnownClasses = (*env)->GetMethodID(env, rj_RJavaImport_Class, 
+
+	mid_RJavaImport_getKnownClasses = (*env)->GetMethodID(env, rj_RJavaImport_Class,
 		"getKnownClasses", "()[Ljava/lang/String;");
 	if (!mid_RJavaImport_getKnownClasses) error("cannot obtain RJavaImport.getKnownClasses method ID");
-	
-	mid_RJavaImport_lookup = (*env)->GetMethodID(env, rj_RJavaImport_Class, 
+
+	mid_RJavaImport_lookup = (*env)->GetMethodID(env, rj_RJavaImport_Class,
 		"lookup", "(Ljava/lang/String;)Ljava/lang/Class;");
 	if( !mid_RJavaImport_lookup) error("cannot obtain RJavaImport.lookup method ID");
-	
-	mid_RJavaImport_exists = (*env)->GetMethodID(env, rj_RJavaImport_Class, 
+
+	mid_RJavaImport_exists = (*env)->GetMethodID(env, rj_RJavaImport_Class,
 		"exists", "(Ljava/lang/String;)Z");
 	if( ! mid_RJavaImport_exists ) error("cannot obtain RJavaImport.exists method ID");
 	// maybe add RJavaArrayTools, ...
-	
-	return R_NilValue; 
-}
 
+	return R_NilValue;
+}

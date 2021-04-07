@@ -2,7 +2,7 @@
 \alias{.jfield}
 \alias{.jfield<-}
 \title{
-  Obtains the value of a field 
+  Obtains the value of a field
 }
 \description{
   \code{.jfield} returns the value of the specified field on an object.
@@ -21,7 +21,7 @@
     the reflection lookup is quite expensive.}
   \item{name}{name of the field to access}
   \item{true.class}{by default the class of the resulting object matches
-    the siganture of the field. Setting this flag to \code{TRUE} causes
+    the signature of the field. Setting this flag to \code{TRUE} causes
     \code{.jfield} to use true class name of the resulting object
     instead. (this flag has no effect on scalar fields)}
   \item{convert}{when set to \code{TRUE} all references are converted to

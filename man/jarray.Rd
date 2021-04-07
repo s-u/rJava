@@ -21,16 +21,16 @@
   \item{contents.class}{common class of the contained objects, see
     details}
   \item{obj}{Java object reference to an array that is to be evaluated}
-  \item{rawJNIRefSignature}{JNI signature that whould be used for
+  \item{rawJNIRefSignature}{JNI signature that would be used for
     conversion. If set to \code{NULL}, the signature is detected
     automatically.}
   \item{silent}{if set to true, warnings are suppressed}
-  \item{dispatch}{logical. If \code{TRUE} the code attemps to dispatch
+  \item{dispatch}{logical. If \code{TRUE} the code attempts to dispatch
   to either a \code{jarrayRef} object for rugged arrays and
   \code{jrectRef} objects for rectangular arrays, creating possibly a
   multi-dimensional object in Java (e.g., when used with a matrix).}
   \item{simplify}{if set to \code{TRUE} more than two-dimensional arrays
-  are converted to native obejcts (e.g., matrices) if their type and
+  are converted to native objects (e.g., matrices) if their type and
   size matches (essentially the inverse for objects created with
   \code{dispatch=TRUE}).}
 }
@@ -68,7 +68,7 @@
   \code{.jevalArray} currently supports only a subset of all possible
   array types. Recursive arrays are handled by returning a list of
   references which can then be evaluated separately. The only exception
-  is \code{simplify=TRUE} in which case \code{.jevalArray} arrempts to
+  is \code{simplify=TRUE} in which case \code{.jevalArray} attempts to
   convert multi-dimensional arrays into native R type if there is a
   such. This only works for rectangular arrays of the same basic type
   (i.e. the length and type of each referenced array is the same -

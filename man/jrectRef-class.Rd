@@ -17,11 +17,11 @@
 \alias{range,jrectRef-method}
 
 \title{Rectangular java arrays}
-\description{References to java arrays that are guaranteed to be rectangular, i.e similar 
+\description{References to java arrays that are guaranteed to be rectangular, i.e similar
 to R arrays}
 \section{Objects from the Class}{
-Objects of this class should *not* be created directly. 
-Instead, they usually come as a result of a java method call. 
+Objects of this class should *not* be created directly.
+Instead, they usually come as a result of a java method call.
 }
 \section{Slots}{
   \describe{
@@ -37,11 +37,11 @@ Class \code{"\linkS4class{jobjRef}"}, by class "jarrayRef", distance 2.
 }
 \section{Methods}{
   \describe{
-    \item{length}{\code{signature(x = "jrectRef")}: The number of elements in the array. 
-    	Note that if the array has more than one dimension, 
-    	it gives the number of arrays in the first dimension, and not the total 
-    	number of atomic objects in tha array (like R does). This gives what would be 
-		returned by \code{array.length} in java.}
+    \item{length}{\code{signature(x = "jrectRef")}: The number of elements in the array.
+       Note that if the array has more than one dimension,
+       it gives the number of arrays in the first dimension, and not the total
+       number of atomic objects in the array (like R does). This gives what would be
+       returned by \code{array.length} in java.}
     \item{str}{\code{signature(object = "jrectRef")}: ... }
     \item{[}{\code{signature(x = "jrectRef")}: R indexing of rectangular java arrays }
     \item{dim}{\code{signature(x = "jrectRef")}: extracts the dimensions of the array }
@@ -71,7 +71,7 @@ array[ c(TRUE,FALSE,TRUE) ]
 array[ 1:2 ]
 array[ -3 ]
 
-# length 
+# length
 length( array )
 \dontshow{stopifnot(length(array) == 3L)}
 
@@ -95,7 +95,7 @@ x <- .jcall( "RectangularArrayExamples", "[[I",
 stopifnot( identical( typeof( x ), "integer" ) )
 stopifnot( identical( dim(x) , dim2d ) )
 stopifnot( identical( as.vector(x), 0:9 ) )
- 
+
 x <- .jcall( "RectangularArrayExamples", "[[B",
 "getByteDoubleRectangularArrayExample",  evalArray = TRUE, simplify = TRUE )
 stopifnot( identical( typeof( x ), "raw" ) )
@@ -141,7 +141,7 @@ stopifnot( identical( as.vector(x), as.character(0:9) ) )
 
 # 3d
 
-dim3d <- c(5L, 3L, 2L) 
+dim3d <- c(5L, 3L, 2L)
 
 x <- .jcall( "RectangularArrayExamples", "[[[Z",
 "getBooleanTripleRectangularArrayExample",  evalArray = TRUE, simplify = TRUE)
@@ -154,7 +154,7 @@ x <- .jcall( "RectangularArrayExamples", "[[[I",
 stopifnot( identical( typeof( x ), "integer" ) )
 stopifnot( identical( dim(x) , dim3d ) )
 stopifnot( identical( as.vector(x), 0:29 ) )
- 
+
 x <- .jcall( "RectangularArrayExamples", "[[[B",
 "getByteTripleRectangularArrayExample",  evalArray = TRUE, simplify = TRUE )
 stopifnot( identical( typeof( x ), "raw" ) )
@@ -196,7 +196,7 @@ x <- .jcall( "RectangularArrayExamples", "[[[Ljava/lang/String;",
 stopifnot( identical( typeof( x ), "character" ) )
 stopifnot( identical( dim(x) , dim3d ) )
 stopifnot( identical( as.vector(x), as.character(0:29) ) )
-          
+
 
 # testing the indexing
 
@@ -247,7 +247,7 @@ stopifnot( dim(xu) == 2L )
 # test duplicated
 x <- .jarray( rep( 1:2, each = 5 ), dispatch = TRUE )
 xd <- duplicated( x )
-stopifnot( xd == rep( c( FALSE, TRUE, TRUE, TRUE, TRUE), 2L ) ) 
+stopifnot( xd == rep( c( FALSE, TRUE, TRUE, TRUE, TRUE), 2L ) )
 if (rJava:::.base.has.anyDuplicated) stopifnot( anyDuplicated( x ) == 2L )
 
   p1 <- .jnew( "java/awt/Point" )

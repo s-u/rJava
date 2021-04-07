@@ -29,17 +29,17 @@
 }
 \details{
   Sometimes a result of a method is by definition of the class
-  \code{java.lang.Object}, but the acutal referenced object may be an
+  \code{java.lang.Object}, but the actual referenced object may be an
   array. In that case the method returns a Java object reference instead
   of an array reference. In order to obtain an array reference, it is
   necessary to cast such an object to an array reference - this is done
   using the above \code{.jcastToArray} function.
 
-  The input is an object reference that points to an array. Ususally the
+  The input is an object reference that points to an array. Usually the
   signature should be left at \code{NULL} such that it is determined
   from the object's class. This is also a check, because if the object's
   class is not an array, then the functions fails either with an error
-  (when \code{quiet=FALSE}) or by returing the original object (when
+  (when \code{quiet=FALSE}) or by returning the original object (when
   \code{quiet=TRUE}). If the signature is set to anything else, it is
   not verified and the array reference is always created, even if it may
   be invalid and unusable.

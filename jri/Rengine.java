@@ -2,18 +2,18 @@ package org.rosuda.JRI;
 
 import java.lang.*;
 
-/** Rengine class is the interface between an instance of R and the Java VM. Due to the fact that R has no threading support, you can run only one instance of R withing a multi-threaded application. There are two ways to use R from Java: individual call and full event loop. See the Rengine {@link #Rengine constructor} for details. <p> <u>Important note:</u> All methods starting with <code>rni</code> (R Native Interface) are low-level native methods that should be avoided if a high-level methods exists. They do NOT attempt any synchronization, so it is the duty of the calling program to ensure that the invocation is safe (see {@link #getRsync()} for details). At some point in the future when the high-level API is complete they should become private. However, currently this high-level layer is not complete, so they are available for now.<p>All <code>rni</code> methods use <code>long</code> type to reference <code>SEXP</code>s on R side. Those reference should never be modified or used in arithmetics - the only reason for not using an extra interface class to wrap those references is that <code>rni</code> methods are all <i>native</i> methods and therefore it would be too expensive to handle the unwrapping on the C side.<p><code>jri</code> methods are called internally by R and invoke the corresponding method from the even loop handler. Those methods should usualy not be called directly.
+/** Rengine class is the interface between an instance of R and the Java VM. Due to the fact that R has no threading support, you can run only one instance of R withing a multi-threaded application. There are two ways to use R from Java: individual call and full event loop. See the Rengine {@link #Rengine constructor} for details. <p> <u>Important note:</u> All methods starting with <code>rni</code> (R Native Interface) are low-level native methods that should be avoided if a high-level methods exists. They do NOT attempt any synchronization, so it is the duty of the calling program to ensure that the invocation is safe (see {@link #getRsync()} for details). At some point in the future when the high-level API is complete they should become private. However, currently this high-level layer is not complete, so they are available for now.<p>All <code>rni</code> methods use <code>long</code> type to reference <code>SEXP</code>s on R side. Those reference should never be modified or used in arithmetics - the only reason for not using an extra interface class to wrap those references is that <code>rni</code> methods are all <i>native</i> methods and therefore it would be too expensive to handle the unwrapping on the C side.<p><code>jri</code> methods are called internally by R and invoke the corresponding method from the even loop handler. Those methods should usually not be called directly.
 
- <p>Since 0.5 a failure to load the JRI naitve library will not be fatal if <code>jri.ignore.ule=yes</code> system preference is set. Rengine will still not work, but that gives a chance to GUI programs to report the error in a more meaningful way (use {@link #jriLoaded} to check the availability of JRI). 
+ <p>Since 0.5 a failure to load the JRI naitve library will not be fatal if <code>jri.ignore.ule=yes</code> system preference is set. Rengine will still not work, but that gives a chance to GUI programs to report the error in a more meaningful way (use {@link #jriLoaded} to check the availability of JRI).
  */
 public class Rengine extends Thread {
-	/** this flags is set to <code>true</code> if the native code was successfully loaded. If this flag is <code>false</code> then none of the rni methods are available. Previous 
+	/** this flags is set to <code>true</code> if the native code was successfully loaded. If this flag is <code>false</code> then none of the rni methods are available. Previous
 	 @since API 1.9, JRI 0.5
 	 */
 	public static boolean jriLoaded;
 
     boolean loopHasLock = false;
-    
+
     static {
         try {
             System.loadLibrary("jri");
@@ -60,18 +60,18 @@ public class Rengine extends Thread {
 	public static boolean versionCheck() {
 		return (getVersion()==rniGetVersion());
 	}
-	
+
     /** debug flag. Set to value &gt;0 to enable debugging messages. The verbosity increases with increasing number */
     public static int DEBUG = 0;
-	
+
 	/** this value specifies the time (in ms) to spend sleeping between checks for R shutdown requests if R event loop is not used. The default is 200ms. Higher values lower the CPU usage but may make R less responsive to shutdown attempts (in theory it should not matter because {@link #stop()} uses interrupt to awake from the idle sleep immediately, but some implementation may not honor that).
 	@since JRI 0.3
 	*/
 	public int idleDelay = 200;
-	
+
     /** main engine. Since there can be only one instance of R, this is also the only instance. */
     static Rengine mainEngine=null;
-    
+
     /** return the current main R engine instance. Since there can be only one true R instance at a time, this is also the only instance. This may not be true for future versions, though.
 	@return current instance of the R engine or <code>null</code> if no R engine was started yet. */
     public static Rengine getMainEngine() { return mainEngine; }
@@ -99,8 +99,8 @@ public class Rengine extends Thread {
 	Mutex Rsync;
 	/** callback handler */
     RMainLoopCallbacks callback;
-	
-    /** create and start a new instance of R. 
+
+    /** create and start a new instance of R.
 	@param args arguments to be passed to R. Please note that R requires the presence of certain arguments (e.g. <code>--save</code> or <code>--no-save</code> or equivalents), so passing an empty list usually doesn't work.
 	@param runMainLoop if set to <code>true</code> the the event loop will be started as soon as possible, otherwise no event loop is started. Running loop requires <code>initialCallbacks</code> to be set correspondingly as well.
 	@param initialCallbacks an instance implementing the {@link org.rosuda.JRI.RMainLoopCallbacks RMainLoopCallbacks} interface that provides methods to be called by R
@@ -143,7 +143,7 @@ public class Rengine extends Thread {
 	@return result code
      */
     native int rniSetupR(String[] args);
-    
+
     /** RNI: setup IPC with RJava. This method is used by rJava to pass the IPC information to the JRI engine for synchronization
 	@since experimental, not in the public API!
      */
@@ -159,7 +159,7 @@ public class Rengine extends Thread {
     synchronized int setupR() {
         return setupR(null);
     }
-    
+
     synchronized int setupR(String[] args) {
         int r=rniSetupR(args);
         if (r==0) {
@@ -169,7 +169,7 @@ public class Rengine extends Thread {
         }
         return r;
     }
-    
+
     /** RNI: parses a string into R expressions (do NOT use directly unless you know exactly what you're doing, where possible use {@link #eval} instead). Note that no synchronization is performed!
 	@param s string to parse
 	@param parts number of expressions contained in the string
@@ -256,7 +256,7 @@ public class Rengine extends Thread {
 	@param exps initial contents of the vector consisiting of an array of references
 	@return reference to the resulting VECSXP */
     public synchronized native long rniPutVector(long[] exps);
-    
+
     /** RNI: get an attribute
 	@param exp reference to the object whose attribute is requested
 	@param name name of the attribute
@@ -264,9 +264,9 @@ public class Rengine extends Thread {
     public synchronized native long rniGetAttr(long exp, String name);
 	/** RNI: get attribute names
 	 @param exp reference to the object whose attributes are requested
-	 @return a list of strings naming all attributes or <code>null</code> if there are none 
+	 @return a list of strings naming all attributes or <code>null</code> if there are none
 	 @since API 1.9, JRI 0.5 */
-    public synchronized native String[] rniGetAttrNames(long exp);	
+    public synchronized native String[] rniGetAttrNames(long exp);
     /** RNI: set an attribute
 	 @param exp reference to the object whose attribute is to be modified
 	 @param name attribute name
@@ -277,7 +277,7 @@ public class Rengine extends Thread {
 		@since API 1.5, JRI 0.3
 		@param exp reference to an object
 		@param cName name of the class to check
-		@return <code>true</code> if <code>cName</code> inherits from class <code>cName</code> (see <code>inherits</code> in R) */ 
+		@return <code>true</code> if <code>cName</code> inherits from class <code>cName</code> (see <code>inherits</code> in R) */
 	public synchronized native boolean rniInherits(long exp, String cName);
 
     /** RNI: create a dotted-pair list (LISTSXP or LANGSXP)
@@ -355,7 +355,7 @@ public class Rengine extends Thread {
 		@since API 1.9, JRI 0.5
 		@param exp reference to an R object */
 	public synchronized native void rniRelease(long exp);
-	
+
 	/** RNI: return the parent environment
 		@since API 1.9, JRI 0.5
 		@param exp reference to environment
@@ -381,7 +381,7 @@ public class Rengine extends Thread {
 		@param which constant referring to a particular special object (see SO_xxx constants)
 		@return reference to a special object or 0 if the kind of object it unknown/unsupported */
 	public synchronized native long rniSpecialObject(int which);
-	
+
 	//--- was API 1.4 but it only caused portability problems, so we got rid of it
     //public static native void rniSetEnv(String key, String val);
     //public static native String rniGetEnv(String key);
@@ -399,16 +399,16 @@ public class Rengine extends Thread {
 		@since API 1.5, JRI 0.3
 		*/
 	public synchronized native Object rniXrefToJava(long exp);
-	
+
     /** RNI: return the API version of the native library
 		@return API version of the native library */
     public static native long rniGetVersion();
-    
+
     /** RNI: interrupt the R process (if possible). Note that R handles interrupt requests in (R-thread-)synchronous, co-operative fashion as it wants to make sure that the interrupted state is recoverable. If interrupting from another thread while using blocking ReadConsole REPL make sure you also interrupt your ReadConsole call after rniStop such that R can act on the signalled interrupt.
 	@param flag determines how to attempt to inform R about the interrput. For normal (safe) operation using flag signalling must be 0. Other options are 1 (SIGINT for compatibility with older JRI API) and 2 (<tt>Rf_onintr</tT> call - use <u>only</u> on the R thread and only if you know what it means). Values other than 0 are only supported since JRI 0.5-4.
 	@return result code (currently 0) */
     public native int rniStop(int flag);
-    
+
     /** RNI: assign a value to an environment
 	@param name name
 	@param exp value
@@ -417,14 +417,14 @@ public class Rengine extends Thread {
         @since API 1.10, JRI 0.5-1 (existed before but returned <code>void</code>)
     */
     public synchronized native boolean rniAssign(String name, long exp, long rho);
-    
+
     /** RNI: get the SEXP type
 	@param exp reference to a SEXP
 	@return type of the expression (see xxxSEXP constants) */
     public synchronized native int rniExpType(long exp);
     /** RNI: run the main loop.<br> <i>Note:</i> this is an internal method and it doesn't return until the loop exits. Don't use directly! */
     public native void rniRunMainLoop();
-    
+
     /** RNI: run other event handlers in R */
     public synchronized native void rniIdle();
 
@@ -439,7 +439,7 @@ public class Rengine extends Thread {
     public void startMainLoop() {
 		runLoop=true;
     }
-    
+
     //============ R callback methods =========
 
     /** JRI: R_WriteConsole call-back from R
@@ -486,7 +486,7 @@ public class Rengine extends Thread {
     {
         if (callback!=null) callback.rShowMessage(this, message);
     }
-    
+
     /** JRI: R_loadhistory call-back from R
 	@param filename name of the history file */
     public void jriLoadHistory(String filename)
@@ -500,7 +500,7 @@ public class Rengine extends Thread {
     {
         if (callback!=null) callback.rSaveHistory(this, filename);
     }
-	
+
     /** JRI: R_ChooseFile call-back from R
 	@param newFile flag specifying whether an existing or new file is requested
 	@return name of the selected file or <code>null</code> if cancelled */
@@ -509,14 +509,14 @@ public class Rengine extends Thread {
         if (callback!=null) return callback.rChooseFile(this, newFile);
 		return null;
     }
-	
-    /** JRI: R_FlushConsole call-back from R */	
+
+    /** JRI: R_FlushConsole call-back from R */
     public void jriFlushConsole()
     {
         if (callback!=null) callback.rFlushConsole(this);
     }
-	
-    
+
+
     //============ "official" API =============
 
 
@@ -526,7 +526,7 @@ public class Rengine extends Thread {
     public synchronized REXP eval(String s) {
 		return eval(s, true);
 	}
-	
+
     /** Parses and evaluates an R expression and returns the result.
 		@since JRI 0.3
 		@param s expression (as string) to parse and evaluate
@@ -559,7 +559,7 @@ public class Rengine extends Thread {
         if (DEBUG>0) System.out.println("Rengine.eval("+s+"): END (ERR)"+Thread.currentThread());
         return null;
     }
-    
+
     /** This method is very much like {@link #eval(String)}, except that it is non-blocking and returns <code>null</code> if the engine is busy.
         @param s string to evaluate
         @return result of the evaluation or <code>null</code> if the engine is busy
@@ -592,7 +592,7 @@ public class Rengine extends Thread {
         }
         return null;
     }
-    
+
 	/** returns the synchronization mutex for this engine. If an external code needs to use RNI calls, it should do so only in properly protected environment secured by this mutex. Usually the procedure should be as follows:<pre>
 	boolean obtainedLock = e.getRsync().safeLock();
 	try {
@@ -607,7 +607,7 @@ public class Rengine extends Thread {
 	public Mutex getRsync() {
 		return Rsync;
 	}
-	
+
     /** check the state of R
 		@return <code>true</code> if R is alive and <code>false</code> if R died or exitted */
     public synchronized boolean waitForR() {
@@ -619,21 +619,21 @@ public class Rengine extends Thread {
         alive = false;
         interrupt();
     }
-    
-    /** The implementation of the R thread. This method should not be called directly. */	
+
+    /** The implementation of the R thread. This method should not be called directly. */
     public void run() {
 	if (DEBUG > 0)
 	    System.out.println("Starting R...");
 	loopHasLock = Rsync.safeLock(); // force all code to wait until R is ready
 	try {
 	    if (setupR(args) == 0) {
-		if (!runLoop && loopHasLock) { // without event loop we can unlock now since we woin't do anything
+		if (!runLoop && loopHasLock) { // without event loop we can unlock now since we won't do anything
 		    Rsync.unlock();
 		    loopHasLock = false;
 		}
 		while (alive) {
 		    try {
-			if (runLoop) {                        
+			if (runLoop) {
 			    if (DEBUG > 0)
 				System.out.println("***> launching main loop:");
 			    loopRunning = true;
@@ -662,7 +662,7 @@ public class Rengine extends Thread {
 	    if (loopHasLock) Rsync.unlock();
 	}
     }
-	
+
 	/** assign a string value to a symbol in R. The symbol is created if it doesn't exist already.
          *  @param sym symbol name.  The symbol name is used as-is, i.e. as if it was quoted in R code (for example assigning to "foo$bar" has the same effect as `foo$bar`&lt;- and NOT foo$bar&lt;-).
 	 *  @param ct contents

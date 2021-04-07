@@ -23,7 +23,7 @@
 
 #include <stdarg.h>
 
-/* max supported # of parameters to Java methdos */
+/* max supported # of parameters to Java methods */
 #ifndef maxJavaPars
 #define maxJavaPars 32
 #endif
@@ -42,7 +42,7 @@ REPC SEXP RJava_has_jri_cb() {
   LOGICAL(r)[0] = 0;
 #endif
   return r;
-} 
+}
 
 /* debugging output (enable with -DRJ_DEBUG) */
 #ifdef RJ_DEBUG
@@ -131,7 +131,7 @@ SEXP j2SEXP(JNIEnv *env, jobject o, int releaseLocal) {
       releaseObject(env, o);
     o=go;
   }
-  
+
   {
     SEXP xp = R_MakeExternalPtr(o, R_NilValue, R_NilValue);
 
@@ -163,7 +163,7 @@ const char *rj_char_utf8(SEXP s) {
 #endif
 
 HIDE void deserializeSEXP(SEXP o) {
-  _dbg(rjprintf("attempt to deserialize %p (clCL=%p, oCL=%p)\n", o, clClassLoader, oClassLoader));
+  _dbg(rjprintf("attempt to deserialize %p (clCl=%p, oCL=%p)\n", o, clClassLoader, oClassLoader));
   SEXP s = EXTPTR_PROT(o);
   if (TYPEOF(s) == RAWSXP && EXTPTR_PTR(o) == NULL) {
     JNIEnv *env = getJNIEnv();
@@ -190,7 +190,7 @@ HIDE void deserializeSEXP(SEXP o) {
 	}
 	releaseObject(env, ser);
       }
-    }    
+    }
   }
 }
 
@@ -234,7 +234,7 @@ HIDE void init_sigbuf(sig_buffer_t *sb) {
 }
 
 /* free the content of a signature buffer (if necessary) */
-HIDE void done_sigbuf(sig_buffer_t *sb) { 
+HIDE void done_sigbuf(sig_buffer_t *sb) {
   if (sb->sig != sb->sigbuf) free(sb->sig);
 }
 
@@ -256,7 +256,7 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, sig_buffer_t *sig, i
 	    Rf_error("Too many arguments in Java call. maxJavaPars is %d, recompile rJava with higher number if needed.", maxJavaPars);
 	break;
     }
-    
+
     _dbg(rjprintf("Rpar2jvalue: par %d type %d\n",i,TYPEOF(e)));
     if (TYPEOF(e)==STRSXP) {
       _dbg(rjprintf(" string vector of length %d\n",LENGTH(e)));
@@ -463,10 +463,10 @@ REPE SEXP RcallMethod(SEXP par) {
   jmethodID mid = 0;
   jclass cls;
   JNIEnv *env = getJNIEnv();
-  
+
   profStart();
   p=CDR(p); e=CAR(p); p=CDR(p);
-  if (e==R_NilValue) 
+  if (e==R_NilValue)
     error_return("RcallMethod: call on a NULL object");
   if (TYPEOF(e)==EXTPTRSXP) {
     jverify(e);
@@ -498,7 +498,7 @@ REPE SEXP RcallMethod(SEXP par) {
   if (TYPEOF(e)==STRSXP && LENGTH(e)==1) { /* signature */
     retsig=CHAR_UTF8(STRING_ELT(e,0));
     /*
-      } else if (inherits(e, "jobjRef")) { method object 
+      } else if (inherits(e, "jobjRef")) { method object
     SEXP mexp = GET_SLOT(e, install("jobj"));
     jobject mobj = (jobject)(INTEGER(mexp)[0]);
     _dbg(rjprintf(" signature is Java object %x - using reflection\n", mobj);
@@ -506,7 +506,7 @@ REPE SEXP RcallMethod(SEXP par) {
     retsig = getReturnSigFromMethodObject(mobj);
     */
   } else error_return("RcallMethod: invalid return signature parameter");
-    
+
   e=CAR(p); p=CDR(p);
   if (TYPEOF(e)!=STRSXP || LENGTH(e)!=1)
     error_return("RcallMethod: invalid method name");
@@ -551,7 +551,7 @@ END_RJAVA_CALL
 BEGIN_RJAVA_CALL
     int r=o?
       (*env)->CallIntMethodA(env, o, mid, jpar):
-      (*env)->CallStaticIntMethodA(env, cls, mid, jpar);  
+      (*env)->CallStaticIntMethodA(env, cls, mid, jpar);
     e = allocVector(INTSXP, 1);
     INTEGER(e)[0] = r;
 END_RJAVA_CALL
@@ -586,7 +586,7 @@ END_RJAVA_CALL
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
    }
- case 'J': { 
+ case 'J': {
 BEGIN_RJAVA_CALL
     jlong r=o?
       (*env)->CallLongMethodA(env, o, mid, jpar):
@@ -599,7 +599,7 @@ END_RJAVA_CALL
     _prof(profReport("Method \"%s\" returned:",mnam));
     return e;
  }
- case 'S': { 
+ case 'S': {
 BEGIN_RJAVA_CALL
     jshort r=o?
       (*env)->CallShortMethodA(env, o, mid, jpar):
@@ -673,7 +673,7 @@ END_RJAVA_CALL
   } /* switch */
   _prof(profReport("Method \"%s\" has an unknown signature, not called:",mnam));
   releaseObject(env, cls);
-  error("unsupported/invalid mathod signature %s", retsig);
+  error("unsupported/invalid method signature %s", retsig);
   return R_NilValue;
 }
 
@@ -684,7 +684,7 @@ REPE SEXP RcallSyncMethod(SEXP par) {
   JNIEnv *env=getJNIEnv();
 
   p=CDR(p); e=CAR(p); p=CDR(p);
-  if (e==R_NilValue) 
+  if (e==R_NilValue)
     error("RcallSyncMethod: call on a NULL object");
   if (TYPEOF(e)==EXTPTRSXP) {
     jverify(e);
@@ -781,7 +781,7 @@ END_RJAVA_CALL
     }
   }
 #endif
-  
+
   return j2SEXP(env, o, 1);
 }
 
@@ -829,7 +829,7 @@ HIDE SEXP new_jobjRef(JNIEnv *env, jobject o, const char *klass) {
   return oo;
 }
 
-/** 
+/**
  * creates a new jclassName object. similar to what the jclassName
  * function does in the R side
  *
@@ -850,9 +850,9 @@ HIDE SEXP new_jclassName(JNIEnv *env, jobject/*Class*/ cl ) {
 /** Calls the Class.getName method and return the result as an R STRSXP */
 HIDE SEXP getName( JNIEnv *env, jobject/*Class*/ cl){
 	char cn[128];
-	
+
 	jstring r = (*env)->CallObjectMethod(env, cl, mid_getName);
-  
+
 	cn[127]=0; *cn=0;
   	int sl = (*env)->GetStringLength(env, r);
   	if (sl>127) {
@@ -861,7 +861,7 @@ HIDE SEXP getName( JNIEnv *env, jobject/*Class*/ cl){
   	if (sl) (*env)->GetStringUTFRegion(env, r, 0, sl, cn);
   	char *c=cn; while(*c) { if (*c=='.') *c='/'; c++; }
 
-	SEXP res = PROTECT( mkString(cn ) ); 
+	SEXP res = PROTECT( mkString(cn ) );
 	releaseObject(env, r);
 	UNPROTECT(1); /* res */
 	return res;
@@ -885,7 +885,7 @@ static SEXP new_jarrayRef(JNIEnv *env, jobject a, const char *sig) {
 /**
  * Creates a reference to a rectangular java array.
  *
- * @param env 
+ * @param env
  * @param a the java object
  * @param sig signature (class of the array object)
  * @param dim dimension vector
@@ -902,7 +902,7 @@ static SEXP new_jrectRef(JNIEnv *env, jobject a, const char *sig, SEXP dim ) {
   SET_SLOT(oo, install("jclass"), mkString(sig));
   SET_SLOT(oo, install("jsig"), mkString(sig));
   SET_SLOT(oo, install("dimension"), dim);
-  
+
   UNPROTECT(1); /* oo */
   return oo;
 }
@@ -910,17 +910,17 @@ static SEXP new_jrectRef(JNIEnv *env, jobject a, const char *sig, SEXP dim ) {
 /* this does not take care of multi dimensional arrays properly */
 
 /**
- * Creates a one dimensionnal java array
+ * Creates a one dimensional java array
  *
  * @param an R list or vector
  * @param cl the class name
  */
 REPC SEXP RcreateArray(SEXP ar, SEXP cl) {
   JNIEnv *env=getJNIEnv();
-  
+
   if (ar==R_NilValue) return R_NilValue;
   switch(TYPEOF(ar)) {
-  case INTSXP:                                
+  case INTSXP:
     {
       if (inherits(ar, "jbyte")) {
 	jbyteArray a = newByteArrayI(env, INTEGER(ar), LENGTH(ar));
@@ -929,7 +929,7 @@ REPC SEXP RcreateArray(SEXP ar, SEXP cl) {
       } else if (inherits(ar, "jchar")) {
 	jcharArray a = newCharArrayI(env, INTEGER(ar), LENGTH(ar));
 	if (!a) error("unable to create a char array");
-	return new_jarrayRef(env, a, "[C" ); 
+	return new_jarrayRef(env, a, "[C" );
       } else if (inherits(ar, "jshort")) {
 	jshortArray a = newShortArrayI(env, INTEGER(ar), LENGTH(ar));
 	if (!a) error("unable to create a short integer array");
@@ -985,12 +985,12 @@ REPC SEXP RcreateArray(SEXP ar, SEXP cl) {
       jclass ac = javaObjectClass;
       const char *sigName = 0;
       char buf[256];
-      
+
       while (i<LENGTH(ar)) {
 	SEXP e = VECTOR_ELT(ar, i);
 	if (e != R_NilValue &&
 	    !inherits(e, "jobjRef") &&
-	    !inherits(e, "jarrayRef") && 
+	    !inherits(e, "jarrayRef") &&
 	    !inherits(e, "jrectRef") )
 	  error("Cannot create a Java array from a list that contains anything other than Java object references.");
 	i++;
@@ -1010,7 +1010,7 @@ REPC SEXP RcreateArray(SEXP ar, SEXP cl) {
 	      buf[0] = '[';
 	      strcpy(buf+1, cname);
 	    } else {
-	      buf[0] = '['; buf[1] = 'L'; 
+	      buf[0] = '['; buf[1] = 'L';
 	      strcpy(buf+2, cname);
 	      strcat(buf,";");
 	    }
@@ -1033,7 +1033,7 @@ REPC SEXP RcreateArray(SEXP ar, SEXP cl) {
 	      jverify(sref);
 	      o = (jobject)EXTPTR_PTR(sref);
 	    }
-	  }	  
+	  }
 	  (*env)->SetObjectArrayElement(env, a, i, o);
 	  i++;
 	}
@@ -1067,7 +1067,7 @@ END_RJAVA_CALL
 REP void RclearException() {
   JNIEnv *env=getJNIEnv();
 BEGIN_RJAVA_CALL
-  (*env)->ExceptionClear(env);  
+  (*env)->ExceptionClear(env);
 END_RJAVA_CALL
 }
 
@@ -1094,7 +1094,7 @@ REPC SEXP RthrowException(SEXP ex) {
 
   if (!inherits(ex, "jobjRef"))
     error("Invalid throwable object.");
-  
+
   exr=GET_SLOT(ex, install("jobj"));
   if (exr && TYPEOF(exr)==EXTPTRSXP) {
     jverify(exr);
@@ -1102,7 +1102,7 @@ REPC SEXP RthrowException(SEXP ex) {
   }
   if (!t)
     error("Throwable must be non-null.");
-  
+
 BEGIN_RJAVA_CALL
   tr = (*env)->Throw(env, t);
 END_RJAVA_CALL
