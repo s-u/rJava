@@ -1,0 +1,47 @@
+on: [push, pull_request]
+
+name: check
+
+jobs:
+  check:
+    runs-on: ${{ matrix.os }}
+
+    name: ${{ matrix.os }} (${{ matrix.r }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ 'windows-latest', 'macOS-10.15', 'ubuntu-20.04' ]
+        r:  [ 'release' ]
+        java: [ 8, 11 ]
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - uses: r-lib/actions/setup-r@master
+        with:
+          r-version: ${{ matrix.r }}
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+
+      - name: Build
+        run: "sh mkdist"
+
+      - name: Info
+        run: "bash -c 'java -version && which java && echo $PATH && echo $JAVA_HOME'"
+
+      - name: Setup R Java support
+        if: runner.os != 'Windows'
+        run: "echo export PATH=$PATH > reconf.sh; echo export JAVA_HOME=$JAVA_HOME >> reconf.sh; echo R CMD javareconf >> reconf.sh; sudo bash reconf.sh"
+
+      - name: R CMD check
+        run: "bash -c 'R CMD check --no-multiarch --no-manual ../rJava_*.tar.gz'"
+
+      - name: Upload check results
+        if: failure()
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{ runner.os }}-r${{ matrix.r }}-j${{ matrix.java }}-results
+          path: rJava.Rcheck
