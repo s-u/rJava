@@ -11,9 +11,6 @@ int use_eenv = 1;
 /* cached environment. Do NOT use directly! Always use getJNIEnv()! */
 JNIEnv *eenv;
 
-/* -- hack to get at the current call from C code using contexts */
-#if ( R_VERSION >= R_Version(3, 6, 0) )
-
 static SEXP getCurrentCall() {
     SEXP cexp, sys_calls = PROTECT(install("sys.calls"));
     cexp = PROTECT(lang1(sys_calls));
@@ -28,74 +25,6 @@ static SEXP getCurrentCall() {
     }
     return R_NilValue; /* (LENGTH(cl) > 0) ? VECTOR_ELT(cl, 0) : R_NilValue; */
 }
-
-#elif ( R_VERSION >= R_Version(1, 7, 0) )
-#include <setjmp.h>
-
-/* stuff we need to pull for Windows... */
-#ifdef WIN32
-/* this is from gnuwin32/fixed/h/psignal.h */
-#ifndef _SIGSET_T_
-#define _SIGSET_T_
-typedef int sigset_t;
-#endif  /* Not _SIGSET_T_ */
-typedef struct
-{    
-  jmp_buf jmpbuf;     /* Calling environment.  */  
-  int mask_was_saved;       /* Saved the signal mask?  */                   
-  sigset_t saved_mask;      /* Saved signal mask.  */                       
-} sigjmp_buf[1];
-/* we need to set HAVE_POSIX_SETJMP since we don't have config.h on Win */
-#ifndef HAVE_POSIX_SETJMP
-#define HAVE_POSIX_SETJMP
-#endif
-#endif
-
-#ifdef HAVE_POSIX_SETJMP
-#define JMP_BUF sigjmp_buf
-#else
-#define JMP_BUF jmp_buf
-#endif
-
-#ifndef CTXT_BUILTIN
-#define CTXT_BUILTIN 64
-#endif
-
-typedef struct RCNTXT { /* this RCNTXT structure is only partial since we need to get at "call" - it is safe form R 1.7.0 on */
-	struct RCNTXT *nextcontext; /* The next context up the chain <<-- we use this one to skip the .Call/.External call frame */
-	int callflag;               /* The context "type" <<<-- we use this one to skip the .Call/.External call frame */
-	JMP_BUF cjmpbuf;            /* C stack and register information */
-	int cstacktop;              /* Top of the pointer protection stack */
-	int evaldepth;              /* evaluation depth at inception */
-	SEXP promargs;              /* Promises supplied to closure */
-	SEXP callfun;               /* The closure called */
-	SEXP sysparent;             /* environment the closure was called from */
-	SEXP call;                  /* The call that effected this context <<<--- we pass this one to the condition */
-	SEXP cloenv;                /* The environment */
-} RCNTXT;
-
-#ifndef LibExtern
-#define LibExtern extern
-#endif
-
-LibExtern RCNTXT* R_GlobalContext;
-
-static SEXP getCurrentCall() {
-	RCNTXT *ctx = R_GlobalContext;
-	/* skip the .External/.Call context to get at the underlying call */
-	if (ctx->nextcontext && (ctx->callflag & CTXT_BUILTIN))
-		ctx = ctx->nextcontext;
-	/* skip .jcheck */
-	if (TYPEOF(ctx->call) == LANGSXP && CAR(ctx->call) == install(".jcheck") && ctx->nextcontext)
-		ctx = ctx->nextcontext;		
-	return ctx->call;
-}
-#else
-static SEXP getCurrentCall() {
-	return R_NilValue;
-}
-#endif
-/* -- end of hack */
 
 /** throw an exception using R condition code.
  *  @param msg - message string
