@@ -31,7 +31,7 @@ public class Rengine extends Thread {
 
     static Thread mainRThread = null;
 
-	// constrants to be used with rniSpecialObject
+	// constants to be used with rniSpecialObject
 	/** constant to be used in {@link #rniSpecialObject} to return <code>R_NilValue</code> reference */
 	public static final int SO_NilValue     = 0;
 	/** constant to be used in {@link #rniSpecialObject} to return <code>R_GlobalEnv</code> reference */
