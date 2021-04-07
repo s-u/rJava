@@ -117,7 +117,7 @@ public class Rengine extends Thread {
         mainEngine=this;
 	mainRThread=this;
         start();
-        while (!alive && !died) yield();
+        while (!alive && !died) super.yield();
     }
 
     /** create a new engine by hooking into an existing, initialized R instance which is calling this constructor. Currently JRI won't influence this R instance other than disabling stack checks (i.e. no callbacks can be registered etc.). It is *not* the designated constructor and it should be used *only* from withing rJava.
