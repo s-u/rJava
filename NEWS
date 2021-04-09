@@ -26,6 +26,8 @@
     o	.jchar(x) supports single non-NA string by calling the
 	String$toCharArray() method.
 
+    o	raw vectors were not recognised in J() API (#260)
+
 
 0.9-14	2021-02-04
     o	JRI: fixed detection of the major Java version (#239)
