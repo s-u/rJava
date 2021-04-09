@@ -15,7 +15,9 @@
 \description{
   \code{.jfloat} marks a numeric vector as an object that can be used
   as parameter to Java calls that require \code{float} parameters.
-  Similarly, \code{.jlong} marks a numeric vector as \code{long} parameter.
+  Similarly, \code{.jlong} marks a numeric vector as \code{long}
+  parameter, \code{.jshort} as \code{short} and \code{.jbyte} as
+  \code{byte}.
 }
 \usage{
 .jfloat(x)
@@ -48,11 +50,18 @@
   between Java's \code{long} type and R's numeric is potentially lossy.
 
   \code{.jbyte} is used when a scalar byte is to be passed to Java. Note
-  that byte arrays are natively passed as RAW vectors, not as
-  \code{.jbyte} arrays.
+  that byte arrays are natively passed as raw vectors, not as
+  \code{.jbyte} arrays, although non-scalar \code{.jbyte} is equivalent
+  except for using four-times as much memory.
 
-  \code{jchar} is strictly experimental and may be based on
-  \code{character} vectors in the future.
+  \code{.jchar} is strictly experimental and uses integer vector as
+  storage class. The type \code{char} in Java
+  represents 16-bit Unicode code points (not to be confused with
+  \code{char} in C which is \code{byte} in Java!), see Java
+  documentation for details. \code{x} can also be a non-\code{NA} string
+  in which case \code{.jchar(x)} is just a shorthand for
+  \code{.jnew("java.lang.String", x)$toCharArray()} and thus performs a
+  Java call (unlike all other functions mentioned here).
 }
 \seealso{
   \code{\link{.jcall}}, \code{\link{jfloat-class}}

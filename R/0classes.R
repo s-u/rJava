@@ -45,7 +45,12 @@ setClass("jchar", representation("array" )  )
 }
 # and char (experimental)
 .jchar <- function(x){
-	storage.mode( x ) <- "integer"
-	new("jchar", as.integer(x))
+    if (is.character(x)) {
+        if (length(x) != 1L || is.na(x))
+            stop(".jchar() supports only (non-NA) character vectors of length one (aka strings)")
+        ## use Java to actually do the conversion
+        x <- .jcall(.jnew("java.lang.String", x), "[C", "toCharArray")
+    }
+    storage.mode( x ) <- "integer"
+    new("jchar", x)
 }
-
