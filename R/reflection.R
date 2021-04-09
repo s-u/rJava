@@ -44,7 +44,9 @@
 ._java_valid_object <- function(a) {
   if (is(a, "jobjRef")) a
   else if (is(a, "jclassName")) a@jobj
-  else if (is.null(a)) .jnull() else {
+  else if (is.null(a)) .jnull()
+  else if (is.raw(a)) .jarray(a, dispatch=FALSE) ## raw is always [B
+  else {
     cm <- match(class(a)[1], names(.class.to.jclass))
     if (!any(is.na(cm))) { 
     	if (length(a) == 1) { 
@@ -53,7 +55,7 @@
     		y 
     	} else .jarray(a, dispatch = FALSE)
     } else {
-      stop("Sorry, parameter type `", cm ,"' is ambiguous or not supported.")
+      stop("Sorry, parameter type `", class(a)[1] ,"' is ambiguous or not supported.")
     }
   }
 }
