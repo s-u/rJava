@@ -1,6 +1,7 @@
 setClass("jclassName", representation(name="character", jobj="jobjRef"))
 
 jclassName <- function(class, class.loader=.rJava.class.loader) {
+	if (.need.init()) .jinit()
 	if( is( class, "jobjRef" ) && .jinherits(class, "java/lang/Class" ) ){
 		jobj <- class
 		name <- .jcall( class, "Ljava/lang/String;", "getName", evalString = TRUE )

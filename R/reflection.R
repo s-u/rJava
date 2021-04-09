@@ -83,6 +83,7 @@
 .jrcall <- function(o, method, ..., simplify=TRUE, class.loader=.rJava.class.loader) {
   if (!is.character(method) | length(method) != 1)
     stop("Invalid method name - must be exactly one character string.")
+  if (.need.init()) .jinit()
   if (is(o, "jclassName"))
     cl <- o@jobj
   else if (is(o, "jobjRef"))
