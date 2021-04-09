@@ -18,6 +18,9 @@
 	in the package without need to change every call to J()
 	separately. See the documentation for .jpackage() for details.
 
+    o	J() will automatically call .jinit() if rJava has not been
+	initialized yet.
+
 
 0.9-14	2021-02-04
     o	JRI: fixed detection of the major Java version (#239)
