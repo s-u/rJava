@@ -1,7 +1,7 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-1.0-1	(under development)
+1.0-1	2020-04-12
     o	New feature: support for custom class loaders. It is strongly
 	recommended that package authors that use rJava in their
 	package use this new feature since it avoids conflicts of
