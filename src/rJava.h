@@ -102,8 +102,8 @@ void profReport(char *fmt, ...);
 #define mkCharUTF8(X) mkChar(X)
 #define CHAR_UTF8(X) CHAR(X)
 #else
-#define mkCharUTF8(X) mkCharCE(X, CE_UTF8)
 #define CHAR_UTF8(X) rj_char_utf8(X)
+extern SEXP mkCharUTF8(const char *);
 extern const char *rj_char_utf8(SEXP);
 #endif
 

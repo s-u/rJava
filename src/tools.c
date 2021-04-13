@@ -27,7 +27,9 @@ REPE SEXP RgetStringValue(SEXP par) {
   c=(*env)->GetStringUTFChars(env, s, 0);
   if (!c)
     error("cannot retrieve string content");
-  r = mkString(c);
+  r = PROTECT(allocVector(STRSXP, 1));
+  SET_STRING_ELT(r, 0, mkCharUTF8(c));
+  UNPROTECT(1);
   (*env)->ReleaseStringUTFChars(env, s, c);
   _prof(profReport("RgetStringValue:"));
   return r;
