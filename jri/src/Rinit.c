@@ -161,7 +161,7 @@ void myCallBack()
 #define CANCEL 0
 #endif
 
-int myYesNoCancel(char *s)
+int myYesNoCancel(RCCONST char *s)
 {
     char  ss[128];
     unsigned char a[3];

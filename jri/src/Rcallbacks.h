@@ -12,8 +12,13 @@
 #else
 #define RCCONST const
 #endif
+#ifdef WIN32
+#define RCSIGN
+#else
+#define RCSIGN unsigned
+#endif
 
-int  Re_ReadConsole(RCCONST char *prompt, unsigned char *buf, int len, int addtohistory);
+int  Re_ReadConsole(RCCONST char *prompt, RCSIGN char *buf, int len, int addtohistory);
 void Re_Busy(int which);
 void Re_WriteConsole(RCCONST char *buf, int len);
 void Re_WriteConsoleEx(RCCONST char *buf, int len, int oType);
