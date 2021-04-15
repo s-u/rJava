@@ -201,6 +201,7 @@ HIDE jdoubleArray newDoubleArray(JNIEnv *env, double *cont, int len);
 HIDE jintArray newIntArray(JNIEnv *env, int *cont, int len);
 HIDE jbooleanArray newBooleanArrayI(JNIEnv *env, int *cont, int len);
 HIDE jstring newString(JNIEnv *env, const char *cont);
+HIDE jstring newString16(JNIEnv *env, const jchar *cont, jsize len);
 HIDE jcharArray newCharArrayI(JNIEnv *env, int *cont, int len);
 HIDE jshortArray newShortArrayI(JNIEnv *env, int *cont, int len);
 HIDE jfloatArray newFloatArrayD(JNIEnv *env, double *cont, int len);

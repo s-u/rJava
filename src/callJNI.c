@@ -305,6 +305,12 @@ HIDE jstring newString(JNIEnv *env, const char *cont) {
   return s?s:errJNI("newString(\"%s\") failed",cont);
 }
 
+HIDE jstring newString16(JNIEnv *env, const jchar *cont, jsize len) {
+    jstring s=(*env)->NewString(env, cont, len);
+    _mp(MEM_PROF_OUT("  %08x LNEW string [%p,%d]\n", (int) s, cont, (int) len))
+    return s?s:errJNI("newString16(%p,%d) failed", cont, (int)len);
+}
+
 HIDE void releaseObject(JNIEnv *env, jobject o) {
   /* Rprintf("releaseObject: %lx\n", (long)o);
      printObject(env, o); */
