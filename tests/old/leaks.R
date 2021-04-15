@@ -6,9 +6,9 @@ gc()
 .i <- 1:10000
 ..s <- .s
 ..i <- .i
-cat(.jcall("Leaks","S","reportMem"),"\n")
+cat("=== Initial state:\n", .jcall("Leaks","S","reportMem"), "\n")
 cat(" - create unassigned objects\n")
-for (i in 1:400) .jnew("Leaks", .i, .s)
+for (i in 1:100) .jnew("Leaks", .i, .s)
 cat(.jcall("Leaks","S","reportMem"),"\n")
 cat(" running R gc\n")
 gc()
@@ -16,7 +16,7 @@ cat(" running java GC\n")
 cat(.jcall("Leaks","S","reportMem"),"\n")
 cat(" - static pass thorugh parameters\n")
 for (i in 1:800) {
-  if (i==400) { cat('   (forcing R gc)\n'); gc() }
+  if (i %% 160 == 0) { cat('   (forcing R gc)\n'); gc() }
   .i <- .jcall("Leaks", "[I", "passI", .i)
   .s <- .jcall("Leaks", "[S", "passS", .s)
 }
@@ -33,10 +33,12 @@ if (!isTRUE(all.equal(.i, ..i)))
 cat(" - dynamic storage\n")
 l <- .jnew("Leaks", .i, .s)
 for (i in 1:800) {
-  .i <- .jcall("Leaks", "[I", "passI", .i)
-  .s <- .jcall("Leaks", "[S", "passS", .s)
+  if (i %% 160 == 0) { cat('   (forcing R gc)\n'); gc() }
+  .i <- .jcall(l, "[I", "replaceI", .i)
+  .s <- .jcall(l, "[S", "replaceS", .s)
 }
 cat(.jcall("Leaks","S","reportMem"),"\n")
+rm(l)
 cat(" running R gc\n")
 gc()
 cat(.jcall("Leaks","S","reportMem"),"\n")
