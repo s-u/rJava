@@ -1,11 +1,14 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-1.0-2	(under development)
+1.0-2	2020-04-15
     o	convert UTF-16 surrogate pairs to UTF-8 when retrieving strings
 	from Java to R (#51)
 
     o	use UTF-16 encoding when converting R strings to Java
+
+    o	avoid warnings in the "blah" R Windows API by casting to
+	different types on Windows and unix.
 
 
 1.0-1	2020-04-12
