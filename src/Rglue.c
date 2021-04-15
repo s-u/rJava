@@ -4,6 +4,8 @@
 #include <Rdefines.h>
 #include <R_ext/Parse.h>
 #include <R_ext/Print.h>
+#include <R_ext/Riconv.h>
+#include <errno.h>
 
 /* R 4.0.1 broke EXTPTR_PTR ABI so re-map it to safety at
    the small expense of speed */
@@ -155,9 +157,65 @@ SEXP j2SEXP(JNIEnv *env, jobject o, int releaseLocal) {
 }
 
 #if R_VERSION >= R_Version(2,7,0)
-/* returns string from a CHARSXP making sure that the result is in UTF-8 */
+/* returns string from a CHARSXP making sure that the result is in UTF-8
+   NOTE: this should NOT be used to create Java strings as they require UTF-16 natively */
 const char *rj_char_utf8(SEXP s) {
     return (Rf_getCharCE(s) == CE_UTF8) ? CHAR(s) : Rf_reEnc(CHAR(s), getCharCE(s), CE_UTF8, 0); /* subst. invalid chars: 1=hex, 2=., 3=?, other=skip */
+}
+
+#ifdef WIN32
+extern unsigned int localeCP;
+static char cpbuf[16];
+#endif
+static jchar js_zero[2] = { 0, 0 };
+static jchar js_buf[128];
+/* returns string from a CHARSXP making sure that the result is in UTF-16.
+   the buffer is owned by the function and may be static, so copy after use */
+int rj_char_utf16(SEXP s, jchar **buf) {
+    void *ih;
+    cetype_t ce_in = getCharCE(s);
+    const char *ifrom = "", *c = CHAR(s), *ce = strchr(c, 0);
+    if (ce == c) {
+	buf[0] = js_zero;
+	return 0;
+    }
+    size_t osize = sizeof(jchar) * (ce - c + 1), isize = ce - c;
+    jchar *js = buf[0] = (osize < sizeof(js_buf)) ? js_buf : (jchar*) R_alloc(sizeof(jchar), ce - c + 1);
+    char *dst = (char*) js;
+    int end_test = 1;
+
+    switch (ce_in) {
+#ifdef WIN32
+    case CE_NATIVE:
+	sprintf(cpbuf, "CP%d", localeCP);
+	ifrom = cpbuf;
+	break;
+    case CE_LATIN1: ifrom = "CP1252"; break;
+#else
+    case CE_LATIN1: ifrom = "latin1"; break;
+#endif
+    default:
+	ifrom = "UTF-8"; break;
+    }
+
+    ih = Riconv_open(((char*)&end_test)[0] == 1 ? "UTF-16LE" : "UTF-16BE", ifrom);
+    if(ih == (void *)(-1))
+	Rf_error("Unable to start conversion to UTF-16");
+    while (c < ce) {
+	size_t res = Riconv(ih, &c, &isize, &dst, &osize);
+	/* this should never happen since we allocated far more than needed */
+	if (res == -1 && errno == E2BIG)
+	    Rf_error("Conversion to UTF-16 failed due to unexpectedly large buffer requirements.");
+	else if(res == -1 && (errno == EILSEQ || errno == EINVAL)) { /* invalid char */
+	    *(dst++) = '?';
+	    *(dst++) = 0;
+	    osize -= 2;
+	    c++;
+	    isize--;
+	}
+    }
+    Riconv_close(ih);
+    return dst - (char*) js;
 }
 
 /* Java returns *modified* UTF-8 which is incompatible with UTF-8,
@@ -255,6 +313,12 @@ SEXP mkCharUTF8(const char *src) {
 }
 
 #endif
+
+static jstring newJavaString(JNIEnv *env, SEXP sChar) {
+    jchar *s;
+    size_t len = rj_char_utf16(sChar, &s);
+    return newString16(env, s, (len + 1) >> 1);
+}
 
 HIDE void deserializeSEXP(SEXP o) {
   _dbg(rjprintf("attempt to deserialize %p (clCl=%p, oCL=%p)\n", o, clClassLoader, oClassLoader));
@@ -360,7 +424,7 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, sig_buffer_t *sig, i
 	  if (sv == R_NaString) {
 	      addtmpo(tmpo, jpar[jvpos++].l = 0);
 	  } else {
-	      addtmpo(tmpo, jpar[jvpos++].l = newString(env, CHAR_UTF8(sv)));
+	      addtmpo(tmpo, jpar[jvpos++].l = newJavaString(env, sv));
 	  }
       } else {
 	  int j = 0;
@@ -376,7 +440,7 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, sig_buffer_t *sig, i
 	      SEXP sv = STRING_ELT(e,j);
 	      if (sv == R_NaString) {
 	      } else {
-		  jobject s = newString(env, CHAR_UTF8(sv));
+		  jobject s = newJavaString(env, sv);
 		  _dbg(rjprintf (" [%d] \"%s\"\n",j,CHAR_UTF8(sv)));
 		  (*env)->SetObjectArrayElement(env, sa, j, s);
 		  if (s) releaseObject(env, s);
@@ -1058,7 +1122,7 @@ REPC SEXP RcreateArray(SEXP ar, SEXP cl) {
       while (i < LENGTH(ar)) {
 	  SEXP sa = STRING_ELT(ar, i);
 	  if (sa != R_NaString) {
-	      jobject so = newString(env, CHAR_UTF8(sa));
+	      jobject so = newJavaString(env, sa);
 	      (*env)->SetObjectArrayElement(env, a, i, so);
 	      releaseObject(env, so);
 	  }
