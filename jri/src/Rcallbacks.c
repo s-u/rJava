@@ -62,7 +62,7 @@ JNIEnv *checkEnvironment()
     return env;
 }
 
-int Re_ReadConsole(RCCONST char *prompt, unsigned char *buf, int len, int addtohistory)
+int Re_ReadConsole(RCCONST char *prompt, RCSIGN char *buf, int len, int addtohistory)
 {
 	jstring r,s;
 	jmethodID mid;
