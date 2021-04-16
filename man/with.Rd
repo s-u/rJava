@@ -56,7 +56,7 @@ Romain Francois <francoisromain@free.fr>
 }
 \references{
 	the \code{java.lang.reflect} package: 
-	\url{http://java.sun.com/j2se/1.5.0/docs/api/java/lang/reflect/package-summary.html}
+	\url{https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/package-summary.html}
 }
 \examples{
 \dontshow{.jinit()}
