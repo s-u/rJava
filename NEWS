@@ -1,6 +1,10 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+1.0-3
+    o	update URLs referring Java docs to current 1.8 website
+
+
 1.0-2	2021-04-15
     o	convert UTF-16 surrogate pairs to UTF-8 when retrieving strings
 	from Java to R (#51)
