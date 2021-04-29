@@ -1,6 +1,13 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+1.0-4
+    o	make jverify() check the object type before checking for
+	serialization content. This fixes possible segfaults,
+	including one in .jfield() when used on jclassName objects
+	where jverify() was used on the wrapping S4 class.
+
+
 1.0-3
     o	update URLs referring to Java docs to current 1.8 website
 
