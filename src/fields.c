@@ -32,6 +32,8 @@ static char *classToJNI(const char *cl) {
   return jc;
 }
 
+static SEXP R_Sym_jobj = 0;
+
 /* get an R object and extract Java class and Java object from it.
    if it is a string of class reference then jobj will
    be NULL and only the class is provided.
@@ -47,11 +49,14 @@ static jclass inputToClass(JNIEnv *env, SEXP obj, jobject *jobj, int *is_local) 
   if (is_local)
     *is_local = 0;
 
+  if (!R_Sym_jobj)
+    R_Sym_jobj = Rf_install("jobj");
+
   /* jclassName is the result of J("class.name") and has the class object in jobj slot */
   if (inherits(obj, "jclassName")) {
-    obj = GET_SLOT(obj, install("jobj"));
+    obj = GET_SLOT(obj, R_Sym_jobj);
     jverify(obj); /* twice wrapped: className has @jobj slot which in turn contains jobjRef to the class */
-    obj = GET_SLOT(obj, install("jobj"));
+    obj = GET_SLOT(obj, R_Sym_jobj);
     jverify(obj);
     cls = (jclass)EXTPTR_PTR(obj);
 #ifdef RJ_DEBUG
