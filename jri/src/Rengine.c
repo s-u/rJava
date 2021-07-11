@@ -121,6 +121,12 @@ JNIEXPORT jlong JNICALL Java_org_rosuda_JRI_Rengine_rniParse
       return SEXP2L(pstr);
 }
 
+void throw_jri_eval_error(JNIEnv *env)
+{
+      jclass exception = (*env)->FindClass(env, "java/lang/RuntimeException");
+      (*env)->ThrowNew(env, exception, R_curErrorBuf());
+}
+
 /** 
  * Evaluates one expression or a list of expressions
  *
@@ -138,7 +144,7 @@ JNIEXPORT jlong JNICALL Java_org_rosuda_JRI_Rengine_rniEval
       int i = 0, l;
 
       /* invalid (NULL) expression (parse error, ... ) */
-      if (!exp) return 0;
+      if (!exp) throw_jri_eval_error(env);
 
       if (TYPEOF(exps) == EXPRSXP) { 
       	  /* if the object is a list of exps, eval them one by one */
@@ -147,14 +153,13 @@ JNIEXPORT jlong JNICALL Java_org_rosuda_JRI_Rengine_rniEval
               es = R_tryEval(VECTOR_ELT(exps,i), eval_env, &er);
               
               /* an error occured, no need to continue */
-              if (er) return 0;
+              if (er) throw_jri_eval_error(env);
               i++;
           }
       } else
           es = R_tryEval(exps, eval_env, &er);
       
-      /* er is just a flag - on error return 0 */
-      if (er) return 0;
+      if (er) throw_jri_eval_error(env);
       
       return SEXP2L(es);
 }
