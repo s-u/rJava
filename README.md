@@ -7,7 +7,7 @@
 R/Java interface allowing the use of Java from R as well as embedding
 R into Java (via JRI)
 
-Please visit the [main rJava project page on RForge.net](http://rforge.net) for details.
+Please visit the [main rJava project page on RForge.net](https://rforge.net/rJava) for details.
 
 ### Installation
 
@@ -48,7 +48,7 @@ Rule #1: do __not__ set `JAVA_HOME` unless you are an expert. rJava attempts to 
 
 ### Windows
 
-Please make sure you install Java that matches your R architecture. R from CRAN is installed by default both in 32-bit and 64-bit versions so if in doubt, install both 32-bit and 64-bit Java. Most common mistake is to use 64-bit R but only have 32-bit Java installed.
+Please make sure you install Java that matches your R architecture. R from CRAN is installed by default both in 32-bit and 64-bit versions so if in doubt, install both 32-bit and 64-bit Java. Teh most common mistake is to use 64-bit R but only have 32-bit Java installed.
 
 rJava determines the Java location from the registry, so make sure you use the official Oracle installer so that your Java installation can be found.
 
@@ -60,7 +60,7 @@ When installing from a zip or tar ball, put your Java installation in `/Library/
 
 Most recent rJava version will try to automatically detect the Java location and load it dynamically. You can also check the version selected by your settings via `/usr/libexec/java_home` in the Terminal.
 
-If you have multiple versions and want to pick one without changing the macOS Java settinbgs, you can set `JAVA_HOME` but it must point to the `Home` directory inside the JDK, so, for example, for that above Zulu JDK that would be `JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-11.jdk/Contents/Home`. Again, don't do this unless you want to change the default behavior.
+If you have multiple versions and want to pick one without changing the macOS Java settings, you can set `JAVA_HOME` but it must point to the `Home` directory inside the JDK, so, for example, for that above Zulu JDK that would be `JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-11.jdk/Contents/Home`. Again, don't do this unless you want to change the default behavior.
 
 ### Linux
 
@@ -70,7 +70,7 @@ Also note that `sudo` may change environment variables, so if you need to run wi
 
 The way Java R configuration on Linux works is for the `R` start script to modify `LD_LIBRARY_PATH` to make sure the JVM libraries can be loaded (it does so according to the `javaconf` settings). Therefore if you use a process embbedding R you need to run it via `R CMD <program>` such that those setting are honored, otherwise you're on your own.
 
-If you are installing rJava from sources, make sure you have a full JDK installed and all necessary libraries needed to compile packages. For example, on Debian/Ubuntu that would require at least `r-base-dev`. If you run into issues, please check `config.log` which gives a clue as to what went wrong - usually some missing R dependency such as `pcre2`. The `config.log` file will be in the directory you used to build rJava in which is claned by R by default, so to keep it you can use e.g.:
+If you are installing rJava from sources, make sure you have a full JDK installed and all the necessary libraries needed to compile packages. For example, on Debian/Ubuntu that would require at least `r-base-dev`. If you run into issues, please check `config.log` which gives a clue as to what went wrong - usually some missing R dependency such as `pcre2`. The `config.log` file will be in the directory you used to build rJava in which is claned by R by default, so to keep it you can use e.g.:
 
 ```
 curl -LO https://rforge.net/rJava/snapshot/rJava_1.0-4.tar.gz
