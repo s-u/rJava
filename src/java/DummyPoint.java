@@ -16,5 +16,7 @@ public class DummyPoint implements Cloneable {
 		this.x += x ;
 		this.y += y ;
 	}
-	
+	public Object clone() {
+		return new DummyPoint(x, y);
+	}
 }
