@@ -1,6 +1,18 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+1.0-5	(under development)
+    o	allow access modifications to fail on JDK-17
+
+	== Important note to Java developers:
+	JDK-17 no longer allows access overrides, so J() wrapper
+	will fail for cases where the underlying class does
+	not allow public access. This means that it is no longer
+	possible to write high-level code that behaves as if it was a
+	member of the class. Do not upgrade to JDK-17 if that is
+	important in your application or write a Java wrapper that
+	exposes the necessary fields/methods as public.
+
 1.0-4
     o	make jverify() check the object type before checking for
 	serialization content. This fixes possible segfaults,
