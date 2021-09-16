@@ -345,7 +345,13 @@ public class RJavaTools {
 		
 		/* enforcing accessibility (workaround for bug 128) */
 		boolean access = cons.isAccessible(); 
-		cons.setAccessible( true ); 
+		if (!access) {
+			try { /* since JDK-17 this may fail */
+				cons.setAccessible( true ); 
+			} catch (Throwable e) {
+				access = true; /* nothing we can do, just let it fail below */
+			}
+		}
 		
 		Object o; 
 		try{
@@ -354,7 +360,8 @@ public class RJavaTools {
 			/* the target exception is much more useful than the reflection wrapper */
 			throw e.getTargetException() ;
 		} finally{
-			cons.setAccessible( access ); 
+			if (!access)
+				cons.setAccessible( access ); 
 		}
 		return o;                                 
 	}
@@ -378,8 +385,14 @@ public class RJavaTools {
 		Method m = getMethod( o_clazz, name, clazzes, arg_is_null(args) );
 		
 		/* enforcing accessibility (workaround for bug 128) */
-		boolean access = m.isAccessible(); 
-		m.setAccessible( true ); 
+		boolean access = m.isAccessible();
+		if (!access) {
+			try { /* since JDK-17 this may fail */
+				m.setAccessible( true ); 
+			} catch (Throwable e) {
+				access = true; /* nothing we can do, fail later with proper error ... */
+			}
+		}
 		
 		Object out; 
 		try{
@@ -388,7 +401,8 @@ public class RJavaTools {
 			/* the target exception is much more useful than the reflection wrapper */
 			throw e.getTargetException() ;
 		} finally{
-			m.setAccessible( access ); 
+			if (!access)
+				m.setAccessible( access ); 
 		}
 		return out ; 
 	}

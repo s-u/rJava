@@ -633,19 +633,25 @@ public class RJavaArrayTools {
 		
 		Method m = getCloneMethod( o.getClass() ) ;
 		boolean access = m.isAccessible() ; 
-		m.setAccessible( true ) ;
+		if (!access) {
+			try {
+				m.setAccessible( true ) ;
+			} catch (Throwable e) {
+				access = true; /* give up */
+			}
+		}
+
 		try{
 			for( int i=0; i<size; i++){
 				Object cloned = o.getClass().cast( m.invoke( o, (Object[])null ) );
 				res[i] = cloned ;
 			}
-		} catch( IllegalAccessException e) {
-			m.setAccessible( access );
-			/* should not happen */
 		} catch( InvocationTargetException e){
-			m.setAccessible( access );
 			throw e.getCause() ; 
-		} 
+		} finally {
+			if (!access)
+				m.setAccessible( access );
+		}
 		return res ;
 	}
 	
@@ -670,19 +676,25 @@ public class RJavaArrayTools {
 	public static Object cloneObject( Object o) throws Throwable {
 		Method m = getCloneMethod( o.getClass() ) ;
 		boolean access = m.isAccessible() ; 
-		m.setAccessible( true ) ;
+		if (!access) {
+			try {
+				m.setAccessible( true ) ;
+			} catch (Throwable e) {
+				access = true; /* give up */
+			}
+		}
 		
 		Object copy = null ; 
 		
-		try{
-				copy = o.getClass().cast( m.invoke( o, (Object[])null ) );
-		} catch( IllegalAccessException e) {
-			m.setAccessible( access );
-			/* should not happen */
+		try {
+			copy = o.getClass().cast( m.invoke( o, (Object[])null ) );
 		} catch( InvocationTargetException e){
-			m.setAccessible( access );
 			throw e.getCause() ; 
+		} finally {
+			if (!access)
+				m.setAccessible( access );
 		}
+
 		return copy ;
 	}
 	// }}}
