@@ -54,7 +54,7 @@ rJava determines the Java location from the registry, so make sure you use the o
 
 ### macOS
 
-On modern macOS versions Apple no longer supplies Java, so it must be downloaded from 3rd parties. Most commonly used distributions are [adoptium.net](https://adoptium.net) (Intel-based Macs only), [Azul Zulu](https://www.azul.com/downloads/) (includes Apple silicon). Please note that on Apple silicon (M1+) based Macs you will need latest R-4.1.1-patched from https://mac.R-project.org or else you will get `trap R` errors when loading Java (see [#267](https://github.com/s-u/rJava/issues/267) for details).
+On modern macOS versions Apple no longer supplies Java, so it must be downloaded from 3rd parties. Probably the most commonly used distribution on macOS are [adoptium.net](https://adoptium.net) and [Azul Zulu](https://www.azul.com/downloads/). Please note that if you are using arm64 R on Apple silicon (M1+) based Macs you will need latest R-4.1.1-patched from https://mac.R-project.org or else you will get `trap R` errors when loading Java (see [#267](https://github.com/s-u/rJava/issues/267) for details).
 
 When installing from a zip or tar ball, put your Java installation in `/Library/Java/JavaVirtualMachines`. For example, if installing Zulu, unpack/move it such that it results in `/Library/Java/JavaVirtualMachines/zulu-11.jdk`.
 
