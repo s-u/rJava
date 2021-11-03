@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(rJava, 0.8, Simon.Urbanek@r-project.org)
+AC_INIT([rJava],[0.8],[Simon.Urbanek@r-project.org])
 AC_CONFIG_SRCDIR([src/rJava.c])
-AC_CONFIG_HEADER([src/config.h])
+AC_CONFIG_HEADERS([src/config.h])
 AC_CONFIG_AUX_DIR([tools])
 
 # find R home and set CC/CFLAGS
@@ -24,8 +24,7 @@ fi
 
 ## enable threads, i.e. Java is running is a separate thread
 AC_ARG_ENABLE([threads],
-[AC_HELP_STRING([--enable-threads],
-		[enable the use of threads, i.e. Java is run on a separate thread.
+[AS_HELP_STRING([--enable-threads],[enable the use of threads, i.e. Java is run on a separate thread.
 		This is necessary for some implementations of AWT. This feature
 		is highly experimental, becasue of synchronization issues, so
 		use with care. @<:@no@:>@])],
@@ -34,8 +33,7 @@ AC_ARG_ENABLE([threads],
 
 ## enable JNI-cache
 AC_ARG_ENABLE([jni-cache],
-[AC_HELP_STRING([--enable-jni-cache],
-	        [enable support for caching of the JNI environment. With this
+[AS_HELP_STRING([--enable-jni-cache],[enable support for caching of the JNI environment. With this
 		 option turned on, the JNI state is stored locally and re-used
 		 for subsequent calls. This will work *only* if no threads are
 		 used, because each thread has a separate JNI state. Enabling
@@ -47,51 +45,44 @@ AC_ARG_ENABLE([jni-cache],
 
 ## enable JRI
 AC_ARG_ENABLE([jri],
-[AC_HELP_STRING([--enable-jri],
-		[enable Java to R interface (JRI), which allows Java programs
+[AS_HELP_STRING([--enable-jri],[enable Java to R interface (JRI), which allows Java programs
 		to embed R. @<:@auto@:>@])],
 [want_jri="${enableval}"],
 [want_jri=auto])
 
 ## enable headless
 AC_ARG_ENABLE([headless],
-[AC_HELP_STRING([--enable-headless],
-		[enable initialization in headless mode. @<:@auto@:>@])],
+[AS_HELP_STRING([--enable-headless],[enable initialization in headless mode. @<:@auto@:>@])],
 [want_headless="${enableval}"],
 [want_headless=auto])
 
 ## enable -Xrs support
 AC_ARG_ENABLE([Xrs],
-[AC_HELP_STRING([--enable-Xrs],
-		[use -Xrs in Java initialization. @<:@auto@:>@])],
+[AS_HELP_STRING([--enable-Xrs],[use -Xrs in Java initialization. @<:@auto@:>@])],
 [want_xrs="${enableval}"],
 [want_xrs=auto])
 
 ## enable dynloaded JVM
 AC_ARG_ENABLE([dynload],
-[AC_HELP_STRING([--enable-dynload],
-		[load JVM dynamically (without linking). @<:@auto@:>@])],
+[AS_HELP_STRING([--enable-dynload],[load JVM dynamically (without linking). @<:@auto@:>@])],
 [want_dynload="${enableval}"],
 [want_dynload=auto])
 
 ## enable debug flags
 AC_ARG_ENABLE([debug],
-[AC_HELP_STRING([--enable-debug],
-		[enable debug flags and output. @<:@no@:>@])],
+[AS_HELP_STRING([--enable-debug],[enable debug flags and output. @<:@no@:>@])],
 [want_debug="${enableval}"],
 [want_debug=no])
 
 ## enable memory profiling
 AC_ARG_ENABLE([mem-profile],
-[AC_HELP_STRING([--enable-mem-profile],
-		[enable memory profiling. @<:@debug@:>@])],
+[AS_HELP_STRING([--enable-mem-profile],[enable memory profiling. @<:@debug@:>@])],
 [want_memprof="${enableval}"],
 [want_memprof=debug])
 
 ## enable callbacks (experimental)
 AC_ARG_ENABLE([callbacks],
-[AC_HELP_STRING([--enable-callbacks],
-		[enable the support for callbacks from Java into R. This requires JRI and is currently experimental/incomplete. @<:@no@:>@])],
+[AS_HELP_STRING([--enable-callbacks],[enable the support for callbacks from Java into R. This requires JRI and is currently experimental/incomplete. @<:@no@:>@])],
 [want_callbacks="${enableval}"],
 [want_callbacks=no])
 
@@ -103,15 +94,13 @@ AC_PROG_CC
 # Checks for libraries.
 
 # Checks for header files.
-AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([string.h sys/time.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
-AC_HEADER_TIME
 
-AC_CHECKING([whether ${CC} supports static inline])
+AS_MESSAGE([checking whether ${CC} supports static inline...])
 can_inline=no
 AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 static inline int foo(int a, int b);

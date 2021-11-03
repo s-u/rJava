@@ -65,7 +65,7 @@ AC_SUBST(R_INCLUDE_DIR)
 
 AC_LANG(C)
 AC_PROG_CC
-AC_HEADER_STDC
+
 
 ## RUN_JAVA(variable for the result, parameters)
 ## ----------
