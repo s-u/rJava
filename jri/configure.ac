@@ -66,6 +66,9 @@ AC_SUBST(R_INCLUDE_DIR)
 AC_LANG(C)
 AC_PROG_CC
 
+## we need HAVE_..._H for R-ext/eventloop.h which requires
+## defines from R's config.h which are not shipped with R
+AC_CHECK_HEADERS([sys/time.h sys/types.h sys/select.h])
 
 ## RUN_JAVA(variable for the result, parameters)
 ## ----------
