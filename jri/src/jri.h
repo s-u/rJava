@@ -2,6 +2,9 @@
 #define __JRI_H__
 
 #include <jni.h>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include <R.h>
 #include <Rinternals.h>
 #include <Rdefines.h>
@@ -9,7 +12,7 @@
 
 /* the viewpoint is from R, i.e. "get" means "Java->R" whereas "put" means "R->Java" */
 
-#define JRI_VERSION 0x0506 /* JRI v0.5-6 */
+#define JRI_VERSION 0x0507 /* JRI v0.5-7 */
 #define JRI_API     0x010a /* API-version 1.10 */
 
 #ifdef __cplusplus
