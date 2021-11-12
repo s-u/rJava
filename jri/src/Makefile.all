@@ -1,5 +1,7 @@
 # JRI - Java/R Interface      experimental!
 #--------------------------------------------------------------------------
+# JRI_CPPFLAGS and JRI_LIBS are additional overrides that can be supplied
+# by the user
 
 JRI_JSRC=$(wildcard ../*.java)
 TARGETS=$(JNIPREFIX)jri$(JNISO) JRI.jar
@@ -7,38 +9,38 @@ TARGETS=$(JNIPREFIX)jri$(JNISO) JRI.jar
 all: $(TARGETS)
 
 JRI.jar: $(JRI_JSRC) $(JNIPREFIX)jri$(JNISO)
-	$(JAVAC) $(JFLAGS) -d . $(JRI_JSRC)
+	$(JAVAC) $(JFLAGS) $(JRI_JFLAGS) -d . $(JRI_JSRC)
 	$(JAR) fc $@ org $(JNIPREFIX)jri$(JNISO)
 
 org_rosuda_JRI_Rengine.h: org/rosuda/JRI/Rengine.class
 	if [ -n "$(JAVAH)" ]; then $(JAVAH) -d . -classpath . org.rosuda.JRI.Rengine; fi
 
 Rcallbacks.o: Rcallbacks.c Rcallbacks.h globals.h org_rosuda_JRI_Rengine.h
-	$(CC) -c -o $@ $< $(CFLAGS) $(CPICF) $(JAVAINC) $(RINC)
+	$(CC) -c -o $@ $< $(CFLAGS) $(CPICF) $(JAVAINC) $(RINC) $(JRI_CPPFLAGS)
 
 Rinit.o: Rinit.c Rinit.h Rcallbacks.h
-	$(CC) -c -o $@ $< $(CFLAGS) $(CPICF) $(RINC)
+	$(CC) -c -o $@ $< $(CFLAGS) $(CPICF) $(RINC) $(JRI_CPPFLAGS)
 
 globals.o: globals.c globals.h
-	$(CC) -c -o $@ $< $(CFLAGS) $(CPICF) $(JAVAINC)
+	$(CC) -c -o $@ $< $(CFLAGS) $(CPICF) $(JAVAINC) $(JRI_CPPFLAGS)
 
 rjava.o: rjava.c rjava.h
-	$(CC) -c -o $@ $< $(CFLAGS) $(CPICF) $(JAVAINC)
+	$(CC) -c -o $@ $< $(CFLAGS) $(CPICF) $(JAVAINC) $(JRI_CPPFLAGS)
 
 Rengine.o: Rengine.c org_rosuda_JRI_Rengine.h globals.h Rcallbacks.h Rinit.h
-	$(CC) -c -o $@ Rengine.c $(CFLAGS) $(CPICF) $(JAVAINC) $(RINC)
+	$(CC) -c -o $@ Rengine.c $(CFLAGS) $(CPICF) $(JAVAINC) $(RINC) $(JRI_CPPFLAGS)
 
 jri.o: jri.c
-	$(CC) -c -o $@ jri.c $(CFLAGS) $(CPICF) $(JAVAINC) $(RINC)
+	$(CC) -c -o $@ jri.c $(CFLAGS) $(CPICF) $(JAVAINC) $(RINC) $(JRI_CPPFLAGS)
 
 $(JNIPREFIX)jri$(JNISO): Rengine.o jri.o Rcallbacks.o Rinit.o globals.o rjava.o $(JRIDEPS)
-	$(CC) -o $@ $^ $(LDFLAGS) $(JNILD) $(RLD)
+	$(CC) -o $@ $^ $(LDFLAGS) $(JNILD) $(RLD) $(JRI_LIBS)
 
 win32/libjvm.dll.a:
 	make -C win32 libjvm.dll.a
 
 org/rosuda/JRI/Rengine.class org/rosuda/JRI/REXP.class org/rosuda/JRI/Mutex.class: $(JRI_JSRC)
-	$(JAVAC) $(JFLAGS) -d . $^
+	$(JAVAC) $(JFLAGS) $(JRI_JFLAGS) -d . $^
 
 clean:
 	rm -rf $(TARGETS) org *.o *~ org_rosuda_JRI_Rengine.h *$(JNISO) *.class *~
