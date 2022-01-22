@@ -15,7 +15,10 @@ JRI.jar: $(JRI_JSRC) $(JNIPREFIX)jri$(JNISO)
 org_rosuda_JRI_Rengine.h: org/rosuda/JRI/Rengine.class
 	if [ -n "$(JAVAH)" ]; then $(JAVAH) -d . -classpath . org.rosuda.JRI.Rengine; fi
 
-Rcallbacks.o: Rcallbacks.c Rcallbacks.h globals.h org_rosuda_JRI_Rengine.h
+Rcallbacks.o: Rcallbacks.c Rcallbacks.h globals.h rjstring.h org_rosuda_JRI_Rengine.h
+	$(CC) -c -o $@ $< $(CFLAGS) $(CPICF) $(JAVAINC) $(RINC) $(JRI_CPPFLAGS)
+
+rjstring.o: rjstring.c rjstring.h
 	$(CC) -c -o $@ $< $(CFLAGS) $(CPICF) $(JAVAINC) $(RINC) $(JRI_CPPFLAGS)
 
 Rinit.o: Rinit.c Rinit.h Rcallbacks.h
@@ -33,7 +36,7 @@ Rengine.o: Rengine.c org_rosuda_JRI_Rengine.h globals.h Rcallbacks.h Rinit.h
 jri.o: jri.c
 	$(CC) -c -o $@ jri.c $(CFLAGS) $(CPICF) $(JAVAINC) $(RINC) $(JRI_CPPFLAGS)
 
-$(JNIPREFIX)jri$(JNISO): Rengine.o jri.o Rcallbacks.o Rinit.o globals.o rjava.o $(JRIDEPS)
+$(JNIPREFIX)jri$(JNISO): Rengine.o jri.o Rcallbacks.o Rinit.o globals.o rjava.o rjstring.o $(JRIDEPS)
 	$(CC) -o $@ $^ $(LDFLAGS) $(JNILD) $(RLD) $(JRI_LIBS)
 
 win32/libjvm.dll.a:
