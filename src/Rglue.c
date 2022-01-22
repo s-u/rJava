@@ -160,6 +160,11 @@ SEXP j2SEXP(JNIEnv *env, jobject o, int releaseLocal) {
 /* returns string from a CHARSXP making sure that the result is in UTF-8
    NOTE: this should NOT be used to create Java strings as they require UTF-16 natively */
 const char *rj_char_utf8(SEXP s) {
+#ifdef DEBUG_ENCODING
+    fprintf(stderr, "rJava.rj_char_utf8, CE=%d: \"%s\"\n", (int)Rf_getCharCE(s), CHAR(s));
+//  { const char *c0 = CHAR(s); while (*c0) fprintf(stderr, " %02x", (int)((unsigned char)*(c0++))); }
+//  fprintf(stderr, "\n");
+#endif
     return (Rf_getCharCE(s) == CE_UTF8) ? CHAR(s) : Rf_reEnc(CHAR(s), getCharCE(s), CE_UTF8, 0); /* subst. invalid chars: 1=hex, 2=., 3=?, other=skip */
 }
 
@@ -184,20 +189,32 @@ int rj_char_utf16(SEXP s, jchar **buf) {
     char *dst = (char*) js;
     int end_test = 1;
 
+#ifdef DEBUG_ENCODING
+    fprintf(stderr, "rJava.rj_char_utf16, CE=%d:", (int)ce_in);
+    { const char *c0 = c; while (*c0) fprintf(stderr, " %02x", (int)((unsigned char)*(c0++))); }
+    fprintf(stderr, "\n");
+#endif
+
     switch (ce_in) {
 #ifdef WIN32
     case CE_NATIVE:
+/* reEnc uses this, but translateCharUtf8 uses "" so let's go with ""
 	sprintf(cpbuf, "CP%d", localeCP);
 	ifrom = cpbuf;
+*/
 	break;
     case CE_LATIN1: ifrom = "CP1252"; break;
 #else
+    case CE_NATIVE: break; /* is already "" */
     case CE_LATIN1: ifrom = "latin1"; break;
 #endif
     default:
 	ifrom = "UTF-8"; break;
     }
 
+#ifdef DEBUG_ENCODING
+    fprintf(stderr, "  '%s' -> UTF-16: ", ifrom);
+#endif
     ih = Riconv_open(((char*)&end_test)[0] == 1 ? "UTF-16LE" : "UTF-16BE", ifrom);
     if(ih == (void *)(-1))
 	Rf_error("Unable to start conversion to UTF-16");
@@ -215,6 +232,10 @@ int rj_char_utf16(SEXP s, jchar **buf) {
 	}
     }
     Riconv_close(ih);
+#ifdef DEBUG_ENCODING
+    { const jchar *j = js; while (j < (const jchar*)dst) fprintf(stderr, " %04x", (unsigned int)*(j++)); }
+    fprintf(stderr, "\n");
+#endif
     return dst - (char*) js;
 }
 
