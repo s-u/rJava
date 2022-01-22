@@ -6,6 +6,7 @@
 #include <R_ext/Print.h>
 #include <R_ext/Riconv.h>
 #include <errno.h>
+#include "rjstring.h"
 
 /* R 4.0.1 broke EXTPTR_PTR ABI so re-map it to safety at
    the small expense of speed */
@@ -156,9 +157,9 @@ SEXP j2SEXP(JNIEnv *env, jobject o, int releaseLocal) {
   }
 }
 
-#if R_VERSION >= R_Version(2,7,0)
 /* returns string from a CHARSXP making sure that the result is in UTF-8
-   NOTE: this should NOT be used to create Java strings as they require UTF-16 natively */
+   NOTE: this should NOT be used to create Java strings as they require UTF-16 natively
+   For Java strings use rj_*_utf16 function from rjstring.h */
 const char *rj_char_utf8(SEXP s) {
 #ifdef DEBUG_ENCODING
     fprintf(stderr, "rJava.rj_char_utf8, CE=%d: \"%s\"\n", (int)Rf_getCharCE(s), CHAR(s));
@@ -168,176 +169,10 @@ const char *rj_char_utf8(SEXP s) {
     return (Rf_getCharCE(s) == CE_UTF8) ? CHAR(s) : Rf_reEnc(CHAR(s), getCharCE(s), CE_UTF8, 0); /* subst. invalid chars: 1=hex, 2=., 3=?, other=skip */
 }
 
-#ifdef WIN32
-extern unsigned int localeCP;
-static char cpbuf[16];
-#endif
-static jchar js_zero[2] = { 0, 0 };
-static jchar js_buf[128];
-/* returns string from a CHARSXP making sure that the result is in UTF-16.
-   the buffer is owned by the function and may be static, so copy after use */
-int rj_char_utf16(SEXP s, jchar **buf) {
-    void *ih;
-    cetype_t ce_in = getCharCE(s);
-    const char *ifrom = "", *c = CHAR(s), *ce = strchr(c, 0);
-    if (ce == c) {
-	buf[0] = js_zero;
-	return 0;
-    }
-    size_t osize = sizeof(jchar) * (ce - c + 1), isize = ce - c;
-    jchar *js = buf[0] = (osize < sizeof(js_buf)) ? js_buf : (jchar*) R_alloc(sizeof(jchar), ce - c + 1);
-    char *dst = (char*) js;
-    int end_test = 1;
-
-#ifdef DEBUG_ENCODING
-    fprintf(stderr, "rJava.rj_char_utf16, CE=%d:", (int)ce_in);
-    { const char *c0 = c; while (*c0) fprintf(stderr, " %02x", (int)((unsigned char)*(c0++))); }
-    fprintf(stderr, "\n");
-#endif
-
-    switch (ce_in) {
-#ifdef WIN32
-    case CE_NATIVE:
-/* reEnc uses this, but translateCharUtf8 uses "" so let's go with ""
-	sprintf(cpbuf, "CP%d", localeCP);
-	ifrom = cpbuf;
-*/
-	break;
-    case CE_LATIN1: ifrom = "CP1252"; break;
-#else
-    case CE_NATIVE: break; /* is already "" */
-    case CE_LATIN1: ifrom = "latin1"; break;
-#endif
-    default:
-	ifrom = "UTF-8"; break;
-    }
-
-#ifdef DEBUG_ENCODING
-    fprintf(stderr, "  '%s' -> UTF-16: ", ifrom);
-#endif
-    ih = Riconv_open(((char*)&end_test)[0] == 1 ? "UTF-16LE" : "UTF-16BE", ifrom);
-    if(ih == (void *)(-1))
-	Rf_error("Unable to start conversion to UTF-16");
-    while (c < ce) {
-	size_t res = Riconv(ih, &c, &isize, &dst, &osize);
-	/* this should never happen since we allocated far more than needed */
-	if (res == -1 && errno == E2BIG)
-	    Rf_error("Conversion to UTF-16 failed due to unexpectedly large buffer requirements.");
-	else if(res == -1 && (errno == EILSEQ || errno == EINVAL)) { /* invalid char */
-	    *(dst++) = '?';
-	    *(dst++) = 0;
-	    osize -= 2;
-	    c++;
-	    isize--;
-	}
-    }
-    Riconv_close(ih);
-#ifdef DEBUG_ENCODING
-    { const jchar *j = js; while (j < (const jchar*)dst) fprintf(stderr, " %04x", (unsigned int)*(j++)); }
-    fprintf(stderr, "\n");
-#endif
-    return dst - (char*) js;
-}
-
-/* Java returns *modified* UTF-8 which is incompatible with UTF-8,
-   so we have to detect the illegal surrgoate pairs and convert them */
-SEXP mkCharUTF8(const char *src) {
-    const unsigned char *s = (const unsigned char*) src;
-    const unsigned char *c = (const unsigned char*) s;
-    /* check if the string contains any surrogate pairs, i.e.
-       Unicode in the range 0xD800-0xDFFF
-       We want this to be fast since in 99.99% of cases it will
-       be false */
-    while (*c) {
-	if (c[0] == 0xED &&
-	    (c[1] & 0xE0) == 0xA0)
-	    break;
-	c++;
-    }
-    if (*c) { /* yes, we have to convert them */
-	SEXP res;
-	const unsigned char *e = (const unsigned char*) strchr((const char*)s, 0); /* find the end for size */
-	unsigned char *dst = 0, *d, sbuf[64];
-	if (!e) /* should never occur */
-	    return mkChar("");
-	/* we use static buffer for small strings and dynamic alloc for large */
-	if (e - s >= sizeof(sbuf)) {
-	    /* allocate temp buffer since our input is const */
-	    d = dst = (unsigned char *) malloc(e - s + 1);
-	    if (!dst)
-		Rf_error("Cannot allocate memory for surrogate pair conversion");
-	} else
-	    d = (unsigned char *)sbuf;
-	if (c - s > 0) {
-	    memcpy(d, s, c - s);
-	    d += c - s;
-	}
-	while (*c) {
-	    unsigned int u1, u;
-	    *(d++) = *(c++);
-	    /* start of a sequence ? */
-	    if ((c[-1] & 0xC0) != 0xC0)
-		continue;
-	    if ((c[-1] & 0xE0) == 0xC0)  { /* 2-byte, not a surrogate pair */
-		if ((c[0] & 0xC0) != 0x80) {
-		    if (dst) free(dst);
-		    Rf_error("illegal 2-byte sequence in Java string");
-		}
-		*(d++) = *(c++);
-		continue;
-	    }
-	    if ((c[-1] & 0xF0) != 0xE0) { /* must be 3-byte */
-		if (dst) free(dst);
-		Rf_error("illegal multi-byte seqeunce in Java string (>3-byte)");
-	    }
-	    if (((c[0] & 0xC0) != 0x80 ||
-		 (c[1] & 0xC0) != 0x80)) {
-		if (dst) free(dst);
-		Rf_error("illegal 3-byte sequence in Java string");
-	    }
-	    u1 = ((((unsigned int)c[-1]) & 0x0F) << 12) |
-		 ((((unsigned int)c[0]) & 0x3F) << 6) |
-		 (((unsigned int)c[1]) & 0x3F);
-	    if (u1 < 0xD800 || u1 > 0xDBFF) { /* not a surrogate pair -> regular copy */
-		*(d++) = *(c++);
-		*(d++) = *(c++);
-		continue;
-	    }
-	    if (u1 >= 0xDC00 && u1 <= 0xDFFF) { /* low surrogate pair ? */
-		if (dst) free(dst);
-		Rf_error("illegal sequence in Java string: low surrogate pair without a high one");
-	    }
-	    c += 2; /* move to the low pair */
-	    if (c[0] != 0xED ||
-		(c[1] & 0xF0) != 0xB0 ||
-		(c[2] & 0xC0) != 0x80) {
-		if (dst) free(dst);
-		Rf_error("illegal sequence in Java string: high surrogate pair not followed by low one");
-	    }
-	    /* the actually encoded unicode character */
-	    u = ((((unsigned int)c[1]) & 0x0F) << 6) |
-		(((unsigned int)c[2]) & 0x3F);
-	    u |= (u1 & 0x03FF) << 10;
-	    u += 0x10000;
-	    c += 3;
-	    /* it must be <= 0x10FFFF by design (each surrogate has 10 bits) */
-	    d[-1]  = (unsigned char) (((u >> 18) & 0x0F) | 0xF0);
-	    *(d++) = (unsigned char) (((u >> 12) & 0x3F) | 0x80);
-	    *(d++) = (unsigned char) (((u >> 6) & 0x3F) | 0x80);
-	    *(d++) = (unsigned char) ((u & 0x3F) | 0x80);
-	}
-	res = mkCharLenCE((const char*) (dst ? dst : sbuf), dst ? (d - dst) : (d - sbuf), CE_UTF8);
-	if (dst) free(dst);
-	return res;
-    }
-    return mkCharLenCE(src, c - s, CE_UTF8);
-}
-
-#endif
 
 static jstring newJavaString(JNIEnv *env, SEXP sChar) {
     jchar *s;
-    size_t len = rj_char_utf16(sChar, &s);
+    size_t len = rj_rchar_utf16(sChar, &s);
     return newString16(env, s, (len + 1) >> 1);
 }
 

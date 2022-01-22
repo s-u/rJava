@@ -97,14 +97,17 @@ void profReport(char *fmt, ...);
 #define END_RJAVA_CALL };
 #endif
 
-/* define mkCharUTF8 in a compatible fashion */
+/* define mkCharUTF8 in a compatible fashion
+   NOTE: those should NOT be used anymore since native
+   Java strings use UTF-16 so use only in cases where UTF8 is required */
 #if R_VERSION < R_Version(2,7,0)
 #define mkCharUTF8(X) mkChar(X)
 #define CHAR_UTF8(X) CHAR(X)
 #else
+#define mkCharUTF8(X) rj_mkCharUTF8(X)
 #define CHAR_UTF8(X) rj_char_utf8(X)
-extern SEXP mkCharUTF8(const char *);
-extern const char *rj_char_utf8(SEXP);
+extern SEXP rj_mkCharUTF8(const char *); /* rjstring.c */
+extern const char *rj_char_utf8(SEXP);   /* Rglue.c */
 #endif
 
 /* signatures are stored in a local buffer if they fit. Only if they don't fit a heap buffer is allocated and used. */
