@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "Rdecl.h"
 #include "Rcallbacks.h"
+#include "rjstring.h"
 
 #include "org_rosuda_JRI_Rengine.h"
 #include <R_ext/Parse.h>
@@ -64,12 +65,15 @@ JNIEnv *checkEnvironment()
 
 int Re_ReadConsole(RCCONST char *prompt, RCSIGN char *buf, int len, int addtohistory)
 {
-	jstring r,s;
+	jstring r, s;
 	jmethodID mid;
-    JNIEnv *lenv=checkEnvironment();
-	
-    if (!lenv || !engineObj) return -1;
-	
+	JNIEnv *lenv=checkEnvironment();
+	const void *vmax = 0;
+	int ret = -1;
+	const char *c = 0;
+
+	if (!lenv || !engineObj) return -1;
+
 	jri_checkExceptions(lenv, 1);
 	mid=(*lenv)->GetMethodID(eenv, engineClass, "jriReadConsole", "(Ljava/lang/String;I)Ljava/lang/String;");
 #ifdef JRI_DEBUG
@@ -77,28 +81,46 @@ int Re_ReadConsole(RCCONST char *prompt, RCSIGN char *buf, int len, int addtohis
 #endif
 	jri_checkExceptions(lenv, 0);
 	if (!mid) return -1;
-		
-	s=(*lenv)->NewStringUTF(eenv, prompt);
-	r=(jstring) (*lenv)->CallObjectMethod(lenv, engineObj, mid, s, addtohistory);
+	vmax = vmaxget();
+	s = rj_newNativeJavaString(lenv, prompt, -1);
+	vmaxset(vmax);
+	if (!s) return -1;
+	r = (jstring) (*lenv)->CallObjectMethod(lenv, engineObj, mid, s, addtohistory);
 	jri_checkExceptions(lenv, 1);
 	(*lenv)->DeleteLocalRef(lenv, s);
 	jri_checkExceptions(lenv, 0);
-	if (r) {
-		const char *c=(*lenv)->GetStringUTFChars(lenv, r, 0);
-		if (!c) return -1;
-		{
-			int l=strlen(c);
-			strncpy((char*)buf, c, (l>len-1)?len-1:l);
-			buf[(l>len-1)?len-1:l]=0;
-#ifdef JRI_DEBUG
-			printf("Re_ReadConsole succeeded: \"%s\"\n",buf);
-#endif
+	while (r) {
+		/* get string in Java UTF-8 */
+		c = (*lenv)->GetStringUTFChars(lenv, r, 0);
+		if (!c) break;
+		vmax = vmaxget();
+
+		/* convert from Java UTF-8 to real UTF-8 in a CHARSXP */
+		SEXP sRes = rj_mkCharUTF8_noerr(c);
+		if (!sRes) {
+			vmaxset(vmax);
+			break;
 		}
-		(*lenv)->ReleaseStringUTFChars(lenv, r, c);
+
+		/* UTF8 -> native */
+		const char *rc = Rf_translateChar(sRes);
+		int l = strlen(rc);
+		strncpy((char*)buf, rc, (l > len - 1) ? len - 1 : l);
+		vmaxset(vmax);
+
+		/* truncate if needed */
+		buf[(l > len - 1) ? len - 1 : l] = 0;
+#ifdef JRI_DEBUG
+		printf("Re_ReadConsole succeeded: \"%s\"\n", buf);
+#endif
+		ret = 1;
+		break;
+	}
+	if (r) {
+		if (c) (*lenv)->ReleaseStringUTFChars(lenv, r, c);
 		(*lenv)->DeleteLocalRef(lenv, r);
-		return 1;
-    }
-    return -1;
+	}
+	return ret;
 }
 
 void Re_Busy(int which)
@@ -118,20 +140,27 @@ void Re_Busy(int which)
 
 void Re_WriteConsoleEx(RCCONST char *buf, int len, int oType)
 {
-    JNIEnv *lenv=checkEnvironment();
-    jri_checkExceptions(lenv, 1);
-    {
-      jstring s=(*lenv)->NewStringUTF(lenv, buf);
-      jmethodID mid=(*lenv)->GetMethodID(lenv, engineClass, "jriWriteConsole", "(Ljava/lang/String;I)V");
-      jri_checkExceptions(lenv, 0);
+	JNIEnv *lenv = checkEnvironment();
+	jri_checkExceptions(lenv, 1);
+
+	const void *vmax = vmaxget();
+	jstring s = rj_newNativeJavaString(lenv, buf, len);
+	vmaxset(vmax);
+	if (!s) {
 #ifdef JRI_DEBUG
-      printf("jriWriteConsole mid=%x\n", mid);
+		printf("jriWriteConsole rj_newNativeJavaString() FAILED!\n");
 #endif
-      if (!mid) return;
-      (*lenv)->CallVoidMethod(lenv, engineObj, mid, s, oType);
-      jri_checkExceptions(lenv, 1);
-      (*lenv)->DeleteLocalRef(lenv, s);
-    }
+		return;
+	}
+	jmethodID mid = (*lenv)->GetMethodID(lenv, engineClass, "jriWriteConsole", "(Ljava/lang/String;I)V");
+	jri_checkExceptions(lenv, 0);
+#ifdef JRI_DEBUG
+	printf("jriWriteConsole mid=%x\n", mid);
+#endif
+	if (!mid) return;
+	(*lenv)->CallVoidMethod(lenv, engineObj, mid, s, oType);
+	jri_checkExceptions(lenv, 1);
+	(*lenv)->DeleteLocalRef(lenv, s);
 }
 
 /* old-style WriteConsole (for old R versions only) */
