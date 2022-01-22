@@ -1,6 +1,16 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+1.0-7
+    o	fix conversion from native encoding into UTF-16 (introduced
+	in 1.0-2) to work correctly if the native encoding is
+	neither UTF-8 nor Latin1. (#228)
+
+    o	debugging: if DEBUG_ENCODING C macro is defined string
+	conversion routines will output debugging information
+	when strings are converted from R to Java.
+
+
 1.0-6	2021-12-10
     o	remove obsolete autoconf macros
 
