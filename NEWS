@@ -10,6 +10,10 @@
 	conversion routines will output debugging information
 	when strings are converted from R to Java.
 
+    o	JRI: console callbacks (Read/WriteConsole) encode and decode
+	strings between native encoding and Java. (#24)
+	Previously, only UTF-8 native locales were supported.
+
 
 1.0-6	2021-12-10
     o	remove obsolete autoconf macros
