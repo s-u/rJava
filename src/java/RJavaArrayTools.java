@@ -738,7 +738,7 @@ public class RJavaArrayTools {
 		if (d == null) return null;
 		int i = 0, n = d.length;
 		Double o[] = new Double[i];
-		for (i = 0; i < n; i++) if (!isNA(d[i])) o[i] = new Double(d[i]);
+		for (i = 0; i < n; i++) if (!isNA(d[i])) o[i] = Double.valueOf(d[i]);
 		return o;
 	}
 
@@ -746,7 +746,7 @@ public class RJavaArrayTools {
 		if (d == null) return null;
 		int i = 0, n = d.length;
 		Integer o[] = new Integer[i];
-		for (i = 0; i < n; i++) if (d[i] != NA_INTEGER) o[i] = new Integer(d[i]);
+		for (i = 0; i < n; i++) if (d[i] != NA_INTEGER) o[i] = Integer.valueOf(d[i]);
 		return o;
 	}
 
@@ -754,7 +754,7 @@ public class RJavaArrayTools {
 		if (d == null) return null;
 		int i = 0, n = d.length;
 		Boolean o[] = new Boolean[i];
-		for (i = 0; i < n; i++) if (d[i] != NA_INTEGER) o[i] = new Boolean((d[i] == 0) ? false : true);
+		for (i = 0; i < n; i++) if (d[i] != NA_INTEGER) o[i] = Boolean.valueOf((d[i] == 0) ? false : true);
 		return o;
 	}
 }

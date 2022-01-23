@@ -161,7 +161,6 @@ public class RJavaClassLoader extends URLClassLoader {
 				try{
 					urlPrefix = "jar:" + toURL().toString() + "!" ;
 				} catch( java.net.MalformedURLException ex){
-				} catch( java.io.IOException ex){
 				}
 			}
 			

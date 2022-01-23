@@ -237,7 +237,7 @@ public class RJavaArrayTools_Test {
 		System.out.print( "  new Double('10.2') " ) ;
 		boolean ok = false; 
 		try{
-			RJavaArrayTools.getDimensionLength( new Double("10.3") ) ;
+			RJavaArrayTools.getDimensionLength( Double.valueOf(10.3) ) ;
 		} catch( NotAnArrayException e){
 			ok = true ; 
 		}
@@ -505,7 +505,7 @@ public class RJavaArrayTools_Test {
 		System.out.print( "  new Double('10.2') " ) ;
 		boolean ok = false; 
 		try{
-			res = RJavaArrayTools.getDimensions( new Double("10.3") ) ;
+			res = RJavaArrayTools.getDimensions( Double.valueOf(10.3) ) ;
 		} catch( NotAnArrayException e){
 			ok = true ; 
 		}
@@ -736,7 +736,7 @@ public class RJavaArrayTools_Test {
 		System.out.print( "  new Double('10.2') " ) ;
 		boolean ok = false; 
 		try{
-			res = RJavaArrayTools.getTrueLength( new Double("10.3") ) ;
+			res = RJavaArrayTools.getTrueLength( Double.valueOf(10.3) ) ;
 		} catch( NotAnArrayException e){
 			ok = true ; 
 		}
@@ -1303,7 +1303,7 @@ public class RJavaArrayTools_Test {
 		System.out.print( "  new Double('10.2') " ) ;
 		boolean ok = false; 
 		try{
-			res = RJavaArrayTools.getObjectTypeName( new Double("10.3") ) ;
+			res = RJavaArrayTools.getObjectTypeName( Double.valueOf(10.3) ) ;
 		} catch( NotAnArrayException e){
 			ok = true ; 
 		}

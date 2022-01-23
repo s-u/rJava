@@ -39,7 +39,7 @@ public class RFactor extends Object {
 		int j;
 		if (i!=null && i.length>0)
 			for(j=0;j<i.length;j++)
-				id.addElement(new Integer(i[j]-base));
+				id.addElement(Integer.valueOf(i[j] - base));
 		if (v!=null && v.length>0)
 			for(j=0;j<v.length;j++)
 				val.addElement(v[j]);
@@ -53,7 +53,7 @@ public class RFactor extends Object {
 	    i=val.size();
 	    val.addElement(v);
 	};
-	id.addElement(new Integer(i));
+	id.addElement(Integer.valueOf(i));
     }
 
     /** returns name for a specific ID 

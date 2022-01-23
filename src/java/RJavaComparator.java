@@ -28,8 +28,8 @@ public class RJavaComparator {
 		
 		// treat Number s separately
 		if( a instanceof Number && b instanceof Number && !( a.getClass() == b.getClass() ) ){
-			Double _a = new Double( ((Number)a).doubleValue() );
-			Double _b = new Double( ((Number)b).doubleValue() );
+			Double _a = Double.valueOf( ((Number)a).doubleValue() );
+			Double _b = Double.valueOf( ((Number)b).doubleValue() );
 			return _a.compareTo( _b ); 
 		}
 		
