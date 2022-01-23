@@ -8,11 +8,14 @@
 
     o	debugging: if DEBUG_ENCODING C macro is defined string
 	conversion routines will output debugging information
-	when strings are converted from R to Java.
+	when strings are converted between R and Java.
 
     o	JRI: console callbacks (Read/WriteConsole) encode and decode
 	strings between native encoding and Java. (#24)
 	Previously, only UTF-8 native locales were supported.
+
+    o	Replaced deprected constructors like new Double(double) with
+	valueOf() calls to make recent JDKs happy.
 
 
 1.0-6	2021-12-10
