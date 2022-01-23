@@ -43,3 +43,4 @@ doc:	$(JRI_JDOCSRC)
 
 .PHONY: clean all examples doc
 
+.NOTPARALLEL:

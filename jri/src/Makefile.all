@@ -50,3 +50,4 @@ clean:
 
 .PHONY: clean all
 
+.NOTPARALLEL:
