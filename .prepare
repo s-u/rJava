@@ -1,0 +1,3 @@
+#!/bin/sh
+sh mkdist
+(cd .. ; tar xzvf rJava_*.tar.gz) 
