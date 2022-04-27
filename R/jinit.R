@@ -50,7 +50,11 @@
 
   ## unfortunately Sys/setlocale()/Sys.getlocale() have incompatible interfaces so there
   ## is no good way to get/set locales -- so we have to hack around it ...
-  locale.list <- c("LC_COLLATE", "LC_CTYPE", "LC_MONETARY", "LC_NUMERIC", "LC_TIME", "LC_MESSAGES", "LC_PAPER", "LC_MEASUREMENT")
+  locale.list <- if (Sys.info()[["sysname"]] == "Windows")
+    c("LC_COLLATE", "LC_CTYPE", "LC_MONETARY", "LC_NUMERIC", "LC_TIME")
+  else
+    c("LC_COLLATE", "LC_CTYPE", "LC_MONETARY", "LC_NUMERIC", "LC_TIME", "LC_MESSAGES", "LC_PAPER", "LC_MEASUREMENT")
+
   locales <- sapply(locale.list, Sys.getlocale)
   loc.sig <- Sys.getlocale()
 

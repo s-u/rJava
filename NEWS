@@ -2,6 +2,9 @@
 --------------------------
 
 1.0-7
+    o	fixed an issue where .jinit() could crash when attempting to
+    query LC_MESSAGES locale category on Windows (#296)
+
     o	fix conversion from native encoding into UTF-16 (introduced
 	in 1.0-2) to work correctly if the native encoding is
 	neither UTF-8 nor Latin1. (#228)
@@ -76,9 +79,9 @@
 	package has to use class.loader=.rJava.class.loader in calls
 	to functions that need to load classes such as .jnew() or J().
 	This can also be done automatically via something like
-	
+
 	J <- function(...) rJava::J(..., class.loader=.rJava.class.loader)
-	
+
 	in the package without need to change every call to J()
 	separately. See the documentation for .jpackage() for details.
 
