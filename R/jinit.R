@@ -51,6 +51,10 @@
   ## unfortunately Sys/setlocale()/Sys.getlocale() have incompatible interfaces so there
   ## is no good way to get/set locales -- so we have to hack around it ...
   locale.list <- c("LC_COLLATE", "LC_CTYPE", "LC_MONETARY", "LC_NUMERIC", "LC_TIME", "LC_MESSAGES", "LC_PAPER", "LC_MEASUREMENT")
+  ## RStudio on Windows crashes due to missing error handlers if locales
+  ## are queried that Windows does not support so we remove those to work around it
+  if (identical(.Platform$OS.type, "windows"))
+      locale.list <- locale.list[-(6:8)]
   locales <- sapply(locale.list, Sys.getlocale)
   loc.sig <- Sys.getlocale()
 
