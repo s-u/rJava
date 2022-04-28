@@ -17,6 +17,8 @@
     o	Replaced deprected constructors like new Double(double) with
 	valueOf() calls to make recent JDKs happy.
 
+    o	Work around a crash in RStudio on UCRT Windows. (#296)
+
 
 1.0-6	2021-12-10
     o	remove obsolete autoconf macros
