@@ -7,7 +7,7 @@
 R/Java interface allowing the use of Java from R as well as embedding
 R into Java (via JRI)
 
-Please visit the [main rJava project page on RForge.net](https://rforge.net/rJava) for details.
+Please visit the [main rJava project page on RForge.net](https://rforge.net/rJava) for details on the project. For some FAQs and troubleshooting see below - read before reporting bugs!
 
 ### Installation
 
@@ -19,7 +19,7 @@ in R. If you have all tools (and knowledge) necessary to compile
 R packages from sources, you can install the latest development
 version with
 
-    install.packages("rJava", repos="http://rforge.net")
+    install.packages("rJava", repos="https://rforge.net")
 
 The RForge.net repository is updated automatically on each
 commit. On macOS/Windows you may need to add `type='source'`.
@@ -40,7 +40,7 @@ generate one (which involves compilation of Java code).
 ### Bug reports
 
 Please use [rJava GitHub issues page](https://github.com/s-u/rJava/issues) to
-report bugs.
+report bugs, but read the following documentation and search previous issues before you do so.
 
 ## Troubleshooting
 
@@ -48,13 +48,13 @@ Rule #1: do __not__ set `JAVA_HOME` unless you are an expert. rJava attempts to 
 
 ### Windows
 
-Please make sure you install Java that matches your R architecture. R from CRAN is installed by default both in 32-bit and 64-bit versions so if in doubt, install both 32-bit and 64-bit Java. Teh most common mistake is to use 64-bit R but only have 32-bit Java installed.
+Please make sure you install Java that matches your R architecture. R from CRAN is installed by default both in 32-bit and 64-bit versions so if in doubt, install both 32-bit and 64-bit Java. The most common mistake is to use 64-bit R but only have 32-bit Java installed.
 
 rJava determines the Java location from the registry, so make sure you use the official Oracle installer so that your Java installation can be found.
 
 ### macOS
 
-On modern macOS versions Apple no longer supplies Java, so it must be downloaded from 3rd parties. Probably the most commonly used distribution on macOS are [adoptium.net](https://adoptium.net) and [Azul Zulu](https://www.azul.com/downloads/). Please note that if you are using arm64 R on Apple silicon (M1+) based Macs you will need latest R-4.1.1-patched from https://mac.R-project.org or else you will get `trap R` errors when loading Java (see [#267](https://github.com/s-u/rJava/issues/267) for details).
+On modern macOS versions Apple no longer supplies Java, so it must be downloaded from 3rd parties. Probably the most commonly used distributions on macOS are [adoptium.net](https://adoptium.net) and [Azul Zulu](https://www.azul.com/downloads/). Please note that if you are using arm64 R on Apple silicon (M1+) based Macs you will need at least R-4.1.2 or else you will get `trap R` errors when loading Java (see [#267](https://github.com/s-u/rJava/issues/267) for details).
 
 When installing from a zip or tar ball, put your Java installation in `/Library/Java/JavaVirtualMachines`. For example, if installing Zulu, unpack/move it such that it results in `/Library/Java/JavaVirtualMachines/zulu-11.jdk`.
 
@@ -70,11 +70,11 @@ Also note that `sudo` may change environment variables, so if you need to run wi
 
 The way Java R configuration on Linux works is for the `R` start script to modify `LD_LIBRARY_PATH` to make sure the JVM libraries can be loaded (it does so according to the `javaconf` settings). Therefore if you use a process embbedding R you need to run it via `R CMD <program>` such that those setting are honored, otherwise you're on your own.
 
-If you are installing rJava from sources, make sure you have a full JDK installed and all the necessary libraries needed to compile packages. For example, on Debian/Ubuntu that would require at least `r-base-dev`. If you run into issues, please check `config.log` which gives a clue as to what went wrong - usually some missing R dependency such as `pcre2`. The `config.log` file will be in the directory you used to build rJava in which is claned by R by default, so to keep it you can use e.g.:
+If you are installing rJava from sources, make sure you have the full JDK installed and all the necessary libraries needed to compile packages. For example, on Debian/Ubuntu that would require at least `r-base-dev`. If you run into issues, please check `config.log` which gives a clue as to what went wrong - usually some missing R dependency such as `pcre2`. The `config.log` file will be in the directory you used to build rJava in which is claned by R by default, so to keep it you can use e.g.:
 
 ```
-curl -LO https://rforge.net/rJava/snapshot/rJava_1.0-4.tar.gz
-tar fxz rJava_1.0-4.tar.gz
+curl -LO https://rforge.net/rJava/snapshot/rJava_1.0-6.tar.gz
+tar fxz rJava_1.0-6.tar.gz
 R CMD INSTALL rJava
 ## on failure check rJava/config.log
 ```
