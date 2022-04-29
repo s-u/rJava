@@ -1,15 +1,19 @@
 \name{jinit}
 \alias{.jinit}
+\alias{.jvmState}
 \title{
   Initialize Java VM
 }
 \description{
   \code{.jinit} initializes the Java Virtual Machine (JVM). This
   function must be called before any rJava functions can be used.
+
+  \code{.jvmState() returns the state of the current JVM.}
 }
 \usage{
 .jinit(classpath = NULL, parameters = getOption("java.parameters"), ...,
 silent = FALSE, force.init = FALSE)
+.jvmState()
 }
 \arguments{
   \item{classpath}{Any additional classes to include in the Java class
@@ -33,6 +37,20 @@ silent = FALSE, force.init = FALSE)
   initialization and positive values signify partially successful
   initilization (i.e. the VM is up, but parameters or class path could
   not be set due to an existing or incompatible VM).
+
+  \code{.jvmState} returns a named list with at least the following
+  elements:
+  \item{initialized}{\code{TRUE} if rJava is initialized and has a
+    runing JVM, \code{FALSE} otherwise.}
+  \item{state}{string representing the current state of the JVM. One of
+    the following values:
+    \code{"none"} if there is no JVM, \code{"created"} if the current
+    JVM has been created by rJava, \code{"attached"} if rJava attached
+    into an existing JVM (typically when R is embedded into a running
+    JVM via JRI), \code{"detached"} if there is a JVM (such as embedded
+    R), but rJava has not been initialized to use it, \code{"dead"} if
+    the process is about to die due to the JVM forcing en exit or
+    \code{"destroyed"} if a JVM existed before, but was destroyed.}
 }
 \details{
   Starting with version 0.5 rJava provides a custom class loader that can
@@ -59,7 +77,18 @@ silent = FALSE, force.init = FALSE)
   At any rate, it is impossible to change any other VM parameters of a
   running VM, so when using \code{.jinit} in a package, be generous with
   limits and don't use VM parameters to unnecessarily restrict
-  resources (or preferably use \code{\link{.jpackage}} instead).
+  resources (or preferably use \code{\link{.jpackage}} instead). JVM
+  parameters can only be set if the initial state of the JVM is
+  \code{"none"}.
+
+  There is a subtle difference between \code{"initialized"} and the JVM
+  state. It is in theory possible for \code{"initialized"} to be
+  \code{FALSE} and still \code{"state"} to be \code{"created"} or
+  \code{"attached"} in case where JVM was created but rJava has not been
+  able to initialize for other reasons, although such state should be
+  rare and problematic in either case. Behavior of rJava functions other
+  than \code{.jinit} and \code{.jvmState} is undefined unless
+  \code{.jvmState()$initialized} is \code{TRUE}.
 }
 \seealso{
   \code{\link{.jpackage}}
@@ -69,6 +98,7 @@ silent = FALSE, force.init = FALSE)
 ## set heap size limit to 512MB (see java -X) and
 ## use "myClasses.jar" as the class path
 .jinit(classpath="myClasses.jar", parameters="-Xmx512m")
+.jvmState()
 }
 }
 \keyword{interface}

@@ -19,6 +19,8 @@
 
     o	Work around a crash in RStudio on UCRT Windows. (#296)
 
+    o	add .jvmState() reporting the state of the JVM. (#259)
+
 
 1.0-6	2021-12-10
     o	remove obsolete autoconf macros

@@ -1124,3 +1124,24 @@ END_RJAVA_CALL
   INTEGER(res)[0]=tr;
   return res;
 }
+
+extern int existingJVMs(); /* init.c */
+
+REPC SEXP RgetJVMstate() {
+    const char *names[] = { "initialized", "state", "" };
+    SEXP res = PROTECT(Rf_mkNamed(VECSXP, names));
+    const char *st = "unknown";
+    switch (rJava_JVM_state) {
+    case JVM_STATE_NONE: /* could be detached */
+	st = (existingJVMs() > 0) ? "detached" : "none";
+	break;
+    case JVM_STATE_CREATED:   st = "created"; break;
+    case JVM_STATE_ATTACHED:  st = "attached"; break;
+    case JVM_STATE_DEAD:      st = "dead"; break;
+    case JVM_STATE_DESTROYED: st = "destroyed"; break;
+    }
+    SET_VECTOR_ELT(res, 0, Rf_ScalarLogical(rJava_initialized));
+    SET_VECTOR_ELT(res, 1, Rf_mkString(st));
+    UNPROTECT(1);
+    return res;
+}

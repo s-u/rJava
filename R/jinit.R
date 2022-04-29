@@ -230,3 +230,5 @@
   } # if #rcp>0
   invisible(.jcall("java/lang/System","S","getProperty","java.class.path"))
 }
+
+.jvmState <- function() .Call(RgetJVMstate)

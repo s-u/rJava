@@ -9,6 +9,9 @@ JavaVM *jvm;
 /* this will be set when Java tries to exit() but we carry on */
 int java_is_dead = 0;
 
+/* current JVM state */
+int rJava_JVM_state = JVM_STATE_NONE;
+
 /* cached, global objects */
 
 jclass javaStringClass;
@@ -78,11 +81,18 @@ static int JNICALL vfprintf_hook(FILE *f, const char *fmt, va_list ap) {
 static void JNICALL exit_hook(int status) {
     /* REprintf("\nJava requested System.exit(%d), trying to raise R error - this may crash if Java is in a bad state.\n", status); */
     java_is_dead = 1;
+    rJava_JVM_state = JVM_STATE_DEAD;
     Rf_error("Java called System.exit(%d) requesting R to quit - trying to recover", status);
     /* FIXME: we could do something smart here such as running a call-back
        into R ... jump into R event loop ... at any rate we cannot return,
        but we don't want to kill R ... */
     exit(status);
+}
+
+int existingJVMs() {
+    jsize vms = 0;
+    JavaVM *jvms[32];
+    return (JNI_GetCreatedJavaVMs(jvms, 32, &vms) >= 0) ? vms : 0;
 }
 
 /* in reality WIN64 implies WIN32 but to make sure ... */
@@ -186,6 +196,7 @@ static int initJVM(const char *user_classpath, int opts, char **optv, int hooks,
   if (!eenv)
     error("Cannot obtain JVM environment");
 
+  rJava_JVM_state = JVM_STATE_CREATED;
 #if defined(_WIN64) || defined(_WIN32)
   _setmode(0, _O_TEXT);
 #endif
@@ -216,6 +227,8 @@ static void *initJVMthread(void *classpath)
 
   thInitResult=initJVM((char*)classpath, jvm_opts, jvm_optv, default_hooks, 0);
   if (thInitResult) return 0;
+
+  rJava_JVM_state = JVM_STATE_CREATED;
 
   init_rJava();
 
@@ -357,7 +370,10 @@ static SEXP RinitJVM_real(SEXP par, int disableGuardPages)
       while (i<vms) {
 	if (jvms[i]) {
 	  if (!(*jvms[i])->AttachCurrentThread(jvms[i], (void**)&eenv, NULL)) {
-            _dbg(rjprintf("RinitJVM: Attached to existing JVM #%d.\n", i+1));
+	      /* attaching our own created JVM doesn't change it to attached */
+	      if (rJava_JVM_state != JVM_STATE_CREATED)
+		  rJava_JVM_state = JVM_STATE_ATTACHED;
+	      _dbg(rjprintf("RinitJVM: Attached to existing JVM #%d.\n", i+1));
 	    break;
 	  }
 	}
@@ -389,6 +405,8 @@ static SEXP RinitJVM_real(SEXP par, int disableGuardPages)
   _dbg(rjprintf("RinitJVM(threads): attach\n"));
   /* since JVM was initialized by another thread, we need to attach ourselves */
   (*jvm)->AttachCurrentThread(jvm, (void**)&eenv, NULL);
+  if (rJava_JVM_state != JVM_STATE_CREATED)
+      rJava_JVM_state = JVM_STATE_ATTACHED;
   _dbg(rjprintf("RinitJVM(threads): done.\n"));
   r = thInitResult;
 #else
@@ -752,6 +770,7 @@ REP void doneJVM() {
   (*jvm)->DestroyJavaVM(jvm);
   jvm = 0;
   eenv = 0;
+  rJava_JVM_state = JVM_STATE_DESTROYED;
 }
 
 /**
