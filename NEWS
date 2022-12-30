@@ -1,7 +1,13 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-1.0-7
+1.0-8
+    o	attempt to prevent (close to) infinite loop in stack
+	detection due to unwanted tail call optimization by
+	gcc >= 11 if JDK older than Java 10 is used. (#300)
+
+
+1.0-7	2022-04-29
     o	fix conversion from native encoding into UTF-16 (introduced
 	in 1.0-2) to work correctly if the native encoding is
 	neither UTF-8 nor Latin1. (#228)
