@@ -572,14 +572,14 @@ static char* findBound(char *from, char *limit, int dir)
    than allocating large arrays on the C stack, both via definition and
    alloca. */
 static SEXP RinitJVM_with_padding(SEXP par, intptr_t padding, char *last) {
-  char dummy[1];
+  volatile char dummy[1];
     /* reduce the risk that dummy will be optimized out */
   dummy[0] = (char) (uintptr_t) &dummy;
   padding -= (last - dummy) * R_CStackDir;
   if (padding <= 0)
     return RinitJVM_real(par, 0);
   else
-    return RinitJVM_with_padding(par, padding, dummy);
+    return RinitJVM_with_padding(par, padding, (char*) dummy);
 }
 
 /* Run RinitJVM with the Java stack workaround */
