@@ -11,30 +11,37 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'windows-latest', 'macOS-10.15', 'ubuntu-20.04' ]
+        os: [ 'windows-2022', 'macOS-10.15', 'ubuntu-20.04' ]
         r:  [ 'release' ]
         java: [ 8, 11 ]
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
 
-      - uses: r-lib/actions/setup-r@master
+      - name: Install R
+        uses: s-u/R-actions/install@v1
         with:
           r-version: ${{ matrix.r }}
+          tools: base
 
       - uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.java }}
 
       - name: Build
-        run: "sh mkdist"
-
-      - name: Info
-        run: "bash -c 'java -version && which java && echo $PATH && echo $JAVA_HOME'"
+        run: |
+          sh mkdist
+          java -version && which java && echo $PATH && echo $JAVA_HOME
+        shell: bash
 
       - name: Setup R Java support
         if: runner.os != 'Windows'
-        run: "echo export PATH=$PATH > reconf.sh; echo export JAVA_HOME=$JAVA_HOME >> reconf.sh; echo R CMD javareconf >> reconf.sh; sudo bash reconf.sh"
+        run: |
+          echo export PATH=$PATH > reconf.sh
+          echo export JAVA_HOME=$JAVA_HOME >> reconf.sh
+          echo R CMD javareconf >> reconf.sh
+          sudo bash reconf.sh
+        shell: bash
 
       - name: R CMD check (Windows)
         if: runner.os == 'Windows'
