@@ -104,7 +104,7 @@ AS_MESSAGE([checking whether ${CC} supports static inline...])
 can_inline=no
 AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 static inline int foo(int a, int b);
-static f = 1;
+static int f = 1;
 static inline int foo(int a, int b) { return a+b; }
 int main(void) {
     return foo(f,-1);
