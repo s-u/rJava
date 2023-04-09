@@ -3624,7 +3624,7 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 static inline int foo(int a, int b);
-static f = 1;
+static int f = 1;
 static inline int foo(int a, int b) { return a+b; }
 int main(void) {
     return foo(f,-1);
