@@ -1,7 +1,11 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-1.0-8
+1.0-9	2023-11-28
+    o	clean up benign C warnings
+
+
+1.0-8	2022-12-30
     o	attempt to prevent (close to) infinite loop in stack
 	detection due to unwanted tail call optimization by
 	gcc >= 11 if JDK older than Java 10 is used. (#300)
