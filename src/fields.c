@@ -88,7 +88,6 @@ static jclass inputToClass(JNIEnv *env, SEXP obj, jobject *jobj, int *is_local) 
     if (o)
       cls = objectClass(env, o);
     else { /* this should be rare since is doesn't provide a way to specify the class loader */
-      char *c = clnam;
       cls = findClass(env, clnam, oClassLoader);
       free(clnam);
       if (!cls) {
@@ -146,7 +145,7 @@ REPC SEXP RgetField(SEXP obj, SEXP sig, SEXP name, SEXP trueclass) {
   jobject o = 0;
   SEXP e;
   const char *retsig, *fnam;
-  char *clnam = 0, *detsig = 0;
+  char *detsig = 0;
   jfieldID fid;
   jclass cls;
   int tc = asInteger(trueclass), cls_local = 0;
