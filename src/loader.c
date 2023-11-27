@@ -31,7 +31,7 @@ REPC SEXP RJava_set_class_loader(SEXP ldr) {
   return R_NilValue;
 }
 
-REPC SEXP RJava_primary_class_loader() {
+REPC SEXP RJava_primary_class_loader(void) {
   JNIEnv *env=getJNIEnv();
   jclass cl = (*env)->FindClass(env, "RJavaClassLoader");
   _dbg(Rprintf("RJava_primary_class_loader, cl = %x\n", (int) cl));

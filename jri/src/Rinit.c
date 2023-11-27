@@ -85,7 +85,7 @@ int initR(int argc, char **argv) {
     return 0;
 }
 
-void initRinside() {
+void initRinside(void) {
     /* disable stack checking, because threads will thow it off */
     R_CStackLimit = (uintptr_t) -1;
 }
@@ -137,16 +137,16 @@ extern int UserBreak;
 #endif
 
 /* calls into the R DLL */
-extern char *getDLLVersion();
+extern char *getDLLVersion(void);
 extern void R_DefParams(Rstart);
 extern void R_SetParams(Rstart);
 extern void setup_term_ui(void);
 extern void ProcessEvents(void);
 extern void end_Rmainloop(void), R_ReplDLLinit(void);
-extern int R_ReplDLLdo1();
+extern int R_ReplDLLdo1(void);
 extern void run_Rmainloop(void);
 
-void myCallBack()
+void myCallBack(void)
 {
     /* called during i/o, eval, graphics in ProcessEvents */
 }
@@ -284,7 +284,7 @@ int initR(int argc, char **argv)
     return 0;
 }
 
-void initRinside() {
+void initRinside(void) {
     /* disable stack checking, because threads will thow it off */
     R_CStackLimit = (uintptr_t) -1;
 }

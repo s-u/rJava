@@ -89,7 +89,7 @@ static void JNICALL exit_hook(int status) {
     exit(status);
 }
 
-int existingJVMs() {
+int existingJVMs(void) {
     jsize vms = 0;
     JavaVM *jvms[32];
     return (JNI_GetCreatedJavaVMs(jvms, 32, &vms) >= 0) ? vms : 0;
@@ -766,7 +766,7 @@ REP SEXP RinitJVM(SEXP par) {
 #endif
 }
 
-REP void doneJVM() {
+REP void doneJVM(void) {
   (*jvm)->DestroyJavaVM(jvm);
   jvm = 0;
   eenv = 0;
@@ -778,7 +778,7 @@ REP void doneJVM() {
  * These classes and methods are the ones that are in rJava (RJavaTools, ...)
  * not java standard classes (Object, Class)
  */
-REPC SEXP initRJavaTools(){
+REPC SEXP initRJavaTools(void){
 
 	JNIEnv *env=getJNIEnv();
 	jclass c;

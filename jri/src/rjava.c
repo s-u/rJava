@@ -13,7 +13,7 @@ int *rjctrl = 0;
 
 typedef void(callbackfn)(void *);
 
-int RJava_request_lock() {
+int RJava_request_lock(void) {
   ptrlong buf[4];
   int n;
   if (rjctrl && *rjctrl) return 2;
@@ -24,7 +24,7 @@ int RJava_request_lock() {
   return (n == sizeof(ptrlong) && buf[0] == IPCC_LOCK_GRANTED) ? 1 : 0;
 }
 
-int RJava_clear_lock() {
+int RJava_clear_lock(void) {
   ptrlong buf[4];
   buf[0] = IPCC_CLEAR_LOCK;
   return (write(ipcout, buf, sizeof(ptrlong)) == sizeof(ptrlong)) ? 1 : 0;
@@ -44,7 +44,7 @@ void RJava_setup(int _in, int _out) {
   resin = _in;
 }
 
-void RJava_init_ctrl() {
+void RJava_init_ctrl(void) {
   ptrlong buf[4];
   buf[0] = IPCC_CONTROL_ADDR;
   if (write(ipcout, buf, sizeof(ptrlong)) == sizeof(ptrlong) &&

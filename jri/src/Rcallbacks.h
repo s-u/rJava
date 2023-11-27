@@ -22,9 +22,9 @@ int  Re_ReadConsole(RCCONST char *prompt, RCSIGN char *buf, int len, int addtohi
 void Re_Busy(int which);
 void Re_WriteConsole(RCCONST char *buf, int len);
 void Re_WriteConsoleEx(RCCONST char *buf, int len, int oType);
-void Re_ResetConsole();
-void Re_FlushConsole();
-void Re_ClearerrConsole();
+void Re_ResetConsole(void);
+void Re_FlushConsole(void);
+void Re_ClearerrConsole(void);
 int  Re_ChooseFile(int new, char *buf, int len);
 void Re_ShowMessage(RCCONST char *buf);
 void Re_read_history(char *buf);

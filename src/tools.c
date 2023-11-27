@@ -106,7 +106,7 @@ REPC SEXP RidenticalRef(SEXP ref1, SEXP ref2) {
 }
 
 /** create a NULL external reference */
-REPC SEXP RgetNullReference() {
+REPC SEXP RgetNullReference(void) {
   return R_MakeExternalPtr(0, R_NilValue, R_NilValue);
 }
 
@@ -128,7 +128,7 @@ REPC SEXP RisAssignableFrom(SEXP cl1, SEXP cl2) {
   return r;
 }
 
-REPC SEXP RJava_checkJVM() {
+REPC SEXP RJava_checkJVM(void) {
   SEXP r = allocVector(LGLSXP, 1);
   LOGICAL(r)[0] = 0;
   if (!jvm || !getJNIEnv()) return r;
@@ -138,7 +138,7 @@ REPC SEXP RJava_checkJVM() {
 
 extern int rJava_initialized; /* in callJNI.c */
 
-REPC SEXP RJava_needs_init() {
+REPC SEXP RJava_needs_init(void) {
   SEXP r = allocVector(LGLSXP, 1);
   LOGICAL(r)[0] = rJava_initialized?0:1;
   return r;

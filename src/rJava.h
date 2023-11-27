@@ -82,7 +82,7 @@ void rjprintf(char *fmt, ...); /* in Rglue.c */
 #ifdef RJ_PROFILE
 #define profStart() profilerTime=time_ms()
 #define _prof(X) X
-long time_ms(); /* those are acutally in Rglue.c */
+long time_ms(void); /* those are acutally in Rglue.c */
 void profReport(char *fmt, ...);
 #else
 #define profStart()
@@ -123,7 +123,7 @@ extern int RJava_has_control;
 /* in rJava.c */
 extern JNIEnv *eenv; /* should NOT be used since not thread-safe; use getJNIEnv instead */
 
-HIDE JNIEnv* getJNIEnv();
+HIDE JNIEnv* getJNIEnv(void);
 HIDE void ckx(JNIEnv *env);
 HIDE void clx(JNIEnv *env);
 
@@ -175,7 +175,7 @@ HIDE void init_rJava(void);
 
 REPC SEXP newRJavaLookupTable(SEXP) ;
 
-HIDE SEXP R_getUnboundValue() ;
+HIDE SEXP R_getUnboundValue(void) ;
 HIDE SEXP rJavaLookupTable_objects(R_ObjectTable *) ;
 HIDE SEXP rJavaLookupTable_assign(const char * const, SEXP, R_ObjectTable * ) ;
 HIDE Rboolean rJavaLookupTable_canCache(const char * const, R_ObjectTable *) ;

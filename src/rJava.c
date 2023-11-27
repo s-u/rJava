@@ -11,7 +11,7 @@ int use_eenv = 1;
 /* cached environment. Do NOT use directly! Always use getJNIEnv()! */
 JNIEnv *eenv;
 
-static SEXP getCurrentCall() {
+static SEXP getCurrentCall(void) {
     SEXP cexp, sys_calls = PROTECT(install("sys.calls"));
     cexp = PROTECT(lang1(sys_calls));
     SEXP cl = eval(cexp, R_GetCurrentEnv());
@@ -132,14 +132,14 @@ HIDE void clx(JNIEnv *env) {
 }
 
 #ifdef JNI_CACHE
-HIDE JNIEnv *getJNIEnvSafe();
-HIDE JNIEnv *getJNIEnv() {
+HIDE JNIEnv *getJNIEnvSafe(void);
+HIDE JNIEnv *getJNIEnv(void) {
   return (use_eenv)?eenv:getJNIEnvSafe();
 }
 
-HIDE JNIEnv *getJNIEnvSafe()
+HIDE JNIEnv *getJNIEnvSafe(void)
 #else
-HIDE JNIEnv *getJNIEnv()
+HIDE JNIEnv *getJNIEnv(void)
 #endif
   {
     JNIEnv *env;

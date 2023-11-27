@@ -37,7 +37,7 @@
 /* this method is used rather for debugging purposes - it finds the correct JNIEnv for the current thread. we still have some threading issues to solve, becuase eenv!=env should never happen (uncontrolled), because concurrency issues arise */
 static JavaVM *jvm=0;
 
-JNIEnv *checkEnvironment()
+JNIEnv *checkEnvironment(void)
 {
     JNIEnv *env;
     jsize l;
@@ -170,12 +170,12 @@ void Re_WriteConsole(RCCONST char *buf, int len)
 }
 
 /* Indicate that input is coming from the console */
-void Re_ResetConsole()
+void Re_ResetConsole(void)
 {
 }
 
 /* Stdio support to ensure the console file buffer is flushed */
-void Re_FlushConsole()
+void Re_FlushConsole(void)
 {
     JNIEnv *lenv=checkEnvironment();
     jri_checkExceptions(lenv, 1);
@@ -192,7 +192,7 @@ void Re_FlushConsole()
 }
 
 /* Reset stdin if the user types EOF on the console. */
-void Re_ClearerrConsole()
+void Re_ClearerrConsole(void)
 {
 }
 

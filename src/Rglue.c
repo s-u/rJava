@@ -37,7 +37,7 @@
 #endif
 
 /** returns TRUE if JRI has callback support compiled in or FALSE otherwise */
-REPC SEXP RJava_has_jri_cb() {
+REPC SEXP RJava_has_jri_cb(void) {
   SEXP r = allocVector(LGLSXP, 1);
 #ifdef ENABLE_JRICB
   LOGICAL(r)[0] = 1;
@@ -65,7 +65,7 @@ HIDE void rjprintf(char *fmt, ...) {
 #ifdef RJ_PROFILE
 #include <sys/time.h>
 
-HIDE long time_ms() {
+HIDE long time_ms(void) {
 #ifdef Win32
   return 0; /* in Win32 we have no gettimeofday :( */
 #else
@@ -1067,7 +1067,7 @@ REPC SEXP RcreateArray(SEXP ar, SEXP cl) {
 
 /** check whether there is an exception pending and
     return the exception if any (NULL otherwise) */
-REPC SEXP RpollException() {
+REPC SEXP RpollException(void) {
   JNIEnv *env=getJNIEnv();
   jthrowable t;
 BEGIN_RJAVA_CALL
@@ -1078,7 +1078,7 @@ END_RJAVA_CALL
 }
 
 /** clear any pending exceptions */
-REP void RclearException() {
+REP void RclearException(void) {
   JNIEnv *env=getJNIEnv();
 BEGIN_RJAVA_CALL
   (*env)->ExceptionClear(env);
@@ -1125,9 +1125,9 @@ END_RJAVA_CALL
   return res;
 }
 
-extern int existingJVMs(); /* init.c */
+extern int existingJVMs(void); /* init.c */
 
-REPC SEXP RgetJVMstate() {
+REPC SEXP RgetJVMstate(void) {
     const char *names[] = { "initialized", "state", "" };
     SEXP res = PROTECT(Rf_mkNamed(VECSXP, names));
     const char *st = "unknown";

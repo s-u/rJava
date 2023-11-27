@@ -10,10 +10,10 @@
 #define IPCC_CALL_REQUEST 4 /* pars: <fn-ptr> <data-ptr> */
 #define IPCC_CONTROL_ADDR 5 /* ipc: request, res: <ctrl-ptr> */
 
-int RJava_request_lock();
-int RJava_clear_lock();
+int RJava_request_lock(void);
+int RJava_clear_lock(void);
 /* int RJava_request_callback(callbackfn *fn, void *data); */
 void RJava_setup(int _in, int _out);
-void RJava_init_ctrl();
+void RJava_init_ctrl(void);
 
 #endif

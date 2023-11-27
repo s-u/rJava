@@ -3,7 +3,7 @@
 
 /* only to avoid NOTEs from broken checks,
    never called */
-int dummy__() {
+int dummy__(void) {
     return R_registerRoutines(0, 0, 0, 0, 0);
 }
 

@@ -8,7 +8,7 @@
 /**
  * Returns the R_UnboundValue
  */
-HIDE SEXP R_getUnboundValue() {
+HIDE SEXP R_getUnboundValue(void) {
     return(R_UnboundValue);
 }
 
