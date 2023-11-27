@@ -148,7 +148,9 @@ static int initJVM(const char *user_classpath, int opts, char **optv, int hooks,
   vm_args.ignoreUnrecognized = disableGuardPages ? JNI_FALSE : JNI_TRUE;
 
   classpath = (char*) calloc(24 + strlen(user_classpath), sizeof(char));
-  sprintf(classpath, "-Djava.class.path=%s", user_classpath);
+  if (!classpath)
+      error("Cannot allocate memory for classpath");
+  snprintf(classpath, (24 + strlen(user_classpath)) * sizeof(char), "-Djava.class.path=%s", user_classpath);
 
   vm_options[propNum++].optionString = classpath;
 

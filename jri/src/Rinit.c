@@ -166,7 +166,7 @@ int myYesNoCancel(RCCONST char *s)
     char  ss[128];
     unsigned char a[3];
 
-    sprintf(ss, "%s [y/n/c]: ", s);
+    snprintf(ss, sizeof(ss)-1, "%s [y/n/c]: ", s);
     Re_ReadConsole(ss, a, 3, 0);
     switch (a[0]) {
     case 'y':
@@ -197,11 +197,11 @@ int initR(int argc, char **argv)
     HKEY k;
     int cvl;
 
-    sprintf(Rversion, "%s.%s", R_MAJOR, R_MINOR);
+    snprintf(Rversion, sizeof(Rversion)-1, "%s.%s", R_MAJOR, R_MINOR);
     cvl=strlen(R_MAJOR)+2;
     if(strncmp(getDLLVersion(), Rversion, cvl) != 0) {
         char msg[512];
-	sprintf(msg, "Error: R.DLL version does not match (DLL: %s, expecting: %s)\n", getDLLVersion(), Rversion);
+	snprintf(msg, sizeof(msg)-1, "Error: R.DLL version does not match (DLL: %s, expecting: %s)\n", getDLLVersion(), Rversion);
 	fprintf(stderr, msg);
 	MessageBox(0, msg, "Version mismatch", MB_OK|MB_ICONERROR);
 	return -1;
@@ -228,7 +228,7 @@ int initR(int argc, char **argv)
 	MessageBox(0, "R_HOME must be set or R properly installed (\\Software\\R-core\\R\\InstallPath registry entry must exist).\n", "Can't find R home", MB_OK|MB_ICONERROR);
 	return -2;
       }
-      sprintf(rhb,"R_HOME=%s",RHome);
+      snprintf(rhb, sizeof(rhb)-1, "R_HOME=%s",RHome);
       putenv(rhb);
     }
     /* on Win32 this should set R_Home (in R_SetParams) as well */
