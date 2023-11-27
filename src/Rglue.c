@@ -896,6 +896,7 @@ static SEXP new_jarrayRef(JNIEnv *env, jobject a, const char *sig) {
   return oo;
 }
 
+#if 0 /* FIXME: no longer used */
 /**
  * Creates a reference to a rectangular java array.
  *
@@ -920,6 +921,7 @@ static SEXP new_jrectRef(JNIEnv *env, jobject a, const char *sig, SEXP dim ) {
   UNPROTECT(1); /* oo */
   return oo;
 }
+#endif
 
 /* this does not take care of multi dimensional arrays properly */
 
