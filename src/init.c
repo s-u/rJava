@@ -731,7 +731,7 @@ static SEXP RinitJVM_jsw(SEXP par) {
       /* the message may be confusing when R_CStackLimit was set to -1
          because the original stack size was too large */
       REprintf("Rjava.init.warning: stack size reduced from unlimited to"
-        " %u bytes after JVM initialization.\n", newlim);
+	       " %lu bytes after JVM initialization.\n", (unsigned long) newlim);
       bigloss = 1;
     } else {
       unsigned lost = (unsigned) (oldlim - newlim);
