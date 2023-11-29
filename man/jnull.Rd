@@ -34,8 +34,8 @@ is.jnull(x)
 
   Example: given the following method definitions of the class \code{A}:
   \itemize{
-    \item{o}{public static void run(String a);}
-    \item{o}{public static void run(Double n);}
+    \item \code{public static void run(String a);}
+    \item \code{public static void run(Double n);}
   }
   Calling \code{.jcall("A",,"run",NULL)} is ambiguous, because it is
   unclear which method is to be used. Therefore rJava requires class

@@ -39,7 +39,7 @@
   \item{interface}{This option is experimental and specifies the
     interface used for calling the Java method; the current
     implementation supports two interfaces:
-    \itemize{
+    \describe{
       \item{\code{"RcallMethod"}}{the default interface.}
       \item{\code{"RcallSyncMethod"}}{synchronized call of a
 	method. This has similar effect as using \code{synchronize} in
