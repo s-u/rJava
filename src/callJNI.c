@@ -30,9 +30,9 @@ HIDE void* errJNI(const char *err, ...) {
 	msg[511]=0;
 	vsnprintf(msg, 511, err, ap);
 #ifdef RJ_DEBUG
-	Rf_warning(msg);
+	Rf_warning("%s", msg);
 #else
-	Rf_error(msg);
+	Rf_error("%s", msg);
 	/* this never returns and is just a fallback in case ckx doesn't return */
 #endif
 	va_end(ap);
