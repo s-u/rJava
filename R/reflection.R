@@ -22,15 +22,19 @@
 }
 
 ### this list maps R class names to Java class names for which the constructor does the necessary conversion (for use in .jrcall)
-.class.to.jclass <-    c(character= "java/lang/String",
-                         jbyte    = "java/lang/Byte",
-                         integer  = "java/lang/Integer",
-                         numeric  = "java/lang/Double",
-                         logical  = "java/lang/Boolean",
-                         jlong    = "java/lang/Long",
-                         jchar    = "java/lang/Character",
-                         jshort   = "java/lang/Short",
-                         jfloat   = "java/lang/Float")
+### The order matters in case an object inherits from multiple (S3) classes - then the first one
+### in the list is picked.
+.class.to.jclass <-    c(
+    jlong    = "java/lang/Long",
+    jchar    = "java/lang/Character",
+    jshort   = "java/lang/Short",
+    jfloat   = "java/lang/Float",
+    jbyte    = "java/lang/Byte",
+    integer  = "java/lang/Integer",
+    numeric  = "java/lang/Double",
+    logical  = "java/lang/Boolean",
+    character= "java/lang/String"
+)
 
 ### Java classes that have a corresponding primitive type and thus a corresponding TYPE field to use with scalars
 .primitive.classes = c("java/lang/Byte", "java/lang/Integer", "java/lang/Double", "java/lang/Boolean",
@@ -47,12 +51,15 @@
   else if (is.null(a)) .jnull()
   else if (is.raw(a)) .jarray(a, dispatch=FALSE) ## raw is always [B
   else {
-    cm <- match(class(a)[1], names(.class.to.jclass))
-    if (!any(is.na(cm))) { 
-    	if (length(a) == 1) { 
+      ## check all classes (in S3 case, see #317)
+      cm <- match(class(a), names(.class.to.jclass))
+      if (!all(is.na(cm))) { ## at least one subclass matches
+          cm <- min(cm, na.rm=TRUE) ## pick the lowest (i.e. in precedence of the order above)
+          ## scalar? then create directly
+          if (length(a) == 1) {
     		y <- .jnew(.class.to.jclass[cm], a)
     		if (.class.to.jclass[cm] %in% .primitive.classes) attr(y, "primitive") <- TRUE
-    		y 
+                y
     	} else .jarray(a, dispatch = FALSE)
     } else {
       stop("Sorry, parameter type `", class(a)[1] ,"' is ambiguous or not supported.")
