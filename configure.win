@@ -50,7 +50,7 @@ if [ -e jri/configure.win ]; then
 	cp -r jri/run.bat jri/src/jri.dll jri/src/JRI.jar jri/examples inst/jri/
     else
 	echo "**** WARNING: JRI could NOT be built" >&2
-	if [ -z "$INGORE" ]; then
+	if [ -z "$IGNORE" ]; then
 	    echo "Set IGNORE=1 if you want to build rJava anyway."
 	    exit 1
 	fi
