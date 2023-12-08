@@ -13,6 +13,10 @@
 	from the source package by running `make javadoc` in the
 	`src/java` directory.
 
+    o	bugfix: .jarray(..., dispatch=TRUE) was generating nested
+	arrays with incorrect content if the input array had more than
+	two dimensions. (#5)
+
 
 1.0-10	2023-11-30
     o	minor documentation fixes
