@@ -158,8 +158,9 @@ mkdir -p inst/java/boot
 cd src/java
 make clean
 make compile
-echo "Generate javadoc documentation"
-make javadoc
+# do not generate javadoc (see #303)
+#echo "Generate javadoc documentation"
+#make javadoc
 cd ../..
 echo "Copy compiled Java classes ..."
 # copy all complied Java classes and sources
