@@ -71,6 +71,7 @@ public abstract class RJavaArrayIterator {
 				index[i] = 0 ; 
 			} else{
 				index[i] = index[i] + 1 ;
+				break;
 			}
 		}
 				
