@@ -1,6 +1,19 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+1.0-11
+    o	dispatch on superclasses when converting native types in
+	the reflection API (J/.jrcall). Please note that it is
+	safer to use the native API than to rely on reflection
+	conversions so packages are encouraged to use the native API
+	which is much faster and type-safe. (#317)
+
+    o	remove JavaDoc from the distribution tar ball due to
+	security issues (#303). Note that JavaDoc can be generated
+	from the source package by running `make javadoc` in the
+	`src/java` directory.
+
+
 1.0-10	2023-11-30
     o	minor documentation fixes
 
