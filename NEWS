@@ -17,6 +17,8 @@
 	arrays with incorrect content if the input array had more than
 	two dimensions. (#5)
 
+    o	the IGNORE env var was misspelled in configure.win. (#304)
+
 
 1.0-10	2023-11-30
     o	minor documentation fixes
