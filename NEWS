@@ -1,9 +1,9 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-1.0-12
+1.0-12	2024-01-26
     o	Win32: minor changes to adapt to (undocumented) API changes in
-	R 4.2.0.    
+	R 4.2.0.
 
     o	Win32: warn if R_HOME path is too long.
 
