@@ -194,7 +194,7 @@ static int initJVM(const char *user_classpath, int opts, char **optv, int hooks,
     return -2; /* perhaps this VM does not allow disabling guard pages */
 
   if (res != 0)
-    error("Cannot create Java virtual machine (%d)", res);
+      error("Cannot create Java virtual machine (JNI_CreateJavaVM returned %ld)", (long int) res);
   if (!eenv)
     error("Cannot obtain JVM environment");
 
