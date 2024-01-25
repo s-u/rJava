@@ -71,7 +71,7 @@
   \item{simplify}{logical}
   \item{java.class}{string, class name}
   \item{fn}{convertor function}
-  \item{r.convertor}{string, R class}
+  \item{r.class}{string, R class}
   \item{obj}{Java object}
   \item{engine}{Java engine object, if \code{NULL} uses the main engine}
   \item{convert}{logical}
