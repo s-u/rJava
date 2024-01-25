@@ -163,10 +163,17 @@ void myCallBack(void)
 
 int myYesNoCancel(RCCONST char *s)
 {
-    char  ss[128];
-    unsigned char a[3];
+    char  ss[192];
+    RCSIGN char a[3];
+    unsigned int l = (unsigned int) strlen(s);
 
-    snprintf(ss, sizeof(ss)-1, "%s [y/n/c]: ", s);
+    if (l + 12 > sizeof(ss)) {
+	memcpy(ss, s, sizeof(ss) - 15);
+	strcpy(ss + sizeof(ss) - 15, "... [y/n/c]: ");
+    } else {
+	memcpy(ss, s, l);
+	strcpy(ss + l, " [y/n/c]: ");
+    }
     Re_ReadConsole(ss, a, 3, 0);
     switch (a[0]) {
     case 'y':
@@ -228,7 +235,13 @@ int initR(int argc, char **argv)
 	MessageBox(0, "R_HOME must be set or R properly installed (\\Software\\R-core\\R\\InstallPath registry entry must exist).\n", "Can't find R home", MB_OK|MB_ICONERROR);
 	return -2;
       }
-      snprintf(rhb, sizeof(rhb)-1, "R_HOME=%s",RHome);
+      strcpy(rhb, "R_HOME=");
+      if (strlen(RHome) > sizeof(rhb) - 9) {
+	  fprintf(stderr, "R_HOME path is too long!\n");
+	  MessageBox(0, "R_HOME path it too long! Install R in a different location.\n", "R home path is too long", MB_OK|MB_ICONERROR);
+	  return -2;
+      }
+      strcpy(rhb + 7, RHome);
       putenv(rhb);
     }
     /* on Win32 this should set R_Home (in R_SetParams) as well */

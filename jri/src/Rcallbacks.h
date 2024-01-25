@@ -12,7 +12,8 @@
 #else
 #define RCCONST const
 #endif
-#ifdef WIN32
+/* ReadConsole API has been changed (unannounced and undocumented!) for Windows in r81626 */
+#if defined (WIN32) && (R_VERSION < R_Version(4,2,0))
 #define RCSIGN
 #else
 #define RCSIGN unsigned
