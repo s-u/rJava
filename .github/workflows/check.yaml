@@ -11,15 +11,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'windows-2022', 'macOS-10.15', 'ubuntu-20.04' ]
+        os: [ 'windows-2022', 'macOS-13', 'macOS-14', 'ubuntu-22.04' ]
         r:  [ 'release' ]
         java: [ 8, 11 ]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install R
-        uses: s-u/R-actions/install@v1
+        uses: s-u/R-actions/install@v2
         with:
           r-version: ${{ matrix.r }}
           tools: base
@@ -43,24 +43,4 @@ jobs:
           sudo bash reconf.sh
         shell: bash
 
-      - name: R CMD check (Windows)
-        if: runner.os == 'Windows'
-        run: "bash -c 'R CMD check --no-multiarch --no-manual ../rJava_*.tar.gz'"
-
-      - name: R CMD check (Linux)
-        if: runner.os == 'Linux'
-        run: "bash -c 'xvfb-run R CMD check --no-manual ../rJava_*.tar.gz'"
-
-      - name: R CMD check (macOS)
-        if: runner.os == 'macOS'
-        run: "bash -c 'NOAWT=1 R CMD check --no-manual ../rJava_*.tar.gz'"
-
-      - name: Show install log
-        run: "bash -c 'if [ -e rJava.Rcheck/00install.out ]; then cat rJava.Rcheck/00install.out; fi'"
-
-      - name: Upload check results
-        if: failure()
-        uses: actions/upload-artifact@master
-        with:
-          name: ${{ runner.os }}-r${{ matrix.r }}-j${{ matrix.java }}-results
-          path: rJava.Rcheck
+      - uses: s-u/R-actions/pkg-check@v2
