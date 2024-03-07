@@ -28,12 +28,6 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
 
-      - name: Build
-        run: |
-          sh mkdist
-          java -version && which java && echo $PATH && echo $JAVA_HOME
-        shell: bash
-
       - name: Setup R Java support
         if: runner.os != 'Windows'
         run: |
@@ -44,3 +38,5 @@ jobs:
         shell: bash
 
       - uses: s-u/R-actions/pkg-check@v2
+        with:
+          build-script: sh mkdist
