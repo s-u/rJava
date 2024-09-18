@@ -36,7 +36,7 @@
     if (!length(libjvm))
         stop("Cannot find libjvm in ", home)
     message("Loading JVM from ", home)
-    .jloadJVM(libjvm)
+    .jloadJVM(libjvm[1])
 }
 
 ## initialization

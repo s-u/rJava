@@ -259,7 +259,7 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, sig_buffer_t *sig, i
   SEXP p=par;
   SEXP e;
   int jvpos=0;
-  int i=0;
+  _dbg(int i=0);
 
   while (p && TYPEOF(p)==LISTSXP && (e=CAR(p))) {
     /* skip all named arguments */
@@ -432,7 +432,7 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, sig_buffer_t *sig, i
 	_dbg(rjprintf(" (ignoring)\n"));
       }
     }
-    i++;
+    _dbg(i++);
     p=CDR(p);
   }
   fintmpo(tmpo);

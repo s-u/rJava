@@ -64,9 +64,9 @@ AC_ARG_ENABLE([Xrs],
 
 ## enable dynloaded JVM
 AC_ARG_ENABLE([dynload],
-[AS_HELP_STRING([--enable-dynload],[load JVM dynamically (without linking). @<:@auto@:>@])],
+[AS_HELP_STRING([--enable-dynload],[load JVM dynamically (without linking). @<:@yes@:>@])],
 [want_dynload="${enableval}"],
-[want_dynload=auto])
+[want_dynload=yes])
 
 ## enable debug flags
 AC_ARG_ENABLE([debug],
@@ -253,6 +253,8 @@ AC_MSG_CHECKING([whether JVM will be loaded dynamically])
 AC_MSG_RESULT(${use_dynload})
 AM_CONDITIONAL(USE_DYNLOAD, [test "x${use_dynload}" = xyes])
 
+if test x${use_dynload} = xno; then
+
 AC_MSG_CHECKING([whether JNI programs can be compiled])
 AC_LINK_IFELSE([AC_LANG_SOURCE([[
 #include <jni.h>
@@ -289,6 +291,7 @@ int main(void) {
 }
         ]])],[AC_MSG_RESULT([ok])],[AC_MSG_ERROR([One or more JNI types differ from the corresponding native type. You may need to use non-standard compiler flags or a different compiler in order to fix this.])],[])
 
+fi ## dynload = no
 
 if test "${want_jri}" = auto; then
    AC_MSG_CHECKING([whether JRI should be compiled (autodetect)])
