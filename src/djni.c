@@ -38,6 +38,8 @@ int djni_load(const char *path) {
 	JNI_GetDefaultJavaVMInitArgs_fn = 0;
 	JNI_CreateJavaVM_fn = 0;
 	JNI_GetCreatedJavaVMs_fn = 0;
+	dlclose(jni_dl);
+	jni_dl = 0;
 	return -3;
     }
     return 0;
@@ -52,6 +54,14 @@ int djni_unload(void) {
 	return 0;
     }
     return -1;  
+}
+
+int djni_loaded(void) {
+    return jni_dl ? 1 : 0;
+}
+
+const char* djni_last_error(void) {
+    return last_error;
 }
 
 /* The following are the "normal" JNI API calls which are routed to libjvm JNI API.

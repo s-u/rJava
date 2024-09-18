@@ -9,8 +9,41 @@
 .need.init <- function()
     .Call(RJava_needs_init)
 
+.jloadJVM <- function(path, silent=FALSE)
+  .Call(RloadJVM, path.expand(path), silent)
+
+.junloadJVM <- function()
+  .Call(RunloadJVM)
+
+.jfindAndLoadJVM <- function() {
+    home <- Sys.getenv("JAVA_HOME")
+    if (!nzchar(home) || !isTRUE(dir.exists(home))) {
+        ## try java_home first if present
+        if (file.exists("/usr/libexec/java_home")) {
+	    home <- tryCatch(system("/usr/libexec/java_home", intern=TRUE, ignore.stderr=TRUE),
+	                     error=function(...) "")
+	}
+	## otherwise rely on java in PATH
+        if (!nzchar(home) || !isTRUE(dir.exists(home))) {
+	    home <- tryCatch(system(paste("java", "-cp",
+	        shQuote(system.file("java", package="rJava")), "getsp", "java.home"),
+	        intern=TRUE, ignore.stderr=TRUE), error=function(...) "")
+	}
+    }
+    if (!nzchar(home) || !isTRUE(dir.exists(home)))
+        stop("Cannot find Java. Either make sure java executable is on the PATH or set the JAVA_HOME environment variable.")
+    libjvm <- list.files(home, "^libjvm[.]", recursive=TRUE, full.names=TRUE)
+    if (!length(libjvm))
+        stop("Cannot find libjvm in ", home)
+    message("Loading JVM from ", home)
+    .jloadJVM(libjvm)
+}
+
 ## initialization
 .jinit <- function(classpath=NULL, parameters=getOption("java.parameters"), ..., silent=FALSE, force.init=FALSE) {
+  st <- .jvmState()
+  if (st$state == "not-loaded")
+     .jfindAndLoadJVM()
   running.classpath <- character()
   if (!.need.init()) {
     running.classpath <- .jclassPath()

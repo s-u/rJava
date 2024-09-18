@@ -1,7 +1,7 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x01000b /* rJava v1.0-11 */
+#define RJAVA_VER 0x010010 /* rJava v1.1-0 */
 
 /* important changes between versions:
    3.0  - adds compiler
@@ -19,7 +19,7 @@
    0.2  - uses S4 classes
    0.1  - first public release */
 
-#include <jni.h>
+#include "djni.h"
 #include <R.h>
 #include <Rinternals.h>
 #include <Rversion.h>
@@ -140,7 +140,8 @@ extern int rJava_initialized;
 #define JVM_STATE_CREATED   1  /* JVM was created by us */
 #define JVM_STATE_ATTACHED  2  /* we attached to another JVM */
 #define JVM_STATE_DEAD      4  /* set when Java exit handler was called */
-#define JVM_STATE_DESTROYED 8  /* JVM was destroyed */
+#define JVM_STATE_DETACHED  8  /* detached from existing JVM */
+#define JVM_STATE_DESTROYED 9  /* JVM was destroyed */
 
 extern int rJava_JVM_state;
 
@@ -168,6 +169,7 @@ extern jmethodID mid_RJavaImport_lookup ;
 extern jmethodID mid_RJavaImport_exists ;
 
 HIDE void init_rJava(void);
+HIDE void destroyJVM(void);
 
 /* in otables.c */
 // turn this for debugging in otables.c

@@ -22,7 +22,7 @@
                     "RgetShortArrayCont", "RgetStringArrayCont", "RidenticalRef", "RgetSimpleClassNames",
                     "RisAssignableFrom", "RpollException", "RsetField", "RthrowException",
                     "javaObjectCache", "initRJavaTools", "newRJavaLookupTable", "useDynamicSymbols",
-                    "RgetJVMstate",
+                    "RgetJVMstate", "RloadJVM", "RunloadJVM",
                      # .External
                     "RcreateObject", "RgetStringValue", "RinitJVM", "RtoString", "RcallMethod",
                      # .C

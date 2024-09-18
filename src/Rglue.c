@@ -1135,8 +1135,11 @@ REPC SEXP RgetJVMstate(void) {
     const char *st = "unknown";
     switch (rJava_JVM_state) {
     case JVM_STATE_NONE: /* could be detached */
-	st = (existingJVMs() > 0) ? "detached" : "none";
-	break;
+	{
+	    int evm = existingJVMs();
+	    st = (evm == -1) ? "not-loaded" : ((evm > 0) ? "detached" : "none");
+	    break;
+	}
     case JVM_STATE_CREATED:   st = "created"; break;
     case JVM_STATE_ATTACHED:  st = "attached"; break;
     case JVM_STATE_DEAD:      st = "dead"; break;
@@ -1146,4 +1149,32 @@ REPC SEXP RgetJVMstate(void) {
     SET_VECTOR_ELT(res, 1, Rf_mkString(st));
     UNPROTECT(1);
     return res;
+}
+
+REPC SEXP RloadJVM(SEXP sPath, SEXP sSilent) {
+    const char *path;
+    int res, silent = Rf_asInteger(sSilent);
+    if (TYPEOF(sPath) != STRSXP || LENGTH(sPath) != 1)
+	Rf_error("Invalid path to JVM library");
+    /* FIXME: worry about encoding? */
+    path = CHAR(STRING_ELT(sPath, 0));
+    res = djni_load(path);
+    if (silent)
+	return Rf_ScalarInteger(res);
+    switch(res) {
+    case -1: Rf_error("JVM run-time is already loaded");
+    case -2: Rf_error("Cannot load JVM run-time (%s)", djni_last_error() ? djni_last_error() : "unsuccessful");
+    case -3: Rf_error("JVM run-time does not have required entry points");
+    }
+    return Rf_ScalarLogical(1);
+}
+
+REPC SEXP RunloadJVM(void) {
+    int res;
+    if (rJava_JVM_state == JVM_STATE_CREATED ||
+	rJava_JVM_state == JVM_STATE_ATTACHED) {
+	destroyJVM();
+    }
+    res = djni_unload();
+    return Rf_ScalarLogical((res < -1) ? 0 : 1);
 }
