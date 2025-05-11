@@ -10,7 +10,7 @@
     .Call(RJava_needs_init)
 
 ## initialization
-.jinit <- function(classpath=NULL, parameters=getOption("java.parameters"), ..., silent=FALSE, force.init=FALSE) {
+.jinit <- function(classpath=NULL, parameters=getOption("java.parameters", NA), ..., silent=FALSE, force.init=FALSE) {
   running.classpath <- character()
   if (!.need.init()) {
     running.classpath <- .jclassPath()
@@ -22,6 +22,21 @@
       return(0)
     }
   }
+
+  # default JVM initialization parameters
+  # Up until 1.0-12 jfirst (=onLoad) set java.parameters to -Xmx512m to increase the heap
+  # size, so parameters was always -Xmx512m unless the user set java.parameters or parameters.
+  # We now leave the java.parameters alone and only set the default heap size if
+  # java.parameters is not set -- with mostly the same effect.
+  # (NB: JVMs have changed the default from 256Mb to 25% of available memory in some cases,
+  # thus the default is becoming less important nowadays.)
+  # We also increase the default heap size since machines using R are unlikely
+  # to be starved for RAM. Note that the meaning of NULL has changed to "none"
+  # since 1.0-13.
+  if (any(is.na(parameters)))
+      parameters <- "-Xmx1g"
+  if (is.null(parameters))
+      parameters <- character()
 
   ## determine path separator
   path.sep <- .Platform$path.sep

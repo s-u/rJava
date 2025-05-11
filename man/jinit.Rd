@@ -11,8 +11,8 @@
   \code{.jvmState() returns the state of the current JVM.}
 }
 \usage{
-.jinit(classpath = NULL, parameters = getOption("java.parameters"), ...,
-silent = FALSE, force.init = FALSE)
+.jinit(classpath = NULL, parameters = getOption("java.parameters", NA), ...,
+       silent = FALSE, force.init = FALSE)
 .jvmState()
 }
 \arguments{
@@ -25,7 +25,10 @@ silent = FALSE, force.init = FALSE)
     the virtual machine. They are implementation dependent and apply
     to JDK version 1.2 or higher only. Please note that each parameter
     must be in a separate element of the array, you cannot use a
-    space-separated string with multiple parameters.}
+    space-separated string with multiple parameters. The value of
+    \code{NA} means "use rJava default" which is \code{"-Xmx1g"}
+    currently. \code{NULL} is equivalent to \code{character()}.
+  }
   \item{...}{Other optional Java initialization parameters (implementation-dependent).}
   \item{silent}{If set to \code{TRUE} no warnings are issued.}
   \item{force.init}{If set to \code{TRUE} JVM is re-initialized even if
@@ -89,15 +92,17 @@ silent = FALSE, force.init = FALSE)
   rare and problematic in either case. Behavior of rJava functions other
   than \code{.jinit} and \code{.jvmState} is undefined unless
   \code{.jvmState()$initialized} is \code{TRUE}.
+
+  NOTE: \code{.jinit()} can be called implicitly by other functions such
+  as \code{\link{.jpackage}} or \code{\link{J}}.
 }
 \seealso{
   \code{\link{.jpackage}}
 }
 \examples{
 \dontrun{
-## set heap size limit to 512MB (see java -X) and
-## use "myClasses.jar" as the class path
-.jinit(classpath="myClasses.jar", parameters="-Xmx512m")
+## set heap size limit to 512MB (see java -X)
+.jinit(parameters="-Xmx512m")
 .jvmState()
 }
 }
