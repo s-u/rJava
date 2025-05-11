@@ -1,6 +1,18 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+1.0-13
+    o	The default Java parameters have changed from -Xmx512m to
+	-Xmx1g and will be only set by .jinit() if the java.parameters
+	option is not set (and no parameters are specified).  (#341)
+	Previously, the java.parameters option would be set on load
+	(if not present), now it is not changed by rJava at all and
+	left to the user.
+
+    o	.jinit() interprets parameters=NA as "use rJava default" (see
+	above) and NULL is a shorthand for character().
+
+
 1.0-12	2024-01-26
     o	Win32: minor changes to adapt to (undocumented) API changes in
 	R 4.2.0.
