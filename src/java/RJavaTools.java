@@ -17,13 +17,20 @@
 // You should have received a copy of the GNU General Public License
 // along with rJava.  If not, see <http://www.gnu.org/licenses/>.
 
-import java.lang.reflect.Method ;
-import java.lang.reflect.Field ;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor ;
+import java.lang.reflect.Executable;
+import java.lang.reflect.Field ;
 import java.lang.reflect.InvocationTargetException ;
-import java.lang.reflect.Modifier ;
 import java.lang.reflect.Member ;
-
+import java.lang.reflect.Method ;
+import java.lang.reflect.Modifier ;
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.Vector ;
 
 
@@ -34,6 +41,23 @@ import java.util.Vector ;
  * by Romain Francois &lt;francoisromain@free.fr&gt; licensed under GPL v2 or higher.
  */
 public class RJavaTools {
+	
+	/* dual path for Java 8 and 9+ to check actual accessibility */
+	private static final Method CAN_ACCESS;
+	/* Java 8 accessibility checker */
+	private static final Lookup LOOKUP = MethodHandles.publicLookup(); 
+	
+	static {
+		Method canAccess = null;
+		try {
+			canAccess = Executable.class.getMethod("canAccess", Object.class);
+		} catch (NoSuchMethodException e) {
+			// Java 8-
+		} catch (SecurityException e) {
+			// Java 8-
+		}
+		CAN_ACCESS = canAccess;
+	}
 	
 	/**
 	 * Returns an inner class of the class with the given simple name
@@ -328,7 +352,97 @@ public class RJavaTools {
 		return classHasMethod(o.getClass(), name, false); 
 	}
 	
+	/**
+	 * Tests whether a given executable is accessible without actually calling {@link AccessibleObject#isAccessible()} which is unreliable.
+	 * 
+	 * @param executable the given method/constructor
+	 * @param o the target object
+	 * @return true if the method can be accessed from RJavaTools
+	 */
+	public static boolean canAccess(Executable executable, Object o){
+		try {
+			if (CAN_ACCESS != null) {
+				/* Java 9+ path */
+				return (boolean) (Boolean) CAN_ACCESS.invoke(executable, o);
+			} else {
+				/* Java 8 path */
+				if (executable instanceof Method)
+					LOOKUP.unreflect((Method) executable);
+				else
+					LOOKUP.unreflectConstructor((Constructor) executable);
+				return true;
+			}
+		} catch (Exception e) {
+			return false;
+		}
+	}
 	
+	/**
+	 * Resolves a bridge method to the override one
+	 * @param bridgeMethod the potentially bridge method
+	 * @return a method that isn't a bridge method
+	 */
+	public static Method resolveBridge(Method bridgeMethod) {
+		// accounts for bridge methods which may have slightly different parameters
+		Method best = null;
+		if (bridgeMethod.isBridge()) {
+			Class<?>[] bridgeParams = bridgeMethod.getParameterTypes();
+			// look for non-bridge methods in the same class that accepts wider parameters
+			nextMethod:
+			for (Method method: bridgeMethod.getDeclaringClass().getDeclaredMethods()) {
+				if (!method.isBridge() && !method.isSynthetic() && method.getName().equals(bridgeMethod.getName())
+						&& method.getParameterCount() == bridgeMethod.getParameterCount()) {
+					Class<?>[] testParams = method.getParameterTypes();
+					// Bridge params should be supertypes of target params (erasure widening).
+					for (int i = 0; i < testParams.length; i++) {
+						if (!testParams[i].isAssignableFrom(bridgeParams[i])) continue nextMethod;
+					}
+					if (bridgeMethod.getReturnType().isAssignableFrom(method.getReturnType()) && (best == null || isMoreSpecific(method, best))) best = method;
+				}
+			}
+		}
+		
+		return best == null ? bridgeMethod : best;
+	}
+	
+	/**
+	 * Finds a mathod that accepts the given instance and is accessible from RJavaTools class.
+	 * <p>Avoids calling isAccessible/setAccessible that fails on Java 17+
+	 * 
+	 * @param method The most specific, possibly non-accessible, method
+	 * @param target the instance upon which the method is being invoked (null for static)
+	 * @return
+	 */
+	public static Method findAccessible(Method method, Object target) {
+		if (canAccess(method, target)) return method;
+		
+		Deque<Class<?>> supers = new ArrayDeque<Class<?>>();
+		HashSet<Class<?>> visited = new HashSet<Class<?>>();
+		supers.add(target.getClass());
+
+		while (!supers.isEmpty()) {
+			Class<?> c = supers.pop();
+			if (visited.add(c)) {
+				Method superMethod;
+				try {
+					// first update the method to be non-bridge
+					method = resolveBridge(method);
+					superMethod = c.getMethod(method.getName(), method.getParameterTypes());
+					/* if an accessible executable is found stop here */
+					if (canAccess(superMethod, target)) return superMethod;
+					if (!c.isInterface() && !c.isArray()) supers.add(c.getSuperclass());
+					if (!c.isArray()) supers.addAll(Arrays.asList(c.getInterfaces()));
+				} catch (NoSuchMethodException e1) {
+					/* executable not found in current class (and any of its ancestors) */
+				} catch (SecurityException e1) {
+					/* executable not found in current class (and any of its ancestors) */
+				}
+			}
+		}
+		
+		/* No accessible executable found, fail later on invoke/newInstance */
+		return method;
+	}
 	
 	/**
 	 * Object creator. Find the best constructor based on the parameter classes
@@ -343,25 +457,12 @@ public class RJavaTools {
 		
 		Constructor cons = getConstructor( o_clazz, clazzes, is_null );
 		
-		/* enforcing accessibility (workaround for bug 128) */
-		boolean access = cons.isAccessible(); 
-		if (!access) {
-			try { /* since JDK-17 this may fail */
-				cons.setAccessible( true ); 
-			} catch (Throwable e) {
-				access = true; /* nothing we can do, just let it fail below */
-			}
-		}
-		
 		Object o; 
 		try{
 			o = cons.newInstance( args ) ; 
 		} catch( InvocationTargetException e){
 			/* the target exception is much more useful than the reflection wrapper */
-			throw e.getTargetException() ;
-		} finally{
-			if (!access)
-				cons.setAccessible( access ); 
+			throw e.getCause() ;
 		}
 		return o;                                 
 	}
@@ -377,32 +478,21 @@ public class RJavaTools {
 	
 	/**
 	 * Invoke a method of a given class
-	 * <p>First the appropriate method is resolved by getMethod and
-	 * then invokes the method
+	 * <p>First the appropriate method is resolved by getMethod.
+	 * <p>Then, if the method is not accessible, tries to find an accessible equivalent.
+	 * <p>Finally it invokes the method
 	 */
 	public static Object invokeMethod( Class o_clazz, Object o, String name, Object[] args, Class[] clazzes) throws Throwable {
 		
 		Method m = getMethod( o_clazz, name, clazzes, arg_is_null(args) );
-		
-		/* enforcing accessibility (workaround for bug 128) */
-		boolean access = m.isAccessible();
-		if (!access) {
-			try { /* since JDK-17 this may fail */
-				m.setAccessible( true ); 
-			} catch (Throwable e) {
-				access = true; /* nothing we can do, fail later with proper error ... */
-			}
-		}
+		m = findAccessible(m, o);
 		
 		Object out; 
 		try{
 			out = m.invoke( o, args ) ; 
 		} catch( InvocationTargetException e){
 			/* the target exception is much more useful than the reflection wrapper */
-			throw e.getTargetException() ;
-		} finally{
-			if (!access)
-				m.setAccessible( access ); 
+			throw e.getCause() ;
 		}
 		return out ; 
 	}
