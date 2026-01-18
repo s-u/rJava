@@ -2,10 +2,14 @@
 --------------------------
 
 1.0-14	2026-01-19
-    o	adjust to renamed R API
+    o	Minor changes to replace EXTPTR macros with API calls globally.
+
+    o	Added Authors@R and ORCID.
+
+    o	Add some protection fixes.
 
 
-1.0-13	2024-05-12
+1.0-13	2025-05-12
     o	The default Java parameters have changed from -Xmx512m to
 	-Xmx1g and will be only set by .jinit() if the java.parameters
 	option is not set (and no parameters are specified).  (#341)
