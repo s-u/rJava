@@ -1,7 +1,7 @@
 #ifndef __RJAVA_H__
 #define __RJAVA_H__
 
-#define RJAVA_VER 0x01000d /* rJava v1.0-13 */
+#define RJAVA_VER 0x01000e /* rJava v1.0-14 */
 
 /* important changes between versions:
    3.0  - adds compiler
@@ -26,6 +26,25 @@
 
 #include <Rdefines.h>
 #include <R_ext/Callbacks.h>
+
+#include <Rversion.h>
+
+/* R API compatibility re-mapping */
+#if (R_VERSION >= R_Version(2,0,0))
+/* EXTPTR */
+#ifdef  EXTPTR_PTR
+#undef  EXTPTR_PTR
+#endif
+#define EXTPTR_PTR(X) R_ExternalPtrAddr(X)
+#ifdef  EXTPTR_PROT
+#undef  EXTPTR_PROT
+#endif
+#define EXTPTR_PROT(X) R_ExternalPtrProtected(X)
+#ifdef  EXTPTR_TAG
+#undef  EXTPTR_TAG
+#endif
+#define EXTPTR_TAG(X) R_ExternalPtrTag(X)
+#endif
 
 /* flags used in function declarations:
    HIDE - hidden (used internally in rJava only)
