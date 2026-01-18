@@ -13,8 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'windows-2022', 'macOS-13', 'macOS-14', 'ubuntu-22.04' ]
-        r:  [ 'release' ]
+        os: [ macos-14, macos-15-intel, windows-2022, ubuntu-22.04, ubuntu-24.04 ]
+        r:  [ devel ]
         java: [ 8, 11 ]
 
     steps:
@@ -40,6 +40,6 @@ jobs:
           sudo bash reconf.sh
         shell: bash
 
-      - uses: s-u/R-actions/pkg-check@v2
+      - uses: s-u/R-actions/pkg-check@master
         with:
           build-script: sh mkdist
