@@ -78,6 +78,21 @@
 
 #include "config.h"
 
+/* R 4.0.1 broke EXTPTR_PTR ABI so re-map it to safety at the small expense of speed */
+#ifdef  EXTPTR_PTR
+#undef  EXTPTR_PTR
+#endif
+#define EXTPTR_PTR(X) R_ExternalPtrAddr(X)
+/* PROT/TAG are safe so far, but just to make sure ... */
+#ifdef  EXTPTR_PROT
+#undef  EXTPTR_PROT
+#endif
+#define EXTPTR_PROT(X) R_ExternalPtrProtected(X)
+#ifdef  EXTPTR_TAG
+#undef  EXTPTR_TAG
+#endif
+#define EXTPTR_TAG(X) R_ExternalPtrTag(X)
+
 #ifdef MEMPROF
 #include <stdio.h>
 #include <time.h>
