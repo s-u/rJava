@@ -43,3 +43,4 @@ jobs:
       - uses: s-u/R-actions/pkg-check@master
         with:
           build-script: sh mkdist
+          debian-deps: libpcre2-dev liblzma-dev libbz2-dev libdeflate-dev
