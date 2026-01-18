@@ -7,23 +7,6 @@
 #include <R_ext/Riconv.h>
 #include <errno.h>
 #include "rjstring.h"
-
-/* R 4.0.1 broke EXTPTR_PTR ABI so re-map it to safety at
-   the small expense of speed */
-#ifdef  EXTPTR_PTR
-#undef  EXTPTR_PTR
-#endif
-#define EXTPTR_PTR(X) R_ExternalPtrAddr(X)
-/* PROT/TAG are safe so far, but just to make sure ... */
-#ifdef  EXTPTR_PROT
-#undef  EXTPTR_PROT
-#endif
-#define EXTPTR_PROT(X) R_ExternalPtrProtected(X)
-#ifdef  EXTPTR_TAG
-#undef  EXTPTR_TAG
-#endif
-#define EXTPTR_TAG(X) R_ExternalPtrTag(X)
-
 #include <stdarg.h>
 
 /* max supported # of parameters to Java methods */
@@ -197,7 +180,7 @@ HIDE void deserializeSEXP(SEXP o) {
 	      /* Note: currently we don't remove the serialized content, because it was created explicitly using .jcache to allow repeated saving. Once this is handled by a hook, we shall remove it. However, to assure compatibility TAG is always NULL for now, so we do clear the cache if TAG is non-null for future use. */
 	      if (EXTPTR_TAG(o) != R_NilValue) {
 		/* remove the serialized raw vector */
-		SETCDR(o, R_NilValue); /* Note: this is abuse of the API since it uses the fact that PROT is stored in CDR */
+		R_SetExternalPtrTag(o, R_NilValue);
 	      }
 	    }
 	  }
@@ -259,7 +242,9 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, sig_buffer_t *sig, i
   SEXP p=par;
   SEXP e;
   int jvpos=0;
-  int i=0;
+#ifdef RJ_DEBUG
+  int i = 0;
+#endif
 
   while (p && TYPEOF(p)==LISTSXP && (e=CAR(p))) {
     /* skip all named arguments */
@@ -432,7 +417,9 @@ static int Rpar2jvalue(JNIEnv *env, SEXP par, jvalue *jpar, sig_buffer_t *sig, i
 	_dbg(rjprintf(" (ignoring)\n"));
       }
     }
+#ifdef RJ_DEBUG
     i++;
+#endif
     p=CDR(p);
   }
   fintmpo(tmpo);
@@ -453,7 +440,8 @@ static void Rfreejpars(JNIEnv *env, jobject *tmpo) {
 HIDE jvalue R1par2jvalue(JNIEnv *env, SEXP par, sig_buffer_t *sig, jobject *otr) {
   jobject tmpo[4] = {0, 0};
   jvalue v[4];
-  int p = Rpar2jvalue(env, CONS(par, R_NilValue), v, sig, 2, tmpo);
+  int p = Rpar2jvalue(env, PROTECT(CONS(par, R_NilValue)), v, sig, 2, tmpo);
+  UNPROTECT(1);
   /* this should never happen, but just in case - we can only assume responsibility for one value ... */
   if (p != 1 || (tmpo[0] && tmpo[1])) {
     Rfreejpars(env, tmpo);
@@ -717,8 +705,11 @@ REPE SEXP RcallSyncMethod(SEXP par) {
 
   e = RcallMethod(par);
 
-  if ((*env)->MonitorExit(env, o) != JNI_OK)
+  if ((*env)->MonitorExit(env, o) != JNI_OK) {
+    PROTECT(e);
     REprintf("Rglue.SERIOUS PROBLEM: MonitorExit failed, subsequent calls may cause a deadlock!\n");
+    UNPROTECT(1);
+  }
 
   return e;
 }
@@ -832,14 +823,13 @@ static SEXP getObjectClassName(JNIEnv *env, jobject o) {
 
 /** creates a new jobjRef object. If klass is NULL then the class is determined from the object (if also o=NULL then the class is set to java/lang/Object) */
 HIDE SEXP new_jobjRef(JNIEnv *env, jobject o, const char *klass) {
-  SEXP oo = NEW_OBJECT(MAKE_CLASS("jobjRef"));
+  SEXP oo = PROTECT(NEW_OBJECT(PROTECT(MAKE_CLASS("jobjRef"))));
   if (!inherits(oo, "jobjRef"))
     error("unable to create jobjRef object");
-  PROTECT(oo);
   SET_SLOT(oo, install("jclass"),
-	   klass?mkString(klass):getObjectClassName(env, o));
-  SET_SLOT(oo, install("jobj"), j2SEXP(env, o, 1));
-  UNPROTECT(1);
+	   PROTECT(klass ? mkString(klass) : getObjectClassName(env, o)));
+  SET_SLOT(oo, install("jobj"), PROTECT(j2SEXP(env, o, 1)));
+  UNPROTECT(4);
   return oo;
 }
 
@@ -851,13 +841,12 @@ HIDE SEXP new_jobjRef(JNIEnv *env, jobject o, const char *klass) {
  * @param cl Class instance
  */
 HIDE SEXP new_jclassName(JNIEnv *env, jobject/*Class*/ cl ) {
-  SEXP oo = NEW_OBJECT(MAKE_CLASS("jclassName"));
+  SEXP oo = PROTECT(NEW_OBJECT(PROTECT(MAKE_CLASS("jclassName"))));
   if (!inherits(oo, "jclassName"))
     error("unable to create jclassName object");
-  PROTECT(oo);
-  SET_SLOT(oo, install("name"), getName(env, cl) );
-  SET_SLOT(oo, install("jobj"), new_jobjRef( env, cl, "java/lang/Class" ) );
-  UNPROTECT(1);
+  SET_SLOT(oo, install("name"), PROTECT(getName(env, cl)) );
+  SET_SLOT(oo, install("jobj"), PROTECT(new_jobjRef( env, cl, "java/lang/Class" )) );
+  UNPROTECT(4);
   return oo;
 }
 
@@ -875,24 +864,22 @@ HIDE SEXP getName( JNIEnv *env, jobject/*Class*/ cl){
   	if (sl) (*env)->GetStringUTFRegion(env, r, 0, sl, cn);
   	char *c=cn; while(*c) { if (*c=='.') *c='/'; c++; }
 
-	SEXP res = PROTECT( mkString(cn ) );
+	SEXP res = mkString(cn);
 	releaseObject(env, r);
-	UNPROTECT(1); /* res */
 	return res;
 }
 
 static SEXP new_jarrayRef(JNIEnv *env, jobject a, const char *sig) {
   /* it is too tedious to try to do this in C, so we use 'new' R function instead */
   /* SEXP oo = eval(LCONS(install("new"),LCONS(mkString("jarrayRef"),R_NilValue)), R_GlobalEnv); */
-  SEXP oo = NEW_OBJECT(MAKE_CLASS("jarrayRef"));
+  SEXP oo = PROTECT(NEW_OBJECT(PROTECT(MAKE_CLASS("jarrayRef"))));
   /* .. and set the slots in C .. */
   if (! IS_JARRAYREF(oo) )
     error("unable to create an array");
-  PROTECT(oo);
-  SET_SLOT(oo, install("jobj"), j2SEXP(env, a, 1));
-  SET_SLOT(oo, install("jclass"), mkString(sig));
-  SET_SLOT(oo, install("jsig"), mkString(sig));
-  UNPROTECT(1);
+  SET_SLOT(oo, install("jobj"), PROTECT(j2SEXP(env, a, 1)));
+  SET_SLOT(oo, install("jclass"), PROTECT(mkString(sig)));
+  SET_SLOT(oo, install("jsig"), PROTECT(mkString(sig)));
+  UNPROTECT(5);
   return oo;
 }
 
@@ -908,17 +895,16 @@ static SEXP new_jarrayRef(JNIEnv *env, jobject a, const char *sig) {
 static SEXP new_jrectRef(JNIEnv *env, jobject a, const char *sig, SEXP dim ) {
   /* it is too tedious to try to do this in C, so we use 'new' R function instead */
   /* SEXP oo = eval(LCONS(install("new"),LCONS(mkString("jrectRef"),R_NilValue)), R_GlobalEnv); */
-  SEXP oo = NEW_OBJECT(MAKE_CLASS("jrectRef"));
+  SEXP oo = PROTECT(NEW_OBJECT(PROTECT(MAKE_CLASS("jrectRef"))));
   /* .. and set the slots in C .. */
   if (! IS_JRECTREF(oo) )
     error("unable to create an array");
-  PROTECT(oo);
-  SET_SLOT(oo, install("jobj"), j2SEXP(env, a, 1));
-  SET_SLOT(oo, install("jclass"), mkString(sig));
-  SET_SLOT(oo, install("jsig"), mkString(sig));
+  SET_SLOT(oo, install("jobj"), PROTECT(j2SEXP(env, a, 1)));
+  SET_SLOT(oo, install("jclass"), PROTECT(mkString(sig)));
+  SET_SLOT(oo, install("jsig"), PROTECT(mkString(sig)));
   SET_SLOT(oo, install("dimension"), dim);
 
-  UNPROTECT(1); /* oo */
+  UNPROTECT(5); /* oo + slots */
   return oo;
 }
 #endif
@@ -1092,7 +1078,7 @@ REPC SEXP javaObjectCache(SEXP o, SEXP what) {
     error("invalid object");
   if (TYPEOF(what) == RAWSXP || what == R_NilValue) {
     /* set PROT to the serialization of NULL */
-    SETCDR(o, what);
+    R_SetExternalPtrProtected(o, what);
     return what;
   }
   if (TYPEOF(what) == LGLSXP)

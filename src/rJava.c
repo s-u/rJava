@@ -43,9 +43,9 @@ HIDE void throwR(SEXP msg, SEXP jobj, SEXP clazzes) {
 
 	setAttrib(cond, R_NamesSymbol, names);
 	setAttrib(cond, R_ClassSymbol, clazzes);
-	UNPROTECT(2); /* clazzes, names */
-	eval(LCONS(install("stop"), CONS(cond, R_NilValue)), R_GlobalEnv);
-	UNPROTECT(1); /* cond */
+	UNPROTECT(1); /* names */
+	eval(PROTECT(LCONS(install("stop"), PROTECT(CONS(cond, R_NilValue)))), R_GlobalEnv);
+	UNPROTECT(3); /* cond + eval-pars */
 }
 
 /* check for exceptions and throw them to R level */
@@ -63,7 +63,7 @@ HIDE void ckx(JNIEnv *env) {
 	/* env is valid and an exception occurred */
 	/* we create the jobj first, because the exception may in theory disappear after being cleared,
 	   yet this can be (also in theory) risky as it uses further JNI calls ... */
-	xobj = j2SEXP(env, x, 0);
+	xobj = PROTECT(j2SEXP(env, x, 0));
 	if (!rj_RJavaTools_Class) {
 	    REprintf("ERROR: Java exception occurred during rJava bootstrap - see stderr for Java stack trace.\n");
 	    (*env)->ExceptionDescribe(env);
@@ -71,7 +71,7 @@ HIDE void ckx(JNIEnv *env) {
 	(*env)->ExceptionClear(env);
 
 	/* grab the list of class names (without package path) */
-	SEXP clazzes = rj_RJavaTools_Class ? PROTECT( getSimpleClassNames_asSEXP( (jobject)x, (jboolean)1 ) ) : R_NilValue;
+	SEXP clazzes = PROTECT( rj_RJavaTools_Class ? getSimpleClassNames_asSEXP( (jobject)x, (jboolean)1 ) : R_NilValue );
 
 	/* ok, now this is a critical part that we do manually to avoid recursion */
 	{
@@ -97,7 +97,7 @@ HIDE void ckx(JNIEnv *env) {
 					/* convert full class name to JNI notation */
 					char *cn = strdup(c), *d = cn;
 					while (*d) { if (*d == '.') *d = '/'; d++; }
-					xclass = mkString(cn);
+					xclass = PROTECT(mkString(cn));
 					free(cn);
 					(*env)->ReleaseStringUTFChars(env, cname, c);
 				}
@@ -114,15 +114,20 @@ HIDE void ckx(JNIEnv *env) {
 	(*env)->DeleteLocalRef(env, x);
 
 	/* construct the jobjRef */
-	xr = PROTECT(NEW_OBJECT(MAKE_CLASS("jobjRef")));
+	xr = PROTECT(NEW_OBJECT(PROTECT(MAKE_CLASS("jobjRef"))));
+	if (!xclass) xclass = PROTECT(mkString("java/lang/Throwable"));
 	if (inherits(xr, "jobjRef")) {
-		SET_SLOT(xr, install("jclass"), xclass ? xclass : mkString("java/lang/Throwable"));
+		SET_SLOT(xr, install("jclass"), xclass);
 		SET_SLOT(xr, install("jobj"), xobj);
 	}
 
 	/* and off to R .. (we're keeping xr and clazzes protected) */
 	throwR(msg, xr, clazzes);
-	/* throwR never returns so don't even bother ... */
+	/* should not return, but just in case ... */
+
+	/* protect stack: xobj, clz, msg, xcl, xr + mk_class */
+	/* (it may confuse the UP checker since the order does vary by path, but the count is the same) */
+	UNPROTECT(6);
 }
 
 /* clear any pending exceptions */
@@ -162,8 +167,6 @@ HIDE JNIEnv *getJNIEnv(void)
     }
     if (env && !eenv) eenv=env;
 
-    /* if (eenv!=env)
-        fprintf(stderr, "Warning! eenv=%x, but env=%x - different environments encountered!\n", eenv, env); */
     return env;
 }
 
