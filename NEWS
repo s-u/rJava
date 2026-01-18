@@ -1,7 +1,11 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-1.0-13
+1.0-14	2026-01-19
+    o	adjust to renamed R API
+
+
+1.0-13	2024-05-12
     o	The default Java parameters have changed from -Xmx512m to
 	-Xmx1g and will be only set by .jinit() if the java.parameters
 	option is not set (and no parameters are specified).  (#341)
