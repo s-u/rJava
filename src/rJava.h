@@ -25,9 +25,12 @@
 #include <Rversion.h>
 
 #include <Rdefines.h>
-#include <R_ext/Callbacks.h>
-
 #include <Rversion.h>
+#if (R_VERSION >= R_Version(4,6,0))
+#include <R_ext/ObjectTable.h>
+#else
+#include <R_ext/Callbacks.h>
+#endif
 
 /* R API compatibility re-mapping */
 #if (R_VERSION >= R_Version(2,0,0))
