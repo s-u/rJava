@@ -382,7 +382,7 @@ if test "${want_jri}" = yes; then
   export JAVA_HOME JAVA_CPPFLAGS JAVA_LIBS JAVA_LD_LIBRARY_PATH JAVA JAVAC JAVAH JAR
   CONFIGURED=1
   export CONFIGURED
-  AC_CONFIG_SUBDIRS(jri)
+  AC_CONFIG_SUBDIRS(src/jri)
 else
   AC_MSG_RESULT([no])
 fi

@@ -22,9 +22,9 @@ mkdir /tmp/rJava
 echo "Copying package base ..."
 cp -r . /tmp/rJava
 
-if [ -e "${SWD}/jri/mkdist" ]; then
-    JRI="${SWD}/jri"
-    rm -rf /tmp/rJava/jri
+if [ -e "${SWD}/src/jri/mkdist" ]; then
+    JRI="${SWD}/src/jri"
+    rm -rf /tmp/rJava/src/jri
     echo "Embedded JRI: ${JRI}"
 fi
 
@@ -38,7 +38,7 @@ rm -f /tmp/rJava/README.md
 cd /tmp/rJava
 
 if [ "$1" = "-c" ]; then
-    rm -f configure tools/install-sh jri/configure
+    rm -f configure tools/install-sh src/jri/configure
 fi
 
 if [ -e /tmp/rJava/configure ]; then
@@ -72,9 +72,9 @@ echo "Removing CVS/SVN and backup files ..."
 rm -rf `find . -name CVS -or -name .svn -or -name \*~`
 
 ## since we merged JRI and rJava trees we no longer support ORG builds
-if [ ! -e jri/configure ]; then
-    if [ -e "${SWD}/jri/mkdist" ]; then
-	DEFAULTJRI="${SWD}/jri"
+if [ ! -e src/jri/configure ]; then
+    if [ -e "${SWD}/src/jri/mkdist" ]; then
+	DEFAULTJRI="${SWD}/src/jri"
     fi
     : ${JRI=$DEFAULTJRI}
     if [ ! -e "$JRI" ]; then
@@ -96,35 +96,35 @@ if [ ! -e jri/configure ]; then
 	    echo "*** ERROR: Cannot get JRI distro!"
 	    exit 1
 	fi
-	rm -rf jri JRI ${SWD}/JRI_*
+	rm -rf jri src/jri JRI ${SWD}/JRI_*
 	#mkdir jri 2> /dev/null > /dev/null
 	cd /tmp/rJava
-	tar fvxz $jf
+	tar fvxz $jf -C src
     else
-	tar fxz $JRI
+	tar fxz $JRI -C src
     fi
-    if [ -e jri/JRI ]; then
+    if [ -e src/jri/JRI ]; then
 	rm -rf 1
-	mv jri 1
-	mv 1/JRI jri
+	mv src/jri 1
+	mv 1/JRI src/jri
 	rm -rf 1
     fi
-    if [ ! -e jri/Makefile.in ]; then
-	if [ -e JRI/Makefile.in ]; then
-	    mv JRI jri
+    if [ ! -e src/jri/Makefile.in ]; then
+	if [ -e src/JRI/Makefile.in ]; then
+	    mv src/JRI src/jri
 	else
 	    echo "*** ERROR: jri is not correctly set up."
 	    exit 1
 	fi
     fi
-    if [ -e jri/Makefile.in -a -e JRI/Makefile.in ]; then
+    if [ -e src/jri/Makefile.in -a -e src/JRI/Makefile.in ]; then
 	# case-insensitive fs - but we need lower case *sigh*
-	mv JRI 1
-	mv 1 jri
+	mv src/JRI 1
+	mv 1 src/jri
     fi
 fi
 
-DEFAULTRENG="${SWD}/jri/REngine"
+DEFAULTRENG="${SWD}/src/jri/REngine"
 if [ ! -e "$DEFAULTRENG/Makefile" ]; then
     echo "*** WARNING *** cannot find REngine sources, the distribution will NOT include REngine!"
 else
@@ -169,7 +169,7 @@ cp src/java/*.java inst/java
 # move RJavaClassLoader into boot area since it will be loaded by the system class loader
 mv inst/java/RJavaClassLoader* inst/java/boot
 # move javadoc directory
-mv src/java/javadoc inst/javadoc
+if [ -e src/java/javadoc ]; then mv src/java/javadoc inst/javadoc; fi
 
 echo "Updating version ..."
 cd /tmp/rJava
@@ -193,7 +193,7 @@ fi
 echo "Creating package ..."
 cd ..
 rm -f `find rJava -name ._\*`
-rm -rf rJava/.git* rJava/jri/REngine/.git*
+rm -rf rJava/.git* rJava/src/jri/REngine/.git*
 rm -f rJava/version
 R CMD build rJava
 cd ${SWD}
