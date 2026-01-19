@@ -3,19 +3,16 @@
 /* define if callbacks support is enabled. */
 #undef ENABLE_JRICB
 
-/* Define to 1 if you have the declaration of `siglongjmp', and to 0 if you
+/* Define to 1 if you have the declaration of 'siglongjmp', and to 0 if you
    don't. */
 #undef HAVE_DECL_SIGLONGJMP
 
-/* Define to 1 if you have the declaration of `sigsetjmp', and to 0 if you
+/* Define to 1 if you have the declaration of 'sigsetjmp', and to 0 if you
    don't. */
 #undef HAVE_DECL_SIGSETJMP
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
-
-/* Define to 1 if you have the <memory.h> header file. */
-#undef HAVE_MEMORY_H
 
 /* Define if you have POSIX.1 compatible sigsetjmp/siglongjmp. */
 #undef HAVE_POSIX_SETJMP
@@ -25,6 +22,9 @@
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
@@ -77,17 +77,16 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Define to 1 if you have the ANSI C header files. */
+/* Define to 1 if all of the C89 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
 
 /* Set if threading support should be enabled. */
 #undef THREADS
 
-/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
-#undef TIME_WITH_SYS_TIME
-
 /* Set if headless mode is to be used when starting the JVM */
 #undef USE_HEADLESS_INIT
 
-/* Define to empty if `const' does not conform to ANSI C. */
+/* Define to empty if 'const' does not conform to ANSI C. */
 #undef const
