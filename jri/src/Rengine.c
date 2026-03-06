@@ -21,6 +21,22 @@ LibExtern int R_interrupts_pending;
 #define RS_ParseVector(A,B,C) R_ParseVector(A,B,C,R_NilValue)
 #endif
 
+/* R API compatibility re-mapping */
+#if (R_VERSION >= R_Version(2,0,0))
+/* EXTPTR */
+#ifdef  EXTPTR_PTR
+#undef  EXTPTR_PTR
+#endif
+#define EXTPTR_PTR(X) R_ExternalPtrAddr(X)
+#endif
+
+#if (R_VERSION >= R_Version(2,5,0))
+#ifdef ENCLOS
+#undef ENCLOS
+#endif
+#define ENCLOS(X) R_ParentEnv(X)
+#endif
+
 #include "Rcallbacks.h"
 #include "Rinit.h"
 #include "globals.h"
