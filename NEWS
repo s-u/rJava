@@ -2,9 +2,6 @@
 --------------------------
 
 1.0-15
-    o	Avoid access issues in Java 17+ (thanks to Valentino Pinna!)
-	when using reflection API: J() (#345)
-
     o	Move JRI sources to src/jri to avoid the top level warning.
 
 
