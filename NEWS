@@ -1,8 +1,10 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
-1.0-15
+1.0-15	2026-03-11
     o	Move JRI sources to src/jri to avoid the top level warning.
+
+    o	Add compatibility re-maps in JRI for R 4.5.0+
 
 
 1.0-14	2026-01-19
