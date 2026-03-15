@@ -232,7 +232,7 @@ JNIEXPORT void JNICALL Java_org_rosuda_JRI_Rengine_rniPrintValue
 JNIEXPORT jlong JNICALL Java_org_rosuda_JRI_Rengine_rniParentEnv
 (JNIEnv *env, jobject this, jlong exp)
 {
-  return SEXP2L(ENCLOS(exp ? L2SEXP(exp) : R_GlobalEnv));
+	return SEXP2L(ENCLOS(exp ? L2SEXP(exp) : R_GlobalEnv));
 }
 
 JNIEXPORT jlong JNICALL Java_org_rosuda_JRI_Rengine_rniFindVar
@@ -247,7 +247,19 @@ JNIEXPORT jlong JNICALL Java_org_rosuda_JRI_Rengine_rniFindVar
 JNIEXPORT jlong JNICALL Java_org_rosuda_JRI_Rengine_rniListEnv
 (JNIEnv *env, jobject this, jlong rho, jboolean all)
 {
+#if (R_VERSION >= R_Version(4,6,0))
+	/* have to do it the hard way - eval ls(rho, all.names=all) */
+	SEXP sRho = PROTECT(rho ? L2SEXP(rho) : R_GlobalEnv);
+	SEXP sAll = PROTECT(Rf_ScalarLogical(all ? 1 : 0));
+	SEXP ana = PROTECT(CONS(sAll, R_NilValue));
+	SET_TAG(ana, Rf_install("all.names"));
+	SEXP ex = PROTECT(lang3(Rf_install("ls"), sRho, ana));
+	SEXP res = Rf_eval(ex, R_BaseEnv);
+	UNPROTECT(4);
+	return SEXP2L(res);
+#else
 	return SEXP2L(R_lsInternal(rho ? L2SEXP(rho) : R_GlobalEnv, all));
+#endif
 }
 
 JNIEXPORT jlong JNICALL Java_org_rosuda_JRI_Rengine_rniSpecialObject
