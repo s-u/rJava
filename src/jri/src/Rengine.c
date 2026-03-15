@@ -156,6 +156,7 @@ JNIEXPORT jlong JNICALL Java_org_rosuda_JRI_Rengine_rniEval
       /* invalid (NULL) expression (parse error, ... ) */
       if (!exp) return 0;
 
+      PROTECT(exps);
       if (TYPEOF(exps) == EXPRSXP) { 
       	  /* if the object is a list of exps, eval them one by one */
           l = LENGTH(exps);
@@ -163,12 +164,16 @@ JNIEXPORT jlong JNICALL Java_org_rosuda_JRI_Rengine_rniEval
               es = R_tryEval(VECTOR_ELT(exps,i), eval_env, &er);
               
               /* an error occured, no need to continue */
-              if (er) return 0;
+              if (er) {
+		  UNPROTECT(1);
+		  return 0;
+	      }
               i++;
           }
       } else
           es = R_tryEval(exps, eval_env, &er);
-      
+      UNPROTECT(1);
+
       /* er is just a flag - on error return 0 */
       if (er) return 0;
       

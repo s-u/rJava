@@ -548,7 +548,16 @@ public class Rengine extends Thread {
             if (pr != 0) {
                 long er = rniEval(pr, 0);
                 if (er != 0) {
-                    REXP x = new REXP(this, er, convert);
+		    REXP x;
+		    if (convert) {
+			rniProtect(er);
+			try {
+			    x = new REXP(this, er, convert);
+			} finally {
+			    rniUnprotect(1);
+			}
+		    } else
+			x = new REXP(this, er, convert);
                     if (DEBUG>0) System.out.println("Rengine.eval("+s+"): END (OK)"+Thread.currentThread());
                     return x;
                 }
