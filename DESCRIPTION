@@ -7,6 +7,6 @@ Authors@R: person("Simon", "Urbanek", role=c("aut","cre","cph"), email="Simon.Ur
 Depends: R (>= 3.6.0), methods
 Description: Low-level interface to Java VM very much like .C/.Call and friends. Allows creation of objects, calling methods and accessing fields.
 License: LGPL-2.1
-URL: http://www.rforge.net/rJava/
+URL: https://www.rforge.net/rJava/
 SystemRequirements: Java JDK 1.2 or higher (for JRI/REngine JDK 1.4 or higher), GNU make
 BugReports: https://github.com/s-u/rJava/issues
