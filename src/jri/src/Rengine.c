@@ -410,19 +410,33 @@ JNIEXPORT jobjectArray JNICALL Java_org_rosuda_JRI_Rengine_rniGetAttrNames
 (JNIEnv *env, jobject this, jlong exp)
 {
     SEXP o = L2SEXP(exp);
-    SEXP att = ATTRIB(o), ah = att;
     unsigned int ac = 0;
     jobjectArray sa;
+#if (R_VERSION >= R_Version(4,6,0))
+    SEXP ans = R_getAttribNames(o);
+    ac = (unsigned int) XLENGTH(o);
+    if (!ac) return 0;
+#else
+    SEXP att = ATTRIB(o), ah = att;
     if (att == R_NilValue) return 0;
     /* count the number of attributes */
     while (ah != R_NilValue) {
 	ac++;
 	ah = CDR(ah);
     }
+#endif
     /* allocate Java array */
     sa = (*env)->NewObjectArray(env, ac, (*env)->FindClass(env, "java/lang/String"), 0);
     if (!sa) return 0;
     ac = 0;
+#if (R_VERSION >= R_Version(4,6,0))
+    R_xlen_t i = 0, n = XLENGTH(ans);
+    while (i < n) {
+	jobject s = (*env)->NewStringUTF(env, CHAR_UTF8(STRING_ELT(ans, i)));
+	(*env)->SetObjectArrayElement(env, sa, (unsigned int)i, s);
+	i++;
+    }
+#else
     ah = att;
     /* iterate again and set create the strings */
     while (ah != R_NilValue) {
@@ -434,6 +448,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_rosuda_JRI_Rengine_rniGetAttrNames
 	ac++;
 	ah = CDR(ah);
     }
+#endif
     return sa;
 }
 
@@ -444,8 +459,7 @@ JNIEXPORT void JNICALL Java_org_rosuda_JRI_Rengine_rniSetAttr
     if (!an || an==R_NilValue || exp==0 || L2SEXP(exp)==R_NilValue) return;
 
     setAttrib(L2SEXP(exp), an, (attr==0)?R_NilValue:L2SEXP(attr));
-	
-	/* BTW: we don't need to adjust the object bit for "class", setAttrib does that already */
+    /* BTW: we don't need to adjust the object bit for "class", setAttrib does that already */
 
     /* this is not official API, but whoever uses this should know what he's doing
        it's ok for directly constructing attr lists, and that's what it should be used for
