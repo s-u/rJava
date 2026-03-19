@@ -1,6 +1,10 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+1.0-17	2026-03-20
+    o	Some more API changes for R 4.6.0
+
+
 1.0-16	2026-03-15
     o	Adjust to API removal in R 4.6.0
 
