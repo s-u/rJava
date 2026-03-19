@@ -37,6 +37,13 @@ LibExtern int R_interrupts_pending;
 #define ENCLOS(X) R_ParentEnv(X)
 #endif
 
+#if (R_VERSION >= R_Version(4,5,0))
+#ifdef Rf_findVar
+#undef Rf_findVar
+#endif
+#define Rf_findVar(X, Y) R_getVar(X, Y, FALSE)
+#endif
+
 #include "Rcallbacks.h"
 #include "Rinit.h"
 #include "globals.h"
