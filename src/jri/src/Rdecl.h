@@ -19,7 +19,4 @@ int  R_ReadConsole(char*, unsigned char*, int, int); /* include/Defn.h */
 int  Rf_initialize_R(int ac, char **av); /* include/Rembedded.h - exists since 2.4.0 */
 #endif /* R < 4.6.0 */
 
-/* this one is still left over */
-void Rf_checkArity(SEXP, SEXP); /* include/Defn.h */
-
 #endif /* __RDECL_H__ */

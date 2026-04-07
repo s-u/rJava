@@ -26,7 +26,8 @@
 #ifndef checkArity
 #define checkArity               Rf_checkArity
 #endif
-#else
+void Rf_checkArity(SEXP, SEXP); /* include/Defn.h */
+#else /* in 2.6.0 re-mapped to Rf_checkArityCall so we just disable it to avoid API issues */
 #define checkArity(X,Y)
 #endif
 
