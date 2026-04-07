@@ -30,14 +30,12 @@ LibExtern int R_interrupts_pending;
 #define EXTPTR_PTR(X) R_ExternalPtrAddr(X)
 #endif
 
-#if (R_VERSION >= R_Version(2,5,0))
+#if (R_VERSION >= R_Version(4,5,0))
 #ifdef ENCLOS
 #undef ENCLOS
 #endif
 #define ENCLOS(X) R_ParentEnv(X)
-#endif
 
-#if (R_VERSION >= R_Version(4,5,0))
 #ifdef Rf_findVar
 #undef Rf_findVar
 #endif
