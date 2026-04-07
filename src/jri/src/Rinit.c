@@ -2,7 +2,7 @@
 #include <Rinternals.h>
 #include "Rinit.h"
 #include "Rcallbacks.h"
-#include "Rdecl.h"
+#include "Rdecl.h" /* includes Rinterface.h */
 
 /*-------------------------------------------------------------------*
  * UNIX initialization (includes Darwin/Mac OS X)                    *
@@ -10,9 +10,6 @@
 
 #ifndef Win32
 
-#define R_INTERFACE_PTRS 1
-#define CSTACK_DEFNS 1
-#include <Rinterface.h>
 /* and SaveAction is not officially exported */
 extern SA_TYPE SaveAction;
 
