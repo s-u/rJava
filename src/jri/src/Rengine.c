@@ -436,7 +436,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_rosuda_JRI_Rengine_rniGetAttrNames
     jobjectArray sa;
 #if (R_VERSION >= R_Version(4,6,0))
     SEXP ans = R_getAttribNames(o);
-    ac = (unsigned int) XLENGTH(o);
+    ac = (unsigned int) XLENGTH(ans);
     if (!ac) return 0;
 #else
     SEXP att = ATTRIB(o), ah = att;
