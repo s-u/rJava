@@ -1,7 +1,7 @@
 #ifndef RJ_STRING_H__
 #define RJ_STRING_H__
 
-#include <jni.h>         /* for jchar */
+#include "jni.h"         /* for jchar */
 #include <Rinternals.h>  /* for SEXP */
 
 /* --- API --- */

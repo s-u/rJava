@@ -1359,7 +1359,7 @@ Optional Features:
                           programs to embed R. [auto]
   --enable-headless       enable initialization in headless mode. [auto]
   --enable-Xrs            use -Xrs in Java initialization. [auto]
-  --enable-dynload        load JVM dynamically (without linking). [auto]
+  --enable-dynload        load JVM dynamically (required). [yes]
   --enable-debug          enable debug flags and output. [no]
   --enable-mem-profile    enable memory profiling. [debug]
   --enable-callbacks      enable the support for callbacks from Java into R.
@@ -2458,8 +2458,13 @@ if test ${enable_dynload+y}
 then :
   enableval=$enable_dynload; want_dynload="${enableval}"
 else case e in #(
-  e) want_dynload=auto ;;
+  e) want_dynload=yes ;;
 esac
+fi
+
+if test "x${want_dynload}" = xno
+then :
+  as_fn_error $? "--disable-dynload is no longer supported: JVM loading is deferred to .jinit()." "$LINENO" 5
 fi
 
 
@@ -4009,17 +4014,7 @@ printf "%s\n" "#define HAVE_XRS 1" >>confdefs.h
 
 fi
 
-use_dynload="$want_dynload"
-if test x"$use_dynload" = xauto; then
-   if test "x$OSNAME" = xDarwin; then
-      use_dynload=yes
-   else
-      use_dynload=no
-   fi
-fi
-if test x"$use_dynload" != xyes; then
-   use_dynload=no
-fi
+use_dynload=yes
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether JVM will be loaded dynamically" >&5
 printf %s "checking whether JVM will be loaded dynamically... " >&6; }
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: ${use_dynload}" >&5
@@ -4031,100 +4026,6 @@ else
   USE_DYNLOAD_TRUE='#'
   USE_DYNLOAD_FALSE=
 fi
-
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether JNI programs can be compiled" >&5
-printf %s "checking whether JNI programs can be compiled... " >&6; }
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <jni.h>
-int main(void) {
-    jobject o;
-    JNI_CreateJavaVM(0, 0, 0);
-    return 0;
-}
-
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-else case e in #(
-  e) as_fn_error $? "Cannot compile a simple JNI program. See config.log for details.
-
-Make sure you have Java Development Kit installed and correctly registered in R.
-If in doubt, re-run \"R CMD javareconf\" as root.
-" "$LINENO" 5 ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether JNI programs run" >&5
-printf %s "checking whether JNI programs run... " >&6; }
-if test "$cross_compiling" = yes
-then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: don't know (cross-compiling)" >&5
-printf "%s\n" "don't know (cross-compiling)" >&6; }
-else case e in #(
-  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <jni.h>
-int main(void) {
-  jsize n;
-  JNI_GetCreatedJavaVMs(NULL, 0, &n);
-  return 0;
-}
-
-_ACEOF
-if ac_fn_c_try_run "$LINENO"
-then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-else case e in #(
-  e) as_fn_error $? "Unable to run a simple JNI program. Make sure you have configured R with Java support (see R documentation) and check config.log for failure reason." "$LINENO" 5 ;;
-esac
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
-esac
-fi
-
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking JNI data types" >&5
-printf %s "checking JNI data types... " >&6; }
-if test "$cross_compiling" = yes
-then :
-  { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in '$ac_pwd':" >&5
-printf "%s\n" "$as_me: error: in '$ac_pwd':" >&2;}
-as_fn_error $? "cannot run test program while cross compiling
-See 'config.log' for more details" "$LINENO" 5; }
-else case e in #(
-  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <jni.h>
-int main(void) {
-  return (sizeof(int)==sizeof(jint) && sizeof(long)==sizeof(long) && sizeof(jbyte)==sizeof(char) && sizeof(jshort)==sizeof(short) && sizeof(jfloat)==sizeof(float) && sizeof(jdouble)==sizeof(double))?0:1;
-}
-
-_ACEOF
-if ac_fn_c_try_run "$LINENO"
-then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: ok" >&5
-printf "%s\n" "ok" >&6; }
-else case e in #(
-  e) as_fn_error $? "One or more JNI types differ from the corresponding native type. You may need to use non-standard compiler flags or a different compiler in order to fix this." "$LINENO" 5 ;;
-esac
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
-esac
-fi
-
-
 
 if test "${want_jri}" = auto; then
    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether JRI should be compiled (autodetect)" >&5

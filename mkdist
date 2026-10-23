@@ -166,6 +166,7 @@ echo "Copy compiled Java classes ..."
 # copy all complied Java classes and sources
 cp src/java/*.class inst/java
 cp src/java/*.java inst/java
+cp tools/getsp* inst/java
 # move RJavaClassLoader into boot area since it will be loaded by the system class loader
 mv inst/java/RJavaClassLoader* inst/java/boot
 # move javadoc directory

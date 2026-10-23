@@ -9,8 +9,44 @@
 .need.init <- function()
     .Call(RJava_needs_init)
 
+.jloadJVM <- function(path, silent=FALSE)
+  .Call(RloadJVM, path.expand(path), silent)
+
+.junloadJVM <- function()
+  .Call(RunloadJVM)
+
+.jfindAndLoadJVM <- function() {
+    ## A mapped JVM is the only runtime this process can use, even before
+    ## a VM exists (e.g. JavaGD links libjvm). Select the held image itself;
+    ## explicit .jloadJVM(path) still requires a path naming that same file.
+    mapped <- .Call(RgetMappedJVM)
+    if (!is.null(mapped) && isTRUE(mapped$vms > 0L))
+        return(.Call(RattachJVM))
+    home <- .find.java.runtime()
+    if (!is.null(mapped)) {
+        selected <- .Call(RattachJVM)
+        discovered <- if (nzchar(home)) .find.jvm.library(home) else character()
+        if (length(discovered) &&
+            !identical(normalizePath(discovered[1], winslash="/"),
+                       normalizePath(mapped$path, winslash="/", mustWork=FALSE)))
+            warning("Using the JVM library already mapped into this process: ", mapped$path,
+                    "; Java discovery selected ", discovered[1],
+                    ". To select that runtime, start a new R process before loading packages that use Java.",
+                    call.=FALSE)
+        return(selected)
+    }
+    if (!nzchar(home))
+        stop("Cannot find Java. Set JAVA_HOME to an existing Java home before initializing the JVM.")
+    libjvm <- .find.jvm.library(home)
+    if (!length(libjvm)) stop("Cannot find JVM library in ", home)
+    .jloadJVM(normalizePath(libjvm[1], winslash="/", mustWork=TRUE))
+}
+
 ## initialization
 .jinit <- function(classpath=NULL, parameters=getOption("java.parameters", NA), ..., silent=FALSE, force.init=FALSE) {
+  st <- .jvmState()
+  if (st$state == "not-loaded")
+     .jfindAndLoadJVM()
   running.classpath <- character()
   if (!.need.init()) {
     running.classpath <- .jclassPath()

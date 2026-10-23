@@ -1,52 +1,5 @@
+# this should no longer be needed as an autoconf-edited file
 .onLoad <- function(libname, pkgname) {
-   ## we can skip all the detection logic if forced - assuming the user has loaded JVM already
-   if (!nzchar(Sys.getenv("RJAVA_FORCE_LOAD"))) {
-      ## On OS X with Oracle Java we may need to work around Oracle bug:
-      ## https://bugs.openjdk.java.net/browse/JDK-7131356
-      use.dynload <- FALSE
-      @USE_DYNLOAD_TRUE@use.dynload <- TRUE
-      if (length(grep("^darwin", R.version$os))) {
-         jh <- Sys.getenv("JAVA_HOME")
-         if (nzchar(jh) && !dir.exists(jh)) {
-             warning("JAVA_HOME is set incorrectly! Ingoring.")
-             jh <- ""
-         }
-         if (!nzchar(jh) && file.exists("/usr/libexec/java_home"))
-               jh <- system("/usr/libexec/java_home", intern=TRUE)[1L]
-         if (!nzchar(jh)) {
-            if (use.dynload)
-               stop("Cannot find Java. Install Java run-time and use R CMD javareconf.\nAs a last resort you can set JAVA_HOME appropriately.")
-            warning("Cannot find Java. Install Java run-time and use R CMD javareconf.\nAs a last resort you can set JAVA_HOME if you know the correct value.")
-         }
-         if (file.exists(file.path(jh, "jre/lib"))) jh <- file.path(jh, "jre")
-         dlp <- Sys.getenv("DYLD_LIBRARY_PATH")
-         if (nzchar(dlp)) dlp <- paste0(":", dlp)
-         ## pre-load JLI due to Oracle bug
-         if (file.exists(jli <- file.path(jh, "lib/jli/libjli.dylib")))
-            dyn.load(jli, FALSE)
-         ## this is mandatory - we need the JVM
-         if (file.exists(jvm <- file.path(jh, "lib/server/libjvm.dylib"))) {
-            dyn.load(jvm, FALSE)
-            Sys.setenv(DYLD_LIBRARY_PATH=paste0(file.path(jh, "lib/server"), dlp))
-         } else {
-            warning("Cannot find JVM library '", jvm, "'\nInstall Java and/or check JAVA_HOME (if in doubt, do NOT set it, it will be detected)")
-            if (use.dynload) stop("JVM could not be found")
-         }
-      } else if (use.dynload) {
-         jh <- Sys.getenv("JAVA_HOME")
-         if (nzchar(jh) && !dir.exists(jh)) {
-            warning("JAVA_HOME is set incorrectly! Ingoring.")
-            jh <- ""
-         }
-         if (!nzchar(jh))
-            stop("JAVA_HOME is requied for dynamically loaded JVM, but is not set.\nRe-run R CMD javareconf or set JAVA_HOME correctly.")
-         if (file.exists(file.path(jh, "jre/lib"))) jh <- file.path(jh, "jre")
-         if (!file.exists(jvm <- file.path(jh, "lib/server/libjvm.so")))
-            stop("Cannot find ", jvm,", re-configure R or use valid JAVA_HOME")
-         dyn.load(jvm, FALSE)
-      }
-   } ## RJAVA_FORCE_LOAD
-
    library.dynam("rJava", pkgname, libname)
    # pass on to the system-independent part
    .jfirst(libname, pkgname)

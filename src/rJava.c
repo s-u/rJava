@@ -11,6 +11,11 @@ int use_eenv = 1;
 /* cached environment. Do NOT use directly! Always use getJNIEnv()! */
 JNIEnv *eenv;
 
+/* quick hack - we have to get rid of R_GetCurrentEnv() soon anyway */
+#if R_VERSION < R_Version(3,6,0)
+#define R_GetCurrentEnv() R_GlobalEnv
+#endif
+
 static SEXP getCurrentCall(void) {
     SEXP cexp, sys_calls = PROTECT(install("sys.calls"));
     cexp = PROTECT(lang1(sys_calls));

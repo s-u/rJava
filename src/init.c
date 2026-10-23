@@ -89,10 +89,12 @@ static void JNICALL exit_hook(int status) {
     exit(status);
 }
 
+/* -1 if no run-time is loaded, otherwise number of active VMs */
 int existingJVMs(void) {
     jsize vms = 0;
     JavaVM *jvms[32];
-    return (JNI_GetCreatedJavaVMs(jvms, 32, &vms) >= 0) ? vms : 0;
+    jint res = JNI_GetCreatedJavaVMs(jvms, 32, &vms);
+    return (res == JNI_NO_DJNI) ? -1 : ((res >= 0) ? vms : 0);
 }
 
 /* in reality WIN64 implies WIN32 but to make sure ... */
@@ -118,7 +120,9 @@ static int initJVM(const char *user_classpath, int opts, char **optv, int hooks,
   if(!user_classpath) user_classpath = "";
 
   vm_args.version = JNI_VERSION_1_2;
-  if(JNI_GetDefaultJavaVMInitArgs(&vm_args) != JNI_OK) {
+  if((res = JNI_GetDefaultJavaVMInitArgs(&vm_args)) != JNI_OK) {
+    if (res == JNI_NO_DJNI) /* DJNI has not loaded a run-time yet */
+      error("No Java run-time is loaded.");
     error("JNI 1.2 or higher is required");
     return -1;
   }
@@ -193,8 +197,11 @@ static int initJVM(const char *user_classpath, int opts, char **optv, int hooks,
   if (disableGuardPages && (res != 0 || !eenv))
     return -2; /* perhaps this VM does not allow disabling guard pages */
 
-  if (res != 0)
-      error("Cannot create Java virtual machine (JNI_CreateJavaVM returned %ld)", (long int) res);
+  if (res != 0) {
+      if (rJava_JVM_state != JVM_STATE_NONE)
+	  Rf_warning("Attempt to re-create a second JVM in a process - most known Java implementations do not support it.");
+      Rf_error("Cannot create Java virtual machine (JNI_CreateJavaVM returned %d)", (int) res);
+  }
   if (!eenv)
     error("Cannot obtain JVM environment");
 
@@ -760,19 +767,13 @@ static SEXP RinitJVM_jsw(SEXP par) {
 /** RinitJVM(classpath)
     initializes JVM with the specified class path */
 REP SEXP RinitJVM(SEXP par) {
-
+    if (!djni_loaded())
+	Rf_error("No Java run-time is loaded.");
 #ifndef JVM_STACK_WORKAROUND
-  return RinitJVM_real(par, 0);
+    return RinitJVM_real(par, 0);
 #else
-  return RinitJVM_jsw(par);
+    return RinitJVM_jsw(par);
 #endif
-}
-
-REP void doneJVM(void) {
-  (*jvm)->DestroyJavaVM(jvm);
-  jvm = 0;
-  eenv = 0;
-  rJava_JVM_state = JVM_STATE_DESTROYED;
 }
 
 /**

@@ -1,6 +1,58 @@
  NEWS/ChangeLog for rJava
 --------------------------
 
+1.0-19	(not yet released)
+    o	The JVM run-time is no longer linked into rJava or loaded when
+	the namespace loads. The first .jinit() selects one: a JVM
+	already mapped in the process, then java.home (Windows) or
+	JAVA_HOME, the JavaSoft registry (Windows),
+	/usr/libexec/java_home (macOS), R CMD config JAVA_HOME (Linux),
+	and java on PATH. Linux thus retains the javareconf JDK as its
+	default when JAVA_HOME is unset. Until a
+	library is loaded, a failed .jinit() can be retried after
+	correcting the setting. .jloadJVM() selects a library by path;
+	.jvmState() reports "not-loaded" before any selection.
+
+    o	A selected JVM library stays selected for the life of the R
+	process: .junloadJVM() fails once one is loaded, and another
+	run-time requires a new R process. A JVM library already mapped
+	into the process can be selected explicitly only by a path naming
+	the same file; a different or unverifiable file is refused before it is
+	loaded. Device mismatches on btrfs and overlayfs are not evidence
+	of a different file: matching inodes also require a loader
+	reference to the same image, without loading another library.
+
+    o	If native code in the process has already mapped one JVM library
+	(e.g. JavaGD), .jinit() adopts it even before a VM exists and warns
+	if Java discovery selects a different path. If a Java application
+	embedding R through JRI has created a VM, .jinit() attaches to it
+	whatever JAVA_HOME names.
+
+    o	Changed behavior: the Java home is now chosen when Java is
+	first used, not when rJava loads, and .onLoad() no longer changes
+	PATH (Windows) or DYLD_LIBRARY_PATH (macOS). On Linux with musl
+	(e.g. Alpine), only the run-time whose server directory was on
+	LD_LIBRARY_PATH when R started can be used; selecting another
+	is refused, and the refused library stays mapped, so a new R
+	process is needed (see ?.jinit).
+
+    o	JVM loading is now always dynamic. --enable-dynload defaults to
+	yes; --disable-dynload is rejected instead of silently producing
+	a dynamic build under --as-needed. RJAVA_FORCE_LOAD is no longer
+	used, since namespace loading never requires a JVM.
+
+
+    o	On Windows, retain MSVC runtime DLLs for native libraries Java
+	loads after startup or host attachment. Already loaded runtimes
+	keep precedence. For each runtime the JDK bundles, select the
+	newer of System32 and the bundled copy before loading jvm.dll,
+	preferring System32 on ties or unknown versions. This preserves
+	newer system runtimes for other native packages while supporting
+	missing or incomplete system VC++ installations. Retention lasts
+	for the process lifetime without changing PATH or retaining a
+	search directory. Windows JRI build policy is unchanged.
+
+
 1.0-18	2026-04-08
     o	JRI: fix regression in 1.0-16 breaking older versions of R.
 

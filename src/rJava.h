@@ -19,7 +19,7 @@
    0.2  - uses S4 classes
    0.1  - first public release */
 
-#include <jni.h>
+#include "djni.h"
 #include <R.h>
 #include <Rinternals.h>
 #include <Rversion.h>

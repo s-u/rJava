@@ -64,9 +64,11 @@ AC_ARG_ENABLE([Xrs],
 
 ## enable dynloaded JVM
 AC_ARG_ENABLE([dynload],
-[AS_HELP_STRING([--enable-dynload],[load JVM dynamically (without linking). @<:@auto@:>@])],
+[AS_HELP_STRING([--enable-dynload],[load JVM dynamically (required). @<:@yes@:>@])],
 [want_dynload="${enableval}"],
-[want_dynload=auto])
+[want_dynload=yes])
+AS_IF([test "x${want_dynload}" = xno],
+      [AC_MSG_ERROR([--disable-dynload is no longer supported: JVM loading is deferred to .jinit().])])
 
 ## enable debug flags
 AC_ARG_ENABLE([debug],
@@ -238,57 +240,10 @@ if test x"$has_xrs" = xyes; then
    AC_DEFINE(HAVE_XRS, 1, [Set if the Java parameter -Xrs is supported])
 fi
 
-use_dynload="$want_dynload"
-if test x"$use_dynload" = xauto; then
-   if test "x$OSNAME" = xDarwin; then
-      use_dynload=yes
-   else
-      use_dynload=no
-   fi
-fi
-if test x"$use_dynload" != xyes; then
-   use_dynload=no
-fi
+use_dynload=yes
 AC_MSG_CHECKING([whether JVM will be loaded dynamically])
 AC_MSG_RESULT(${use_dynload})
 AM_CONDITIONAL(USE_DYNLOAD, [test "x${use_dynload}" = xyes])
-
-AC_MSG_CHECKING([whether JNI programs can be compiled])
-AC_LINK_IFELSE([AC_LANG_SOURCE([[
-#include <jni.h>
-int main(void) {
-    jobject o;
-    JNI_CreateJavaVM(0, 0, 0);
-    return 0;
-}
-	]])],[AC_MSG_RESULT(yes)],
-	[AC_MSG_ERROR([Cannot compile a simple JNI program. See config.log for details.
-
-Make sure you have Java Development Kit installed and correctly registered in R.
-If in doubt, re-run "R CMD javareconf" as root.
-])])
-
-AC_MSG_CHECKING([whether JNI programs run])
-AC_RUN_IFELSE([AC_LANG_SOURCE([
-#include <jni.h>
-int main(void) {
-  jsize n;
-  JNI_GetCreatedJavaVMs(NULL, 0, &n);
-  return 0;
-}
-	])],
-	[AC_MSG_RESULT([yes])],
-	[AC_MSG_ERROR([Unable to run a simple JNI program. Make sure you have configured R with Java support (see R documentation) and check config.log for failure reason.])],
-	[AC_MSG_RESULT([don't know (cross-compiling)])])
-
-AC_MSG_CHECKING([JNI data types])
-AC_RUN_IFELSE([AC_LANG_SOURCE([[
-#include <jni.h>
-int main(void) {
-  return (sizeof(int)==sizeof(jint) && sizeof(long)==sizeof(long) && sizeof(jbyte)==sizeof(char) && sizeof(jshort)==sizeof(short) && sizeof(jfloat)==sizeof(float) && sizeof(jdouble)==sizeof(double))?0:1;
-}
-        ]])],[AC_MSG_RESULT([ok])],[AC_MSG_ERROR([One or more JNI types differ from the corresponding native type. You may need to use non-standard compiler flags or a different compiler in order to fix this.])],[])
-
 
 if test "${want_jri}" = auto; then
    AC_MSG_CHECKING([whether JRI should be compiled (autodetect)])
