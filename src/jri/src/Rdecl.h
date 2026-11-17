@@ -6,9 +6,6 @@
 
 #include <Rversion.h>
 
-/* some have been added to R 4.6.0 */
-#if R_VERSION >= R_Version(4,6,0)
-
 /* Rinterface.h is not available on Windows */
 #ifndef Win32
 #define R_INTERFACE_PTRS 1
@@ -16,6 +13,8 @@
 #include <Rinterface.h> /* R_ReadConsole since 4.6.0 */
 #endif
 
+/* some have been added to R 4.6.0 */
+#if R_VERSION >= R_Version(4,6,0)
 #include <Rembedded.h>  /* run_Rmainloop (since 4.6.0), Rf_initialize_R (since 2.4.0) */
 
 /* required on Windows (since 4.6.0) */
